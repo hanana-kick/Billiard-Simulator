@@ -6,16 +6,19 @@
 const {len,sub,clamp}=G.LabMath,D=G.LabDimensions;
 const wrap=a=>((a+180)%360+360)%360-180;
 const halton=(n,b)=>{let f=1,r=0;while(n>0){f/=b;r+=f*(n%b);n=Math.floor(n/b);}return r;};
+const requiredCushions=o=>o.mode==='three'||(o.gameMode==='four'&&o.fourBallThreeCushion)?3:0;
+const fullShot=o=>o.gameMode==='four';
 function validate(req){
  const {snapshot:s,selectedId,options:o}=req;
  if(!s||!o||!['target','carom','direct','three'].includes(o.mode))throw new Error('검색 조건이 올바르지 않습니다.');
  const cue=s.objects.find(b=>b.id===selectedId),first=s.objects.find(b=>b.id===o.targetId),second=s.objects.find(b=>b.id===o.secondId);
+ if(o.gameMode==='four'){const other=s.objects.find(b=>b.id===o.opponentId);if(!other||other.shape!=='sphere'||[selectedId,o.targetId,o.secondId].includes(o.opponentId)||o.mode!=='carom'||typeof o.fourBallThreeCushion!=='boolean')throw new Error('4구 수구·상대 수구·적구 조건을 확인하세요.');}
  if(!cue||cue.shape!=='sphere'||!first||first.shape!=='sphere'||first.id===cue.id)throw new Error('서로 다른 수구와 목적구를 선택하세요.');
  if(o.mode!=='target'&&(!second||second.shape!=='sphere'||second.id===cue.id||second.id===first.id))throw new Error('첫 공과 두 번째 공은 서로 달라야 합니다.');
  if(![48,128,320].includes(o.budget)&&!req.testBudget)throw new Error('지원하지 않는 탐색량입니다.');
  if(!Number.isInteger(o.budget)||o.budget<1||o.budget>1024||![8,16,30].includes(o.horizon))throw new Error('탐색량·시간 범위를 확인하세요.');
- if(!['shortest','gentle'].includes(o.objective)||!req.settings||!Number.isFinite(req.settings.elevation)||req.settings.elevation<0||req.settings.elevation>80||typeof o.spin!=='boolean')throw new Error('목표 설정이 올바르지 않습니다.');
- for(const [lo,hi,min,max] of [['minSpeed','maxSpeed',.5,4.5],['minElevation','maxElevation',0,80]]){const a=o[lo]??min,b=o[hi]??max;if(!Number.isFinite(a)||!Number.isFinite(b)||a<min||b>max||a>b)throw new Error('탐색 범위가 올바르지 않습니다.');}
+ if(!['shortest','gentle'].includes(o.objective)||!req.settings||!Number.isFinite(req.settings.elevation)||req.settings.elevation<0||req.settings.elevation>85||typeof o.spin!=='boolean')throw new Error('목표 설정이 올바르지 않습니다.');
+ for(const [lo,hi,min,max] of [['minSpeed','maxSpeed',.5,4.5],['minElevation','maxElevation',0,85]]){const a=o[lo]??min,b=o[hi]??max;if(!Number.isFinite(a)||!Number.isFinite(b)||a<min||b>max||a>b)throw new Error('탐색 범위가 올바르지 않습니다.');}
  if(o.inputStrategy!==undefined&&!['hybrid','analytic'].includes(o.inputStrategy))throw new Error('지원하지 않는 입력 추정 방식입니다.');
  if(o.elevationMode!==undefined&&!['fixed','search'].includes(o.elevationMode))throw new Error('큐 들림 탐색 조건이 올바르지 않습니다.');
  if(o.allowKiss!==undefined&&typeof o.allowKiss!=='boolean')throw new Error('키스 허용 옵션이 올바르지 않습니다.');
@@ -24,7 +27,7 @@ function validate(req){
  return{cue,first,second};
 }
 function normalize(settings){
- const s={angle:wrap(settings.angle),elevation:clamp(settings.elevation,0,80),speed:clamp(settings.speed,.5,4.5),tipX:clamp(settings.tipX,-.55,.55),tipY:clamp(settings.tipY,-.45,.45)};
+ const s={angle:wrap(settings.angle),elevation:clamp(settings.elevation,0,85),speed:clamp(settings.speed,.5,4.5),tipX:clamp(settings.tipX,-.55,.55),tipY:clamp(settings.tipY,-.45,.45)};
  const m=Math.hypot(s.tipX,s.tipY);if(m>.6){s.tipX*=.6/m;s.tipY*=.6/m;}
  for(const k of Object.keys(s))s[k]=Math.round(s[k]*100000)/100000;
  return s;
@@ -78,14 +81,14 @@ function nextSettings(search){
 function constrainSettings(search,settings){
  const o=search.req.options,s={...settings};
  s.speed=clamp(s.speed,o.minSpeed??.5,o.maxSpeed??4.5);
- if(search.pendingModel?.stage==='closed-form-input-estimate')return projectInputs(s,search.req);
+ if(['closed-form-input-estimate','current-user-settings','local-physical-refinement'].includes(search.pendingModel?.stage))return projectInputs(s,search.req);
  if(o.elevationMode==='search'){
-  const low=o.minElevation??0,high=o.maxElevation??30;
+  const low=o.minElevation??0,high=o.maxElevation??85;
   // Interleave low-discrepancy elevation exploration and local refinement.
   const parent=search.pool[0];
-  s.elevation=search.count>24&&search.count%3!==0&&parent?
+  s.elevation=search.pendingModel?.stage==='full-angle-exploration'?low+(high-low)*search.pendingModel.elevationFraction:search.count>24&&search.count%3!==0&&parent?
    clamp(parent.settings.elevation+(search.count%2?1:-1)*[2,.5,.1][search.count%3],low,high):
-   low+(high-low)*halton(search.count+1,13);
+   low+(high-low)*halton(search.count+1,13)**3;
  }else s.elevation=search.req.settings.elevation;
  return normalize(s);
 }
@@ -121,12 +124,12 @@ function dampedStep(residual,columns,lambda=1e-4){
 function projectInputs(settings,req){
  const s=normalize(settings),o=req.options;
  s.speed=clamp(s.speed,o.minSpeed??.5,o.maxSpeed??4.5);
- s.elevation=o.elevationMode==='search'?clamp(s.elevation,o.minElevation??0,o.maxElevation??30):req.settings.elevation;
+ s.elevation=o.elevationMode==='search'?clamp(s.elevation,o.minElevation??0,o.maxElevation??85):req.settings.elevation;
  return s;
 }
 function nextDls(search){
  const partition=search.req.partition,localCount=partition?(search.count-partition.index)/partition.count:search.count;
- const axes=['angle'];if((search.req.options.maxSpeed??4.5)>(search.req.options.minSpeed??.5))axes.push('speed');if(search.req.options.spin)axes.push('tipX','tipY');if(search.req.options.elevationMode==='search'&&(search.req.options.maxElevation??30)>(search.req.options.minElevation??0))axes.push('elevation');
+ const axes=['angle'];if((search.req.options.maxSpeed??4.5)>(search.req.options.minSpeed??.5))axes.push('speed');if(search.req.options.spin)axes.push('tipX','tipY');if(search.req.options.elevationMode==='search'&&(search.req.options.maxElevation??85)>(search.req.options.minElevation??0))axes.push('elevation');
  const warmup=Math.max(1,Math.min(10,search.req.options.budget-axes.length-1));
  if(localCount<warmup)return null;
  if(!search.dls&&search.lastDlsEnd!==undefined&&localCount-search.lastDlsEnd<10)return null;
@@ -141,7 +144,7 @@ function nextDls(search){
  const d=search.dls;
  if(d.columns.length<d.axes.length){
   const axis=d.axes[d.columns.length];let step=d.steps[axis];
-  const upper=axis==='speed'?(search.req.options.maxSpeed??4.5):axis==='tipX'?.55:axis==='tipY'?.45:axis==='elevation'?(search.req.options.maxElevation??30):Infinity;
+  const upper=axis==='speed'?(search.req.options.maxSpeed??4.5):axis==='tipX'?.55:axis==='tipY'?.45:axis==='elevation'?(search.req.options.maxElevation??85):Infinity;
   if(d.base.settings[axis]+step>upper)step=-step;
   const settings=projectInputs({...d.base.settings,[axis]:d.base.settings[axis]+step},search.req);
   step=axis==='angle'?wrap(settings[axis]-d.base.settings[axis]):settings[axis]-d.base.settings[axis];
@@ -175,7 +178,7 @@ function restoreClearance(search){
  f.probes++;
  const delta={elevation:5,angle:2,tipX:.08,tipY:.08};
  const s=normalize({...f.settings,[axis]:f.settings[axis]+sign*scale*delta[axis]});
- if(search.req.options.elevationMode==='search')s.elevation=clamp(s.elevation,search.req.options.minElevation??0,search.req.options.maxElevation??30);
+ if(search.req.options.elevationMode==='search')s.elevation=clamp(s.elevation,search.req.options.minElevation??0,search.req.options.maxElevation??85);
  else s.elevation=search.req.settings.elevation;
  if(!search.req.options.spin){s.tipX=0;s.tipY=0;}
  return s;
@@ -185,7 +188,7 @@ function beginTrial(search,settings){
  let clearance=lab.cueClearance(lab.get(req.selectedId),settings);
  const fs=search.feasibilityStats||(search.feasibilityStats={checked:0,blocked:0,restored:0});fs.checked++;
  if(!clearance.clear&&req.options.elevationMode==='search'){
-  const restored=lab.findCueFeasible(lab.get(req.selectedId),settings,{minElevation:req.options.minElevation??0,maxElevation:req.options.maxElevation??30});
+  const restored=lab.findCueFeasible(lab.get(req.selectedId),settings,{minElevation:req.options.minElevation??0,maxElevation:req.options.maxElevation??85});
   fs.checked+=restored.queries;
   if(restored.found){if(search.pendingModel)search.pendingModel={...search.pendingModel,modified:true,modification:'geometric-cue-elevation-restoration'};settings=normalize(restored.settings);clearance=lab.cueClearance(lab.get(req.selectedId),settings);fs.checked++;fs.restored++;search.candidateResetDls=true;search.dlsPending=null;search.dls=null;}
  }
@@ -198,9 +201,10 @@ function beginTrial(search,settings){
  if(search.feasibility){fs.restored++;search.feasibility=null;}
 
  const trial={lab,settings,searchModel:search.pendingModel,start:lab.time,steps:0,rails:0,firstHit:false,success:false,invalid:false,contacts:[],closest:Infinity,afterFirstClosest:Infinity,firstClosest:Infinity,residual:null,residualDistance:Infinity,length:0,previous:{...lab.get(req.selectedId).body.translation()},maxHeight:0,pending:[],ambiguous:false,kisses:G.LabRouteRules.createKissTracker()};
- const first=req.options.targetId,second=req.options.secondId,needed=req.options.mode==='three'?3:0;
+ const first=req.options.targetId,second=req.options.secondId,needed=requiredCushions(req.options);
  lab.onEvent=e=>{
   if(e.kind==='cue-obstruction'){trial.cueObstructed=true;trial.invalid=true;return;}
+  if(fullShot(req.options)&&e.kind==='contact'){const other=e.a?.id===req.selectedId?e.b:e.b?.id===req.selectedId?e.a:null;if(other&&(other.id===req.options.opponentId||other.kind==='floor')){trial.fourBallFoul=true;trial.invalid=true;}}
   if(trial.goalLatched)return;
   if(req.options.methodId){
    if(e.kind!=='contact'||!e.a||!e.b)return;
@@ -228,11 +232,12 @@ function beginTrial(search,settings){
 }
 function stepTrial(search,t,budget=240){
  if(t.invalid)return true;
- if(t.success&&!t.lab?.cue)return true;
- const {req}=search,max=Math.round(req.options.horizon/t.lab.dt),needed=req.options.mode==='three'?3:0;
+ if(t.success&&!t.lab?.cue&&!fullShot(search.req.options))return true;
+ const {req}=search,max=Math.round(req.options.horizon/t.lab.dt),needed=requiredCushions(req.options);
  for(let i=0;i<budget&&t.steps<max;i++){
   t.lab.step();t.steps++;
-  if(t.goalLatched){if(t.cueObstructed)t.invalid=true;if(t.invalid||!t.lab.cue)return true;continue;}
+  if(fullShot(req.options)){const cue=t.lab.get(req.selectedId),other=t.lab.get(req.options.opponentId);t.lab.world.contactPair(cue.pairCollider||cue.collider,other.pairCollider||other.collider,m=>{for(let j=0;j<m.numContacts();j++)if(m.contactImpulse(j)>0)t.fourBallFoul=true;});const p=cue.body.translation();if(!Number.isFinite(p.x+p.y+p.z))throw new Error('물리 계산에 유효하지 않은 값이 발생했습니다.');if(p.y<-0.05||Math.abs(p.x)>D.width/2+.07||Math.abs(p.z)>D.depth/2+.07)t.fourBallFoul=true;if(t.fourBallFoul)t.invalid=true;}
+  if(t.goalLatched){if(t.cueObstructed||t.fourBallFoul)t.invalid=true;if(t.invalid||(!t.lab.cue&&(!fullShot(req.options)||t.lab.objects.every(o=>o.body.isSleeping()))))return true;continue;}
   sampleKisses(t,req.selectedId);
   if(req.options.methodId&&t.pending.length){
    const pending=t.pending.splice(0).sort((a,b)=>a.time-b.time);
@@ -242,11 +247,11 @@ function stepTrial(search,t,budget=240){
     const seen=new Set();for(const e of group){const key=e.kind+':'+(e.rail||e.id);if(!seen.has(key)){seen.add(key);t.contacts.push(e);}}
     k=j;
    }
-   const result=G.LabRouteRules.evaluate(t.contacts,{method:req.options.methodId,firstId:req.options.targetId,secondId:req.options.secondId,ambiguous:t.ambiguous});
+   const result=G.LabRouteRules.evaluate(t.contacts,{method:req.options.methodId,firstId:req.options.targetId,secondId:req.options.secondId,ambiguous:t.ambiguous,minCushions:needed});
    t.rule=result;t.rails=result.total;t.firstHit=result.firstHit;t.success=result.success;t.invalid=result.invalid;
    if(result.complete){t.hitTime=result.contacts.at(-1).time;t.hitRails=result.total;t.contacts=result.contacts;}
   }
-  if(t.cueObstructed)t.invalid=true;
+  if(t.cueObstructed||t.fourBallFoul)t.invalid=true;
   if(!G.LabRouteRules.kissAllowed(req.options)&&t.kisses.contacts.some(e=>!t.success||e.time<=(t.hitTime??Infinity)+1e-9))t.invalid=true;
   const cue=t.lab.get(req.selectedId),pos=cue.body.translation();t.length+=len(sub(pos,t.previous));t.previous={...pos};t.maxHeight=Math.max(t.maxHeight,pos.y-cue.radius);
   const a=t.lab.get(req.options.targetId),b=t.lab.get(req.options.secondId),gap=o=>Math.max(0,len(sub(pos,o.body.translation()))-cue.radius-o.radius);
@@ -259,24 +264,25 @@ function stepTrial(search,t,budget=240){
   if(!Number.isFinite(pos.x+pos.y+pos.z))throw new Error('물리 계산에 유효하지 않은 값이 발생했습니다.');
   // Leaving the cloth invalidates a table shot, even if it lands on a target later.
   if(pos.y<-0.05||Math.abs(pos.x)>D.width/2+.07||Math.abs(pos.z)>D.depth/2+.07)t.invalid=true;
-  if(t.success&&!t.invalid){t.goalLatched=true;if(!t.lab.cue)return true;}
+  if(t.success&&!t.invalid){t.goalLatched=true;if(!t.lab.cue&&!fullShot(req.options))return true;}
   if(t.invalid||(!t.lab.cue&&t.lab.objects.every(o=>o.body.isSleeping())))return true;
  }
- if(t.steps>=max&&t.goalLatched&&t.lab.cue){t.invalid=true;t.verificationIncomplete=true;}
+ if(t.steps>=max&&t.goalLatched&&(t.lab.cue||(fullShot(req.options)&&!t.lab.objects.every(o=>o.body.isSleeping())))){t.invalid=true;t.verificationIncomplete=true;}
  return t.steps>=max;
 }
 function finishTrial(search,t){
  const o=search.req.options,success=t.success&&!t.invalid;
  const clearance=Number.isFinite(t.closest)?t.closest:t.firstHit&&Number.isFinite(t.afterFirstClosest)?t.afterFirstClosest:Number.isFinite(t.firstClosest)?t.firstClosest:5;
  const cost=o.objective==='gentle'?t.settings.speed:t.length;
- const missing=Math.max(0,(o.mode==='three'?3:0)-t.rails);
+ const missing=Math.max(0,requiredCushions(o)-t.rails);
  const penalty=success?0:t.invalid?600:t.firstHit?(missing?220+20*missing:100)+25*clearance:450+20*clearance;
- const failureReason=success?null:t.cueObstructed?'cue-obstruction':t.verificationIncomplete?'cue-tail-incomplete':t.invalid?(t.rule?.reason||'invalid-contact-or-table-state'):!t.firstHit?'first-target-not-hit':missing?'insufficient-cushions':'final-target-not-hit';
- const result={settings:t.settings,searchModel:t.searchModel,success,failureReason,residual:t.residual,topology:t.residualTopology,score:penalty+cost/100,clearance,firstHit:t.firstHit,cushions:t.hitRails??t.rails,distance:t.length,seconds:t.hitTime??(t.lab.time-t.start),contacts:t.contacts.slice(),maxHeight:t.maxHeight,kissContacts:t.kisses.contacts.slice(),method:o.methodId||null,firstId:o.targetId,secondId:o.secondId,ambiguous:t.ambiguous||false,matchedMethods:success&&o.methodId&&o.mode==='three'?G.LabRouteRules.classify(t.contacts,o.targetId,o.secondId):[]};
+ const failureReason=success?null:t.cueObstructed?'cue-obstruction':t.fourBallFoul?'four-ball-opponent-or-off-table':t.verificationIncomplete?(fullShot(o)?'four-ball-shot-incomplete':'cue-tail-incomplete'):t.invalid?(t.rule?.reason||'invalid-contact-or-table-state'):!t.firstHit?'first-target-not-hit':missing?'insufficient-cushions':'final-target-not-hit';
+ const result={gameMode:o.gameMode,opponentId:o.opponentId,fourBallThreeCushion:o.fourBallThreeCushion,settings:t.settings,searchModel:t.searchModel,success,failureReason,residual:t.residual,topology:t.residualTopology,score:penalty+cost/100,clearance,firstHit:t.firstHit,cushions:t.hitRails??t.rails,distance:t.length,seconds:t.hitTime??(t.lab.time-t.start),contacts:t.contacts.slice(),maxHeight:t.maxHeight,kissContacts:t.kisses.contacts.slice(),method:o.methodId||null,firstId:o.targetId,secondId:o.secondId,ambiguous:t.ambiguous||false,matchedMethods:success&&o.methodId&&o.mode==='three'?G.LabRouteRules.classify(t.contacts,o.targetId,o.secondId):[]};
  t.lab.dispose();acceptCandidate(search,result,t.steps);return result;
 }
 function acceptCandidate(search,result,steps){
  const o=search.req.options,success=result.success;
+ if(!success){const reasons=search.failureReasons||(search.failureReasons={});const reason=result.failureReason||'unspecified-physical-failure';reasons[reason]=(reasons[reason]||0)+1;}
  if(result.searchModel?.stage==='closed-form-input-estimate'){(search.analyticDiagnostics||(search.analyticDiagnostics=[])).push({settings:result.settings,geometricResidual:result.searchModel.geometricResidual,physicalResidualNorm:result.residual?Math.hypot(...result.residual):null,success,failureReason:result.failureReason,cushions:result.cushions,firstId:result.firstId,secondId:result.secondId});}
  finishDls(search,result);
  search.evaluated++;search.physicsSteps=(search.physicsSteps||0)+steps;if(success){search.firstSuccessCost??={tested:search.count,physicsSteps:search.physicsSteps,elapsedMs:performance.now()-search.started};search.successCount++;search.successes.push(result);}search.pool.push(result);search.pool.sort((a,b)=>{if(a.success&&b.success){const primary=o.objective==='gentle'?a.settings.speed-b.settings.speed:a.distance-b.distance;return primary||(o.objective==='gentle'?a.distance-b.distance:a.settings.speed-b.settings.speed);}return a.score-b.score});search.pool=search.pool.slice(0,18);
@@ -324,7 +330,7 @@ function progress(search){const fraction=search.active?Math.min(.99,search.activ
 function finishSearch(search){
  const unique=[];
  for(const r of search.successes.slice().sort((a,b)=>search.req.options.objective==='gentle'?a.settings.speed-b.settings.speed||a.distance-b.distance:a.distance-b.distance||a.settings.speed-b.settings.speed))if(!unique.some(p=>G.LabRouteRules.successIdentity(p)===G.LabRouteRules.successIdentity(r)))unique.push({...r,id:unique.length+1});
- return{...progress(search),results:unique,resultCount:unique.length,resultLimit:null,nearest:unique.length?null:search.bestMiss,options:{...search.req.options},hz:Math.round(1/search.req.snapshot.dt),solverStats:search.solverStats||{probes:0,steps:0,accepted:0,rejected:0},globalOptimal:false,exhaustive:false,seedCushionRange:search.req.options.methodId==='carom'?[0,search.seedMaxOrder??0]:search.req.options.methodId==='any'?[3,search.seedMaxOrder??3]:null,seedMaxOrder:search.seedMaxOrder??null,searchModel:search.req.options.inputStrategy==='analytic'?'closed-form-inputs-with-physical-fallback':'hybrid-physical-search',inputStrategy:search.req.options.inputStrategy||'hybrid',physicsSteps:search.physicsSteps||0,firstSuccessCost:search.firstSuccessCost??null,analyticDiagnostics:search.analyticDiagnostics||[],analyticStats:{proposed:search.analyticSeeds?.length||0,feasible:search.analyticSeeds?.filter(x=>x.ok).length||0,evaluated:search.analyticCursor||0,rejectedReasons:[...new Set((search.analyticSeeds||[]).filter(x=>!x.ok).map(x=>x.reason))]},feasibilityStats:search.feasibilityStats,feasibilityStatus:search.successes.length?'verified-feasible-shot':'not-found-within-budget',terminationReason:search.finished?'candidate-budget-exhausted':'partial'};
+ return{...progress(search),failureReasons:{...search.failureReasons},results:unique,resultCount:unique.length,resultLimit:null,nearest:unique.length?null:search.bestMiss,options:{...search.req.options},hz:Math.round(1/search.req.snapshot.dt),solverStats:search.solverStats||{probes:0,steps:0,accepted:0,rejected:0},globalOptimal:false,exhaustive:false,seedCushionRange:search.req.options.methodId==='carom'?[requiredCushions(search.req.options),search.seedMaxOrder??requiredCushions(search.req.options)]:search.req.options.methodId==='any'?[3,search.seedMaxOrder??3]:null,seedMaxOrder:search.seedMaxOrder??null,searchModel:search.req.options.inputStrategy==='analytic'?'closed-form-inputs-with-physical-fallback':'hybrid-physical-search',inputStrategy:search.req.options.inputStrategy||'hybrid',physicsSteps:search.physicsSteps||0,firstSuccessCost:search.firstSuccessCost??null,analyticDiagnostics:search.analyticDiagnostics||[],analyticStats:{proposed:search.analyticSeeds?.length||0,feasible:search.analyticSeeds?.filter(x=>x.ok).length||0,evaluated:search.analyticCursor||0,rejectedReasons:[...new Set((search.analyticSeeds||[]).filter(x=>!x.ok).map(x=>x.reason))]},feasibilityStats:search.feasibilityStats,feasibilityStatus:search.successes.length?'verified-feasible-shot':'not-found-within-budget',terminationReason:search.finished?'candidate-budget-exhausted':'partial'};
 }
 function disposeSearch(search){if(search.active){search.active.lab.dispose();search.active=null;}}
 G.ShotSearchCore={proposeCandidate,beginCandidate,finishCandidate,commitCandidate,acceptCandidate,validate,constrainSettings,sampleKisses,solveLinear,dampedStep,projectInputs,nextDls,createSearch,advanceSearch,finishSearch,disposeSearch,progress,beginTrial,stepTrial,finishTrial};

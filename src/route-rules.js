@@ -51,9 +51,9 @@ function condition(method,f){
   default:return false;
  }
 }
-function evaluate(contacts,{method='any',firstId,secondId,ambiguous=false}={}){
+function evaluate(contacts,{method='any',firstId,secondId,ambiguous=false,minCushions=0}={}){
  if(!byId.has(method)||!Number.isInteger(firstId)||!Number.isInteger(secondId)||firstId===secondId)throw new Error('잘못된 경로 판정 조건');
- const f=features(contacts,firstId,secondId),required=method==='direct'||method==='carom'?0:3;
+ const f=features(contacts,firstId,secondId),required=Math.max(minCushions,method==='direct'||method==='carom'?0:3);
  let invalid=f.wrong||ambiguous;
  if(method==='direct'&&f.total>0)invalid=true;
  const def=byId.get(method);

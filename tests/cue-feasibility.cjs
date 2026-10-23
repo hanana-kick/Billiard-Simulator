@@ -69,3 +69,4 @@ test('a real near-touching object hit is latched before actual cue separation an
  }finally{trial.lab.dispose();}
  }finally{lab.dispose();}
 });
+test('engine upper supported elevation remains physically checked and produces finite motion when feasible',()=>{const lab=new PhysicsLab(R);try{const settings={angle:25,elevation:85,speed:1,tipX:0,tipY:0},clearance=lab.cueClearance(lab.get(1),settings),shot=lab.strike(1,settings);assert.notEqual(shot.reason,'유효하지 않은 타격 설정입니다.');assert.equal(shot.ok,clearance.clear);if(shot.ok){lab.step(120);for(const o of lab.objects){const p=o.body.translation();assert.ok(Number.isFinite(p.x+p.y+p.z));}}assert.equal(lab.strike(1,{...settings,elevation:85.01}).ok,false);}finally{lab.dispose();}});

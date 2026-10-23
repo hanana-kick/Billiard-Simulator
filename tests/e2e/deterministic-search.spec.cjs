@@ -1,9 +1,10 @@
 const {test,expect}=require('@playwright/test');
-test('default route preset uses the global worker-independent plan and retains numerical correction',async({page})=>{
+test('explicit fixed-angle baseline uses the global worker-independent plan and retains numerical correction',async({page})=>{
  await page.goto('./');await page.waitForFunction(()=>globalThis.__LAB_READY__&&cueLab.state.ready);
  await page.evaluate(()=>cueLab.option('predict',false));
  if(await page.locator('#sidebarTrigger').getAttribute('aria-expanded')!=='true')await page.locator('#sidebarTrigger').click();
  await expect(page.locator('#tab-routes')).toHaveAttribute('aria-selected','true');
+ await page.locator('#routeDetails').click();await page.locator('#routeElevation').click();await page.getByRole('option',{name:/현재.*고정/}).click();await page.locator('#closeRouteDetails').click();
  await page.locator('#findRoute').click();
  await page.waitForFunction(()=>['done','error'].includes(cueLab.state.routeStatus),{},{timeout:150000});
  const actual=await page.evaluate(()=>({status:cueLab.state.routeStatus,result:cueLab.state.routeResult,shots:cueLab.lab.shots}));
@@ -12,4 +13,17 @@ test('default route preset uses the global worker-independent plan and retains n
  expect(r.candidatePlan.workerIndependent).toBe(true);expect(r.candidatePlan.committed).toBe(48);expect(r.solverStats.steps).toBeGreaterThan(0);expect(r.results.length).toBe(4);expect(r.resultLimit).toBe(null);expect(r.physicsSteps).toBe(352867);
  await expect(page.locator('[id^=applyRoute]')).toHaveCount(4);await page.locator('#applyRoute4').click();await expect(page.locator('#applyRoute4')).toHaveText('적용됨');
  expect(await page.evaluate(()=>cueLab.state.settings.angle)).toBeCloseTo(r.results[3].settings.angle,8);expect(await page.evaluate(()=>cueLab.lab.shots)).toBe(0);
+});
+
+test('default all-angle four-ball search applies a verified red-only shot and scores it with the same rules',async({page})=>{
+ await page.goto('./');await page.waitForFunction(()=>globalThis.__LAB_READY__&&cueLab.state.ready);await page.evaluate(()=>cueLab.option('predict',false));
+ if(await page.locator('#sidebarTrigger').getAttribute('aria-expanded')!=='true')await page.locator('#sidebarTrigger').click();
+ await page.locator('#gameMode').getByRole('button',{name:'4구',exact:true}).click();await page.locator('#findRoute').click();
+ await page.waitForFunction(()=>['done','error'].includes(cueLab.state.routeStatus),{},{timeout:150000});
+ const r=await page.evaluate(()=>cueLab.state.routeResult);expect(r).toBeTruthy();expect(r.options.gameMode).toBe('four');expect(r.options.elevationMode).toBe('search');expect(r.options.minElevation).toBe(0);expect(r.options.maxElevation).toBe(85);expect(r.options.fourBallThreeCushion).toBe(false);expect(r.results.length).toBeGreaterThan(0);
+ expect(await page.evaluate(()=>[cueLab.state.routeResult.options.targetId,cueLab.state.routeResult.options.secondId].every(id=>cueLab.game.redIds.includes(id)))).toBe(true);
+ await page.locator('#applyRoute1').click();const cue=await page.evaluate(()=>cueLab.state.selectedId);
+ if(await page.locator('#sidebarTrigger').getAttribute('aria-expanded')==='true')await page.locator('.toolbox-heading').getByRole('button',{name:'설정 패널 닫기',exact:true}).click();
+ await page.locator('#strike').click();await page.waitForFunction(()=>cueLab.lab.shots===1&&!cueLab.game.pending&&!cueLab.lab.cue,{},{timeout:60000});
+ expect(await page.evaluate(id=>cueLab.game.scores[id],cue)).toBe(1);expect(await page.evaluate(()=>cueLab.game.activeCue)).toBe(cue);
 });

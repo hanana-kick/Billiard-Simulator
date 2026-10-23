@@ -50,15 +50,18 @@ test('three real Base UI tabs preserve world, settings, focus and mounted canvas
 
 test('all settings work through actual Base UI controls',async({page})=>{
  const errors=await boot(page);await tab(page,'설정').click();
- for(const id of ['horizon','speed','step','clearTrails','placement','posX','posZ','posY','height','addBall','addBox','remove','materials','contacts','undo','reset']){
+ for(const id of ['horizon','speed','clearTrails','materials','contacts','undo','reset']){
   const el=page.locator('#'+id);await el.scrollIntoViewIfNeeded();await expect(el).toBeVisible();
  }
  for(const [id,key]of [['조준 큐 표시','showCue'],['실제 이동 궤적','paths'],['모든 타격 경로 보기','allPaths'],['충돌 형상','debug'],['속도 벡터','vectors']]){
   const before=await page.evaluate(key=>cueLab.state[key],key);await page.getByRole('checkbox',{name:id,exact:true}).click();expect(await page.evaluate(key=>cueLab.state[key],key)).toBe(!before);await page.getByRole('checkbox',{name:id,exact:true}).click();
  }
+ await tab(page,'수동').click();
+ for(const id of ['pause','step','placement','posX','posZ','posY','height','addBall','addBox','remove']){await page.locator('#'+id).scrollIntoViewIfNeeded();await expect(page.locator('#'+id)).toBeVisible();}
  await settleInput(page,'posX','-60');expect(await page.evaluate(()=>cueLab.lab.get(cueLab.state.selectedId).body.translation().x)).toBeCloseTo(-.6,4);
  await settleInput(page,'posY','10');expect(await page.evaluate(()=>cueLab.lab.get(cueLab.state.selectedId).body.translation().y)).toBeGreaterThan(.12);await page.locator('#putOnTable').click();
  const count=await page.evaluate(()=>cueLab.lab.objects.length);await page.locator('#addBall').click();expect(await page.evaluate(()=>cueLab.lab.objects.length)).toBe(count+1);await page.locator('#remove').click();await page.locator('#addBox').click();expect(await page.evaluate(()=>cueLab.lab.get(cueLab.state.selectedId).shape)).toBe('box');await page.locator('#remove').click();
+ await tab(page,'설정').click();
  for(const key of ['clothFriction','cushionRestitution','cushionFriction','ballRestitution','ballFriction','tipFriction','gravity','rollingLength','spinLength']){
   const before=await page.evaluate(key=>cueLab.lab.params[key],key);const group=page.locator('#p-'+key);await group.scrollIntoViewIfNeeded();await expect(group.locator('[data-slot=slider-thumb]')).toBeVisible();const track=await group.locator('[data-slot=slider-track]').boundingBox();expect(track.height).toBeGreaterThan(0);const slider=group.getByRole('slider');await slider.focus();await slider.press('ArrowRight');expect(await page.evaluate(key=>cueLab.lab.params[key],key)).not.toBe(before);
  }
@@ -82,15 +85,17 @@ test('desktop and small-screen layout keeps table and one scrollable panel usabl
 test('touch navigation, fine aim and pinch cancellation work without firing',async({browser})=>{
  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1});const page=await context.newPage();const errors=await boot(page);
  await tab(page,'설정').tap();await assertOnePanel(page,'settingsPanel');await tab(page,'경로 탐색').tap();await assertOnePanel(page,'routesPanel');await tab(page,'수동').tap();await closeSidebar(page);
- const before=await page.evaluate(()=>cueLab.state.settings.angle);const r=await page.locator('#aimPad').boundingBox(),cdp=await context.newCDPSession(page);
- await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:r.x+60,y:r.y+r.height/2,id:1}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:r.x+110,y:r.y+r.height/2,id:1}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
- expect(await page.evaluate(()=>cueLab.state.settings.angle)).not.toBe(before);expect(await page.evaluate(()=>cueLab.lab.shots)).toBe(0);
+ const cdp=await context.newCDPSession(page);
+ const linePoints=()=>page.evaluate(()=>{const p=cueLab.lab.get(cueLab.state.selectedId).body.translation(),a=cueLab.state.settings.angle*Math.PI/180,r=cueLab.canvas.getBoundingClientRect();const point=t=>{const q=cueLab.renderer.project({x:p.x+.45*Math.cos(t),y:p.y,z:p.z+.45*Math.sin(t)});return{x:r.left+q.x,y:r.top+q.y};};return{start:point(a),end:point(a+20*Math.PI/180)};});
+ const before=await page.evaluate(()=>cueLab.state.settings.angle),normal=await linePoints();
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{...normal.start,id:1}]});await page.waitForFunction(()=>cueLab.drag?.type==='forward-aim');
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{...normal.end,id:1}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+ expect(await page.evaluate(()=>cueLab.state.settings.angle)-before).toBeCloseTo(20,1);expect(await page.evaluate(()=>cueLab.lab.shots)).toBe(0);
  await openSidebar(page);await tab(page,'수동').tap();await page.getByRole('checkbox',{name:'미세 조준',exact:true}).tap();await expect.poll(()=>page.evaluate(()=>cueLab.state.fineAim)).toBe(true);await closeSidebar(page);
- const fineBefore=await page.evaluate(()=>cueLab.state.settings.angle),x=r.x+60,y=r.y+r.height/2;
- await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y,id:1}]});
- await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+30,y,id:1}]});
- await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
- expect(await page.evaluate(()=>cueLab.state.settings.angle)-fineBefore).toBeCloseTo(.3,2);
+ const fineBefore=await page.evaluate(()=>cueLab.state.settings.angle),fine=await linePoints();
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{...fine.start,id:1}]});await page.waitForFunction(()=>cueLab.drag?.type==='forward-aim');
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{...fine.end,id:1}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+ expect(await page.evaluate(()=>cueLab.state.settings.angle)-fineBefore).toBeCloseTo(1,1);
  await openSidebar(page);await page.locator('#angle').fill('0');await page.locator('#angle').press('Enter');await closeSidebar(page);
  const ball=await page.evaluate(()=>{const o=cueLab.lab.get(cueLab.state.selectedId),p=o.body.translation(),r=cueLab.canvas.getBoundingClientRect(),q=cueLab.renderer.project(p);return {x:r.left+q.x,y:r.top+q.y,pos:{...p}};});
  const gx=ball.x,gy=ball.y,px=gx+24,py=gy-20;
@@ -118,7 +123,7 @@ test('three-cushion search yields a real candidate, applies and preserves it acr
  await page.locator('.route-result button').first().click();
  expect(await page.evaluate(()=>cueLab.lab.shots)).toBe(0);const setting=await page.evaluate(()=>({...cueLab.state.settings}));
  await tab(page,'설정').click();await tab(page,'수동').click();expect(await page.evaluate(()=>({...cueLab.state.settings}))).toEqual(setting);
- await page.locator('#strike').click();await page.waitForFunction(()=>cueLab.lab.time>.5);expect(await page.evaluate(()=>cueLab.state.previewCueVisible)).toBe(false);expect(await page.evaluate(()=>cueLab.lab.shots)).toBe(1);expect(errors).toEqual([]);
+ await closeSidebar(page);await page.locator('#strike').click();await page.waitForFunction(()=>cueLab.lab.time>.5);expect(await page.evaluate(()=>cueLab.state.previewCueVisible)).toBe(false);expect(await page.evaluate(()=>cueLab.lab.shots)).toBe(1);expect(errors).toEqual([]);
 });
 
 test('bundled build has no runtime dependency on external CDNs',async({page})=>{
@@ -134,7 +139,7 @@ test('direct scene remains usable across sizes without removed fullscreen or cue
   await expect(page.locator('.workspace-header')).toBeVisible();await expect(page.locator('#scene')).toBeInViewport();
   expect(await page.evaluate(()=>!document.fullscreenElement&&cueLab.lab===focusWorld&&document.querySelector('#scene')===focusCanvas)).toBe(true);
   const stage=await page.locator('#stagePreview').boundingBox();expect(stage.height).toBeGreaterThan(60);expect(stage.width).toBeGreaterThan(viewport.width-50);
-  await openSidebar(page);await expect(page.locator('#strike')).toBeInViewport();await closeSidebar(page);
+  await expect(page.locator('#strike')).toBeInViewport();expect(await page.locator('#strike').evaluate(e=>!!e.closest('#stagePreview'))).toBe(true);await openSidebar(page);await closeSidebar(page);
  }
  expect(errors).toEqual([]);
 });
@@ -172,4 +177,14 @@ test('all three physically verified baseline candidates are accessible, not a to
  const ids=await page.evaluate(()=>cueLab.state.routeResult.results.map(r=>r.id));for(const id of ids){const button=page.locator('#applyRoute'+id);await button.scrollIntoViewIfNeeded();await expect(button).toBeVisible();}
  await tab(page,'수동').click();await tab(page,'경로 탐색').click();await expect(page.locator('.route-result')).toHaveCount(count);
  expect(await page.evaluate(()=>cueLab.lab.shots)).toBe(0);expect(errors).toEqual([]);
+});
+
+test('forward line owns continuous aiming while empty cloth drag does not and floor drag owns the camera',async({page})=>{
+ await boot(page);await closeSidebar(page);await page.getByRole('checkbox',{name:'상단',exact:true}).click();
+ const coordinates=await page.evaluate(()=>{const c=cueLab,r=c.canvas.getBoundingClientRect(),p=c.lab.get(c.state.selectedId).body.translation(),at=(x,z)=>{const q=c.renderer.project({x,y:p.y,z});return{x:r.left+q.x,y:r.top+q.y};};return{line:at(p.x+.45,p.z),lineEnd:at(p.x+.45,p.z+.35),blank:at(.1,.5),blankEnd:at(.3,.55),floor:{x:r.left+15,y:r.top+50},inside:at(0,0)};});
+ const speed=await page.evaluate(()=>cueLab.state.settings.speed);
+ await page.mouse.move(coordinates.line.x,coordinates.line.y);await page.mouse.down();await page.waitForFunction(()=>cueLab.drag?.type==='forward-aim');await page.mouse.move(coordinates.lineEnd.x,coordinates.lineEnd.y,{steps:8});
+ const aimed=await page.evaluate(()=>cueLab.state.settings.angle);expect(Math.abs(aimed)).toBeGreaterThan(10);expect(await page.evaluate(()=>cueLab.state.settings.speed)).toBe(speed);await page.mouse.up();
+ await page.mouse.move(coordinates.blank.x,coordinates.blank.y);await page.mouse.down();await page.waitForFunction(()=>cueLab.drag?.type==='table-tap');await page.mouse.move(coordinates.blankEnd.x,coordinates.blankEnd.y,{steps:6});await page.mouse.up();expect(await page.evaluate(()=>cueLab.state.settings.angle)).toBe(aimed);
+ const yaw=await page.evaluate(()=>cueLab.renderer.camera.yaw);await page.mouse.move(coordinates.floor.x,coordinates.floor.y);await page.mouse.down();await page.waitForFunction(()=>cueLab.drag?.type==='orbit');await page.mouse.move(coordinates.inside.x,coordinates.inside.y,{steps:8});expect(await page.evaluate(()=>cueLab.drag.type)).toBe('orbit');await page.mouse.up();expect(await page.evaluate(()=>cueLab.renderer.camera.yaw)).not.toBe(yaw);expect(await page.evaluate(()=>cueLab.state.settings.angle)).toBe(aimed);expect(await page.evaluate(()=>cueLab.lab.shots)).toBe(0);
 });

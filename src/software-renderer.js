@@ -53,7 +53,7 @@ class SoftwareRenderer{
   if(state.predict&&state.forecast)for(const track of state.forecast.tracks){this.worldLine(track.segments,track.color,false,.90);this.worldLine(track.endRing,track.color,true,.70);}
   if(state.paths)for(const body of lab.objects)this.worldLine(G.LabMath.visibleTrail(body,lab,state).flatMap(p=>[p.x,p.y,p.z]),body.color,true,.64);
   if(o){const p=o.body.translation(),r=(o.radius||.045)+.012,arr=[];for(let i=0;i<=64;i++){const t=i/64*Math.PI*2;arr.push(p.x+r*Math.cos(t),p.y-(o.radius||o.half.y)+.002,p.z+r*Math.sin(t));}this.worldLine(arr,'#a7f3d0',true,.85);}
-  if(preview&&!state.forecast){const p=o.body.translation(),flat=norm(V(preview.direction.x,0,preview.direction.z)),arr=[];for(let i=1;i<10;i++){const a=add(p,mul(flat,.075*i)),b=add(p,mul(flat,.075*i+.038));arr.push(a.x,a.y,a.z,b.x,b.y,b.z);}this.worldLine(arr,'#bde5c1',false,.5);}
+  if(preview){const guide=G.LabMath.aimGuide(o.body.translation(),state.settings.angle,o.radius),a=guide.start,b=guide.end;this.worldLine([a.x,a.y,a.z,b.x,b.y,b.z],'#e7f9d3',true,.95);}
   if(state.debug){const d=lab.world.debugRender();this.worldLine(Array.from(d.vertices),'#8ccbe0',false,.65);}
   this.completedFrames=(this.completedFrames||0)+1;
   if(state.vectors)for(const body of lab.objects){const p=body.body.translation(),q=add(p,mul(body.body.linvel(),.14));this.worldLine([p.x,p.y,p.z,q.x,q.y,q.z],'#a7f3d0',false,1);}

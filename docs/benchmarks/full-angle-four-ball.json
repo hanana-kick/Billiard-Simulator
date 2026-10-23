@@ -1,0 +1,82 @@
+{
+  "scope": "same engine, finite candidate budgets; no general success guarantee",
+  "threeBallFullAngle48": [
+    {
+      "fullAngle": true,
+      "workers": 1,
+      "tested": 48,
+      "results": 2,
+      "solver": {
+        "probes": 13,
+        "steps": 0,
+        "accepted": 0,
+        "rejected": 5
+      },
+      "physicsSteps": 333243,
+      "elapsedMs": 13800.950556000003,
+      "cpuMs": 14753.601,
+      "firstSuccess": {
+        "tested": 32,
+        "physicsSteps": 223087,
+        "elapsedMs": 9549.940787,
+        "scope": "global-plan"
+      }
+    },
+    {
+      "fullAngle": true,
+      "workers": 4,
+      "tested": 48,
+      "results": 2,
+      "solver": {
+        "probes": 13,
+        "steps": 0,
+        "accepted": 0,
+        "rejected": 5
+      },
+      "physicsSteps": 333243,
+      "elapsedMs": 6905.417850999998,
+      "cpuMs": 20984.982,
+      "firstSuccess": {
+        "tested": 32,
+        "physicsSteps": 223087,
+        "elapsedMs": 4566.033856000002,
+        "scope": "global-plan"
+      }
+    }
+  ],
+  "threeBallFixed8Baseline": {
+    "budget": 48,
+    "successes": 4,
+    "physicsSteps": 352867,
+    "solverSteps": 1
+  },
+  "fourBall": {
+    "defaultLayout": true,
+    "fullAngle": true,
+    "budget48Successes": 2,
+    "budget128Successes": 11,
+    "freshGameReplay": [
+      {
+        "fourBall": true,
+        "budget": 128,
+        "results": 11,
+        "settings": {
+          "angle": -12.92538,
+          "elevation": 19.68081,
+          "speed": 1.87071,
+          "tipX": -1e-05,
+          "tipY": 0.18991
+        },
+        "replaySteps": 5727,
+        "score": 1
+      }
+    ]
+  },
+  "notes": [
+    "Widening the default angular domain reduced verified three-ball candidates from four to two at the same 48 budget.",
+    "Elevation finite-difference change from 1 degree to 0.1 degree did not improve this fixture: 13 probes, zero completed DLS steps.",
+    "Four-ball candidates wait for full-shot sleep and reject opponent contacts independently of kiss permission.",
+    "CPU time includes Node workers; timings vary with load.",
+    "Final fixed-angle tests explicitly request fixed elevation; the new application default is separately tested."
+  ]
+}

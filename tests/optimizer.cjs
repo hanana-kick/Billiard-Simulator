@@ -10,7 +10,7 @@ after(()=>{lab.dispose();if(process.env.OPTIMIZER_REPORT)fs.writeFileSync(proces
 test('search validates distinct source and target bodies, finite limits and budgets',()=>{
  for(const o of [{mode:'oops'},{targetId:1},{targetId:999},{mode:'carom',secondId:2},{horizon:60},{budget:100},{spin:'true'}])assert.throws(()=>LabOptimizer.validate({...request,options:options(o)}));
  assert.throws(()=>LabOptimizer.validate({...request,settings:{...request.settings,elevation:NaN}}));
- assert.throws(()=>LabOptimizer.validate({...request,settings:{...request.settings,elevation:81}}));
+ assert.throws(()=>LabOptimizer.validate({...request,settings:{...request.settings,elevation:86}}));
 });
 test('target search returns successful ranked physical shots without mutating the original world',()=>{
  const bytes=Buffer.from(lab.world.takeSnapshot()),settings=JSON.stringify(request.settings);targetResult=run(request);

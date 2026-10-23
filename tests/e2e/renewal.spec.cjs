@@ -42,9 +42,9 @@ async function closeSidebar(page){
 }
 async function chromeBounds(page,width,height,sidebarOpen){
  const viewport={x:0,y:0,width,height};
- const regions=sidebarOpen?['.toolbox-heading','#panelGroup','#panelScroll','.sidebar-playback']:['.workspace-header','#scene','.stage-toolbar','.scene-tools'];
+ const regions=sidebarOpen?['.toolbox-heading','#panelGroup','#panelScroll']:['.workspace-header','#scene','.stage-toolbar','.scene-action'];
  for(const selector of regions)contained(await page.locator(selector).boundingBox(),viewport,selector);
- const selectors=sidebarOpen?['.toolbox-heading button','#panelGroup [role=tab]','.sidebar-playback button']:['.workspace-header button','.stage-toolbar button','.scene-tools button','.scene-tools [role=switch]'];
+ const selectors=sidebarOpen?['.toolbox-heading button','#panelGroup [role=tab]']:['.workspace-header button','.stage-toolbar button','.scene-action button','.scene-action [role=switch]'];
  for(const selector of selectors){
   for(const el of await page.locator(selector+':visible').all()){
    contained(await el.boundingBox(),viewport,await el.getAttribute('aria-label')||selector);
@@ -52,7 +52,7 @@ async function chromeBounds(page,width,height,sidebarOpen){
   }
   await disjointControls(page,selector,'visible controls');
  }
- for(const selector of sidebarOpen?['.sidebar-playback .hit-target']:['.workspace-header .hit-target','.stage-toolbar .hit-target']){
+ for(const selector of sidebarOpen?[]:['.workspace-header .hit-target','.stage-toolbar .hit-target','.scene-action .hit-target']){
   await disjointControls(page,selector,'reserved hit regions');
   for(const region of await page.locator(selector+':visible').all()){
    const box=await region.boundingBox();contained(box,viewport,'hit region');
@@ -82,7 +82,9 @@ async function directSceneWithinTable(page){
  await expect(page.locator('.cue-handle,#fullscreen,.pull-meter')).toHaveCount(0);
  await expect(page.locator('#scene')).toBeInViewport();
  const canvas=await page.locator('#scene').boundingBox();expect(canvas.height).toBeGreaterThanOrEqual(60);
- await disjointControls(page,'.scene-tools button:visible','direct scene controls');
+ await disjointControls(page,'.scene-action button:visible','direct scene controls');
+ await expect(page.locator('#aimPad,#sideView,#interactionMode')).toHaveCount(0);await expect(page.getByRole('heading',{name:'당구 연습',exact:true})).toHaveCount(1);
+ const strike=await page.locator('#strike').boundingBox();expect(strike.y).toBeGreaterThanOrEqual(canvas.y+canvas.height);await expect(page.locator('#strike')).toBeInViewport({ratio:1});
 }
 async function preserved(page){
  expect(await page.evaluate(()=>({sameWorld:cueLab.lab===savedWorld,sameCanvas:document.getElementById('scene')===savedCanvas,angle:cueLab.state.settings.angle,shots:cueLab.lab.shots,positions:cueLab.lab.objects.map(o=>({...o.body.translation()}))}))).toEqual(await page.evaluate(()=>savedSnapshot));
@@ -101,9 +103,9 @@ for(const [width,height]of viewports)test(`coarse-pointer ${width}x${height}: ev
   await page.setViewportSize({width,height});await closeSidebar(page);
   await chromeBounds(page,width,height,false);await directSceneWithinTable(page);await openSidebar(page);
   for(const [tab,panel,controls]of [
-   ['수동','shotPanel',['#tipDisc','#elevationNumber','#cueSpeed','#angle']],
+   ['수동','shotPanel',['#pause','#step','#tipDisc','#elevationNumber','#cueSpeed','#angle','#placementObject','#height']],
    ['경로 탐색','routesPanel',['#gameMode','#findRoute','#routeDetails']],
-   ['설정','settingsPanel',['#horizon','#speed','#placementObject','#height','#p-spinLength']]
+   ['설정','settingsPanel',['#horizon','#speed','#p-spinLength']]
   ]){
    await page.getByRole('tab',{name:tab,exact:true}).click();
    await expect(page.locator('[role=tabpanel]:visible')).toHaveCount(1);await expect(page.locator('#'+panel)).toBeVisible();
@@ -180,7 +182,7 @@ for(const width of [768,820,1024])test(`200% root text at ${width}px preserves r
   for(const [name,controls]of [
    ['수동',['#fineAim','#tipDisc','#angle','#cueSpeed']],
    ['경로 탐색',['#gameMode','#findRoute','#routeDetails']],
-   ['설정',['#speed','#placementObject','#p-spinLength']]
+   ['설정',['#speed','#p-spinLength']]
   ]){
    await page.getByRole('tab',{name,exact:true}).click();await chromeBounds(page,width,height,true);
    for(const tab of await page.locator('#panelGroup [role=tab]').all())await readableControl(tab,'tab');
@@ -232,7 +234,7 @@ for(const viewport of [{width:390,height:844},{width:844,height:650}])test(`rese
   await clickHitRegion(page,page.getByRole('button',{name:'확대',exact:true}));
   expect(await page.evaluate(()=>cueLab.renderer.camera.zoom)).toBeCloseTo(Math.max(.6,Math.min(2.5,zoomOut/1.12)),6);
   await clickHitRegion(page,page.locator('#fit'));
-  await openSidebar(page);await expect(page.locator('#strike')).toBeEnabled();
+  await closeSidebar(page);await expect(page.locator('#strike')).toBeEnabled();
   const shots=await page.evaluate(()=>cueLab.lab.shots);
   await clickHitRegion(page,page.locator('#strike'));await expect.poll(()=>page.evaluate(()=>cueLab.lab.shots)).toBe(shots+1);
  }finally{await context.close();}
@@ -256,8 +258,8 @@ for(const viewport of [{width:320,height:568},{width:844,height:390}])test(`pres
  const context=await browser.newContext({viewport,hasTouch:true,reducedMotion:'reduce'});
  try{
   const page=await context.newPage();await page.goto('./');await page.waitForFunction(()=>globalThis.__LAB_READY__);await openSidebar(page);
-  const strike=await page.locator('#strike').boundingBox(),tabs=await page.locator('#panelGroup').boundingBox();expect(strike.y+strike.height).toBeLessThanOrEqual(tabs.y);await expect(page.locator('#strike')).toHaveCount(1);
-  expect(await page.evaluate(()=>({mode:cueLab.state.routeOptions.mode,methods:cueLab.state.routeOptions.methods,kiss:cueLab.state.routeOptions.allowKiss,order:cueLab.state.routeOptions.order}))).toEqual({mode:'three',methods:['any'],kiss:true,order:'either'});
+  await expect(page.locator('#strike')).toHaveCount(1);expect(await page.locator('#strike').evaluate(e=>!!e.closest('#stagePreview'))).toBe(true);await expect(page.locator('#aimPad,#sideView,#interactionMode')).toHaveCount(0);
+  expect(await page.evaluate(()=>({mode:cueLab.state.routeOptions.mode,methods:cueLab.state.routeOptions.methods,kiss:cueLab.state.routeOptions.allowKiss,order:cueLab.state.routeOptions.order,elevation:cueLab.state.routeOptions.elevationMode,min:cueLab.state.routeOptions.minElevation,max:cueLab.state.routeOptions.maxElevation}))).toEqual({mode:'three',methods:['any'],kiss:true,order:'either',elevation:'search',min:0,max:85});
   await page.getByRole('tab',{name:'경로 탐색',exact:true}).click();await expect(page.locator('#routeTarget')).toHaveCount(0);await expect(page.locator('#routeMode,#routeWorkers,#routeObjective')).toHaveCount(0);
   await page.locator('#routeDetails').click();await expect(page.getByRole('dialog',{name:'경로 상세 설정',exact:true})).toBeVisible();
   for(const selector of ['#routeTarget','#routeOrder','#routeHorizon','#routeInputStrategy','#routemaxSpeed'])await reachable(page,selector);
@@ -266,3 +268,5 @@ for(const viewport of [{width:320,height:568},{width:844,height:390}])test(`pres
   await closeSidebar(page);await expect(page.locator('#scene')).toBeInViewport();
  }finally{await context.close();}
 });
+
+test('four-ball optional three-cushion constraint and full elevation range remain in details',async({page})=>{await page.goto('./');await page.waitForFunction(()=>globalThis.__LAB_READY__);await openSidebar(page);await page.locator('#gameMode').getByRole('button',{name:'4구',exact:true}).click();await page.locator('#routeDetails').click();const constraint=page.getByRole('checkbox',{name:'3쿠션 조건 추가',exact:true});await expect(constraint).not.toBeChecked();await constraint.check();await expect(page.locator('#routemaxElevation')).toContainText('85°');await page.locator('#closeRouteDetails').click();await expect(page.locator('#routePlanner')).toContainText('두 적구 + 3쿠션');await page.locator('#routeDetails').click();await expect(constraint).toBeChecked();await page.locator('#routeElevation').click();await page.getByRole('option',{name:/현재 .*고정/}).click();await expect(page.locator('#routemaxElevation')).toHaveCount(0);await page.locator('#closeRouteDetails').click();expect(await page.evaluate(()=>cueLab.state.routeOptions.elevationMode)).toBe('fixed');});

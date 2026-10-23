@@ -43,5 +43,6 @@ function visibleTrail(object,lab,state){
  if(cached&&cached.points===points&&cached.last===last&&cached.length===points.length&&cached.shot===lab.shots)return cached.result;
  const result=points.filter(p=>(p.shot??lab.shots)===lab.shots);trailViews.set(object,{points,last,length:points.length,shot:lab.shots,result});return result;
 }
-G.LabMath={visibleTrail,forecastGeometry,V,add,sub,mul,dot,cross,len,norm,clamp,rotate,qident,qfromY,matrix,multiply,lookAt,ortho,perspective};
+function aimGuide(position,angle,radius=.03075){const a=angle*Math.PI/180,d=V(Math.cos(a),0,Math.sin(a));return{start:add(position,mul(d,radius+.015)),end:add(position,mul(d,.9))};}
+G.LabMath={aimGuide,visibleTrail,forecastGeometry,V,add,sub,mul,dot,cross,len,norm,clamp,rotate,qident,qfromY,matrix,multiply,lookAt,ortho,perspective};
 })(globalThis);

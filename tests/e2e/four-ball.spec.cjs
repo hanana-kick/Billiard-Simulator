@@ -53,7 +53,7 @@ test('visible game modes reset the world once and show the actual turn even whil
 });
 
 test('four-ball physical foul updates turn and score, and visible undo/redo restores both',async({page})=>{
- await boot(page);await four(page);await page.locator('#strike').click();
+ await boot(page);await four(page);await closeSidebar(page);await page.locator('#strike').click();
  await page.waitForFunction(()=>!cueLab.game.pending&&!cueLab.lab.cue&&cueLab.lab.shots===1,{},{timeout:60000});
  await openSidebar(page);await expect(page.getByLabel('4구 점수')).toContainText('흰 수구 -1');await expect(page.getByLabel('4구 점수')).toContainText('현재 차례 노란 수구');
  await page.locator('#undo').click();await expect(page.getByLabel('4구 점수')).toContainText('흰 수구 0');await expect(page.getByLabel('4구 점수')).toContainText('현재 차례 흰 수구');

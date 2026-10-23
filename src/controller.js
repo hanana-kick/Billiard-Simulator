@@ -7,13 +7,13 @@ class LabController{
  constructor(){
   this.state={settings:{angle:0,elevation:8,tipX:0,tipY:0,speed:2},selectedId:1,paused:true,rate:1,paths:true,allPaths:false,showCue:true,debug:false,vectors:false,mode:'cue',view:'3d',activePanel:'routes',fineAim:false,predict:true,horizon:8,forecast:null,forecastStatus:'물리엔진 준비 중',predictionBusy:false,obstruction:null,cuePull:0,gesture:'',notice:'',ready:false,engineError:null,previewCueVisible:false,canAim:false};
   this.state.gameMode='free';this.state.game=null;
-  this.state.routeOptions={inputStrategy:'hybrid',mode:'three',targetId:2,secondId:3,budget:48,horizon:16,spin:true,objective:'shortest',order:'either',methods:['any'],allowKiss:true,elevationMode:'fixed',minElevation:0,maxElevation:30,minSpeed:.5,maxSpeed:4.5,workers:0};this.state.routeStatus='idle';this.state.routeProgress=null;this.state.routeResult=null;this.state.routeError='';this.state.routeApplied=null;
+  this.state.routeOptions={inputStrategy:'hybrid',mode:'three',targetId:2,secondId:3,budget:48,horizon:16,spin:true,objective:'shortest',order:'either',methods:['any'],allowKiss:true,elevationMode:'search',minElevation:0,maxElevation:85,fourBallThreeCushion:false,minSpeed:.5,maxSpeed:4.5,workers:0};this.state.routeStatus='idle';this.state.routeProgress=null;this.state.routeResult=null;this.state.routeError='';this.state.routeApplied=null;
   this.undoStack=[];this.redoStack=[];this.inputMetrics={events:0,lastHandlerMs:0,maxHandlerMs:0,lastInputToFrameMs:0,maxInputToFrameMs:0};this.renderCadence=new G.RenderCadence();this.renderMetrics={frames:0,cap:60};this.raf=null;this.disposed=false;this.listeners=new Set();this.lastSnapshot={...this.state,objects:[],events:[],time:0,shots:0,undo:false,params:{...G.LabDefaults}};this.dirty=true;this.accumulator=0;this.requestKey=null;this.token=0;this.gestures=new Map();this.cameraDrags=0;
  }
  subscribe=(fn)=>{this.listeners.add(fn);return()=>this.listeners.delete(fn)};
  snapshot=()=>this.lastSnapshot;
  notify(redraw=true){
-  const s=this.state,l=this.lab,o=l?.get(s.selectedId);s.game=this.game?.snapshot()||null;s.canAim=!!l&&s.paused&&!l.cue&&!l.anyMotion()&&!this.windup&&performance.now()>=(this.cooldownUntil||0);s.previewCueVisible=!!l&&s.showCue&&s.paused&&!l.cue&&!l.anyMotion()&&performance.now()>=(this.cooldownUntil||0);s.obstruction=l&&!l.cue?l.cueObstruction(o,s.settings):null;
+  const s=this.state,l=this.lab,o=l?.get(s.selectedId);s.game=this.game?.snapshot()||null;s.canAim=!!l&&!this.game?.pending&&s.paused&&!l.cue&&!l.anyMotion()&&!this.windup&&performance.now()>=(this.cooldownUntil||0);s.previewCueVisible=!!l&&!this.game?.pending&&s.showCue&&s.paused&&!l.cue&&!l.anyMotion()&&performance.now()>=(this.cooldownUntil||0);s.obstruction=l&&!l.cue?l.cueObstruction(o,s.settings):null;
   this.lastSnapshot={...s,settings:{...s.settings},objects:l?l.objects.map(o=>({id:o.id,label:o.label,shape:o.shape,color:o.color,mass:o.mass,pos:{...o.body.translation()},radius:o.radius||o.half.y})):[],params:l?{...l.params}:{...G.LabDefaults},events:l?l.events.slice(-8):[],time:l?.time||0,shots:l?.shots||0,undo:this.undoStack.length>0,redo:this.redoStack.length>0,activeStroke:!!l?.cue,speed:o?len(o.body.linvel()):0,spin:o?len(o.body.angvel())*60/(2*Math.PI):0,height:o?(o.body.translation().y-(o.radius||o.half.y))*100:0,renderMode:this.renderer?.isFallback?'CPU 3D':this.renderer?.workerMode?'WebGL2 Worker':'WebGL2'};
   this.listeners.forEach(fn=>fn());if(redraw)this.dirty=true;
  }
@@ -50,7 +50,7 @@ class LabController{
  adjustAngle(key,delta){if(key!=='angle'&&key!=='elevation')return;this.changeSettings({[key]:Math.round((this.state.settings[key]+delta)*100)/100});}
  changeSettings(patch,{interactive=false}={}){this.cancelSearch('타격 설정 변경으로 검색을 취소했습니다.');
   if(!this.lab||this.lab.cue||this.windup)return;
-  const s=this.state.settings,limits={angle:[-180,180],elevation:[0,80],speed:[.25,5],tipX:[-.92,.92],tipY:[-.92,.92]};
+  const s=this.state.settings,limits={angle:[-180,180],elevation:[0,85],speed:[.25,5],tipX:[-.92,.92],tipY:[-.92,.92]};
   for(const [key,value]of Object.entries(patch))if(limits[key]&&Number.isFinite(value))s[key]=clamp(value,...limits[key]);
   const r=Math.hypot(s.tipX,s.tipY);if(r>.92){s.tipX*=.92/r;s.tipY*=.92/r;}
   this.redoStack=[];if(interactive){this.inputPending=true;this.dirty=true;}else{this.queuePrediction();this.notify();}
@@ -66,6 +66,7 @@ class LabController{
  zoom(factor){if(!this.renderer)return;this.renderer.camera.zoom=clamp((this.renderer.camera.zoom||1)*factor,.6,2.5);this.dirty=true;this.updateHandles();}
  fire(){
   if(!this.lab||this.windup||this.lab.cue)return false;
+  if(this.game?.pending){this.announce('4구 판정이 끝날 때까지 기다리세요.');return false;}
   if(this.lab.anyMotion()){this.announce('공이 움직이는 동안에는 큐가 대기합니다. 멈춘 뒤 타격하세요.');return false;}
   if(performance.now()<(this.cooldownUntil||0))return false;
   const s=this.state,key=JSON.stringify([this.lab.steps,this.lab.revision,s.selectedId,s.settings,s.horizon,this.lab.params]);
@@ -73,18 +74,18 @@ class LabController{
   if(this.game&&!this.game.cueIds.includes(s.selectedId)){this.announce('4구에서는 흰 수구 또는 노란 수구를 선택하세요.');return false;}
   const before=this.captureHistory();const gameBefore=this.game?.snapshot();const result=this.lab.strike(s.selectedId,{...s.settings});if(!result.ok){this.announce(result.reason);return false;}
   this.commitHistory(before,'shot');
-  if(this.game){this.gameUndo=gameBefore;this.game.begin(s.selectedId);}
+  if(this.game){this.gameUndo=gameBefore;this.game.begin(s.selectedId,{threeCushion:!!s.routeOptions.fourBallThreeCushion});}
   this.cooldownUntil=performance.now()+300;this.state.previewCueVisible=false;this.state.canAim=false;this.state.cuePull=0;this.pause(false);this.state.gesture='';this.notify();return true;
  }
  setGameMode(mode){if(!['free','four'].includes(mode)||mode===this.state.gameMode)return;this.state.gameMode=mode;this.reset();}
  setupGame(){
-  this.game=null;this.gameUndo=null;this.state.routeOptions={...this.state.routeOptions,mode:'three',methods:['any'],order:'either',allowKiss:true,workers:0,targetId:2,secondId:3};if(this.state.gameMode!=='four')return;
+  this.game=null;this.gameUndo=null;this.state.routeOptions={...this.state.routeOptions,mode:'three',methods:['any'],order:'either',allowKiss:true,workers:0,elevationMode:'search',minElevation:0,maxElevation:85,fourBallThreeCushion:false,targetId:2,secondId:3};if(this.state.gameMode!=='four')return;
   const lab=this.lab;lab.objects[0].label='흰 수구';lab.objects[1].label='노란 수구';lab.objects[2].label='적구 1';
   const red=lab.addSphere(V(.64,D.radius+.00005,.30),'적구 2','#ed7770');
-  this.game=new G.FourBallGame([lab.objects[0].id,lab.objects[1].id],[lab.objects[2].id,red.id]);lab.onEvent=e=>this.game?.contact(e);
+  this.game=new G.FourBallGame([lab.objects[0].id,lab.objects[1].id],[lab.objects[2].id,red.id],{threeCushion:!!this.state.routeOptions.fourBallThreeCushion});lab.onEvent=e=>this.game?.contact(e);
   this.state.routeOptions={...this.state.routeOptions,mode:'carom',targetId:lab.objects[2].id,secondId:red.id};
  }
- finishGameShot(){if(this.game?.pending&&!this.lab.cue&&!this.lab.anyMotion()){const result=this.game.finish();this.state.selectedId=result.nextCue;this.repairRouteTargets();this.invalidate();this.queuePrediction(true);this.notify();}}
+ finishGameShot(){if(this.game?.pending&&!this.lab.cue&&this.lab.objects.every(o=>o.body.isSleeping())){const result=this.game.finish();this.state.selectedId=result.nextCue;this.repairRouteTargets();this.invalidate();this.queuePrediction(true);this.notify();}}
  reset(){this.cancelSearch('초기화되었습니다.',true);if(!this.lab)return;this.cooldownUntil=0;this.cancelGesture();this.windup=null;this.invalidate();this.lab.dispose();this.lab=new G.PhysicsLab(G.RAPIER);this.undoStack=[];this.redoStack=[];this.setupGame();Object.assign(this.state,{settings:{angle:0,elevation:8,tipX:0,tipY:0,speed:2},selectedId:1,paused:true,cuePull:0,gesture:''});this.accumulator=0;this.repairRouteTargets();this.queuePrediction();this.notify();}
  captureHistory(){if(!this.lab||this.lab.cue)return null;return{world:this.lab.snapshot(),selectedId:this.state.selectedId,settings:{...this.state.settings},paused:this.state.paused,gameMode:this.state.gameMode,game:this.game?.snapshot()||null};}
  commitHistory(before,kind='edit'){if(!before)return;this.undoStack.push({before,kind});if(this.undoStack.length>30)this.undoStack.shift();this.redoStack=[];}
@@ -141,11 +142,15 @@ class LabController{
   }
   if(this.suppressTouch&&e.pointerType==='touch')return;
   const d=this.drag;if(!d||e.pointerId!==d.pointer)return;e.preventDefault();const started=performance.now();this.lastInputAt=started;this.inputMetrics.events++;const dx=e.clientX-d.x,dy=e.clientY-d.y;if(Math.hypot(dx,dy)>3)d.moved=true;
-  if(d.type==='orbit'){this.renderer.camera.yaw-=dx*.006;this.renderer.camera.pitch=clamp(this.renderer.camera.pitch+dy*.006,.14,Math.PI/2-.001);d.x=e.clientX;d.y=e.clientY;this.state.view='';this.dirty=true;this.updateHandles();return;}
+  if(d.type==='orbit'){this.renderer.camera.yaw-=dx*.006;this.renderer.camera.pitch=clamp(this.renderer.camera.pitch+dy*.006,.14,Math.PI/2-.001);d.x=e.clientX;d.y=e.clientY;this.state.view='';this.dirty=true;this.updateHandles();this.inputMetrics.lastHandlerMs=performance.now()-started;this.inputMetrics.maxHandlerMs=Math.max(this.inputMetrics.maxHandlerMs,this.inputMetrics.lastHandlerMs);return;}
   if(d.type==='fine-aim'){this.changeSettings({angle:normalizeAngle(d.initialAngle+dx*(this.state.fineAim?.01:.15))},{interactive:true});}
+  else if(d.type==='forward-aim'){
+   const pt=this.point(e),o=this.lab.get(this.state.selectedId),p=o.body.translation(),q=this.renderer.planePoint(pt.x,pt.y,p.y);
+   if(q&&Math.hypot(q.x-p.x,q.z-p.z)>.04){const angle=Math.atan2(q.z-p.z,q.x-p.x)*180/Math.PI;this.changeSettings({angle:normalizeAngle((e.altKey||this.state.fineAim)?d.initialAngle+normalizeAngle(angle-d.anchorAngle)*.05:angle)},{interactive:true});}
+  }
   else if(d.type==='aim'){
    const pt=this.point(e),o=this.lab.get(this.state.selectedId),c=o.body.translation(),q=this.renderer.planePoint(pt.x,pt.y,c.y);if(q&&Math.hypot(q.x-c.x,q.z-c.z)>.04)this.changeSettings({angle:normalizeAngle(d.initialAngle+normalizeAngle(Math.atan2(c.z-q.z,c.x-q.x)*180/Math.PI+d.angleOffset-d.initialAngle)*((e.altKey||this.state.fineAim)?.05:1))},{interactive:true});
-  }else if(d.type==='elevation')this.changeSettings({elevation:clamp(d.elevation-dy*.36*((e.altKey||this.state.fineAim)?.05:1),0,80)},{interactive:true});
+  }else if(d.type==='elevation')this.changeSettings({elevation:clamp(d.elevation-dy*.36*((e.altKey||this.state.fineAim)?.05:1),0,85)},{interactive:true});
   else if(d.type==='ball'){
    if(!d.moved)return;const pt=this.point(e),q=this.renderer.planePoint(pt.x,pt.y,d.height);if(q&&this.move(d.id,add(q,d.offset),{interactive:true}))d.changed=true;
   }
@@ -153,7 +158,9 @@ class LabController{
  }
  endGesture(e,canceled=false){
   const d=this.drag;if(!d||e&&e.pointerId!==undefined&&e.pointerId!==d.pointer)return;
-  this.drag=null;this.canvas.style.cursor=this.state.mode==='orbit'?'grab':'default';this.state.gesture='';
+  this.drag=null;this.canvas.style.cursor='default';this.state.gesture='';
+  if(d.type==='table-tap'&&!d.moved&&!canceled){this.lastInputAt=performance.now();this.changeSettings({angle:d.angle},{interactive:true});}
+  if(d.type==='forward-aim'&&canceled)this.changeSettings({angle:d.initialAngle},{interactive:true});
   if(d.type==='ball'&&d.changed){if(canceled)this.restoreHistory(d.before);else this.commitHistory(d.before);}
   this.queuePrediction();
   this.notify();
@@ -178,10 +185,10 @@ class LabController{
   if(this.pinch||this.suppressTouch){if(this.gestures.size<2)this.pinch=null;if(this.gestures.size===0){this.suppressTouch=false;this.state.gesture='';}this.endGesture(e,true);this.notify();return;}
   this.endGesture(e,canceled);
  }
- bindPointers(){
-  const c=this.canvas;c.oncontextmenu=e=>e.preventDefault();
-  this.touchStartListener=e=>this.touchStart(e);c.parentElement.addEventListener('pointerdown',this.touchStartListener,{capture:true,passive:false});
-  c.addEventListener('pointerdown',e=>{
+ aimLine(){const o=this.lab?.get(this.state.selectedId);return o?.shape==='sphere'&&this.state.previewCueVisible?G.LabMath.aimGuide(o.body.translation(),this.state.settings.angle,o.radius):null;}
+ hitAimLine(pt,pointerType){const line=this.aimLine();if(!line)return false;const a=this.renderer.project(line.start),b=this.renderer.project(line.end);if(a.visible===false||b.visible===false)return false;const dx=b.x-a.x,dy=b.y-a.y,t=clamp(((pt.x-a.x)*dx+(pt.y-a.y)*dy)/(dx*dx+dy*dy||1),0,1);return Math.hypot(pt.x-a.x-t*dx,pt.y-a.y-t*dy)<=(pointerType==='touch'?22:12);}
+ pointerDown(e){
+  const c=this.canvas;
    if(e.button!==0&&e.button!==2)return;e.preventDefault();if(this.lab.cue||this.windup||this.pinch||this.suppressTouch)return;
    c.focus({preventScroll:true});const pt=this.point(e);c.setPointerCapture(e.pointerId);
    if(e.button===2){this.drag={type:'orbit',pointer:e.pointerId,x:e.clientX,y:e.clientY};c.style.cursor='grabbing';return;}
@@ -191,12 +198,26 @@ class LabController{
     const before=this.captureHistory();this.select(o.id);this.pause(true);this.invalidate();const pos=o.body.translation(),hit=this.renderer.planePoint(pt.x,pt.y,pos.y);
     this.drag={type:'ball',pointer:e.pointerId,id:o.id,height:pos.y,offset:hit?sub(pos,hit):V(),x:e.clientX,y:e.clientY,moved:false,changed:false,before};this.state.gesture='공을 옮기는 중 · Esc 취소';this.notify();return;
    }
-   if(this.state.mode==='orbit'){this.drag={type:'orbit',pointer:e.pointerId,x:e.clientX,y:e.clientY};c.style.cursor='grabbing';return;}
+   if(this.state.canAim&&this.state.routeStatus!=='searching'&&this.hitAimLine(pt,e.pointerType)){
+    const p=this.lab.get(this.state.selectedId).body.translation(),q=this.renderer.planePoint(pt.x,pt.y,p.y);if(!q)return;
+    this.drag={type:'forward-aim',pointer:e.pointerId,x:e.clientX,y:e.clientY,initialAngle:this.state.settings.angle,anchorAngle:Math.atan2(q.z-p.z,q.x-p.x)*180/Math.PI,moved:false};
+    this.invalidate();this.state.gesture='조준선을 드래그해 방향 조절';this.canvas.style.cursor='grabbing';this.notify(false);return;
+   }
    const type=this.hitCue(pt);if(type){this.beginCue(type,e);return;}
-   // Empty table points forward; touching the actual cue aims from the rear.
+   // Classify only at pointerdown. Crossing the rail cannot change the gesture.
+   const cloth=this.renderer.planePoint(pt.x,pt.y,0),onCloth=cloth&&Math.abs(cloth.x)<=D.width/2&&Math.abs(cloth.z)<=D.depth/2;
+   if(!onCloth){this.drag={type:'orbit',pointer:e.pointerId,x:e.clientX,y:e.clientY,moved:false};c.style.cursor='grabbing';this.state.gesture='바닥을 드래그해 시점 회전';this.notify(false);return;}
    const selected=this.lab.get(this.state.selectedId),q=selected&&this.renderer.planePoint(pt.x,pt.y,selected.body.translation().y);
-   if(q&&this.state.canAim){this.lastInputAt=performance.now();const p=selected.body.translation();if(Math.hypot(q.x-p.x,q.z-p.z)>.06)this.changeSettings({angle:normalizeAngle(Math.atan2(q.z-p.z,q.x-p.x)*180/Math.PI)});}
-  });
+   if(q&&this.state.canAim&&this.state.routeStatus!=='searching'){
+    const p=selected.body.translation();if(Math.hypot(q.x-p.x,q.z-p.z)<=.04)return;
+    const angle=Math.atan2(q.z-p.z,q.x-p.x)*180/Math.PI;
+    this.drag={type:'table-tap',pointer:e.pointerId,x:e.clientX,y:e.clientY,angle:normalizeAngle(angle),moved:false};
+   }
+ }
+ bindPointers(){
+  const c=this.canvas;c.oncontextmenu=e=>e.preventDefault();
+  this.touchStartListener=e=>this.touchStart(e);c.parentElement.addEventListener('pointerdown',this.touchStartListener,{capture:true,passive:false});
+  c.addEventListener('pointerdown',e=>this.pointerDown(e));
   this.moveListener=e=>this.pointerMove(e);this.endListener=e=>this.touchEnd(e);this.cancelListener=e=>this.touchEnd(e,true);
   window.addEventListener('pointermove',this.moveListener,{passive:false});window.addEventListener('pointerup',this.endListener);window.addEventListener('pointercancel',this.cancelListener);
   c.addEventListener('wheel',e=>{e.preventDefault();this.renderer.camera.zoom=clamp((this.renderer.camera.zoom||1)*Math.exp(e.deltaY*.001),.6,2.5);this.dirty=true;this.updateHandles()},{passive:false});
@@ -209,7 +230,7 @@ class LabController{
   if(this.lab?.cue||this.windup)return;e.preventDefault();this.pause(true);const r=e.currentTarget.getBoundingClientRect();
   // The contact remains the pivot; drag the projected rear of the cue.
   const pivot={x:r.width-38,y:r.height-25},x=e.clientX-r.left,y=e.clientY-r.top;
-  this.changeSettings({elevation:clamp(Math.atan2(pivot.y-y,pivot.x-x)*180/Math.PI,0,80)});
+  this.changeSettings({elevation:clamp(Math.atan2(pivot.y-y,pivot.x-x)*180/Math.PI,0,85)});
  }
  renderSide(){
   const canvas=this.sideCanvas;if(!canvas)return;const r=canvas.getBoundingClientRect();if(!r.width||!r.height)return;const dpi=Math.min(devicePixelRatio||1,2);canvas.width=r.width*dpi;canvas.height=r.height*dpi;const ctx=canvas.getContext('2d');ctx.setTransform(dpi,0,0,dpi,0,0);
@@ -228,7 +249,7 @@ class LabController{
   if(!this.state.paused&&!this.drag){this.accumulator+=elapsed*this.state.rate;let n=0;while(this.accumulator>=this.lab.dt&&n<384){this.lab.step();this.accumulator-=this.lab.dt;n++;}if(n===384)this.accumulator=0;this.dirty=true;if(!this.lab.cue&&this.lab.objects.every(o=>o.body.isSleeping())){this.state.paused=true;this.queuePrediction(true);}}
   if(this.inputPending){this.inputPending=false;this.notify();}
   this.finishGameShot();
-  const visible=this.state.showCue&&this.state.paused&&!this.lab.cue&&!this.lab.anyMotion()&&t>=(this.cooldownUntil||0);if(visible!==this.state.previewCueVisible)this.notify();
+  const visible=!this.game?.pending&&this.state.showCue&&this.state.paused&&!this.lab.cue&&!this.lab.anyMotion()&&t>=(this.cooldownUntil||0);if(visible!==this.state.previewCueVisible)this.notify();
   if(t-(this.lastUI||0)>120&&(!this.state.paused||this.state.gesture||this.windup)){this.notify();this.lastUI=t;}
   this.renderMetrics.cap=this.renderer.isFallback?30:60;
   if((this.dirty||this.renderer.needsFrame)&&this.renderCadence.allow(t,this.renderMetrics.cap)){this.renderer.render(this.lab,this.state,{update:this.dirty});this.renderSide();this.updateHandles();this.dirty=false;this.lastDraw=t;this.renderMetrics.frames++;if(this.lastInputAt!==undefined){this.inputMetrics.lastInputToFrameMs=performance.now()-this.lastInputAt;this.inputMetrics.maxInputToFrameMs=Math.max(this.inputMetrics.maxInputToFrameMs,this.inputMetrics.lastInputToFrameMs);this.lastInputAt=undefined;}}
@@ -254,8 +275,10 @@ class LabController{
   this.cancelSearch('검색 조건이 바뀌었습니다.',true);this.state.routeOptions={...this.state.routeOptions,[key]:value};if(key==='targetId')this.repairRouteTargets();this.notify();
  }
  startSearch(){
-  if(!this.lab||this.lab.cue||this.windup||this.lab.anyMotion())return this.announce('모든 물체가 멈춘 뒤 경로를 검색하세요.');
-  const req={snapshot:this.lab.snapshot({trails:false}),selectedId:this.state.selectedId,settings:{...this.state.settings},options:{...this.state.routeOptions}};
+  if(!this.lab||this.lab.cue||this.windup||this.game?.pending||this.lab.anyMotion())return this.announce('모든 물체가 멈춘 뒤 경로를 검색하세요.');
+  if(this.game&&!this.game.cueIds.includes(this.state.selectedId)){this.state.routeStatus='error';this.state.routeError='4구에서는 흰 수구 또는 노란 수구를 선택하세요.';this.notify();return;}
+  const gameRules=this.game?{gameMode:'four',opponentId:this.game.cueIds.find(id=>id!==this.state.selectedId)}:{gameMode:'free',opponentId:null};
+  const req={snapshot:this.lab.snapshot({trails:false}),selectedId:this.state.selectedId,settings:{...this.state.settings},options:{...this.state.routeOptions,...gameRules}};
   try{G.LabOptimizer.validate(req)}catch(e){this.state.routeError=e.message;this.state.routeStatus='error';this.notify();return;}
   this.state.paused=true;this.invalidate();this.routeStamp=this.worldStamp();this.state.routeStatus='searching';this.state.routeResult=null;this.state.routeError='';this.state.routeApplied=null;this.state.routeProgress={tested:0,evaluated:0,rejected:0,total:req.options.budget*(req.options.mode==='three'?req.options.methods.length:1),found:0};
   this.optimizer.request(req);this.notify();

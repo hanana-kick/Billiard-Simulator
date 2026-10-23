@@ -40,13 +40,13 @@ function AngleInput({id,label,value,kind,disabled}:{id:string,label:string,value
  const [draft,setDraft]=React.useState(n(value)),[editing,setEditing]=React.useState(false),skipCommit=React.useRef(false)
  React.useEffect(()=>{if(!editing)setDraft(n(value))},[value,editing])
  const commit=()=>{if(skipCommit.current){skipCommit.current=false;setEditing(false);return;}const v=Number(draft);if(draft.trim()&&Number.isFinite(v))controller.changeSettings({[kind]:Math.round(v*100)/100});setEditing(false)}
- return <Field><div className="field-heading"><FieldLabel htmlFor={id}>{label}</FieldLabel><div className="number-with-unit"><Input id={id} aria-label={label+' 각도'} type="number" min={kind==='angle'?-180:0} max={kind==='angle'?180:80} step={.01} disabled={disabled} value={editing?draft:n(value)} onFocus={()=>{setDraft(n(value));setEditing(true)}} onChange={e=>setDraft(e.target.value)} onBlur={commit} onKeyDown={e=>{if(e.key==='Enter'){commit();e.currentTarget.blur()}else if(e.key==='Escape'){skipCommit.current=true;setDraft(n(value));setEditing(false);e.currentTarget.blur()}else if(e.key==='ArrowUp'||e.key==='ArrowDown'){e.preventDefault();const delta=(e.key==='ArrowUp'?1:-1)*(e.shiftKey?.1:.01);const v=Number(draft);const target=(Number.isFinite(v)?v:value)+delta;controller.changeSettings({[kind]:target});setDraft(n(Math.max(kind==='angle'?-180:0,Math.min(kind==='angle'?180:80,target))))}}}/><span>°</span></div></div>
+ return <Field><div className="field-heading"><FieldLabel htmlFor={id}>{label}</FieldLabel><div className="number-with-unit"><Input id={id} aria-label={label+' 각도'} type="number" min={kind==='angle'?-180:0} max={kind==='angle'?180:85} step={.01} disabled={disabled} value={editing?draft:n(value)} onFocus={()=>{setDraft(n(value));setEditing(true)}} onChange={e=>setDraft(e.target.value)} onBlur={commit} onKeyDown={e=>{if(e.key==='Enter'){commit();e.currentTarget.blur()}else if(e.key==='Escape'){skipCommit.current=true;setDraft(n(value));setEditing(false);e.currentTarget.blur()}else if(e.key==='ArrowUp'||e.key==='ArrowDown'){e.preventDefault();const delta=(e.key==='ArrowUp'?1:-1)*(e.shiftKey?.1:.01);const v=Number(draft);const target=(Number.isFinite(v)?v:value)+delta;controller.changeSettings({[kind]:target});setDraft(n(Math.max(kind==='angle'?-180:0,Math.min(kind==='angle'?180:85,target))))}}}/><span>°</span></div></div>
  <div className="angle-nudges">{[-.1,-.01,.01,.1].map(delta=><Button key={delta} size="sm" variant="outline" disabled={disabled} aria-label={label+' '+(delta>0?'+':'')+delta+'도'} onClick={()=>controller.adjustAngle(kind,delta)}>{delta>0?'+':'−'}{Math.abs(delta)}°</Button>)}</div></Field>
 }
 function PrecisionControls({state:s}:{state:any}){
  return <FieldGroup>
   <AngleInput id="elevationNumber" label="큐 기울기" value={s.settings.elevation} kind="elevation" disabled={s.activeStroke}/>
-  <Field><SliderField label="큐 기울기" id="elevation" value={s.settings.elevation} min={0} max={80} step={.01} onChange={elevation=>controller.changeSettings({elevation})} disabled={s.activeStroke}/></Field>
+  <Field><SliderField label="큐 기울기" id="elevation" value={s.settings.elevation} min={0} max={85} step={.01} onChange={elevation=>controller.changeSettings({elevation})} disabled={s.activeStroke}/></Field>
   <Field><div className="field-heading"><FieldLabel htmlFor="cueSpeed">타격 세기</FieldLabel><output>{n(s.settings.speed)} m/s</output></div><SliderField label="큐 초기 속도" id="cueSpeed" value={s.settings.speed} min={.25} max={5} step={.05} onChange={speed=>controller.changeSettings({speed})} disabled={s.activeStroke}/><div className="scale"><span>부드럽게</span><span>{n(.27*s.settings.speed*s.settings.speed)} J</span><span>강하게</span></div></Field>
   <AngleInput id="angle" label="조준 방향" value={s.settings.angle} kind="angle" disabled={s.activeStroke}/>
   <FieldDescription>0.01° 단위 입력 · Alt + 드래그: 미세 조준</FieldDescription>
@@ -72,14 +72,14 @@ function MaterialSettings({state:s}:{state:any}){
  return <section className="settings-section" id="materials" tabIndex={-1} aria-labelledby="materials-title"><div className="section-heading"><h2 id="materials-title">물리 재질</h2><span>9개 항목</span></div><div className="advanced-body"><FieldGroup>{parameters.map(([key,label,min,max,step,factor])=><Field key={key}><div className="field-heading"><FieldLabel htmlFor={'p-'+key}>{label}</FieldLabel><output>{n(s.params[key]*factor)}</output></div><SliderField label={label} id={'p-'+key} min={min} max={max} step={step} value={s.params[key]*factor} onChange={v=>controller.params({[key]:v/factor})}/></Field>)}</FieldGroup></div></section>
 }
 function HelpDialog({open,onOpenChange}:{open:boolean;onOpenChange:(value:boolean)=>void}){
- return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent className="help-dialog"><DialogHeader><DialogTitle>큐를 직접 움직이세요</DialogTitle><DialogDescription>큐 조작, 경로 탐색, 물리 모델 안내</DialogDescription></DialogHeader><dl><dt>조준</dt><dd>당구대의 빈 곳을 누르면 선택한 공에서 그 방향으로 조준합니다. 큐 자체를 잡아 움직이면 공 반대쪽에서 조준할 수 있습니다.</dd><dt>타격</dt><dd>설정 패널에서 세기와 타점을 정하고 ‘타격’을 누릅니다. 큐 드래그는 조준만 바꾸며 공을 발사하지 않습니다.</dd><dt>기울기</dt><dd>옆면 확대창의 큐를 드래그하거나 Shift를 누르고 큐를 위아래로 움직입니다. Alt 또는 미세 조준을 사용하면 감도가 낮아집니다.</dd><dt>공 이동</dt><dd>별도 모드 선택 없이 공을 잡고 옮깁니다. 이동 도중 Esc, 이동 취소, 두 손가락 터치 또는 화면 이탈은 원래 위치로 돌립니다.</dd><dt>되돌리기</dt><dd>한 번의 드래그를 한 번에 되돌릴 수 있습니다. ‘다시 실행’은 되돌린 조작을 복원합니다. 새 조작을 하면 다시 실행 기록은 지워집니다. 키보드에서는 Ctrl/⌘+Z, Shift+Ctrl/⌘+Z를 사용합니다.</dd><dt>시점</dt><dd>우클릭 드래그 또는 ‘시점 회전’에서 빈 공간을 드래그합니다. 휠 또는 두 손가락 벌리기로 확대하고 화면 맞춤으로 복원합니다.</dd><dt>타격 후</dt><dd>공이 멈출 때까지 큐는 대기합니다. 4구 점수 판정 중에는 공을 옮길 수 없습니다. 되돌리기로 타격을 취소할 수 있습니다.</dd></dl><Separator/><p>실제 3D 강체 접촉으로 공의 속도와 회전을 계산합니다. 예상 궤적도 같은 물리 모델을 사용합니다.</p><p className="muted-caption">강체 근사 모델이며 실제 장비로 보정한 정밀 예측기는 아닙니다. 큐의 휨과 팁 탄성은 집중정수 근사이며 실측 보정하지 않았습니다. 천·쿠션의 세부 변형은 미모델링입니다. 원근 투영은 화면 표현만 변경합니다.</p><DialogFooter><DialogClose render={<Button />}>닫기</DialogClose></DialogFooter></DialogContent></Dialog>
+ return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent className="help-dialog"><DialogHeader><DialogTitle>큐를 직접 움직이세요</DialogTitle><DialogDescription>큐 조작, 경로 탐색, 물리 모델 안내</DialogDescription></DialogHeader><dl><dt>조준</dt><dd>공 앞쪽 조준선을 드래그해 조준합니다. 당구대의 빈 곳을 누르면 선택한 공에서 그 방향으로 조준합니다. 큐 자체를 잡아 움직이면 공 반대쪽에서 조준할 수 있습니다.</dd><dt>타격</dt><dd>수동 탭에서 세기와 타점을 정하고 당구대 아래 ‘타격’을 누릅니다. 큐 드래그는 조준만 바꾸며 공을 발사하지 않습니다.</dd><dt>기울기</dt><dd>수동 탭에서 큐 기울기를 조절합니다. Alt 또는 미세 조준을 사용하면 감도가 낮아집니다.</dd><dt>공 이동</dt><dd>별도 모드 선택 없이 공을 잡고 옮깁니다. 이동 도중 Esc, 이동 취소, 두 손가락 터치 또는 화면 이탈은 원래 위치로 돌립니다.</dd><dt>되돌리기</dt><dd>한 번의 드래그를 한 번에 되돌릴 수 있습니다. ‘다시 실행’은 되돌린 조작을 복원합니다. 새 조작을 하면 다시 실행 기록은 지워집니다. 키보드에서는 Ctrl/⌘+Z, Shift+Ctrl/⌘+Z를 사용합니다.</dd><dt>시점</dt><dd>당구대 바깥 바닥을 드래그하면 시점이 바뀝니다. 휠 또는 두 손가락 벌리기로 확대하고 화면 맞춤으로 복원합니다.</dd><dt>타격 후</dt><dd>공이 멈출 때까지 큐는 대기합니다. 4구 점수 판정 중에는 공을 옮길 수 없습니다. 되돌리기로 타격을 취소할 수 있습니다.</dd></dl><Separator/><p>실제 3D 강체 접촉으로 공의 속도와 회전을 계산합니다. 예상 궤적도 같은 물리 모델을 사용합니다.</p><p className="muted-caption">강체 근사 모델이며 실제 장비로 보정한 정밀 예측기는 아닙니다. 큐의 휨과 팁 탄성은 집중정수 근사이며 실측 보정하지 않았습니다. 천·쿠션의 세부 변형은 미모델링입니다. 원근 투영은 화면 표현만 변경합니다.</p><DialogFooter><DialogClose render={<Button />}>닫기</DialogClose></DialogFooter></DialogContent></Dialog>
 }
 function Workspace(){
  const s:any=React.useSyncExternalStore(controller.subscribe,controller.snapshot)
- const scene=React.useRef<HTMLCanvasElement>(null),side=React.useRef<HTMLCanvasElement>(null)
+ const scene=React.useRef<HTMLCanvasElement>(null)
  const panelScroll=React.useRef<HTMLDivElement>(null)
  const {open:sidebarOpen,setOpen:setSidebarOpen,openMobile:mobileOpen,setOpenMobile:setMobileOpen,isMobile}=useSidebar()
- const [helpOpen,setHelpOpen]=React.useState(false),sideHeld=React.useRef(false)
+ const [helpOpen,setHelpOpen]=React.useState(false)
  React.useEffect(()=>{const media=matchMedia('(max-width:1099px)');const changed=()=>{if(media.matches)setSidebarOpen(false)};media.addEventListener('change',changed);return()=>media.removeEventListener('change',changed)},[setSidebarOpen])
  const scrollPositions=React.useRef<Record<string,number>>({shot:0,routes:0,settings:0})
  const changePanel=(value:unknown)=>{
@@ -89,27 +89,14 @@ function Workspace(){
  }
  React.useEffect(()=>{controller.dirty=true},[sidebarOpen,mobileOpen])
  const attachPanelScroll=React.useCallback((element:HTMLDivElement|null)=>{panelScroll.current=element;if(element)element.scrollTop=scrollPositions.current[s.activePanel]||0},[s.activePanel])
- React.useEffect(()=>{if(scene.current&&side.current)controller.mount(scene.current,side.current,{});return()=>controller.dispose()},[])
- React.useEffect(()=>{panelScroll.current?.scrollTo({top:scrollPositions.current[s.activePanel]||0});controller.dirty=true;requestAnimationFrame(()=>controller.renderSide())},[s.activePanel])
+ React.useEffect(()=>{if(scene.current)controller.mount(scene.current,null,{});return()=>controller.dispose()},[])
+ React.useEffect(()=>{panelScroll.current?.scrollTo({top:scrollPositions.current[s.activePanel]||0});controller.dirty=true},[s.activePanel])
  const selected=s.objects.find((o:any)=>o.id===s.selectedId)
  const disabled=!s.ready||!s.canAim||!!s.activeStroke||!!s.obstruction||selected?.shape!=='sphere'
- const handleKey=(e:React.KeyboardEvent,type:string)=>{
-  if(e.key==='Escape'){controller.cancelGesture();return}
-  const delta=(e.altKey||s.fineAim)?.01:e.shiftKey?1:.1
-  if(e.key==='ArrowLeft')controller.adjustAngle('angle',-delta)
-  else if(e.key==='ArrowRight')controller.adjustAngle('angle',delta)
-  else if(e.key==='ArrowUp')controller.adjustAngle('elevation',delta)
-  else if(e.key==='ArrowDown')controller.adjustAngle('elevation',-delta)
-  else return
-  e.preventDefault()
- }
  return <div className="app-shell">
    <Sidebar className="toolbox" id="toolbox" aria-label="게임과 타격 설정" collapsible="offcanvas">
     <SidebarHeader className="toolbox-heading">
-     <div className="section-heading"><div><h1>Cue Lab</h1><p className="muted-caption">당구 물리 실험실</p></div><Button variant="ghost" size="icon" aria-label="설정 패널 닫기" onClick={()=>{setMobileOpen(false);setSidebarOpen(false)}}><Icon name="x"/></Button></div>
-     <div className="sidebar-playback">
-     <div className="playback-controls"><HitTarget><Button id="strike" disabled={disabled} onClick={()=>{controller.fire();setMobileOpen(false)}}><Icon name="arrow" data-icon="inline-start"/>타격</Button></HitTarget><HitTarget><Button id="pause" variant="outline" aria-label={s.paused?'계속 실행':'일시정지'} onClick={()=>controller.pause(!s.paused)}><Icon name={s.paused?'play':'pause'} data-icon="inline-start"/>{s.paused?'계속':'일시정지'}</Button></HitTarget></div>
-     </div>
+     <div className="section-heading"><div><span className="muted-caption">연습 메뉴</span></div><Button variant="ghost" size="icon" aria-label="설정 패널 닫기" onClick={()=>{setMobileOpen(false);setSidebarOpen(false)}}><Icon name="x"/></Button></div>
     </SidebarHeader>
     <Tabs className="toolbox-tabs" value={s.activePanel} onValueChange={changePanel}>
      <div className="toolbox-nav"><TabsList activateOnFocus id="panelGroup" aria-label="설정 패널" className="grid w-full grid-cols-3">
@@ -118,17 +105,18 @@ function Workspace(){
       <TabsTrigger value="settings" id="tab-settings">설정</TabsTrigger>
      </TabsList></div>
      <SidebarContent className="panel-scroll" id="panelScroll" ref={attachPanelScroll} onScroll={e=>{scrollPositions.current[s.activePanel]=e.currentTarget.scrollTop}}>
-     <TabsContent value="shot" id="shotPanel" className="tool-panel" aria-label="타격 설정">
+     <TabsContent value="shot" id="shotPanel" className="tool-panel" aria-label="수동 설정">
+      <div className="action-row"><HitTarget><Button id="pause" variant="outline" aria-label={s.paused?'계속 실행':'일시정지'} onClick={()=>controller.pause(!s.paused)}><Icon name={s.paused?'play':'pause'} data-icon="inline-start"/>{s.paused?'계속':'일시정지'}</Button></HitTarget><Button id="step" variant="outline" onClick={()=>controller.step()}>1 프레임</Button></div>
 
 
-      {s.game?<Card size="sm" className="game-score" aria-label="4구 점수"><CardHeader><CardTitle>4구 점수</CardTitle><CardDescription>연습 규칙 · 현재 차례 {s.objects.find((o:any)=>o.id===s.game.activeCue)?.label}</CardDescription></CardHeader><CardContent><div className="score-row"><strong>흰 수구 {s.game.scores[s.game.cueIds[0]]}</strong><strong>노란 수구 {s.game.scores[s.game.cueIds[1]]}</strong></div><p role="status">{s.game.pending?'타격 판정 중':s.game.lastResult}</p><p className="helper">두 적구 +1 · 상대 수구 접촉/수구 장외 −1 · 실패 시 교대. 음수 허용, 종료 점수 없는 연습입니다. 수구는 직접 바꿀 수 있습니다. 규격은 기존 캐롬 실험 설정을 유지합니다.</p></CardContent></Card>:null}
+      {s.game?<Card size="sm" className="game-score" aria-label="4구 점수"><CardHeader><CardTitle>4구 점수</CardTitle><CardDescription>연습 규칙 · 현재 차례 {s.objects.find((o:any)=>o.id===s.game.activeCue)?.label}</CardDescription></CardHeader><CardContent><div className="score-row"><strong>흰 수구 {s.game.scores[s.game.cueIds[0]]}</strong><strong>노란 수구 {s.game.scores[s.game.cueIds[1]]}</strong></div><p role="status">{s.game.pending?'타격 판정 중':s.game.lastResult}</p><p className="helper">{(s.game.pending?.threeCushion??s.routeOptions.fourBallThreeCushion)?'두 번째 적구 명중 전 3쿠션 + 두 적구 +1':'두 적구 +1'} · 상대 수구 접촉/수구 장외 −1 · 실패 시 교대. 음수 허용, 종료 점수 없는 연습입니다. 수구는 직접 바꿀 수 있습니다. 규격은 기존 캐롬 실험 설정을 유지합니다.</p></CardContent></Card>:null}
       <FieldGroup><Field><FieldLabel>타격할 공</FieldLabel>
       <OptionGroup id="ballChoices" label="선택 물체" value={String(s.selectedId)} onChange={id=>controller.select(Number(id))} options={s.objects.filter((o:any)=>!s.game||s.game.cueIds.includes(o.id)).map((o:any)=>({value:String(o.id),label:<><i className="ball-dot" style={{background:o.color}}/>{o.label}</>}))}/></Field></FieldGroup>
       <TipSelector state={s}/><Separator/>
       <SwitchField id="fineAim" checked={s.fineAim} onChange={v=>controller.option('fineAim',v)} label="미세 조준"/><PrecisionControls state={s}/>
 
       {s.obstruction?<Alert id="strikeWarning"><AlertDescription>큐가 {s.obstruction}에 닿습니다. 기울기나 조준을 바꾸세요.</AlertDescription></Alert>:null}
-      <p className="helper">미세 조준을 켜면 드래그 감도가 낮아집니다. 숫자와 ± 버튼은 0.01° 단위입니다.</p>
+      <p className="helper">미세 조준을 켜면 드래그 감도가 낮아집니다. 숫자와 ± 버튼은 0.01° 단위입니다.</p><Separator/><Placement state={s}/>
      </TabsContent>
      <TabsContent value="routes" id="routesPanel" className="tool-panel route-panel" aria-label="경로 탐색">      <Field><FieldLabel>게임 모드</FieldLabel><OptionGroup id="gameMode" label="게임 모드" value={s.gameMode} onChange={mode=>controller.setGameMode(mode)} options={[{value:'free',label:'3구'},{value:'four',label:'4구'}]}/><FieldDescription>모드를 변경하면 배치와 점수가 초기화됩니다. 4구는 연습 규칙입니다.</FieldDescription></Field><RoutePlanner state={s} controller={controller}/></TabsContent>
      <TabsContent value="settings" id="settingsPanel" className="tool-panel" aria-label="시뮬레이션 설정">
@@ -138,8 +126,8 @@ function Workspace(){
        <Field><FieldLabel htmlFor="horizon">예측할 시간</FieldLabel><SelectField aria-label="예측 시간" id="horizon" value={s.horizon} onChange={(e:any)=>controller.option('horizon',Number(e.target.value))}>{[4,8,16,30].map(v=><option value={v} key={v}>{v}초</option>)}</SelectField></Field>
        <Field><FieldLabel htmlFor="speed">재생 속도</FieldLabel><SelectField aria-label="재생 속도" id="speed" value={s.rate} onChange={(e:any)=>controller.option('rate',Number(e.target.value))}>{[.25,.5,1,2,4].map(v=><option key={v} value={v}>{v}×</option>)}</SelectField></Field>
        <SwitchField id="showCue" label="조준 큐 표시" checked={s.showCue} onChange={v=>controller.option('showCue',v)}/><SwitchField id="paths" label="실제 이동 궤적" checked={s.paths} onChange={v=>controller.option('paths',v)}/><SwitchField id="allPaths" label="모든 타격 경로 보기" checked={s.allPaths} onChange={v=>controller.option('allPaths',v)}/><FieldDescription>기본은 직전 타격의 이동 경로입니다. 모든 경로 보기는 현재 보관된 이전 타격도 함께 표시합니다. 공별 최근 4,000개 경로 지점까지 보관합니다.</FieldDescription><SwitchField id="wire" label="충돌 형상" checked={s.debug} onChange={v=>controller.option('debug',v)}/><SwitchField id="vectors" label="속도 벡터" checked={s.vectors} onChange={v=>controller.option('vectors',v)}/>
-       <dl className="live-state" aria-label="현재 물리 상태"><div><dt>속력</dt><dd id="statSpeed">{n(s.speed)} m/s</dd></div><div><dt>회전</dt><dd id="statSpin">{n(s.spin,0)} rpm</dd></div><div><dt>공 하단 높이</dt><dd id="statHeight">{n(s.height,1)} cm</dd></div><div><dt>누적 타격</dt><dd id="statShots">{s.shots}회</dd></div></dl><div className="action-row"><Button id="step" variant="outline" onClick={()=>controller.step()}>1 프레임</Button><Button id="clearTrails" variant="outline" onClick={()=>controller.clearTrails()}>궤적 지우기</Button></div>
-      </FieldGroup></section><Separator/><Placement state={s}/><Separator/><MaterialSettings state={s}/><Separator/>
+       <dl className="live-state" aria-label="현재 물리 상태"><div><dt>속력</dt><dd id="statSpeed">{n(s.speed)} m/s</dd></div><div><dt>회전</dt><dd id="statSpin">{n(s.spin,0)} rpm</dd></div><div><dt>공 하단 높이</dt><dd id="statHeight">{n(s.height,1)} cm</dd></div><div><dt>누적 타격</dt><dd id="statShots">{s.shots}회</dd></div></dl><div className="action-row"><Button id="clearTrails" variant="outline" onClick={()=>controller.clearTrails()}>궤적 지우기</Button></div>
+      </FieldGroup></section><Separator/><MaterialSettings state={s}/><Separator/>
       <section id="contacts" className="settings-section contact-log" tabIndex={-1} aria-labelledby="contacts-title"><div className="section-heading"><h2 id="contacts-title">접촉 기록</h2><span>{s.events.length}개</span></div><div>{s.events.length?s.events.map((e:any,i:number)=><p key={i}><time>{n(e.time)}s</time> {e.label}</p>):<p>타격 후 접촉을 기록합니다.</p>}</div></section>
       <p className="helper">동일한 물리 모델로 타격과 예상 경로를 계산합니다.<br/>실측 보정되지 않은 강체·접촉 근사 모델입니다.</p>
       <p className="helper"><a href="./guide.html" target="_blank" rel="noopener">3구·삼구·4구·사구·3쿠션 연습 안내 (새 탭)</a></p>
@@ -152,7 +140,7 @@ function Workspace(){
 
    </Sidebar>
    <SidebarInset className="scene-inset">
-    <header className="workspace-header"><div className="sidebar-opener"><HitTarget><SidebarTrigger id="sidebarTrigger" aria-label={(isMobile?mobileOpen:sidebarOpen)?"설정 패널 닫기":"설정 패널 열기"} aria-expanded={isMobile?mobileOpen:sidebarOpen}/></HitTarget><span>게임·타격·경로</span></div><p className="muted-caption">Cue Lab <span className="desktop-label">· 3D 물리 실험실</span></p></header>
+    <header className="workspace-header"><div className="sidebar-opener"><HitTarget><SidebarTrigger id="sidebarTrigger" aria-label={(isMobile?mobileOpen:sidebarOpen)?"설정 패널 닫기":"설정 패널 열기"} aria-expanded={isMobile?mobileOpen:sidebarOpen}/></HitTarget><h1>당구 연습</h1></div></header>
     <section id="stagePreview" className="stage-region" aria-label="당구대와 직접 조작">
      <div className="stage-toolbar">
       <div className="view-controls"><OptionGroup id="viewGroup" label="카메라 시점" value={s.view||'3d'} onChange={v=>controller.view(v)} options={[{value:'top',label:'상단'},{value:'3d',label:'3D'},{value:'side',label:'측면'}]}/></div>
@@ -160,21 +148,14 @@ function Workspace(){
 
      </div>
       <div className="viewport" id="viewport">
-       <canvas ref={scene} id="scene" tabIndex={0} aria-label="빈 곳을 누르면 그 방향으로 조준합니다. 큐를 드래그하면 반대쪽에서 조준하고, 공을 드래그하면 이동합니다. 두 손가락으로 확대합니다."/>
+       <canvas ref={scene} id="scene" tabIndex={0} aria-label="공 앞 조준선을 드래그해 조준 · 바닥을 드래그해 시점 회전 · 공을 드래그해 이동. 빈 당구대 클릭은 전방 조준, 큐 드래그는 반대쪽 조준, 두 손가락은 확대입니다."/>
        <div className="viewport-meta"><span className="path-legend"><i/>예상 궤적</span><Badge variant="secondary">{s.activeStroke?'타격 중':s.canAim?'준비':s.paused?'일시정지':'운동 중'}</Badge></div>
-       <div className="viewport-guide">{s.gesture||(s.mode==='orbit'?'빈 곳 드래그로 회전 · 공 드래그로 이동':'빈 곳을 눌러 조준 · 공을 드래그해 이동')}</div>
+       <div className="viewport-guide">{s.gesture||'앞 조준선 드래그로 조준 · 바닥 드래그로 시점'}</div>
      {s.gesture==='공을 옮기는 중 · Esc 취소'?<div className="gesture-cancel"><Button variant="outline" id="cancelGesture" onPointerDown={e=>{e.preventDefault();controller.cancelGesture()}} onClick={()=>controller.cancelGesture()}>이동 취소</Button></div>:null}
        {!s.ready?<div className="loading"><Icon name="cube"/><strong>{s.engineError?'초기화 오류':'물리 월드 준비 중'}</strong><p>{s.engineError||'Rapier 3D'}</p></div>:null}
       </div>
 
-     <div className="scene-tools">
-      <div className="scene-modes"><OptionGroup id="interactionMode" label="장면 조작" value={s.mode} onChange={v=>controller.option('mode',v)} options={[{value:'cue',label:'조준·공 이동'},{value:'orbit',label:'시점 회전'}]}/><span className="shot-counter">{s.shots}회 · {n(s.time,1)}s</span></div>
-      <div className="cue-direct-tools"><div className="aim-toolbar"><Button variant="outline" id="aimPad" className="aim-pad" disabled={!s.canAim||s.routeStatus==='searching'} onPointerDown={e=>controller.beginAimPad(e)} onKeyDown={e=>handleKey(e,'aim')} aria-label="좌우 드래그로 조준 방향 조절"><Icon name="move" data-icon="inline-start"/><span>밀어서 조준</span><output>{n(s.settings.angle)}°</output></Button></div>
-      <div className="side-view-wrap"><span className="muted-caption">큐 옆면 · 드래그로 기울기 조절</span>
-      <canvas ref={side} id="sideView" className="side-view" tabIndex={0} role="slider" aria-label="큐 옆면. 드래그로 기울기 조절" aria-valuemin={0} aria-valuemax={80} aria-valuenow={s.settings.elevation}
-       onPointerDown={e=>{e.currentTarget.setPointerCapture(e.pointerId);sideHeld.current=true;controller.sideDrag(e)}} onPointerMove={e=>{if(sideHeld.current)controller.sideDrag(e)}} onPointerUp={()=>sideHeld.current=false} onPointerCancel={()=>sideHeld.current=false} onLostPointerCapture={()=>sideHeld.current=false} onKeyDown={e=>handleKey(e,'aim')}/>
-      </div></div>
-     </div>
+     <div className="scene-action" aria-label="당구대 타격"><span className="shot-counter">{s.shots}회 · {n(s.time,1)}s</span><HitTarget><Button id="strike" disabled={disabled} onClick={()=>controller.fire()}><Icon name="arrow" data-icon="inline-start"/>타격</Button></HitTarget></div>
 
     </section>
    </SidebarInset>

@@ -93,7 +93,7 @@ function idealCueInputs(req,seed,{terminalSpeed=.25}={}){
  const cueMass=D.cueMass??.54,tipRestitution=1,crossTerm=cross(r,direction),speed=Jmag*(1/cueMass+1/m+dot(crossTerm,crossTerm)/I)/(1+tipRestitution);
  if(![speed,tipX,tipY].every(Number.isFinite)||Math.abs(tipX)>.55||Math.abs(tipY)>.45||Math.hypot(tipX,tipY)>.6)return{ok:false,reason:'required-tip-outside-ui-range'};
  if(speed<(o.minSpeed??.5)||speed>(o.maxSpeed??4.5))return{ok:false,reason:'required-cue-speed-outside-range'};
- if(o.elevationMode==='search'&&(elevation<(o.minElevation??0)||elevation>(o.maxElevation??30)))return{ok:false,reason:'specified-elevation-outside-range'};
+ if(o.elevationMode==='search'&&(elevation<(o.minElevation??0)||elevation>(o.maxElevation??85)))return{ok:false,reason:'specified-elevation-outside-range'};
  return{ok:true,settings:{angle:seed.angle,elevation,speed,tipX,tipY},model:'ideal-stun-energy-guide-impulse',branch,terminalSpeed:achievedTerminalSpeed,minimumTerminalSpeed:terminalSpeed,regularizer:'minimum-launch-energy-with-tip-margin',ballSpeed:v0,firstContactSpeed:Math.sqrt(before2),afterContactSpeed:Math.sqrt(after2),initialBackspin:5*a*time/(2*R),lambda,approximate:true,idealRails:seed.suffix>0};
 }
 // Solve F(phi)=cross(v_out, reflectedGoal-contactPoint)=0 for an
@@ -156,7 +156,7 @@ function freeProposals(req,order=3,prefix=null,maxSeeds=Infinity){
 function freeProposalAt(req,index,search){
  // Diagonal enumeration revisits shallow depths with new geometry variants
  // while progressively opening deeper paths. No fixed maximum rail order.
- const minimum=req.options.mode==='three'?3:0;let shell=0,offset=index;
+ const minimum=(req.options.mode==='three'||(req.options.gameMode==='four'&&req.options.fourBallThreeCushion))?3:0;let shell=0,offset=index;
  const size=s=>(s+1)*(minimum+1)+s*(s+1)/2;
  while(offset>=size(shell)){offset-=size(shell);shell++;}
  let depth=0;while(offset>=minimum+depth+1){offset-=minimum+depth+1;depth++;}
@@ -216,12 +216,12 @@ function proposals(req){
 function inverseInputSeeds(req){
  const o=req.options;if((G.LabRouteRules.byId.get(o.methodId)?.prefix??0)>0)return[];const cue=req.snapshot.objects.find(x=>x.id===req.selectedId),a=req.snapshot.objects.find(x=>x.id===o.targetId),b=req.snapshot.objects.find(x=>x.id===o.secondId);if(!b)return[];
  let geometry;
- if(['any','carom'].includes(o.methodId))geometry=freeProposals(req,o.mode==='three'?3:0,0);
+ if(['any','carom'].includes(o.methodId))geometry=freeProposals(req,(o.mode==='three'||(o.gameMode==='four'&&o.fourBallThreeCushion))?3:0,0);
  else{const pre={ix:0,iz:0,order:0,rails:[]};geometry=images(a.pos,b.pos,cue.radius,o.mode==='three'?5:0).filter(im=>matches(o.methodId,im.rails)).flatMap(post=>closedFormContacts(cue.pos,a.pos,b.pos,cue.radius+a.radius,pre,post,cue.radius));}
  return geometry.filter(seed=>seed.source==='closed-form-stun').map(seed=>({...idealCueInputs(req,seed),geometry:seed}));
 }
 function next(search,normalize){
- const {req,count,pool}=search,o=req.options,three=o.mode==='three';
+ const {req,count,pool}=search,o=req.options,three=o.mode==='three'||(o.gameMode==='four'&&o.fourBallThreeCushion);
  const partition=req.partition,localCount=partition?(count-partition.index)/partition.count:count;
  if(count===0){search.pendingModel={stage:'current-user-settings'};return normalize({...req.settings,...(!o.spin?{tipX:0,tipY:0}:{})});}
  const analytic=o.inputStrategy==='analytic'?(search.analyticSeeds||(search.analyticSeeds=inverseInputSeeds(req))):[];
@@ -230,6 +230,7 @@ function next(search,normalize){
   const seed=usable[ordinal];search.analyticCursor=cursor+1;search.seedMaxOrder=Math.max(search.seedMaxOrder??0,(seed.geometry?.prefix??0)+(seed.geometry?.suffix??0));search.pendingModel={stage:'closed-form-input-estimate',model:seed.model,approximate:true,branch:seed.branch,terminalSpeed:seed.terminalSpeed,idealRails:seed.idealRails,geometricResidual:seed.geometry.residual,predictedFirstContactSpeed:seed.firstContactSpeed,predictedFirstContactSpin:0};
   return normalize(seed.settings);
  }
+ if(o.elevationMode==='search'&&localCount%8===4){const ordinal=search.fullAngleCursor||0;search.fullAngleCursor=ordinal+1;const elevationFraction=ordinal===0?0:ordinal===1?1:halton(ordinal-1,3);search.pendingModel={stage:'full-angle-exploration',approximate:true,elevationFraction};return normalize({...req.settings,angle:360*halton(ordinal+1,2)-180,speed:(o.minSpeed??.5)+((o.maxSpeed??4.5)-(o.minSpeed??.5))*halton(ordinal+1,5),tipX:0,tipY:0});}
  search.pendingModel={stage:'sampled-or-adaptive-fallback',approximate:true};
   const seeds=['any','carom'].includes(o.methodId)?null:(search.familySeeds||(search.familySeeds=proposals(req)));
  // Refine actual near-misses at the angular scale needed by a 61.5mm ball.
@@ -239,7 +240,7 @@ function next(search,normalize){
   const key=JSON.stringify(near.settings),used=search.nearRefinements||(search.nearRefinements=new Map());
   const k=used.get(key)||0;
   const moves=[['angle',-.025],['angle',.025],['angle',-.06],['angle',.06],['speed',.12],['speed',-.12],['angle',-.12],['angle',.12],['tipX',-.035],['tipX',.035],['tipY',-.04],['tipY',.04]];
-  if(k<moves.length){used.set(key,k+1);let [axis,delta]=moves[k];if(!o.spin&&axis.startsWith('tip')){axis='angle';delta*=.2;}return normalize({...near.settings,[axis]:near.settings[axis]+delta});}
+  if(k<moves.length){search.pendingModel={stage:'local-physical-refinement',approximate:true};used.set(key,k+1);let [axis,delta]=moves[k];if(!o.spin&&axis.startsWith('tip')){axis='angle';delta*=.2;}return normalize({...near.settings,[axis]:near.settings[axis]+delta});}
  }
  const localExplorations=search.explorations||0;search.explorations=localExplorations+1;
  const k=req.partition?localExplorations*req.partition.count+req.partition.index:localExplorations;
