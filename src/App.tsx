@@ -1,7 +1,9 @@
 import * as React from 'react'
 import {Button} from '@/components/ui/button'
-import {Card,CardHeader,CardTitle,CardDescription,CardContent,CardFooter} from '@/components/ui/card'
+import {Card,CardHeader,CardTitle,CardDescription,CardContent} from '@/components/ui/card'
 import {Tabs,TabsList,TabsTrigger,TabsContent} from '@/components/ui/tabs'
+import {Sidebar,SidebarContent,SidebarFooter,SidebarHeader,SidebarInset,SidebarProvider,SidebarTrigger,useSidebar} from '@/components/ui/sidebar'
+import {Progress} from '@/components/ui/progress'
 import {Badge} from '@/components/ui/badge'
 import {Input} from '@/components/ui/input'
 import {Field,FieldGroup,FieldLabel,FieldDescription} from '@/components/ui/field'
@@ -66,15 +68,15 @@ function MaterialSettings({state:s}:{state:any}){
  return <section className="settings-section" id="materials" tabIndex={-1} aria-labelledby="materials-title"><div className="section-heading"><h2 id="materials-title">물리 재질</h2><span>9개 항목</span></div><div className="advanced-body"><FieldGroup>{parameters.map(([key,label,min,max,step,factor])=><Field key={key}><div className="field-heading"><FieldLabel htmlFor={'p-'+key}>{label}</FieldLabel><output>{n(s.params[key]*factor)}</output></div><SliderField label={label} id={'p-'+key} min={min} max={max} step={step} value={s.params[key]*factor} onChange={v=>controller.params({[key]:v/factor})}/></Field>)}</FieldGroup></div></section>
 }
 function HelpDialog({open,onOpenChange}:{open:boolean;onOpenChange:(value:boolean)=>void}){
- return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent className="help-dialog"><DialogHeader><DialogTitle>큐를 직접 움직이세요</DialogTitle><DialogDescription>큐 조작, 경로 탐색, 물리 모델 안내</DialogDescription></DialogHeader><dl><dt>조준</dt><dd>큐 뒤쪽이나 뒤쪽의 ‘조준’ 손잡이를 잡고 돌립니다.</dd><dt>당겨치기</dt><dd>공에 가까운 ‘당기기’ 손잡이를 큐 축 방향으로 뒤로 당겼다가 놓습니다. 많이 당길수록 강하게 칩니다.</dd><dt>기울기</dt><dd>옆면 확대창에서 큐를 드래그합니다. PC에서는 Shift를 누르고 몸통을 위아래로 움직입니다. Alt를 함께 누르면 감도가 1/20로 줄어듭니다. 모바일에서는 ‘미세’를 켜서 감도를 낮춥니다. 숫자 입력과 ±0.01° 버튼도 사용할 수 있습니다.</dd><dt>공 배치</dt><dd>장면 아래에서 ‘공 배치’를 선택한 뒤 공을 드래그합니다. 큐 조작 모드에서는 공을 눌러도 위치가 바뀌지 않습니다.</dd><dt>시점</dt><dd>우클릭 드래그 또는 ‘시점’ 모드로 회전합니다. 휠 또는 두 손가락 벌리기로 확대하고 화면 맞춤으로 복원합니다. 두 손가락을 대면 진행 중인 당기기는 취소됩니다.</dd><dt>취소</dt><dd>당기는 도중 ‘당기기 취소’ 또는 Esc를 누릅니다. 터치 취소·화면 이탈 시에도 발사하지 않습니다. 큐가 화면 밖에 있으면 아래 ‘밀어서 조준’을 사용하세요.</dd><dt>타격 후</dt><dd>팁이 공에서 떨어지면 물리 큐를 회수합니다. 공이 움직이는 동안 조준 큐와 손잡이는 나타나지 않으며, 일시정지해도 움직임이 남아 있으면 대기합니다.</dd></dl><Separator/><p>Rapier 3D, 기본 960 Hz. 큐 접촉 구간은 61,440 Hz로 세분화합니다. 팁은 3D 탄성·마찰 접촉, 큐 끝은 12 g 유효 질량과 횡방향 탄성 연결로 근사합니다. 공의 속도·회전을 지정하지 않습니다. 예상 궤적도 같은 모델로 계산합니다.</p><p className="muted-caption">강체 근사 모델이며 실제 장비로 보정한 정밀 예측기는 아닙니다. 큐의 휨과 팁 탄성은 집중정수 근사이며 실측 보정하지 않았습니다. 천·쿠션의 세부 변형은 미모델링입니다. 원근 투영은 화면 표현만 변경합니다.</p><DialogFooter><DialogClose render={<Button />}>닫기</DialogClose></DialogFooter></DialogContent></Dialog>
+ return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent className="help-dialog"><DialogHeader><DialogTitle>큐를 직접 움직이세요</DialogTitle><DialogDescription>큐 조작, 경로 탐색, 물리 모델 안내</DialogDescription></DialogHeader><dl><dt>조준</dt><dd>큐 뒤쪽이나 뒤쪽의 ‘조준’ 손잡이를 잡고 돌립니다.</dd><dt>당겨치기</dt><dd>공에 가까운 ‘당기기’ 손잡이를 큐 축 방향으로 뒤로 당겼다가 놓습니다. 많이 당길수록 강하게 칩니다.</dd><dt>기울기</dt><dd>옆면 확대창에서 큐를 드래그합니다. PC에서는 Shift를 누르고 몸통을 위아래로 움직입니다. Alt를 함께 누르면 감도가 1/20로 줄어듭니다. 모바일에서는 ‘미세’를 켜서 감도를 낮춥니다. 숫자 입력과 ±0.01° 버튼도 사용할 수 있습니다.</dd><dt>공 배치</dt><dd>장면 조작에서 ‘공 배치’를 선택한 뒤 공을 드래그합니다. 큐 조작 모드에서는 공을 눌러도 위치가 바뀌지 않습니다.</dd><dt>시점</dt><dd>우클릭 드래그 또는 ‘시점’ 모드로 회전합니다. 휠 또는 두 손가락 벌리기로 확대하고 화면 맞춤으로 복원합니다. 두 손가락을 대면 진행 중인 당기기는 취소됩니다.</dd><dt>취소</dt><dd>당기는 도중 ‘당기기 취소’ 또는 Esc를 누릅니다. 터치 취소·화면 이탈 시에도 발사하지 않습니다. 큐가 화면 밖에 있으면 아래 ‘밀어서 조준’을 사용하세요.</dd><dt>타격 후</dt><dd>팁이 공에서 떨어지면 물리 큐를 회수합니다. 공이 움직이는 동안 조준 큐와 손잡이는 나타나지 않으며, 일시정지해도 움직임이 남아 있으면 대기합니다.</dd></dl><Separator/><p>Rapier 3D, 기본 960 Hz. 큐 접촉 구간은 61,440 Hz로 세분화합니다. 팁은 3D 탄성·마찰 접촉, 큐 끝은 12 g 유효 질량과 횡방향 탄성 연결로 근사합니다. 공의 속도·회전을 지정하지 않습니다. 예상 궤적도 같은 모델로 계산합니다.</p><p className="muted-caption">강체 근사 모델이며 실제 장비로 보정한 정밀 예측기는 아닙니다. 큐의 휨과 팁 탄성은 집중정수 근사이며 실측 보정하지 않았습니다. 천·쿠션의 세부 변형은 미모델링입니다. 원근 투영은 화면 표현만 변경합니다.</p><DialogFooter><DialogClose render={<Button />}>닫기</DialogClose></DialogFooter></DialogContent></Dialog>
 }
-function App(){
+function Workspace(){
  const s:any=React.useSyncExternalStore(controller.subscribe,controller.snapshot)
  const scene=React.useRef<HTMLCanvasElement>(null),side=React.useRef<HTMLCanvasElement>(null)
  const aim=React.useRef<HTMLButtonElement>(null),grip=React.useRef<HTMLButtonElement>(null),panelScroll=React.useRef<HTMLDivElement>(null)
- const [previewCollapsed,setPreviewCollapsed]=React.useState(false)
+ const {open:sidebarOpen,setOpen:setSidebarOpen,openMobile:mobileOpen,setOpenMobile:setMobileOpen,isMobile}=useSidebar()
  const [helpOpen,setHelpOpen]=React.useState(false),sideHeld=React.useRef(false)
- const [fullWindow,setFullWindow]=React.useState(false),[browserFullscreen,setBrowserFullscreen]=React.useState(false)
+ const [fullWindow,setFullWindow]=React.useState(false)
  const appShell=React.useRef<HTMLDivElement>(null)
  const scrollPositions=React.useRef<Record<string,number>>({shot:0,routes:0,settings:0})
  const changePanel=(value:unknown)=>{
@@ -82,19 +84,16 @@ function App(){
   if(panelScroll.current)scrollPositions.current[s.activePanel]=panelScroll.current.scrollTop
   controller.option('activePanel',String(value))
  }
- const exitFullWindow=()=>{setFullWindow(false);if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})}
- const fullscreen=async()=>{
-  if(fullWindow||document.fullscreenElement){exitFullWindow();return}
-  setFullWindow(true)
-  try{await document.documentElement.requestFullscreen?.()}catch{controller.announce('브라우저 전체화면 대신 창 맞춤 모드로 표시합니다.')}
- }
+ const fullscreen=()=>{controller.cancelGesture();setMobileOpen(false);setFullWindow(v=>!v)}
  React.useEffect(()=>{
-  const changed=()=>{setBrowserFullscreen(!!document.fullscreenElement);if(!document.fullscreenElement)setFullWindow(false);controller.dirty=true;requestAnimationFrame(()=>controller.updateHandles())}
+  const size=()=>{const v=window.visualViewport,el=appShell.current;if(!el)return;el.style.setProperty('--focus-height',`${v?.height||innerHeight}px`);el.style.setProperty('--focus-width',`${v?.width||innerWidth}px`);el.style.setProperty('--focus-top',`${v?.offsetTop||0}px`);el.style.setProperty('--focus-left',`${v?.offsetLeft||0}px`);controller.dirty=true}
   const key=(e:KeyboardEvent)=>{if(e.key==='Escape'&&!document.querySelector('[role="dialog"]'))setFullWindow(false)}
-  document.addEventListener('fullscreenchange',changed);window.addEventListener('keydown',key)
-  return()=>{document.removeEventListener('fullscreenchange',changed);window.removeEventListener('keydown',key)}
+  size();window.addEventListener('keydown',key);window.visualViewport?.addEventListener('resize',size);window.visualViewport?.addEventListener('scroll',size)
+  return()=>{window.removeEventListener('keydown',key);window.visualViewport?.removeEventListener('resize',size);window.visualViewport?.removeEventListener('scroll',size)}
  },[])
- React.useEffect(()=>{controller.dirty=true;requestAnimationFrame(()=>controller.updateHandles())},[fullWindow])
+ React.useEffect(()=>{controller.dirty=true;requestAnimationFrame(()=>controller.updateHandles())},[fullWindow,sidebarOpen,mobileOpen])
+ React.useEffect(()=>{if(fullWindow&&mobileOpen)setMobileOpen(false)},[fullWindow,mobileOpen,setMobileOpen])
+ const attachPanelScroll=React.useCallback((element:HTMLDivElement|null)=>{panelScroll.current=element;if(element)element.scrollTop=scrollPositions.current[s.activePanel]||0},[s.activePanel])
  React.useEffect(()=>{if(scene.current&&side.current)controller.mount(scene.current,side.current,{aim:aim.current,grip:grip.current});return()=>controller.dispose()},[])
  React.useEffect(()=>{panelScroll.current?.scrollTo({top:scrollPositions.current[s.activePanel]||0});controller.dirty=true;requestAnimationFrame(()=>controller.renderSide())},[s.activePanel])
  const selected=s.objects.find((o:any)=>o.id===s.selectedId)
@@ -111,79 +110,33 @@ function App(){
   e.preventDefault()
  }
  return <div className="app-shell" ref={appShell} data-full-window={fullWindow||undefined}>
-  <header className="app-header">
-   <div className="brand"><span className="brand-icon"><Icon name="cube"/></span><h1>Cue Lab</h1><span className="desktop-label">물리 실험실</span></div>
-   <div className="header-actions"><Button id="togglePreview" className="preview-toggle" variant="outline" size="sm" aria-expanded={!previewCollapsed} aria-controls="stagePreview" onClick={()=>{setPreviewCollapsed(v=>!v);controller.dirty=true}}>{previewCollapsed?'당구대 펼치기':'당구대 접기'}</Button>
-    <Button id="undo" variant="ghost" size="icon" disabled={!s.undo} aria-label="이전 타격 되돌리기" onClick={()=>controller.undo()}><Icon name="undo" data-icon="inline-start"/></Button>
-    <Button id="reset" variant="ghost" size="icon" aria-label="초기 배치로 돌아가기" onClick={()=>controller.reset()}><Icon name="reset" data-icon="inline-start"/></Button>
-    <Button variant="ghost" size="icon" aria-label="조작 도움말" onClick={()=>setHelpOpen(true)}><Icon name="info" data-icon="inline-start"/></Button>
-   </div>
-  </header>
-  <div className="workspace" data-preview-collapsed={previewCollapsed||undefined}>
-   <main id="stagePreview" className="stage-region" aria-label="당구대와 타격">
-    <Card size="sm" className="stage-card">
-     <CardHeader className="stage-header">
-      <CardTitle className="sr-only">3D 물리 월드</CardTitle>
-      <div className="view-controls"><OptionGroup id="viewGroup" label="카메라 시점" value={s.view||'3d'} onChange={v=>controller.view(v)} options={[{value:'top',label:'상단'},{value:'3d',label:'3D'},{value:'side',label:'측면'}]}/></div>
-      <div className="view-controls zoom-tools">
-       <Button variant="ghost" size="icon" aria-label="축소" onClick={()=>controller.zoom(1.12)}><Icon name="minus" data-icon="inline-start"/></Button>
-       <Button variant="ghost" size="icon" id="fit" aria-label="화면 맞춤" onClick={()=>controller.fit()}><Icon name="frame" data-icon="inline-start"/></Button>
-       <Button variant="ghost" size="icon" aria-label="확대" onClick={()=>controller.zoom(1/1.12)}><Icon name="plus" data-icon="inline-start"/></Button><Button id="fullscreen" variant="ghost" size="icon" aria-label={fullWindow||browserFullscreen?"전체화면 나가기":"전체화면"} aria-pressed={fullWindow||browserFullscreen} onClick={fullscreen}><Icon name={fullWindow||browserFullscreen?"x":"expand"} data-icon="inline-start"/></Button>
-      </div>
-     </CardHeader>
-     <CardContent className="stage-content">
-      <div className="viewport" id="viewport">
-       <canvas ref={scene} id="scene" tabIndex={0} aria-label="물리 공간. 큐 손잡이를 드래그하거나 공 배치 모드에서 공을 옮깁니다. 두 손가락으로 확대합니다."/>
-       <div className="viewport-meta"><span className="path-legend"><i/>예상 궤적</span><Badge variant="secondary">{s.activeStroke?'타격 중':s.canAim?'준비':s.paused?'일시정지':'운동 중'}</Badge></div>
-       <div className="cue-handles" aria-label="큐 직접 조작">
-        <Button variant="outline" ref={aim} id="aimHandle" className="cue-handle aim-handle" aria-label="큐 뒤쪽 조준 손잡이" onPointerDown={e=>controller.beginCue('aim',e)} onKeyDown={e=>handleKey(e,'aim')}><Icon name="move" data-icon="inline-start"/><span>조준</span></Button>
-        <Button variant="outline" ref={grip} id="gripHandle" className="cue-handle grip-handle" aria-label="공 가까운 당기기 손잡이. 당겼다 놓으면 타격" onPointerDown={e=>controller.beginCue('stroke',e)} onKeyDown={e=>handleKey(e,'stroke')}><Icon name="grip" data-icon="inline-start"/><span>당기기</span></Button>
-       </div>
-       <div className="viewport-guide">{s.gesture||(s.mode==='place'?'공을 잡고 옮기세요':s.mode==='orbit'?'드래그로 회전 · 두 손가락으로 확대':'뒤쪽 조준 · 앞쪽 당겨서 타격')}</div>
-       {s.cuePull>.005?<div className="pull-meter"><span>{n(s.cuePull*100,1)} cm 당김</span><strong>{n(s.settings.speed)} m/s</strong><div><i style={{width:`${s.cuePull/.28*100}%`}}/></div></div>:null}
-       {!s.ready?<div className="loading"><Icon name="cube"/><strong>{s.engineError?'초기화 오류':'물리 월드 준비 중'}</strong><p>{s.engineError||'Rapier 3D'}</p></div>:null}
-      </div>
-     </CardContent>
-     <CardFooter className="stage-footer">
-      <div className="scene-modes"><OptionGroup id="interactionMode" label="장면 조작" value={s.mode} onChange={v=>controller.option('mode',v)} options={[{value:'cue',label:'큐 조작'},{value:'place',label:'공 배치'},{value:'orbit',label:'시점'}]}/><span className="shot-counter">{s.shots}회 · {n(s.time,1)}s</span></div>
-      <div className="aim-toolbar">
-       <Button variant="outline" id="aimPad" className="aim-pad" disabled={!s.canAim||s.routeStatus==='searching'} onPointerDown={e=>controller.beginAimPad(e)} onKeyDown={e=>handleKey(e,'aim')} aria-label="좌우 드래그로 조준 방향 조절"><Icon name="move" data-icon="inline-start"/><span>밀어서 조준</span><output>{n(s.settings.angle)}°</output></Button>
-       <SwitchField id="fineAim" checked={s.fineAim} onChange={v=>controller.option('fineAim',v)} label="미세"/>
-      </div>
-      <div className="playback-controls">
-       <Button id="strike" disabled={disabled} onClick={()=>controller.fire()}><Icon name="arrow" data-icon="inline-start"/>타격</Button>
-       {s.cuePull>0||s.gesture==='스트로크'?<Button variant="outline" id="cancelGesture" onPointerDown={e=>{e.preventDefault();controller.cancelGesture()}} onClick={()=>controller.cancelGesture()}>당기기 취소</Button>:<Button id="pause" variant="outline" size="icon" aria-label={s.paused?'계속 실행':'일시정지'} onClick={()=>controller.pause(!s.paused)}><Icon name={s.paused?'play':'pause'} data-icon="inline-start"/></Button>}
-       <SwitchField id="predict" checked={s.predict} onChange={v=>controller.option('predict',v)} label="예상"/>
-       <span className="forecast-status" id="forecastStatus" title={s.forecastStatus} aria-live="polite">{s.routeStatus==='searching'?`경로 탐색 ${s.routeProgress?.tested||0}/${s.routeProgress?.total||0}`:s.predictionBusy?'예측 중…':s.forecast?s.forecastStatus:s.forecastStatus}</span>
-      </div>
-     </CardFooter>
-    </Card>
-    <div className="stage-bottom"><span>{n(s.speed)} m/s · {n(s.spin,0)} rpm</span><span>{s.renderMode||'3D'} · 960 Hz</span></div>
-   </main>
-   <aside className="toolbox" aria-label="타격과 경로 설정" id="toolbox">
-    <Card className="toolbox-card"><Tabs className="toolbox-tabs" value={s.activePanel} onValueChange={changePanel}>
-    <div className="toolbox-nav"><TabsList activateOnFocus id="panelGroup" aria-label="설정 패널" className="grid w-full grid-cols-3">
-     <TabsTrigger value="shot" id="tab-shot">타격</TabsTrigger>
-     <TabsTrigger value="routes" id="tab-routes">경로 {s.routeResult?.results.length?<Badge variant="secondary">{s.routeResult.results.length}</Badge>:null}</TabsTrigger>
-     <TabsTrigger value="settings" id="tab-settings">전체 설정</TabsTrigger>
-    </TabsList></div>
-    <div className="panel-scroll" id="panelScroll" ref={panelScroll}>
+   <Sidebar className="toolbox" id="toolbox" aria-label="게임과 타격 설정" collapsible="offcanvas">
+    <SidebarHeader className="toolbox-heading">
+     <div className="section-heading"><div><h1>Cue Lab</h1><p className="muted-caption">당구 물리 실험실</p></div><Button variant="ghost" size="icon" aria-label="설정 패널 닫기" onClick={()=>{setMobileOpen(false);setSidebarOpen(false)}}><Icon name="x"/></Button></div>
+    </SidebarHeader>
+    <Tabs className="toolbox-tabs" value={s.activePanel} onValueChange={changePanel}>
+     <div className="toolbox-nav"><TabsList activateOnFocus id="panelGroup" aria-label="설정 패널" className="grid w-full grid-cols-3">
+      <TabsTrigger value="shot" id="tab-shot">타격</TabsTrigger>
+      <TabsTrigger value="routes" id="tab-routes">경로</TabsTrigger>
+      <TabsTrigger value="settings" id="tab-settings">설정</TabsTrigger>
+     </TabsList></div>
+     <SidebarContent className="panel-scroll" id="panelScroll" ref={attachPanelScroll} onScroll={e=>{scrollPositions.current[s.activePanel]=e.currentTarget.scrollTop}}>
      <TabsContent value="shot" keepMounted id="shotPanel" className="tool-panel" aria-label="타격 설정">
       <Card size="sm"><CardHeader><CardTitle>게임 설정</CardTitle><CardDescription>연습 방식을 선택하고 수구를 지정하세요.</CardDescription></CardHeader><CardContent><Field><FieldLabel htmlFor="gameMode">게임 모드</FieldLabel><SelectField id="gameMode" aria-label="게임 모드" value={s.gameMode} onChange={(e:any)=>controller.setGameMode(e.target.value)}><option value="free">자유 실험 · 3구 배치</option><option value="four">한국 4구 · 연습 규칙</option></SelectField><FieldDescription>모드를 변경하면 배치와 점수가 초기화됩니다.</FieldDescription></Field></CardContent></Card>
       {s.game?<Card size="sm" className="game-score" aria-label="4구 점수"><CardHeader><CardTitle>4구 점수</CardTitle><CardDescription>연습 규칙 · 현재 차례 {selected?.label}</CardDescription></CardHeader><CardContent><div className="score-row"><strong>흰 수구 {s.game.scores[s.game.cueIds[0]]}</strong><strong>노란 수구 {s.game.scores[s.game.cueIds[1]]}</strong></div><p role="status">{s.game.pending?'타격 판정 중':s.game.lastResult}</p><p className="helper">두 적구 +1 · 상대 수구 접촉/수구 장외 −1 · 실패 시 교대. 음수 허용, 종료 점수 없는 연습입니다. 수구는 직접 바꿀 수 있습니다. 규격은 기존 캐롬 실험 설정을 유지합니다.</p></CardContent></Card>:null}
       <FieldGroup><Field><FieldLabel>타격할 공</FieldLabel>
       <OptionGroup id="ballChoices" label="선택 물체" value={String(s.selectedId)} onChange={id=>controller.select(Number(id))} options={s.objects.filter((o:any)=>!s.game||s.game.cueIds.includes(o.id)).map((o:any)=>({value:String(o.id),label:<><i className="ball-dot" style={{background:o.color}}/>{o.label}</>}))}/></Field></FieldGroup>
       <TipSelector state={s}/><Separator/>
-      <PrecisionControls state={s}/>
-      <canvas ref={side} id="sideView" className="side-view" tabIndex={0} role="slider" aria-label="큐 옆면. 드래그로 기울기 조절" aria-valuemin={0} aria-valuemax={80} aria-valuenow={s.settings.elevation}
-       onPointerDown={e=>{e.currentTarget.setPointerCapture(e.pointerId);sideHeld.current=true;controller.sideDrag(e)}} onPointerMove={e=>{if(sideHeld.current)controller.sideDrag(e)}} onPointerUp={()=>sideHeld.current=false} onPointerCancel={()=>sideHeld.current=false} onLostPointerCapture={()=>sideHeld.current=false} onKeyDown={e=>handleKey(e,'aim')}/>
+      <SwitchField id="fineAim" checked={s.fineAim} onChange={v=>controller.option('fineAim',v)} label="미세 조준"/><PrecisionControls state={s}/>
+
       {s.obstruction?<Alert id="strikeWarning"><AlertDescription>큐가 {s.obstruction}에 닿습니다. 기울기나 조준을 바꾸세요.</AlertDescription></Alert>:null}
       <p className="helper">미세 조준을 켜면 드래그 감도가 낮아집니다. 숫자와 ± 버튼은 0.01° 단위입니다.</p>
      </TabsContent>
      <TabsContent value="routes" keepMounted id="routesPanel" className="tool-panel route-panel" aria-label="경로 탐색"><RoutePlanner state={s} controller={controller}/></TabsContent>
      <TabsContent value="settings" keepMounted id="settingsPanel" className="tool-panel" aria-label="시뮬레이션 설정">
       <section className="settings-section" id="preview-settings" tabIndex={-1} aria-labelledby="preview-settings-title">
-      <div className="section-heading"><h2 id="preview-settings-title">표시·재생</h2></div><FieldGroup><Field><FieldLabel>장면 조작</FieldLabel><OptionGroup id="inspectorInteractionMode" label="설정에서 장면 조작" value={s.mode} onChange={v=>controller.option('mode',v)} options={[{value:'cue',label:'큐 조작'},{value:'place',label:'공 배치'},{value:'orbit',label:'시점'}]}/><FieldDescription>공 배치로 위치를 옮기거나 시점으로 당구대를 회전합니다.</FieldDescription></Field>
+      <div className="section-heading"><h2 id="preview-settings-title">표시·재생</h2></div><FieldGroup>
+       <SwitchField id="predict" checked={s.predict} onChange={v=>controller.option('predict',v)} label="예상 궤적"/>
        <Field><FieldLabel htmlFor="horizon">예측할 시간</FieldLabel><SelectField aria-label="예측 시간" id="horizon" value={s.horizon} onChange={(e:any)=>controller.option('horizon',Number(e.target.value))}>{[4,8,16,30].map(v=><option value={v} key={v}>{v}초</option>)}</SelectField></Field>
        <Field><FieldLabel htmlFor="speed">재생 속도</FieldLabel><SelectField aria-label="재생 속도" id="speed" value={s.rate} onChange={(e:any)=>controller.option('rate',Number(e.target.value))}>{[.25,.5,1,2,4].map(v=><option key={v} value={v}>{v}×</option>)}</SelectField></Field>
        <SwitchField id="showCue" label="조준 큐 표시" checked={s.showCue} onChange={v=>controller.option('showCue',v)}/><SwitchField id="paths" label="실제 이동 궤적" checked={s.paths} onChange={v=>controller.option('paths',v)}/><SwitchField id="wire" label="충돌 형상" checked={s.debug} onChange={v=>controller.option('debug',v)}/><SwitchField id="vectors" label="속도 벡터" checked={s.vectors} onChange={v=>controller.option('vectors',v)}/>
@@ -193,11 +146,48 @@ function App(){
       <p className="helper">동일한 물리 모델로 타격과 예상 경로를 계산합니다.<br/>실측 보정되지 않은 강체·접촉 근사 모델입니다.</p>
       <p className="helper"><a href="./guide.html" target="_blank" rel="noopener">3구·삼구·4구·사구·3쿠션 연습 안내 (새 탭)</a></p>
      </TabsContent>
-    </div>
-    </Tabs></Card>
-   </aside>
-  </div>
-  <HelpDialog open={helpOpen} onOpenChange={setHelpOpen}/><div className={'toast'+(s.notice?' visible':'')} role="status" aria-live="polite">{s.notice}</div>
+
+     </SidebarContent>
+    </Tabs>
+    <SidebarFooter className="sidebar-playback">
+     <div className="playback-controls"><Button id="strike" disabled={disabled} onClick={()=>{controller.fire();setMobileOpen(false)}}><Icon name="arrow" data-icon="inline-start"/>타격</Button><Button id="pause" variant="outline" aria-label={s.paused?'계속 실행':'일시정지'} onClick={()=>controller.pause(!s.paused)}><Icon name={s.paused?'play':'pause'} data-icon="inline-start"/>{s.paused?'계속':'일시정지'}</Button></div>
+     <div className="action-row"><Button id="undo" variant="outline" size="sm" disabled={!s.undo} onClick={()=>controller.undo()}><Icon name="undo" data-icon="inline-start"/>되돌리기</Button><Button id="reset" variant="outline" size="sm" onClick={()=>controller.reset()}><Icon name="reset" data-icon="inline-start"/>초기화</Button><Button variant="ghost" size="icon" aria-label="조작 도움말" onClick={()=>setHelpOpen(true)}><Icon name="info"/></Button></div>
+     <span className="forecast-status" id="forecastStatus" title={s.forecastStatus} aria-live="polite">{s.routeStatus==='searching'?`경로 탐색 ${s.routeProgress?.tested||0}/${s.routeProgress?.total||0}`:s.predictionBusy?'예측 중…':s.forecastStatus}</span>
+    </SidebarFooter>
+   </Sidebar>
+   <SidebarInset className="scene-inset">
+    <header className="workspace-header"><div className="sidebar-opener"><SidebarTrigger id="sidebarTrigger" aria-label={(isMobile?mobileOpen:sidebarOpen)?"설정 패널 닫기":"설정 패널 열기"} aria-expanded={isMobile?mobileOpen:sidebarOpen}/><span>게임·타격·경로</span></div><p className="muted-caption">Cue Lab <span className="desktop-label">· 3D 물리 실험실</span></p></header>
+    <section id="stagePreview" className="stage-region" aria-label="당구대와 직접 조작">
+     <div className="stage-toolbar">
+      <div className="view-controls"><OptionGroup id="viewGroup" label="카메라 시점" value={s.view||'3d'} onChange={v=>controller.view(v)} options={[{value:'top',label:'상단'},{value:'3d',label:'3D'},{value:'side',label:'측면'}]}/></div>
+      <div className="zoom-tools"><Button variant="outline" size="icon" aria-label="축소" onClick={()=>controller.zoom(1.12)}><Icon name="minus"/></Button><Button variant="outline" size="icon" id="fit" aria-label="화면 맞춤" onClick={()=>controller.fit()}><Icon name="frame"/></Button><Button variant="outline" size="icon" aria-label="확대" onClick={()=>controller.zoom(1/1.12)}><Icon name="plus"/></Button></div>
+      <Button id="fullscreen" variant="outline" aria-label={fullWindow?"당구대 집중 모드 나가기":"당구대 집중 모드"} aria-pressed={fullWindow} onClick={fullscreen}><Icon name={fullWindow?"x":"expand"} data-icon="inline-start"/>{fullWindow?'집중 모드 나가기':'집중 모드'}</Button>
+     </div>
+      <div className="viewport" id="viewport">
+       <canvas ref={scene} id="scene" tabIndex={0} aria-label="물리 공간. 큐 손잡이를 드래그하거나 공 배치 모드에서 공을 옮깁니다. 두 손가락으로 확대합니다."/>
+       <div className="viewport-meta"><span className="path-legend"><i/>예상 궤적</span><Badge variant="secondary">{s.activeStroke?'타격 중':s.canAim?'준비':s.paused?'일시정지':'운동 중'}</Badge></div>
+       <div className="cue-handles" aria-label="큐 직접 조작">
+        <Button variant="outline" ref={aim} id="aimHandle" className="cue-handle aim-handle" aria-label="큐 뒤쪽 조준 손잡이" onPointerDown={e=>controller.beginCue('aim',e)} onKeyDown={e=>handleKey(e,'aim')}><Icon name="move" data-icon="inline-start"/><span>조준</span></Button>
+        <Button variant="outline" ref={grip} id="gripHandle" className="cue-handle grip-handle" aria-label="공 가까운 당기기 손잡이. 당겼다 놓으면 타격" onPointerDown={e=>controller.beginCue('stroke',e)} onKeyDown={e=>handleKey(e,'stroke')}><Icon name="grip" data-icon="inline-start"/><span>당기기</span></Button>
+       </div>
+       <div className="viewport-guide">{s.gesture||(s.mode==='place'?'공을 잡고 옮기세요':s.mode==='orbit'?'드래그로 회전 · 두 손가락으로 확대':'뒤쪽 조준 · 앞쪽 당겨서 타격')}</div>
+       {s.cuePull>.005?<div className="pull-meter"><span>{n(s.cuePull*100,1)} cm 당김</span><strong>{n(s.settings.speed)} m/s</strong><Progress value={Math.min(100,s.cuePull/.28*100)} aria-label="큐 당김 거리"/></div>:null}
+       {!s.ready?<div className="loading"><Icon name="cube"/><strong>{s.engineError?'초기화 오류':'물리 월드 준비 중'}</strong><p>{s.engineError||'Rapier 3D'}</p></div>:null}
+      </div>
+
+     <div className="scene-tools">
+      <div className="scene-modes"><OptionGroup id="interactionMode" label="장면 조작" value={s.mode} onChange={v=>controller.option('mode',v)} options={[{value:'cue',label:'큐 조작'},{value:'place',label:'공 배치'},{value:'orbit',label:'시점'}]}/><span className="shot-counter">{s.shots}회 · {n(s.time,1)}s</span></div>
+      <div className="cue-direct-tools"><div className="aim-toolbar"><Button variant="outline" id="aimPad" className="aim-pad" disabled={!s.canAim||s.routeStatus==='searching'} onPointerDown={e=>controller.beginAimPad(e)} onKeyDown={e=>handleKey(e,'aim')} aria-label="좌우 드래그로 조준 방향 조절"><Icon name="move" data-icon="inline-start"/><span>밀어서 조준</span><output>{n(s.settings.angle)}°</output></Button></div>
+      <div className="side-view-wrap"><span className="muted-caption">큐 옆면 · 드래그로 기울기 조절</span>
+      <canvas ref={side} id="sideView" className="side-view" tabIndex={0} role="slider" aria-label="큐 옆면. 드래그로 기울기 조절" aria-valuemin={0} aria-valuemax={80} aria-valuenow={s.settings.elevation}
+       onPointerDown={e=>{e.currentTarget.setPointerCapture(e.pointerId);sideHeld.current=true;controller.sideDrag(e)}} onPointerMove={e=>{if(sideHeld.current)controller.sideDrag(e)}} onPointerUp={()=>sideHeld.current=false} onPointerCancel={()=>sideHeld.current=false} onLostPointerCapture={()=>sideHeld.current=false} onKeyDown={e=>handleKey(e,'aim')}/>
+      </div></div>
+     </div>
+     {s.cuePull>0||s.gesture==='스트로크'?<div className="gesture-cancel"><Button variant="outline" id="cancelGesture" onPointerDown={e=>{e.preventDefault();controller.cancelGesture()}} onClick={()=>controller.cancelGesture()}>당기기 취소</Button></div>:null}
+    </section>
+   </SidebarInset>
+  <HelpDialog open={helpOpen} onOpenChange={setHelpOpen}/>{s.notice?<div className="notice-wrap"><Alert role="status" aria-live="polite"><AlertDescription>{s.notice}</AlertDescription></Alert></div>:null}
  </div>
 }
+function App(){return <SidebarProvider className="workspace-shell" style={{'--sidebar-width':'22rem'} as React.CSSProperties}><Workspace/></SidebarProvider>}
 createRoot(document.getElementById('app')!).render(<App/>);

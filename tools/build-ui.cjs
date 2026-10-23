@@ -21,9 +21,12 @@ async function build(){
   fs.writeFileSync(path.join(root,'docs/ui-bundle-audit.json'),JSON.stringify({realBaseUIInputs:inputs.filter(x=>x.includes('@base-ui/')),totalModules:inputs.length,external:[]},null,2));
  }
  const twRoot=path.dirname(require.resolve('tailwindcss/package.json'));
- const theme=fs.readFileSync(path.join(twRoot,'theme.css'),'utf8'),preflight=fs.readFileSync(path.join(twRoot,'preflight.css'),'utf8'),style=fs.readFileSync(path.join(root,'src/styles.css'),'utf8'),nova=fs.readFileSync(path.join(root,'src/nova.css'),'utf8');
- const compiler=await tw.compile(`@layer theme,base,components,utilities;\n${theme}\n@layer base{${preflight}}\n@custom-variant dark (&:is(.dark *));\n${style}\n${nova}\n@layer utilities { @tailwind utilities; }`);
- const candidates=[...new Set(source.match(/[^\s"'\x60]+/g))];
+ const theme=fs.readFileSync(path.join(twRoot,'theme.css'),'utf8'),preflight=fs.readFileSync(path.join(twRoot,'preflight.css'),'utf8'),style=fs.readFileSync(path.join(root,'src/styles.css'),'utf8');
+ const shadcn=fs.readFileSync(require.resolve('shadcn/tailwind.css'),'utf8'),animate=fs.readFileSync(path.join(root,'node_modules/tw-animate-css/dist/tw-animate.css'),'utf8');
+ const compiler=await tw.compile(`@layer theme,base,components,utilities;\n${theme}\n@layer base{${preflight}}\n@custom-variant dark (&:is(.dark *));\n${shadcn}\n${animate}\n${style}\n@layer utilities { @tailwind utilities; }`);
+ const tokens=new Set();
+ for(const file of files){const ast=ts.createSourceFile(file,fs.readFileSync(file,'utf8'),ts.ScriptTarget.Latest,true,file.endsWith('.tsx')?ts.ScriptKind.TSX:ts.ScriptKind.TS);const visit=node=>{if(ts.isStringLiteral(node)||ts.isNoSubstitutionTemplateLiteral(node))for(const token of node.text.split(/\s+/))if(token)tokens.add(token);ts.forEachChild(node,visit)};visit(ast)}
+ const candidates=[...tokens];
  fs.writeFileSync(path.join(root,'src/styles.compiled.css'),compiler.build(candidates));
  fs.writeFileSync(path.join(root,'src/ui-externals.json'),JSON.stringify([...external].sort()));
  console.log(online?'Compiled official UI sources for real CDN modules.':'Bundled real Base UI, React and official shadcn components.');

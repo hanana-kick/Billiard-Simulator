@@ -13,7 +13,7 @@ export function SliderField({ value, min, max, step, onChange, id, label, disabl
   id?: string; label: string; disabled?: boolean
 }) {
   const labelId = React.useId()
-  return <><span id={labelId} className="sr-only">{label}</span><Slider id={id} value={[value]} min={min} max={max} step={step} thumbAlignment="center" aria-labelledby={labelId}
+  return <><span id={labelId} className="sr-only">{label}</span><Slider id={id} value={[value]} min={min} max={max} step={step} aria-labelledby={labelId}
     onValueChange={value => onChange(Array.isArray(value) ? value[0] : value)} aria-label={label} disabled={disabled} /></>
 }
 export function SwitchField({ checked, onChange, label, id, disabled = false }: {
@@ -39,7 +39,7 @@ export function SelectField({ value, onChange, children, id, className, disabled
   return <Select items={items} value={value == null ? null : String(value)}
     onValueChange={value => { if (value != null) onChange?.({ target: { value } }) }} disabled={disabled}>
     <SelectTrigger id={id} className={className} aria-label={props['aria-label']}><SelectValue /></SelectTrigger>
-    <SelectContent alignItemWithTrigger={false} align="start"><SelectGroup>
+    <SelectContent><SelectGroup>
       {options.map(option => <SelectItem key={option.props.value} value={String(option.props.value)}
         disabled={option.props.disabled}>{option.props.children}</SelectItem>)}
     </SelectGroup></SelectContent>

@@ -1,14 +1,13 @@
 'use strict';
-// Manual installation of the inspected official registry sources. Only import
-// aliases and shadcn's icon-library placeholder resolution are transformed.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
-const root=path.join(__dirname,'..'),original=path.join(root,'vendor/shadcn/base');
-const sha={button:'2007374034d564bb926915baa057e500cab631a4',slider:'2e55a9a0fc07b66fc86ce1df33c86c2501939088',switch:'753fd22a92536c103d3ff4c4c6171d48f428ead7',toggle:'b058b4d0e74ccc7de2258b63a77f0136bb391b11','toggle-group':'f2d9475eaaa1132ea00efd113a415dac46cd2bb3',select:'2cb76c117197336324cfaed1300e92ca65273b40',input:'06c96abffafcd0fbbedb24778f0c2f668e1b2109',card:'2062884f29a8044fa48edf86605182eca29f8716',badge:'10a7f676f81090c851211f363057238d5906e2ca',progress:'43df6eb11e1c55ad939e24dc408042efa6fe8f93',accordion:'182ccd8e3e872fc0b0a24bb72c0469b6a5857b16',alert:'e9aa02f381ef6e588cfb57696f76703c0f7c4ceb',field:'d58e0d29dbfe52053a21eff0b837f571b278f1ef',separator:'d69c13426761105ab42e5a6bd364dc54bd70f78c',label:'3b0886ba1826c80e7c6e0c22b699a43cb6df5bc9',dialog:'8c68524ade906dc3754769729ae3cbcb1b9d7b55'};
+const root=path.join(__dirname,'..');
 const transform=s=>{const icons=new Set();let t=s.replace(/from "cn"/g,'from "@/lib/utils"').replaceAll('@/registry/bases/base/ui/','@/components/ui/');t=t.replace(/<IconPlaceholder([\s\S]*?)\/>/g,(_,attrs)=>{const icon=attrs.match(/lucide="([^"]+)"/);if(!icon)throw Error('Icon lacks lucide mapping');icons.add(icon[1]);return '<'+icon[1]+attrs.replace(/\s+(lucide|tabler|hugeicons|phosphor|remixicon)="[^"]+"/g,'')+'/>'});return t.replace('import { IconPlaceholder } from "@/app/(create)/components/icon-placeholder"',icons.size?`import { ${[...icons].join(', ')} } from "lucide-react"`:'');};
-const files=[];
-for(const[name,expected]of Object.entries(sha)){const s=fs.readFileSync(path.join(original,name+'.tsx'),'utf8'),buf=Buffer.from(s),hash=crypto.createHash('sha1').update(`blob ${buf.length}\0`).update(buf).digest('hex');if(hash!==expected)throw Error(`${name}: upstream blob mismatch ${hash} != ${expected}`);files.push({file:name+'.tsx',upstream:`https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/${name}.tsx`,gitBlobSha:hash,source:s,generated:transform(s)});}
-const check=process.argv.includes('--check');
-for(const f of files){const dest=path.join(root,'src/components/ui',f.file);if(check){if(fs.readFileSync(dest,'utf8')!==f.generated)throw Error('Modified official component '+f.file);}else fs.writeFileSync(dest,f.generated);}
-if(!check)fs.writeFileSync(path.join(root,'vendor/shadcn/provenance.json'),JSON.stringify({retrievedAt:'2026-10-23',base:'base',style:'nova',installation:'manual: official registry sources; import aliases and icon selection only',files:files.map(({source,generated,...f})=>f)},null,2)+'\n');
-console.log(`${files.length} official shadcn Base UI sources ${check?'verified':'installed'}; original Git blob hashes match.`);
-module.exports={transform,sha};
+const manifest=JSON.parse(fs.readFileSync(path.join(root,'vendor/shadcn/provenance.json')));
+for(const item of manifest.files){
+ const file=path.join(root,'vendor/shadcn/base-nova',item.name+'.json'),raw=fs.readFileSync(file);
+ if(crypto.createHash('sha256').update(raw).digest('hex')!==item.sha256)throw Error('Registry snapshot mismatch '+item.name);
+ const original=JSON.parse(raw).files[0].content,generated=transform(original).replaceAll('@/registry/base-nova/ui/','@/components/ui/').replaceAll('@/registry/base-nova/hooks/','@/hooks/');
+ const dest=path.join(root,item.target);fs.mkdirSync(path.dirname(dest),{recursive:true});
+ if(process.argv.includes('--check')){if(fs.readFileSync(dest,'utf8')!==generated)throw Error('Modified styled registry component '+item.name)}else fs.writeFileSync(dest,generated);
+}
+console.log(`${manifest.files.length} official styled base-nova registry components verified, including tabs.`);

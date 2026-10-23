@@ -1,10 +1,19 @@
 const {test,expect}=require('@playwright/test');
 const fs=require('node:fs');
 const tab=(page,name)=>page.getByRole('tab',{name,exact:true});
+async function openSidebar(page){
+ if(await page.locator('#sidebarTrigger').getAttribute('aria-expanded')!=='true')await page.locator('#sidebarTrigger').click();
+ await expect(page.locator('#tab-shot')).toBeInViewport({ratio:1});
+}
+async function closeSidebar(page){
+ if(await page.locator('#sidebarTrigger').getAttribute('aria-expanded')==='true')await page.locator('.toolbox-heading').getByRole('button',{name:'설정 패널 닫기',exact:true}).click();
+ await expect(page.locator('#tab-shot')).not.toBeInViewport();
+}
 async function boot(page){
  page.setDefaultTimeout(15000);const errors=[];page.on('pageerror',e=>errors.push(e.message));
  if(process.env.LOCAL_HTML)await page.setContent(fs.readFileSync(process.env.LOCAL_HTML,'utf8'));else await page.goto('./');await page.waitForFunction(()=>globalThis.__LAB_READY__&&cueLab.state.ready);
  await page.evaluate(()=>cueLab.option('predict',false));
+ await openSidebar(page);
  return errors;
 }
 async function select(page,id,label){await page.locator('#'+id).click();await page.getByRole('option',{name:label,exact:true}).click();}
@@ -20,7 +29,7 @@ test('three real Base UI tabs preserve world, settings, focus and mounted canvas
  await settleInput(page,'angle','17.23');
  const positions=await page.evaluate(()=>{globalThis.savedLab=cueLab.lab;globalThis.savedCanvas=document.getElementById('scene');return cueLab.lab.objects.map(o=>({...o.body.translation()}));});
  await tab(page,'경로').click();await assertOnePanel(page,'routesPanel');
- await tab(page,'전체 설정').click();await assertOnePanel(page,'settingsPanel');
+ await tab(page,'설정').click();await assertOnePanel(page,'settingsPanel');
  await select(page,'horizon','16초');await select(page,'speed','0.5×');
  await tab(page,'타격').click();await expect(page.locator('#angle')).toHaveValue('17.23');
  expect(await page.evaluate(()=>({sameWorld:cueLab.lab===savedLab,sameCanvas:document.getElementById('scene')===savedCanvas,positions:cueLab.lab.objects.map(o=>({...o.body.translation()})),horizon:cueLab.state.horizon,rate:cueLab.state.rate}))).toEqual({sameWorld:true,sameCanvas:true,positions,horizon:16,rate:.5});
@@ -30,7 +39,7 @@ test('three real Base UI tabs preserve world, settings, focus and mounted canvas
 });
 
 test('all settings work through actual Base UI controls',async({page})=>{
- const errors=await boot(page);await tab(page,'전체 설정').click();
+ const errors=await boot(page);await tab(page,'설정').click();
  for(const id of ['horizon','speed','step','clearTrails','placement','posX','posZ','posY','height','addBall','addBox','remove','materials','contacts']){
   const el=page.locator('#'+id);await el.scrollIntoViewIfNeeded();await expect(el).toBeVisible();
  }
@@ -49,11 +58,12 @@ test('all settings work through actual Base UI controls',async({page})=>{
 test('desktop and small-screen layout keeps table and one scrollable panel usable',async({page})=>{
  const errors=await boot(page);fs.mkdirSync('test-results/screenshots',{recursive:true});
  for(const [width,height]of [[320,568],[390,844],[768,1024],[844,390],[1440,900]]){
-  await page.setViewportSize({width,height});await tab(page,'전체 설정').click();
+  await page.setViewportSize({width,height});await openSidebar(page);await tab(page,'설정').click();
   await page.locator('#p-spinLength').scrollIntoViewIfNeeded();
   const sizes=await page.evaluate(()=>{const table=document.getElementById('scene').getBoundingClientRect(),tabs=document.getElementById('panelGroup').getBoundingClientRect(),s=document.querySelector('#p-spinLength').getBoundingClientRect();return{overflow:document.documentElement.scrollWidth>innerWidth+1,tableVisible:table.top>=0&&table.bottom<=innerHeight,tableHeight:table.height,tabsVisible:tabs.top>=0&&tabs.bottom<=innerHeight,sliderReachable:s.top>=0&&s.bottom<=innerHeight}});
   expect(sizes.overflow).toBe(false);expect(sizes.tableVisible).toBe(true);expect(sizes.tableHeight).toBeGreaterThan(60);expect(sizes.tabsVisible).toBe(true);expect(sizes.sliderReachable).toBe(true);
   await tab(page,'타격').click();await assertOnePanel(page,'shotPanel');
+  await closeSidebar(page);await expect(page.locator('#scene')).toBeInViewport();
   await page.screenshot({path:`test-results/screenshots/${width}x${height}.png`});
  }
  expect(errors).toEqual([]);
@@ -61,17 +71,17 @@ test('desktop and small-screen layout keeps table and one scrollable panel usabl
 
 test('touch navigation, fine aim and pinch cancellation work without firing',async({browser})=>{
  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1});const page=await context.newPage();const errors=await boot(page);
- await tab(page,'전체 설정').tap();await assertOnePanel(page,'settingsPanel');await tab(page,'경로').tap();await assertOnePanel(page,'routesPanel');await tab(page,'타격').tap();
+ await tab(page,'설정').tap();await assertOnePanel(page,'settingsPanel');await tab(page,'경로').tap();await assertOnePanel(page,'routesPanel');await tab(page,'타격').tap();await closeSidebar(page);
  const before=await page.evaluate(()=>cueLab.state.settings.angle);const r=await page.locator('#aimPad').boundingBox(),cdp=await context.newCDPSession(page);
  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:r.x+60,y:r.y+r.height/2,id:1}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:r.x+110,y:r.y+r.height/2,id:1}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
  expect(await page.evaluate(()=>cueLab.state.settings.angle)).not.toBe(before);expect(await page.evaluate(()=>cueLab.lab.shots)).toBe(0);
- await page.getByRole('switch',{name:'미세',exact:true}).tap();await expect.poll(()=>page.evaluate(()=>cueLab.state.fineAim)).toBe(true);
+ await openSidebar(page);await tab(page,'타격').tap();await page.getByRole('switch',{name:'미세 조준',exact:true}).tap();await expect.poll(()=>page.evaluate(()=>cueLab.state.fineAim)).toBe(true);await closeSidebar(page);
  const fineBefore=await page.evaluate(()=>cueLab.state.settings.angle),x=r.x+60,y=r.y+r.height/2;
  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y,id:1}]});
  await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+30,y,id:1}]});
  await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
  expect(await page.evaluate(()=>cueLab.state.settings.angle)-fineBefore).toBeCloseTo(.3,2);
- await page.locator('#angle').fill('0');await page.locator('#angle').press('Enter');
+ await openSidebar(page);await page.locator('#angle').fill('0');await page.locator('#angle').press('Enter');await closeSidebar(page);
  await expect(page.locator('#gripHandle')).toBeVisible();
  const grip=await page.locator('#gripHandle').boundingBox(),gx=grip.x+grip.width/2,gy=grip.y+grip.height/2;
  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:gx,y:gy,id:1}]});
@@ -98,20 +108,27 @@ test('three-cushion search yields a real candidate, applies and preserves it acr
  expect(await page.evaluate(()=>cueLab.state.routeStatus)).not.toBe('error');
  await page.locator('.route-result button').first().click();
  expect(await page.evaluate(()=>cueLab.lab.shots)).toBe(0);const setting=await page.evaluate(()=>({...cueLab.state.settings}));
- await tab(page,'전체 설정').click();await tab(page,'타격').click();expect(await page.evaluate(()=>({...cueLab.state.settings}))).toEqual(setting);
+ await tab(page,'설정').click();await tab(page,'타격').click();expect(await page.evaluate(()=>({...cueLab.state.settings}))).toEqual(setting);
  await page.locator('#strike').click();await page.waitForFunction(()=>cueLab.lab.time>.5);expect(await page.evaluate(()=>cueLab.state.previewCueVisible)).toBe(false);expect(await page.evaluate(()=>cueLab.lab.shots)).toBe(1);expect(errors).toEqual([]);
 });
 
 test('bundled build has no runtime dependency on external CDNs',async({page})=>{
  const external=[];page.on('request',r=>{const url=r.url();if(/^https?:/.test(url)&&new URL(url).origin!==new URL(process.env.APP_URL||'http://127.0.0.1:8787').origin)external.push(url);});
- await boot(page);await tab(page,'전체 설정').click();await select(page,'horizon','8초');expect(external).toEqual([]);
+ await boot(page);await tab(page,'설정').click();await select(page,'horizon','8초');expect(external).toEqual([]);
 });
 
-test('full-screen keeps settings popovers in the rendered document',async({page})=>{
- const errors=await boot(page);await page.locator('#fullscreen').click();
- await page.waitForFunction(()=>document.fullscreenElement===document.documentElement||document.querySelector('.app-shell').dataset.fullWindow==='true');
- await page.getByRole('tab',{name:'전체 설정',exact:true}).click();await page.locator('#speed').click();
- await expect(page.getByRole('option',{name:'2×',exact:true})).toBeVisible();await page.getByRole('option',{name:'2×',exact:true}).click();
- expect(await page.evaluate(()=>cueLab.state.rate)).toBe(2);await page.locator('#fullscreen').click();
- await page.waitForFunction(()=>!document.fullscreenElement&&document.querySelector('.app-shell').dataset.fullWindow!=='true');expect(errors).toEqual([]);
+test('scene focus fills the viewport without browser fullscreen and preserves the world',async({page})=>{
+ const errors=await boot(page);await page.evaluate(()=>{globalThis.focusWorld=cueLab.lab;globalThis.focusCanvas=document.querySelector('#scene');globalThis.fullscreenRequests=0;Element.prototype.requestFullscreen=()=>{fullscreenRequests++;throw Error('not allowed')};});
+ for(const viewport of [{width:390,height:844},{width:844,height:390},{width:320,height:568}]){
+  await page.setViewportSize(viewport);await closeSidebar(page);await page.locator('#fullscreen').click();
+  await expect(page.locator('.workspace-header')).toBeHidden();await expect(page.locator('#strike')).toBeHidden();
+  await expect(page.locator('#fullscreen')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('.stage-toolbar button:visible')).toHaveCount(1);
+  await expect(page.locator('#gripHandle')).toBeVisible();
+  expect(await page.evaluate(()=>!document.fullscreenElement&&fullscreenRequests===0&&cueLab.lab===focusWorld&&document.querySelector('#scene')===focusCanvas)).toBe(true);
+  const stage=await page.locator('#stagePreview').boundingBox();expect(stage.height).toBeGreaterThan(viewport.height-30);expect(stage.width).toBeGreaterThan(viewport.width-30);
+  await page.keyboard.press('Escape');await expect(page.locator('.workspace-header')).toBeVisible();await expect(page.locator('#fullscreen')).toHaveAttribute('aria-pressed','false');
+  await openSidebar(page);await expect(page.locator('#strike')).toBeInViewport();await closeSidebar(page);
+ }
+ await page.locator('#fullscreen').click();await page.locator('#fullscreen').click();await expect(page.locator('.workspace-header')).toBeVisible();await openSidebar(page);expect(errors).toEqual([]);
 });

@@ -1,88 +1,139 @@
 {
   "retrievedAt": "2026-10-23",
-  "base": "base",
-  "style": "nova",
-  "installation": "manual: official registry sources; import aliases and icon selection only",
+  "base": "base-nova",
+  "installation": "official styled registry; aliases and icon-library resolution only",
   "files": [
     {
-      "file": "button.tsx",
-      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/button.tsx",
-      "gitBlobSha": "2007374034d564bb926915baa057e500cab631a4"
+      "name": "accordion",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/accordion.json",
+      "target": "src/components/ui/accordion.tsx",
+      "sha256": "01509cb2a91779ee74c2d4a1f75842c0a258bed1758be4f2567af9daabdc39ac"
     },
     {
-      "file": "slider.tsx",
-      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/slider.tsx",
-      "gitBlobSha": "2e55a9a0fc07b66fc86ce1df33c86c2501939088"
+      "name": "alert",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/alert.json",
+      "target": "src/components/ui/alert.tsx",
+      "sha256": "0799cfc29a481568f6e9b48e96518a446032350dec576bfe31b7f67b4b262028"
     },
     {
-      "file": "switch.tsx",
-      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/switch.tsx",
-      "gitBlobSha": "753fd22a92536c103d3ff4c4c6171d48f428ead7"
+      "name": "badge",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/badge.json",
+      "target": "src/components/ui/badge.tsx",
+      "sha256": "ccc20021cdcbf0fb23c0d4d28f1da4adde8e51ba59f4b11dd2722ed97a5ee3a4"
     },
     {
-      "file": "toggle.tsx",
-      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/toggle.tsx",
-      "gitBlobSha": "b058b4d0e74ccc7de2258b63a77f0136bb391b11"
+      "name": "button",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/button.json",
+      "target": "src/components/ui/button.tsx",
+      "sha256": "9ba7e870178813f0552b818a913a2792fb500c779e36395740b4973e3025d427"
     },
     {
-      "file": "toggle-group.tsx",
-      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/toggle-group.tsx",
-      "gitBlobSha": "f2d9475eaaa1132ea00efd113a415dac46cd2bb3"
+      "name": "card",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/card.json",
+      "target": "src/components/ui/card.tsx",
+      "sha256": "e73e3fe00ab2e14c4db1dccb1ff5c67041a94c0926ac3216c1dc6dd6dee9d7e0"
     },
     {
-      "file": "select.tsx",
-      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/select.tsx",
-      "gitBlobSha": "2cb76c117197336324cfaed1300e92ca65273b40"
+      "name": "dialog",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/dialog.json",
+      "target": "src/components/ui/dialog.tsx",
+      "sha256": "40fc321d25eb9590d07db54b00d9bc1a74274a549aa06d5915a34ba302ed8b94"
     },
     {
-      "file": "input.tsx",
-      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/input.tsx",
-      "gitBlobSha": "06c96abffafcd0fbbedb24778f0c2f668e1b2109"
+      "name": "field",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/field.json",
+      "target": "src/components/ui/field.tsx",
+      "sha256": "586110f5563cbb5dc0929207ee34361f1349cf2f816465799c60b98821e4cedc"
     },
     {
-      "file": "card.tsx",
-      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/card.tsx",
-      "gitBlobSha": "2062884f29a8044fa48edf86605182eca29f8716"
+      "name": "input",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/input.json",
+      "target": "src/components/ui/input.tsx",
+      "sha256": "bbad1bba130ac9750a61844eeb8f043e8a710846e07689fa85398b80a46c2741"
     },
     {
-      "file": "badge.tsx",
-      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/badge.tsx",
-      "gitBlobSha": "10a7f676f81090c851211f363057238d5906e2ca"
+      "name": "label",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/label.json",
+      "target": "src/components/ui/label.tsx",
+      "sha256": "89b01e14fd39dceece9fa421e71e78ea83286bd43a2ca1c2f55d2e8d3958fff2"
     },
     {
-      "file": "progress.tsx",
-      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/progress.tsx",
-      "gitBlobSha": "43df6eb11e1c55ad939e24dc408042efa6fe8f93"
+      "name": "progress",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/progress.json",
+      "target": "src/components/ui/progress.tsx",
+      "sha256": "359e72beff723311ec2e4d5154a0f80dedd253bd6b16959a4db0773714ceab52"
     },
     {
-      "file": "accordion.tsx",
-      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/accordion.tsx",
-      "gitBlobSha": "182ccd8e3e872fc0b0a24bb72c0469b6a5857b16"
+      "name": "select",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/select.json",
+      "target": "src/components/ui/select.tsx",
+      "sha256": "425e9b0a28b72617f18fabd75384050113295b88e7ba01c35bede2c72bd5d476"
     },
     {
-      "file": "alert.tsx",
-      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/alert.tsx",
-      "gitBlobSha": "e9aa02f381ef6e588cfb57696f76703c0f7c4ceb"
+      "name": "separator",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/separator.json",
+      "target": "src/components/ui/separator.tsx",
+      "sha256": "3ad65962485f464592201cb90017b3d52a5c9fe272ce41ee049485b4c42e0d76"
     },
     {
-      "file": "field.tsx",
-      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/field.tsx",
-      "gitBlobSha": "d58e0d29dbfe52053a21eff0b837f571b278f1ef"
+      "name": "sheet",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/sheet.json",
+      "target": "src/components/ui/sheet.tsx",
+      "sha256": "72b36d92af7fcbc9bd2d1d4ef0cbc65f4fc8178f7bb2bedaf657460f15011cf4"
     },
     {
-      "file": "separator.tsx",
-      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/separator.tsx",
-      "gitBlobSha": "d69c13426761105ab42e5a6bd364dc54bd70f78c"
+      "name": "sidebar",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/sidebar.json",
+      "target": "src/components/ui/sidebar.tsx",
+      "sha256": "02b1ea430fb246da062048f0161a01d1b34a2c787f6974958c9b20a3142120a6"
     },
     {
-      "file": "label.tsx",
-      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/label.tsx",
-      "gitBlobSha": "3b0886ba1826c80e7c6e0c22b699a43cb6df5bc9"
+      "name": "skeleton",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/skeleton.json",
+      "target": "src/components/ui/skeleton.tsx",
+      "sha256": "85692a09912f518ffd64c540dfcf098fe748a807baf288c107cf8126496cf886"
     },
     {
-      "file": "dialog.tsx",
-      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/dialog.tsx",
-      "gitBlobSha": "8c68524ade906dc3754769729ae3cbcb1b9d7b55"
+      "name": "slider",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/slider.json",
+      "target": "src/components/ui/slider.tsx",
+      "sha256": "646bcd7913417b786bbf7578484f851bf89c81a62f70ef9c4f3522e2af80a951"
+    },
+    {
+      "name": "switch",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/switch.json",
+      "target": "src/components/ui/switch.tsx",
+      "sha256": "1f22350ccbf358a3aa198305c41d91e146abc0a7d5b18a9a23488b8d6b264ab4"
+    },
+    {
+      "name": "tabs",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/tabs.json",
+      "target": "src/components/ui/tabs.tsx",
+      "sha256": "b4552a0329dd9a6e2bfaf03405c133874df5a4930c7bb3dd84c9ab5c45b89402"
+    },
+    {
+      "name": "toggle-group",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/toggle-group.json",
+      "target": "src/components/ui/toggle-group.tsx",
+      "sha256": "9f103af4a048ec392cb09b886985ec733a360a0033cc7138349f1775851a89d4"
+    },
+    {
+      "name": "toggle",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/toggle.json",
+      "target": "src/components/ui/toggle.tsx",
+      "sha256": "f06447a03bcc1e510f3a50d5e7735bd82bdc17bc77849596709727c215bcc20e"
+    },
+    {
+      "name": "tooltip",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/tooltip.json",
+      "target": "src/components/ui/tooltip.tsx",
+      "sha256": "2f55867faecee2d3616cfd8c6a80b538909a21e62fdfa2788b1ead56093e5395"
+    },
+    {
+      "name": "use-mobile",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/use-mobile.json",
+      "target": "src/hooks/use-mobile.ts",
+      "sha256": "f4bfd840445a84352265d7cf66fcd886454b6a2f3834f7caf29d00f68620f87d"
     }
   ]
 }
