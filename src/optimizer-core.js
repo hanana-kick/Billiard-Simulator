@@ -15,6 +15,9 @@ function validate(req){
  if(![48,128,320].includes(o.budget)&&!req.testBudget)throw new Error('지원하지 않는 탐색량입니다.');
  if(!Number.isInteger(o.budget)||o.budget<1||o.budget>1024||![8,16,30].includes(o.horizon))throw new Error('탐색량·시간 범위를 확인하세요.');
  if(!['shortest','gentle'].includes(o.objective)||!req.settings||!Number.isFinite(req.settings.elevation)||req.settings.elevation<0||req.settings.elevation>80||typeof o.spin!=='boolean')throw new Error('목표 설정이 올바르지 않습니다.');
+ for(const [lo,hi,min,max] of [['minSpeed','maxSpeed',.5,4.5],['minElevation','maxElevation',0,80]]){const a=o[lo]??min,b=o[hi]??max;if(!Number.isFinite(a)||!Number.isFinite(b)||a<min||b>max||a>b)throw new Error('탐색 범위가 올바르지 않습니다.');}
+ if(o.elevationMode!==undefined&&!['fixed','search'].includes(o.elevationMode))throw new Error('큐 들림 탐색 조건이 올바르지 않습니다.');
+ if(o.allowMovingTargets!==undefined&&typeof o.allowMovingTargets!=='boolean')throw new Error('움직이는 목적구 옵션이 올바르지 않습니다.');
  if(o.methodId&&!G.LabRouteRules.byId.has(o.methodId))throw new Error('지원하지 않는 경로 종류입니다.');
  return{cue,first,second};
 }
@@ -40,8 +43,9 @@ function proposalAngles(req){
  return seeds.sort((a,b)=>a.order-b.order);
 }
 function createSearch(R,req){
- const refs=validate(req);
- return {R,req,refs,seeds:proposalAngles(req),count:0,evaluated:0,rejected:0,successCount:0,pool:[],seen:new Set(),bestMiss:null,started:performance.now(),active:null,finished:false};
+ const refs=validate(req),seeds=proposalAngles(req);
+ if(req.partition){const {index,count}=req.partition;if(!Number.isInteger(index)||!Number.isInteger(count)||count<1||count>8||index<0||index>=count)throw new Error('잘못된 병렬 탐색 분할');const budget=Math.floor(req.options.budget/count)+(index<req.options.budget%count?1:0);req={...req,testBudget:true,options:{...req.options,budget}};}
+ return {R,req,refs,seeds,count:0,evaluated:0,rejected:0,successCount:0,pool:[],seen:new Set(),bestMiss:null,started:performance.now(),active:null,finished:false};
 }
 function nextSettings(search){
  if(search.req.options.methodId)return G.LabRouteSampler.next(search,normalize); 
@@ -68,11 +72,34 @@ function nextSettings(search){
  return normalize({...base,angle:count%17===0?360*halton(count,2)-180:seed.angle+(2*halton(count,5)-1)*seed.spread*1.08,
   speed:o.mode==='three'?2.3+2.2*halton(count,3):.65+3.85*halton(count,3),tipX:o.spin?(2*halton(count,7)-1)*.55:0,tipY:o.spin?(2*halton(count,11)-1)*.40:0});
 }
+// Constraints only select input settings. They never alter the simulated world.
+function constrainSettings(search,settings){
+ const o=search.req.options,s={...settings};
+ s.speed=clamp(s.speed,o.minSpeed??.5,o.maxSpeed??4.5);
+ if(o.elevationMode==='search'){
+  const low=o.minElevation??0,high=o.maxElevation??30;
+  // Interleave low-discrepancy elevation exploration and local refinement.
+  const parent=search.pool[0];
+  s.elevation=search.count>24&&search.count%3!==0&&parent?
+   clamp(parent.settings.elevation+(search.count%2?1:-1)*[2,.5,.1][search.count%3],low,high):
+   low+(high-low)*halton(search.count+1,13);
+ }else s.elevation=search.req.settings.elevation;
+ return normalize(s);
+}
+// Sample before stepping: post-impact speed would incorrectly reject every hit.
+function captureTargets(lab,selectedId){
+ return new Map(lab.objects.filter(o=>o.id!==selectedId).map(o=>[o.id,{position:{...o.body.translation()},speed:len(o.body.linvel())}]));
+}
+function movingTargetContact(trial,id){
+ const before=trial.beforeTargets.get(id),initial=trial.initialTargets.get(id);
+ return !!before&&!!initial&&(before.speed>.01||len(sub(before.position,initial.position))>.001);
+}
 function beginTrial(search,settings){
  const {req,R}=search,lab=G.PhysicsLab.fromSnapshot(R,req.snapshot);
- const trial={lab,settings,start:lab.time,steps:0,rails:0,firstHit:false,success:false,invalid:false,contacts:[],closest:Infinity,afterFirstClosest:Infinity,firstClosest:Infinity,length:0,previous:{...lab.get(req.selectedId).body.translation()},maxHeight:0,pending:[],ambiguous:false};
+ const trial={lab,settings,start:lab.time,steps:0,rails:0,firstHit:false,success:false,invalid:false,contacts:[],closest:Infinity,afterFirstClosest:Infinity,firstClosest:Infinity,length:0,previous:{...lab.get(req.selectedId).body.translation()},maxHeight:0,pending:[],ambiguous:false,movingTargetContacts:[],initialTargets:captureTargets(lab,req.selectedId),beforeTargets:captureTargets(lab,req.selectedId)};
  const first=req.options.targetId,second=req.options.secondId,needed=req.options.mode==='three'?3:0;
  lab.onEvent=e=>{
+  if(req.options.allowMovingTargets===false&&e.kind==='contact'&&e.a&&e.b){const other=e.a.id===req.selectedId?e.b:e.b.id===req.selectedId?e.a:null;if(other?.id!=null&&movingTargetContact(trial,other.id))trial.movingTargetContacts.push({id:other.id,time:e.time-trial.start});}
   if(req.options.methodId){
    if(e.kind!=='contact'||!e.a||!e.b)return;
    const other=e.a.id===req.selectedId?e.b:e.b.id===req.selectedId?e.a:null;if(!other)return;
@@ -100,6 +127,7 @@ function beginTrial(search,settings){
 function stepTrial(search,t,budget=240){
  const {req}=search,max=Math.round(req.options.horizon/t.lab.dt),needed=req.options.mode==='three'?3:0;
  for(let i=0;i<budget&&t.steps<max;i++){
+  if(req.options.allowMovingTargets===false)t.beforeTargets=captureTargets(t.lab,req.selectedId);
   t.lab.step();t.steps++;
   if(req.options.methodId&&t.pending.length){
    const pending=t.pending.splice(0).sort((a,b)=>a.time-b.time);
@@ -113,6 +141,7 @@ function stepTrial(search,t,budget=240){
    t.rule=result;t.rails=result.total;t.firstHit=result.firstHit;t.success=result.success;t.invalid=result.invalid;
    if(result.complete){t.hitTime=result.contacts.at(-1).time;t.hitRails=result.total;t.contacts=result.contacts;}
   }
+  if(req.options.allowMovingTargets===false&&t.movingTargetContacts.length)t.invalid=true;
   const cue=t.lab.get(req.selectedId),pos=cue.body.translation();t.length+=len(sub(pos,t.previous));t.previous={...pos};t.maxHeight=Math.max(t.maxHeight,pos.y-cue.radius);
   const a=t.lab.get(req.options.targetId),b=t.lab.get(req.options.secondId),gap=o=>Math.max(0,len(sub(pos,o.body.translation()))-cue.radius-o.radius);
   if(!t.firstHit)t.firstClosest=Math.min(t.firstClosest,gap(a));
@@ -132,7 +161,7 @@ function finishTrial(search,t){
  const cost=o.objective==='gentle'?t.settings.speed:t.length;
  const missing=Math.max(0,(o.mode==='three'?3:0)-t.rails);
  const penalty=success?0:t.invalid?600:t.firstHit?(missing?220+20*missing:100)+25*clearance:450+20*clearance;
- const result={settings:t.settings,success,score:penalty+cost/100,clearance,firstHit:t.firstHit,cushions:t.hitRails??t.rails,distance:t.length,seconds:t.hitTime??(t.lab.time-t.start),contacts:t.contacts.slice(),maxHeight:t.maxHeight,method:o.methodId||null,firstId:o.targetId,secondId:o.secondId,ambiguous:t.ambiguous||false,matchedMethods:success&&o.methodId&&o.mode==='three'?G.LabRouteRules.classify(t.contacts,o.targetId,o.secondId):[]};
+ const result={settings:t.settings,success,score:penalty+cost/100,clearance,firstHit:t.firstHit,cushions:t.hitRails??t.rails,distance:t.length,seconds:t.hitTime??(t.lab.time-t.start),contacts:t.contacts.slice(),maxHeight:t.maxHeight,movingTargetContacts:t.movingTargetContacts.slice(),method:o.methodId||null,firstId:o.targetId,secondId:o.secondId,ambiguous:t.ambiguous||false,matchedMethods:success&&o.methodId&&o.mode==='three'?G.LabRouteRules.classify(t.contacts,o.targetId,o.secondId):[]};
  t.lab.dispose();search.evaluated++;if(success)search.successCount++;search.pool.push(result);search.pool.sort((a,b)=>{if(a.success&&b.success){const primary=o.objective==='gentle'?a.settings.speed-b.settings.speed:a.distance-b.distance;return primary||(o.objective==='gentle'?a.distance-b.distance:a.settings.speed-b.settings.speed);}return a.score-b.score});search.pool=search.pool.slice(0,18);
  if(!success&&(!search.bestMiss||result.score<search.bestMiss.score))search.bestMiss=result;
  return result;
@@ -141,7 +170,9 @@ function advanceSearch(search,budget=240){
  if(search.finished)return true;
  if(!search.active){
   if(search.count>=search.req.options.budget){search.finished=true;return true;}
-  let settings=nextSettings(search);search.count++;
+  const localCount=search.count,partition=search.req.partition;
+  if(partition)search.count=localCount*partition.count+partition.index;
+  let settings;try{settings=constrainSettings(search,nextSettings(search));}finally{search.count=localCount+1;}
   let key=JSON.stringify(settings);if(search.seen.has(key)){settings=normalize({...settings,angle:settings.angle+.023*search.count});key=JSON.stringify(settings);}search.seen.add(key);
   search.active=beginTrial(search,settings);
   if(!search.active)return false;
@@ -152,9 +183,9 @@ function advanceSearch(search,budget=240){
 function progress(search){const fraction=search.active?Math.min(.99,search.active.steps*search.active.lab.dt/search.req.options.horizon):0;return{fraction,activeSeconds:search.active?search.active.steps*search.active.lab.dt:0,nearestGap:search.bestMiss?.firstHit&&search.bestMiss.cushions>=3&&search.bestMiss.score<220?search.bestMiss.clearance:null,tested:search.count-(search.active?1:0),evaluated:search.evaluated,rejected:search.rejected,total:search.req.options.budget,found:search.successCount,elapsedMs:performance.now()-search.started};}
 function finishSearch(search){
  const unique=[];
- for(const r of search.pool.filter(r=>r.success))if(!unique.some(p=>Math.abs(wrap(p.settings.angle-r.settings.angle))<.15&&Math.abs(p.settings.speed-r.settings.speed)<.15&&Math.abs(p.settings.tipX-r.settings.tipX)<.08&&Math.abs(p.settings.tipY-r.settings.tipY)<.08))unique.push({...r,id:unique.length+1});
+ for(const r of search.pool.filter(r=>r.success))if(!unique.some(p=>Math.abs(wrap(p.settings.angle-r.settings.angle))<.15&&Math.abs(p.settings.speed-r.settings.speed)<.15&&Math.abs(p.settings.elevation-r.settings.elevation)<.15&&Math.abs(p.settings.tipX-r.settings.tipX)<.08&&Math.abs(p.settings.tipY-r.settings.tipY)<.08))unique.push({...r,id:unique.length+1});
  return{...progress(search),results:unique.slice(0,3),nearest:unique.length?null:search.bestMiss,options:{...search.req.options},hz:Math.round(1/search.req.snapshot.dt),globalOptimal:false};
 }
 function disposeSearch(search){if(search.active){search.active.lab.dispose();search.active=null;}}
-G.ShotSearchCore={validate,createSearch,advanceSearch,finishSearch,disposeSearch,progress,beginTrial,stepTrial,finishTrial};
+G.ShotSearchCore={validate,constrainSettings,captureTargets,movingTargetContact,createSearch,advanceSearch,finishSearch,disposeSearch,progress,beginTrial,stepTrial,finishTrial};
 })(globalThis);

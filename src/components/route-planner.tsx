@@ -17,11 +17,12 @@ export function RoutePlanner({state:s,controller:c}:{state:any;controller:any}){
  const catalog:Method[]=G.LabRouteRules.catalog
  const balls=s.objects.filter((b:any)=>b.shape==='sphere'&&b.id!==s.selectedId)
  const ids:string[]=o.mode==='direct'?['direct']:o.methods
- const invalid=balls.length<2||o.targetId===o.secondId||!balls.some((b:any)=>b.id===o.targetId)||!balls.some((b:any)=>b.id===o.secondId)||!ids.length
+ const invalidRange=(o.minSpeed??.5)>(o.maxSpeed??4.5)||(o.elevationMode==='search'&&(o.minElevation??0)>(o.maxElevation??30))
+ const invalid=invalidRange||balls.length<2||o.targetId===o.secondId||!balls.some((b:any)=>b.id===o.targetId)||!balls.some((b:any)=>b.id===o.secondId)||!ids.length
  const canSearch=s.ready&&s.canAim&&!busy&&!invalid&&!s.activeStroke
  const method=(id:string)=>G.LabRouteRules.byId.get(id) as Method
  const label=(id:number)=>s.objects.find((b:any)=>b.id===id)?.label||String(id)
- const change=(key:string)=>(e:any)=>c.routeOption(key,['targetId','secondId','budget','horizon'].includes(key)?Number(e.target.value):e.target.value)
+ const change=(key:string)=>(e:any)=>c.routeOption(key,['targetId','secondId','budget','horizon','minSpeed','maxSpeed','minElevation','maxElevation','workers'].includes(key)?Number(e.target.value):e.target.value)
  const value=p?Math.min(100,(p.tested+(p.fraction||0))/Math.max(1,p.total)*100):0
  const nearest=Math.min(...(p?.methods||[]).map((m:any)=>m.nearestGap??Infinity))
  return <Card id="routePlanner" className="route-card">
@@ -36,7 +37,7 @@ export function RoutePlanner({state:s,controller:c}:{state:any;controller:any}){
    </FieldGroup>
    <div className="route-actions">
     {busy?<Button id="cancelRoute" variant="outline" onClick={()=>c.stopSearch()}>중단 · 찾은 경로 유지</Button>:<Button id="findRoute" disabled={!canSearch} onClick={()=>c.startSearch()}><Icon name="crosshair" data-icon="inline-start"/>{result?'다시 계산':'경로 계산'}</Button>}
-    <span className="helper">{invalid?'서로 다른 목적구와 방법을 선택하세요.':!s.canAim&&!busy?'공이 멈춘 뒤 계산합니다.':o.mode==='direct'?'쿠션 없이 두 공 맞히기':o.methods.length===1&&o.methods[0]==='any'?'빠른 3쿠션 탐색':`${ids.length}가지 방법 탐색`}</span>
+    <span className="helper">{invalidRange?'최소값은 최대값보다 클 수 없습니다.':invalid?'서로 다른 목적구와 방법을 선택하세요.':!s.canAim&&!busy?'공이 멈춘 뒤 계산합니다.':o.mode==='direct'?'쿠션 없이 두 공 맞히기':o.methods.length===1&&o.methods[0]==='any'?'빠른 3쿠션 탐색':`${ids.length}가지 방법 탐색`}</span>
    </div>
    {busy&&p?<div className="route-progress" role="status">
     <div className="progress-heading"><strong>{p.found?`성공 후보 ${p.found}개 발견`:'물리 월드에서 계산 중'}</strong><span>{fmt(value,0)}%</span></div>
@@ -50,7 +51,7 @@ export function RoutePlanner({state:s,controller:c}:{state:any;controller:any}){
     {result.partial&&!busy?<p className="helper">중단 전 발견한 검증 완료 후보입니다.</p>:null}
     {result.results.map((r:any,i:number)=><Card key={r.id} size="sm" className="route-result" data-applied={s.routeApplied===r.id}>
      <CardHeader><div className="route-result-header"><CardTitle>{r.method==='any'?(method(r.matchedMethods?.find((m:string)=>m!=='any')||'any')?.short):method(r.method)?.short}</CardTitle><Badge variant="secondary">{r.cushions}쿠션</Badge></div><CardDescription>{label(r.firstId)} → {label(r.secondId)} · {fmt(r.distance)} m</CardDescription></CardHeader>
-     <CardContent><dl className="route-values"><div><dt>조준</dt><dd>{fmt(r.settings.angle,3)}°</dd></div><div><dt>큐 속도</dt><dd>{fmt(r.settings.speed)} m/s</dd></div><div><dt>도달</dt><dd>{fmt(r.seconds)} s</dd></div></dl><p className="route-sequence">{r.contacts.map((e:any)=>e.label.replace('쪽 쿠션',' 쿠션')).join(' → ')}</p></CardContent>
+     <CardContent><dl className="route-values"><div><dt>수평 조준</dt><dd>{fmt(r.settings.angle,3)}°</dd></div><div><dt>수직 들림</dt><dd>{fmt(r.settings.elevation,1)}°</dd></div><div><dt>타점 X / Y</dt><dd>{fmt(r.settings.tipX)} / {fmt(r.settings.tipY)}</dd></div><div><dt>큐 속도</dt><dd>{fmt(r.settings.speed)} m/s</dd></div><div><dt>도달</dt><dd>{fmt(r.seconds)} s</dd></div></dl><p className="route-sequence">{r.contacts.map((e:any)=>e.label.replace('쪽 쿠션',' 쿠션')).join(' → ')}</p></CardContent>
      <CardFooter><Button id={'applyRoute'+r.id} disabled={!['done','searching'].includes(s.routeStatus)} variant={i===0?'default':'outline'} onClick={()=>c.applyRoute(r.id)}>{s.routeApplied===r.id?'적용됨':'경로 보기·적용'}</Button></CardFooter>
     </Card>)}
    </div>:null}
@@ -65,8 +66,15 @@ export function RoutePlanner({state:s,controller:c}:{state:any;controller:any}){
     <Field><FieldLabel htmlFor="routeOrder">맞히는 순서</FieldLabel><SelectField id="routeOrder" aria-label="목적구 순서" value={o.order} onChange={change('order')}><option value="either">양쪽 순서 모두</option><option value="fixed">A → B 고정</option></SelectField></Field>
     <div className="route-form"><Field><FieldLabel htmlFor="routeBudget">방법별 후보</FieldLabel><SelectField id="routeBudget" aria-label="방법별 후보 수" value={o.budget} onChange={change('budget')}><option value={48}>빠르게 · 48</option><option value={128}>표준 · 128</option><option value={320}>넓게 · 320</option></SelectField></Field><Field><FieldLabel htmlFor="routeHorizon">계산 구간</FieldLabel><SelectField id="routeHorizon" aria-label="후보당 계산 시간" value={o.horizon} onChange={change('horizon')}><option value={8}>8초</option><option value={16}>16초</option><option value={30}>30초</option></SelectField></Field></div>
     <Field><FieldLabel htmlFor="routeObjective">추천 기준</FieldLabel><SelectField id="routeObjective" aria-label="추천 기준" value={o.objective} onChange={change('objective')}><option value="shortest">짧은 이동거리</option><option value="gentle">낮은 타격 세기</option></SelectField></Field>
+    <Field><FieldLabel htmlFor="routeWorkers">병렬 워커</FieldLabel><SelectField id="routeWorkers" aria-label="병렬 워커 수" value={o.workers??0} onChange={change('workers')}><option value={0}>자동 · 기기 여유에 맞춤</option>{[1,2,3,4].map(v=><option key={v} value={v}>{v}개까지</option>)}</SelectField></Field>
+    <FieldDescription>기기 코어 수에 따라 제한됩니다. 후보 총수는 유지되지만 워커 수에 따라 적응 탐색 결과가 달라질 수 있으며 전체 CPU 절감을 보장하지 않습니다.{result?.workerCount?` 현재 ${result.workerCount}개 워커.`:''}</FieldDescription>
     <SwitchField id="routeSpin" checked={o.spin} onChange={v=>c.routeOption('spin',v)} label="타점도 함께 탐색"/>
-    <FieldDescription>큐 기울기는 현재 {fmt(s.settings.elevation)}°로 고정합니다. 양쪽 순서를 선택하면 후보를 나눠 계산합니다.</FieldDescription>
+    <SwitchField id="routeMovingTargets" checked={o.allowMovingTargets!==false} onChange={v=>c.routeOption('allowMovingTargets',v)} label="움직이는 목적구에 맞히는 경로 허용"/>
+    <FieldDescription>끄면 충돌 전에 1 mm 이상 이동했거나 1 cm/s 이상 움직이는 공에 의존하는 후보를 제외합니다. 공의 물리 운동은 그대로 계산합니다.</FieldDescription>
+    <Field><FieldLabel htmlFor="routeElevation">수직 큐 들림</FieldLabel><SelectField id="routeElevation" aria-label="수직 큐 들림 탐색" value={o.elevationMode||'fixed'} onChange={change('elevationMode')}><option value="fixed">현재 {fmt(s.settings.elevation,1)}° 고정</option><option value="search">범위 내 함께 탐색</option></SelectField></Field>
+    {o.elevationMode==='search'?<div className="route-form">{[['minElevation','최소 들림'],['maxElevation','최대 들림']].map(([key,title])=><Field key={key}><FieldLabel htmlFor={'route'+key}>{title}</FieldLabel><SelectField id={'route'+key} aria-label={title} value={o[key]??(key==='minElevation'?0:30)} onChange={change(key)}>{[0,5,10,15,20,30,45,60,80].map(v=><option key={v} value={v}>{v}°</option>)}</SelectField></Field>)}</div>:null}
+    <div className="route-form">{[['minSpeed','최소 큐 속도'],['maxSpeed','최대 큐 속도']].map(([key,title])=><Field key={key}><FieldLabel htmlFor={'route'+key}>{title}</FieldLabel><SelectField id={'route'+key} aria-label={title} value={o[key]??(key==='minSpeed'?.5:4.5)} onChange={change(key)}>{[.5,1,1.5,2,2.5,3,3.5,4,4.5].map(v=><option key={v} value={v}>{v} m/s</option>)}</SelectField></Field>)}</div>
+    <FieldDescription>양쪽 순서는 후보를 나눠 계산합니다. 들림·타점 탐색을 늘리면 같은 후보 수로 찾을 확률이 낮아질 수 있습니다. 타점은 반지름 비율입니다.</FieldDescription>
    </FieldGroup></InspectorSection>
    {(p?.methods?.length||0)>1?<InspectorSection title="방법별 진행"><div className="method-status">{p.methods.map((m:any)=><div key={m.id}><span>{method(m.id)?.short}</span><span>{m.tested}/{m.total}</span><Badge variant="outline">{m.found?`${m.found}개`:'탐색'}</Badge></div>)}</div></InspectorSection>:null}
   </CardContent>

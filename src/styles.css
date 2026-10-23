@@ -181,3 +181,10 @@ button,input{-webkit-tap-highlight-color:transparent}button:disabled{cursor:not-
  .toolbox{min-height:250px;height:auto;overflow:visible}
  .panel-scroll{overflow:visible;flex:none}
 }
+
+.game-score{border:1px solid var(--border);border-radius:8px;padding:12px;margin-block:12px}.score-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}.game-score p{margin-block:6px}
+@media(pointer:coarse){button,[role=tab],[role=combobox]{min-height:44px}.angle-nudges{gap:6px}.angle-nudges button{flex:1}.panel-scroll{touch-action:pan-y}.tip-disc{touch-action:none}}
+@media(max-width:900px) and (orientation:landscape) and (max-height:600px){.app-shell{padding:0 8px 6px;gap:4px;height:100dvh;overflow:hidden}.app-header{flex:0 0 38px;min-height:38px}.workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(250px,36%);grid-template-rows:minmax(0,1fr);gap:8px;min-height:0;flex:1}.stage-region{height:auto;min-height:0}.toolbox{height:auto;min-height:0;overflow:hidden}.panel-scroll{overflow-y:auto;min-height:0;flex:1}.stage-content,.viewport{min-height:70px}.stage-bottom{display:none}.stage-header{padding:3px 6px!important}.stage-footer{padding:4px 6px!important}.forecast-status{display:none}}
+/* The application owns one fixed viewport; only its inspector scrolls. */
+html,body,#app{height:100%;overflow:hidden}
+@media(max-height:450px) and (max-width:639px) and (orientation:portrait){html,body,#app{height:auto;overflow:auto}}

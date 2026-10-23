@@ -47,7 +47,7 @@ function collectResults(s){
  const compare=s.req.options.objective==='gentle'?(a,b)=>a.settings.speed-b.settings.speed||a.distance-b.distance:(a,b)=>a.distance-b.distance||a.settings.speed-b.settings.speed;
  const all=s.groups.flatMap(g=>Core.finishSearch(g).results.map(r=>({...r,method:g.method,methodLabel:Rules.byId.get(g.method).label}))).sort(compare),selected=[];
  // Reserve up to two actual successes per selected method, not merely global top-three.
- for(const id of s.methods){const unique=[];for(const r of all.filter(r=>r.method===id))if(!unique.some(p=>p.firstId===r.firstId&&Math.abs(p.settings.angle-r.settings.angle)<.1&&Math.abs(p.settings.speed-r.settings.speed)<.12&&Math.abs(p.settings.tipX-r.settings.tipX)<.05&&Math.abs(p.settings.tipY-r.settings.tipY)<.05))unique.push(r);selected.push(...unique.slice(0,2));}
+ for(const id of s.methods){const unique=[];for(const r of all.filter(r=>r.method===id))if(!unique.some(p=>p.firstId===r.firstId&&Math.abs(p.settings.angle-r.settings.angle)<.1&&Math.abs(p.settings.speed-r.settings.speed)<.12&&Math.abs(p.settings.elevation-r.settings.elevation)<.15&&Math.abs(p.settings.tipX-r.settings.tipX)<.05&&Math.abs(p.settings.tipY-r.settings.tipY)<.05))unique.push(r);selected.push(...unique.slice(0,2));}
  selected.sort(compare);selected.forEach((r,i)=>r.id=i+1);
  return{...progress(s),results:selected,nearest:null,options:{...s.req.options},hz:Math.round(1/s.req.snapshot.dt),globalOptimal:false};
 }

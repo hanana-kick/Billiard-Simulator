@@ -30,7 +30,7 @@ class LabRenderer{
    void main(){vec3 color=uColor;vec3 n=normalize(vNormal),l=normalize(vec3(3.,6.,4.));
     if(uMaterial>0.5&&uMaterial<1.5){float grain=sin(vWorld.x*1800.)*sin(vWorld.z*1700.);color*=1.+grain*.025;}
     if(uMaterial>1.5&&uMaterial<2.5){float m=max(abs(vLocal.x),max(abs(vLocal.y),abs(vLocal.z)));if(m>.983){color=mix(vec3(.93,.96,.88),vec3(.66,.23,.18),step(.70,uColor.b));}}
-    if(uMaterial>2.5&&uMaterial<3.5){vec2 grid=abs(fract(vWorld.xz*.5+.5)-.5);float line=1.-smoothstep(.003,.008,min(grid.x,grid.y));color=mix(color,color*1.16,line);}
+    if(uMaterial>4.5&&uMaterial<5.5){float grain=sin((vWorld.x+vWorld.z)*160.+sin(vWorld.y*200.)*.6);color*=1.+grain*.035;}\n    if(uMaterial>2.5&&uMaterial<3.5){vec2 grid=abs(fract(vWorld.xz*.5+.5)-.5);float line=1.-smoothstep(.003,.008,min(grid.x,grid.y));color=mix(color,color*1.16,line);}
     float d=max(dot(n,l),0.);float sh=shadow();vec3 v=normalize(uEye-vWorld),h=normalize(l+v);float glossy=uMaterial>1.5&&uMaterial<2.5?90.:40.;float spec=pow(max(dot(n,h),0.),glossy)*(uMaterial>1.5&&uMaterial<2.5?.45:.10)*sh;
     vec3 lit=color*(.48+.65*d*sh)+vec3(spec);lit+=uSelected*.035;frag=vec4(pow(max(lit,vec3(0.)),vec3(.88)),1.);
    }`);
@@ -52,9 +52,15 @@ class LabRenderer{
  makeBox(){const v=[],p=[V(-1,-1,-1),V(1,-1,-1),V(1,1,-1),V(-1,1,-1),V(-1,-1,1),V(1,-1,1),V(1,1,1),V(-1,1,1)];for(const f of [[0,3,2,1],[4,5,6,7],[0,4,7,3],[1,2,6,5],[3,7,6,2],[0,1,5,4]]){this.triangle(v,p[f[0]],p[f[1]],p[f[2]]);this.triangle(v,p[f[0]],p[f[2]],p[f[3]]);}return this.mesh(v);}
  makeSphere(slices,stacks){const out=[],p=(i,j)=>V(Math.sin(Math.PI*j/stacks)*Math.cos(2*Math.PI*i/slices),Math.cos(Math.PI*j/stacks),Math.sin(Math.PI*j/stacks)*Math.sin(2*Math.PI*i/slices));for(let i=0;i<slices;i++)for(let j=0;j<stacks;j++){const a=p(i,j),b=p(i+1,j),c=p(i+1,j+1),d=p(i,j+1);for(const q of [a,c,b,a,d,c])out.push(q.x,q.y,q.z,q.x,q.y,q.z);}return this.mesh(out);}
  makeCylinder(rTop=1,rBottom=1,steps=24){const out=[];for(let i=0;i<steps;i++){const a=i/steps*2*Math.PI,b=(i+1)/steps*2*Math.PI,p=V(rBottom*Math.cos(a),-.5,rBottom*Math.sin(a)),q=V(rBottom*Math.cos(b),-.5,rBottom*Math.sin(b)),r=V(rTop*Math.cos(b),.5,rTop*Math.sin(b)),s=V(rTop*Math.cos(a),.5,rTop*Math.sin(a));this.triangle(out,p,s,r);this.triangle(out,p,r,q);this.triangle(out,V(0,.5,0),r,s,V(0,1,0));this.triangle(out,V(0,-.5,0),p,q,V(0,-1,0));}return this.mesh(out);}
+ convexMesh(o){
+  if(this.staticCache.has(o))return this.staticCache.get(o);
+  const out=[],vertices=o.vertices,indices=o.indices;
+  for(let i=0;i<indices.length;i+=3){const p=indices.slice(i,i+3).map(index=>V(...vertices.slice(index*3,index*3+3)));this.triangle(out,...p);}
+  const mesh=this.mesh(out);this.staticCache.set(o,mesh);return mesh;
+ }
  cushionMesh(o){if(this.staticCache.has(o))return this.staticCache.get(o);const p=[];for(let i=0;i<8;i++)p.push(V(...o.vertices.slice(i*3,i*3+3)));const out=[];for(const f of [[0,3,2,1],[4,5,6,7],[0,1,5,4],[1,2,6,5],[2,3,7,6],[3,0,4,7]]){this.triangle(out,p[f[0]],p[f[1]],p[f[2]]);this.triangle(out,p[f[0]],p[f[2]],p[f[3]]);}const mesh=this.mesh(out);this.staticCache.set(o,mesh);return mesh;}
  size(){
-  const r=this.canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);if(r.width<1||r.height<1)return;
+  const r=this.viewportSize||this.canvas.getBoundingClientRect(),dpr=Math.min(this.viewportSize?.dpr||globalThis.devicePixelRatio||1,2);if(r.width<1||r.height<1)return;
   const w=Math.round(r.width*dpr),h=Math.round(r.height*dpr);if(this.canvas.width!==w||this.canvas.height!==h){this.canvas.width=w;this.canvas.height=h;}
   this.width=r.width;this.height=r.height;this.aspect=r.width/r.height;
   const c=this.camera,sp=Math.sin(c.pitch),cp=Math.cos(c.pitch);this.tanHalf=Math.tan(38*Math.PI/360);
@@ -92,7 +98,7 @@ class LabRenderer{
  lines(points,color,strip=false,alpha=1){if(points.length<6)return;const gl=this.gl,u=this.locations.get(this.line);gl.useProgram(this.line);gl.uniformMatrix4fv(u.uVP,false,this.vp);const c=typeof color==='string'?hex(color):color;gl.uniform4f(u.uColor,c[0],c[1],c[2],alpha);gl.bindVertexArray(this.lineVAO);gl.bindBuffer(gl.ARRAY_BUFFER,this.lineBuffer);gl.bufferData(gl.ARRAY_BUFFER,points instanceof Float32Array?points:new Float32Array(points),gl.DYNAMIC_DRAW);gl.drawArrays(strip?gl.LINE_STRIP:gl.LINES,0,points.length/3);}
  render(lab,state){
   this.size();const gl=this.gl,cmds=[];
-  for(const o of lab.statics){const material=o.kind==='cloth'?1:o.kind==='floor'?3:0;cmds.push(this.command(o.shape==='cushion'?this.cushionMesh(o):this.box,o.body.translation(),o.body.rotation(),o.half||V(1,1,1),o.color,material));}
+  for(const o of lab.statics){const material=o.kind==='cloth'?1:o.kind==='floor'?3:o.kind==='wood'?5:0;cmds.push(this.command(o.shape==='convex'?this.convexMesh(o):o.shape==='cushion'?this.cushionMesh(o):this.box,o.body.translation(),o.body.rotation(),o.half||V(1,1,1),o.color,material));}
   for(const o of lab.objects){cmds.push(this.command(o.shape==='sphere'?this.sphere:this.box,o.body.translation(),o.body.rotation(),o.shape==='sphere'?V(o.radius,o.radius,o.radius):o.half,o.color,o.shape==='sphere'?2:0,o.id===state.selectedId?1:0));}
   // Small inlays are visual decorations, not additional collision surfaces.
   for(let i=1;i<8;i++)for(const z of [-D.depth/2-.11,D.depth/2+.11])cmds.push(this.command(this.sphere,V(-D.width/2+D.width*i/8,.071,z),qident(),V(.006,.001,.006),'#e4d4a5'));
@@ -109,7 +115,7 @@ class LabRenderer{
   if(preview&&!state.forecast){const start=selected.body.translation(),flat=norm(V(preview.direction.x,0,preview.direction.z));const points=[];for(let i=1;i<10;i++){const a=add(start,mul(flat,.075*i)),b=add(start,mul(flat,.075*i+.038));points.push(a.x,a.y,a.z,b.x,b.y,b.z);}this.lines(points,'#bde5c1',false,.6);}
   if(state.debug){const data=lab.world.debugRender();this.lines(data.vertices,'#8ccbe0',false,.8);}
   if(state.vectors)for(const o of lab.objects){const p=o.body.translation(),end=add(p,mul(o.body.linvel(),.14));this.lines([p.x,p.y,p.z,end.x,end.y,end.z],'#a7f3d0',false,1);}
-  gl.depthMask(true);gl.disable(gl.BLEND);
+  gl.depthMask(true);gl.disable(gl.BLEND);this.completedFrames=(this.completedFrames||0)+1;
  }
  setView(name){const c=this.camera;c.zoom=1;c.target=V(-.12,-.035,0);if(name==='top'){c.projection='orthographic';c.yaw=0;c.pitch=Math.PI/2-.0001;}else if(name==='side'){c.projection='perspective';c.yaw=0;c.pitch=.28;}else{c.projection='perspective';c.yaw=.12;c.pitch=.86;}this.size();}
 }

@@ -39,7 +39,7 @@ class SoftwareRenderer{
  worldLine(points,color,strip=false,alpha=1){const ctx=this.ctx;ctx.strokeStyle=color;ctx.globalAlpha=alpha;ctx.lineWidth=1.3;ctx.beginPath();for(let i=0;i<points.length;i+=3){const p=this.project(V(points[i],points[i+1],points[i+2]));if(i===0||(!strip&&(i/3)%2===0))ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);}ctx.stroke();ctx.globalAlpha=1;}
  render(lab,state){
   this.prepare();const cmds=[];
-  for(const o of lab.statics)cmds.push(this.command(o.shape==='cushion'?this.cushionMesh(o):this.box,o.body.translation(),o.body.rotation(),o.half||V(1,1,1),o.color,o.kind==='cloth'?1:o.kind==='floor'?3:0));
+  for(const o of lab.statics)cmds.push(this.command(o.shape==='convex'?this.convexMesh(o):o.shape==='cushion'?this.cushionMesh(o):this.box,o.body.translation(),o.body.rotation(),o.half||V(1,1,1),o.color,o.kind==='cloth'?1:o.kind==='floor'?3:0));
   for(const o of lab.objects)cmds.push(this.command(o.shape==='sphere'?this.sphere:this.box,o.body.translation(),o.body.rotation(),o.shape==='sphere'?V(o.radius,o.radius,o.radius):o.half,o.color,o.shape==='sphere'?2:0));
   for(let i=1;i<8;i++)for(const z of [-D.depth/2-.11,D.depth/2+.11])cmds.push(this.command(this.sphere,V(-D.width/2+D.width*i/8,.071,z),qident(),V(.006,.001,.006),'#e4d4a5'));
   for(let i=1;i<4;i++)for(const x of [-D.width/2-.11,D.width/2+.11])cmds.push(this.command(this.sphere,V(x,.071,-D.depth/2+D.depth*i/4),qident(),V(.006,.001,.006),'#e4d4a5'));
@@ -55,9 +55,10 @@ class SoftwareRenderer{
   if(o){const p=o.body.translation(),r=(o.radius||.045)+.012,arr=[];for(let i=0;i<=64;i++){const t=i/64*Math.PI*2;arr.push(p.x+r*Math.cos(t),p.y-(o.radius||o.half.y)+.002,p.z+r*Math.sin(t));}this.worldLine(arr,'#a7f3d0',true,.85);}
   if(preview&&!state.forecast){const p=o.body.translation(),flat=norm(V(preview.direction.x,0,preview.direction.z)),arr=[];for(let i=1;i<10;i++){const a=add(p,mul(flat,.075*i)),b=add(p,mul(flat,.075*i+.038));arr.push(a.x,a.y,a.z,b.x,b.y,b.z);}this.worldLine(arr,'#bde5c1',false,.5);}
   if(state.debug){const d=lab.world.debugRender();this.worldLine(Array.from(d.vertices),'#8ccbe0',false,.65);}
+  this.completedFrames=(this.completedFrames||0)+1;
   if(state.vectors)for(const body of lab.objects){const p=body.body.translation(),q=add(p,mul(body.body.linvel(),.14));this.worldLine([p.x,p.y,p.z,q.x,q.y,q.z],'#a7f3d0',false,1);}
  }
 }
-for(const m of ['triangle','makeSphere','makeBox','makeCylinder','cushionMesh','size','project','ray','planePoint','pick','setView','cueCommands'])SoftwareRenderer.prototype[m]=G.LabRenderer.prototype[m];
+for(const m of ['triangle','makeSphere','makeBox','makeCylinder','cushionMesh','convexMesh','size','project','ray','planePoint','pick','setView','cueCommands'])SoftwareRenderer.prototype[m]=G.LabRenderer.prototype[m];
 G.SoftwareRenderer=SoftwareRenderer;
 })(globalThis);

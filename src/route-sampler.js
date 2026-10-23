@@ -32,6 +32,21 @@ function matches(method,rails){
  if(method==='direct')return rails.length===0;
  return rails.length>=3;
 }
+// Inverse stun geometry: solve the contact point rather than aiming at the
+// object centre. Iteration accounts for the outgoing ray starting one diameter
+// away from that centre. Cloth/spin/throw still require forward simulation.
+function tangentContact(origin,target,destination,radius,sign){
+ let ghost={x:target.x,z:target.z},normal,desired;
+ for(let i=0;i<12;i++){
+  desired=norm(destination.x-ghost.x,destination.z-ghost.z);
+  normal={x:-desired.z*sign,z:desired.x*sign};
+  ghost={x:target.x+normal.x*radius,z:target.z+normal.z*radius};
+ }
+ desired=norm(destination.x-ghost.x,destination.z-ghost.z);
+ const vin=norm(ghost.x-origin.x,ghost.z-origin.z),dot=vin.x*normal.x+vin.z*normal.z;
+ if(dot>=-.01||((vin.x-dot*normal.x)*desired.x+(vin.z-dot*normal.z)*desired.z)<.02)return null;
+ return{ghost,normal,desired,angle:Math.atan2(ghost.z-origin.z,ghost.x-origin.x)*180/Math.PI};
+}
 function proposals(req){
  const cue=req.snapshot.objects.find(o=>o.id===req.selectedId),a=req.snapshot.objects.find(o=>o.id===req.options.targetId),b=req.snapshot.objects.find(o=>o.id===req.options.secondId),method=req.options.methodId;
  const p=cue.pos,t=a.pos,r=cue.radius,collisionRadius=r+a.radius,direct=Math.atan2(t.z-p.z,t.x-p.x)*180/Math.PI;
@@ -62,6 +77,8 @@ function proposals(req){
     const normal={x:-desired.z*sign,z:desired.x*sign},ghost={x:t.x+normal.x*collisionRadius,z:t.z+normal.z*collisionRadius},vin=norm(ghost.x-p.x,ghost.z-p.z),dot=vin.x*normal.x+vin.z*normal.z;
     if(dot>=-.01||((vin.x-dot*normal.x)*desired.x+(vin.z-dot*normal.z)*desired.z)<.02)continue;
     add(Math.atan2(ghost.z-p.z,ghost.x-p.x)*180/Math.PI,im.distance+Math.hypot(ghost.x-p.x,ghost.z-p.z),spread*.25);
+    const refined=tangentContact(p,t,im.q,collisionRadius,sign);
+    if(refined)add(refined.angle,im.distance+Math.hypot(refined.ghost.x-p.x,refined.ghost.z-p.z),spread*.15,'inverse-contact');
    }
   }
   // Physical collision responses differ from tangent geometry; also explore the full cut interval.
@@ -84,7 +101,8 @@ function next(search,normalize){
   const moves=[['angle',-.025],['angle',.025],['angle',-.06],['angle',.06],['speed',.12],['speed',-.12],['angle',-.12],['angle',.12],['tipX',-.035],['tipX',.035],['tipY',-.04],['tipY',.04]];
   if(k<moves.length){used.set(key,k+1);let [axis,delta]=moves[k];if(!o.spin&&axis.startsWith('tip')){axis='angle';delta*=.2;}return normalize({...near.settings,[axis]:near.settings[axis]+delta});}
  }
- const k=search.explorations||0;search.explorations=k+1;
+ const localExplorations=search.explorations||0;search.explorations=localExplorations+1;
+ const k=req.partition?localExplorations*req.partition.count+req.partition.index:localExplorations;
  const p=search.refs.cue.pos,t=search.refs.first.pos;
  const angle=Math.atan2(t.z-p.z,t.x-p.x)*180/Math.PI;
  const spread=Math.asin(Math.min(.95,(search.refs.cue.radius+search.refs.first.radius)/Math.hypot(t.x-p.x,t.z-p.z)))*180/Math.PI;
@@ -102,5 +120,5 @@ function next(search,normalize){
   tipX:o.spin&&j>5?(halton(j+1,7)*2-1)*.45:0,
   tipY:o.spin?(three&&j<6?.15:shifts[(cycle+Math.floor(j/4))%shifts.length]):0});
 }
-G.LabRouteSampler={images,proposals,next};
+G.LabRouteSampler={images,tangentContact,proposals,next};
 })(globalThis);

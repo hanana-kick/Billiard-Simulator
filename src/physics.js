@@ -59,17 +59,21 @@ class PhysicsLab{
   this.fixedBox(V(0,-.05,0),V(w,.05,h),'cloth','#187365','테이블 천');
   this.fixedBox(V(0,-.145,0),V(w+.16,.045,h+.16),'wood','#273737','테이블 프레임');
   this.fixedBox(V(0,-.24,0),V(w+.10,.05,h+.10),'wood','#152627','테이블 하부');
-  this.fixedBox(V(w+.11,.016,0),V(.055,.052,h+.16),'wood','#715743','오른쪽 레일');
-  this.fixedBox(V(-w-.11,.016,0),V(.055,.052,h+.16),'wood','#715743','왼쪽 레일');
-  this.fixedBox(V(0,.016,h+.11),V(w+.055,.052,.055),'wood','#715743','앞쪽 레일');
-  this.fixedBox(V(0,.016,-h-.11),V(w+.055,.052,.055),'wood','#715743','뒤쪽 레일');
-  const sides=[['오른쪽 쿠션',h,(u,v)=>V(w+u,v[1],v[0])],['왼쪽 쿠션',h,(u,v)=>V(-w-u,v[1],v[0])],['앞쪽 쿠션',w,(u,v)=>V(v[0],v[1],h+u)],['뒤쪽 쿠션',w,(u,v)=>V(v[0],v[1],-h-u)]];
-  const section=[[0,.0399],[.057,.009],[.057,.061],[.014,.061]];
-  for(const [label,half,convert] of sides){
-   const verts=[];for(const end of [-half,half])for(const [u,y] of section){const p=convert(u,[end,y]);verts.push(p.x,p.y,p.z);}
-   const desc=this.R.ColliderDesc.convexHull(new Float32Array(verts));if(!desc)throw new Error('쿠션 형상 생성 실패');
-   const body=this.world.createRigidBody(this.R.RigidBodyDesc.fixed());const collider=this.world.createCollider(this.material(desc,'cushion'),body);
-   const o={body,collider,shape:'cushion',vertices:verts,kind:'cushion',color:'#1b8a73',label};this.statics.push(o);this.byCollider.set(collider.handle,o);
+  // Continuous mitred rails, with a rounded-over crown rather than four
+  // disconnected blocks. The rendered triangles come from this exact hull.
+  // All profiles are in metres; the cushion nose remains at the playfield edge.
+  const sides=[['오른쪽',h,(u,y,end)=>V(w+u,y,end)],['왼쪽',h,(u,y,end)=>V(-w-u,y,end)],['앞쪽',w,(u,y,end)=>V(end,y,h+u)],['뒤쪽',w,(u,y,end)=>V(end,y,-h-u)]];
+  const railSection=[[.055,-.036],[.157,-.036],[.165,-.028],[.165,.052],[.1638,.0581],[.1603,.0633],[.1551,.0668],[.149,.068],[.063,.068],[.0573,.0657],[.055,.060]];
+  const cushionSection=[[0,.0399],[.057,.009],[.057,.061],[.014,.061]];
+  for(const [side,half,convert] of sides){
+   for(const [kind,color,section,suffix] of [['wood','#715743',railSection,'레일'],['cushion','#1b8a73',cushionSection,'쿠션']]){
+    const verts=[];for(const sign of [-1,1])for(const [u,y] of section){const p=convert(u,y,sign*(half+u));verts.push(p.x,p.y,p.z);}
+    const desc=this.R.ColliderDesc.convexHull(new Float32Array(verts));if(!desc)throw new Error('레일 형상 생성 실패');
+    const body=this.world.createRigidBody(this.R.RigidBodyDesc.fixed());const collider=this.world.createCollider(this.material(desc,kind),body);
+    // Use Rapier's own hull tessellation: one source for collision and drawing.
+    const o={body,collider,shape:'convex',vertices:Array.from(collider.vertices()),indices:Array.from(collider.indices()),kind,color,label:side+' '+suffix};
+    this.statics.push(o);this.byCollider.set(collider.handle,o);
+   }
   }
   for(const x of [-1.05,1.05])for(const z of [-.48,.48])this.fixedBox(V(x,-.53,z),V(.095,.25,.095),'wood','#253132','테이블 다리');
   this.fixedBox(V(0,-.88,0),V(5,.10,4),'floor','#182427','바닥');

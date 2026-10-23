@@ -69,7 +69,7 @@ function HelpDialog({open,onOpenChange}:{open:boolean;onOpenChange:(value:boolea
  return <Dialog open={open} onOpenChange={onOpenChange}><DialogContent className="help-dialog"><DialogHeader><DialogTitle>큐를 직접 움직이세요</DialogTitle><DialogDescription>큐 조작, 경로 탐색, 물리 모델 안내</DialogDescription></DialogHeader><dl><dt>조준</dt><dd>큐 뒤쪽이나 뒤쪽의 ‘조준’ 손잡이를 잡고 돌립니다.</dd><dt>당겨치기</dt><dd>공에 가까운 ‘당기기’ 손잡이를 큐 축 방향으로 뒤로 당겼다가 놓습니다. 많이 당길수록 강하게 칩니다.</dd><dt>기울기</dt><dd>옆면 확대창에서 큐를 드래그합니다. PC에서는 Shift를 누르고 몸통을 위아래로 움직입니다. Alt를 함께 누르면 감도가 1/20로 줄어듭니다. 모바일에서는 ‘미세’를 켜서 감도를 낮춥니다. 숫자 입력과 ±0.01° 버튼도 사용할 수 있습니다.</dd><dt>공 배치</dt><dd>장면 아래에서 ‘공 배치’를 선택한 뒤 공을 드래그합니다. 큐 조작 모드에서는 공을 눌러도 위치가 바뀌지 않습니다.</dd><dt>시점</dt><dd>우클릭 드래그 또는 ‘시점’ 모드로 회전합니다. 휠 또는 두 손가락 벌리기로 확대하고 화면 맞춤으로 복원합니다. 두 손가락을 대면 진행 중인 당기기는 취소됩니다.</dd><dt>취소</dt><dd>당기는 도중 ‘당기기 취소’ 또는 Esc를 누릅니다. 터치 취소·화면 이탈 시에도 발사하지 않습니다. 큐가 화면 밖에 있으면 아래 ‘밀어서 조준’을 사용하세요.</dd><dt>타격 후</dt><dd>팁이 공에서 떨어지면 물리 큐를 회수합니다. 공이 움직이는 동안 조준 큐와 손잡이는 나타나지 않으며, 일시정지해도 움직임이 남아 있으면 대기합니다.</dd></dl><Separator/><p>Rapier 3D, 기본 960 Hz. 큐 접촉 구간은 61,440 Hz로 세분화합니다. 팁은 3D 탄성·마찰 접촉, 큐 끝은 12 g 유효 질량과 횡방향 탄성 연결로 근사합니다. 공의 속도·회전을 지정하지 않습니다. 예상 궤적도 같은 모델로 계산합니다.</p><p className="muted-caption">강체 근사 모델이며 실제 장비로 보정한 정밀 예측기는 아닙니다. 큐의 휨과 팁 탄성은 집중정수 근사이며 실측 보정하지 않았습니다. 천·쿠션의 세부 변형은 미모델링입니다. 원근 투영은 화면 표현만 변경합니다.</p><DialogFooter><DialogClose render={<Button />}>닫기</DialogClose></DialogFooter></DialogContent></Dialog>
 }
 function App(){
- const s=React.useSyncExternalStore(controller.subscribe,controller.snapshot)
+ const s:any=React.useSyncExternalStore(controller.subscribe,controller.snapshot)
  const scene=React.useRef<HTMLCanvasElement>(null),side=React.useRef<HTMLCanvasElement>(null)
  const aim=React.useRef<HTMLButtonElement>(null),grip=React.useRef<HTMLButtonElement>(null),panelScroll=React.useRef<HTMLDivElement>(null)
  const [helpOpen,setHelpOpen]=React.useState(false),sideHeld=React.useRef(false)
@@ -168,8 +168,10 @@ function App(){
     </TabsList></div>
     <div className="panel-scroll" id="panelScroll" ref={panelScroll}>
      <TabsContent value="shot" keepMounted id="shotPanel" className="tool-panel" aria-label="타격 설정">
+      <Field><FieldLabel htmlFor="gameMode">게임 모드</FieldLabel><SelectField id="gameMode" aria-label="게임 모드" value={s.gameMode} onChange={(e:any)=>controller.setGameMode(e.target.value)}><option value="free">자유 실험 · 3구 배치</option><option value="four">한국 4구 · 연습 규칙</option></SelectField><FieldDescription>모드를 변경하면 배치와 점수가 초기화됩니다.</FieldDescription></Field>
+      {s.game?<section className="game-score" aria-label="4구 점수"><div className="score-row"><strong>흰 수구 {s.game.scores[s.game.cueIds[0]]}</strong><strong>노란 수구 {s.game.scores[s.game.cueIds[1]]}</strong></div><p role="status">{s.game.pending?'타격 판정 중':s.game.lastResult}</p><p className="helper">두 적구 +1 · 상대 수구 접촉/수구 장외 −1 · 실패 시 교대. 음수 허용, 종료 점수 없는 연습입니다. 수구는 직접 바꿀 수 있습니다. 규격은 기존 캐롬 실험 설정을 유지합니다.</p></section>:null}
       <div className="section-heading"><h2>타격할 공</h2><span>{selected?.label}</span></div>
-      <OptionGroup id="ballChoices" label="선택 물체" value={String(s.selectedId)} onChange={id=>controller.select(Number(id))} options={s.objects.map((o:any)=>({value:String(o.id),label:<><i className="ball-dot" style={{background:o.color}}/>{o.label}</>}))}/>
+      <OptionGroup id="ballChoices" label="선택 물체" value={String(s.selectedId)} onChange={id=>controller.select(Number(id))} options={s.objects.filter((o:any)=>!s.game||s.game.cueIds.includes(o.id)).map((o:any)=>({value:String(o.id),label:<><i className="ball-dot" style={{background:o.color}}/>{o.label}</>}))}/>
       <TipSelector state={s}/><Separator/>
       <PrecisionControls state={s}/>
       <canvas ref={side} id="sideView" className="side-view" tabIndex={0} role="slider" aria-label="큐 옆면. 드래그로 기울기 조절" aria-valuemin={0} aria-valuemax={80} aria-valuenow={s.settings.elevation}

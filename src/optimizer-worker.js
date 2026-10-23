@@ -17,5 +17,5 @@ self.onmessage=async({data})=>{
   }
   const result=LabOptimizer.finishSearch(search);search=null;
   if(id===activeId)self.postMessage({requestId:id,result});
- }catch(e){if(search)LabOptimizer.disposeSearch(search);if(id===activeId)self.postMessage({requestId:id,error:e.message||String(e)});}
+ }catch(e){if(search){try{LabOptimizer.disposeSearch(search);}catch{ /* Preserve the originating error if WASM cleanup also fails. */ }}if(id===activeId)self.postMessage({requestId:id,error:e.message||String(e),errorStack:e.stack});}
 };
