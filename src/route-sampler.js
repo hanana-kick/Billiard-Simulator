@@ -47,7 +47,98 @@ function tangentContact(origin,target,destination,radius,sign){
  if(dot>=-.01||((vin.x-dot*normal.x)*desired.x+(vin.z-dot*normal.z)*desired.z)<.02)return null;
  return{ghost,normal,desired,angle:Math.atan2(ghost.z-origin.z,ghost.x-origin.x)*180/Math.PI};
 }
+// Two closed-form ideal stun solutions. Exact only for equal masses,
+// elastic frictionless ball contact and specular rails; real-world replay is
+// mandatory. This is the primary geometric inverse, not an angular grid scan.
+function closedFormContacts(origin,target,goal,radius,pre,post,cueRadius){
+ const hx=D.width/2-cueRadius,hz=D.depth/2-cueRadius;
+ const q={x:2*hx*post.ix+(Math.abs(post.ix)%2?-goal.x:goal.x),z:2*hz*post.iz+(Math.abs(post.iz)%2?-goal.z:goal.z)};
+ const w={x:q.x-target.x,z:q.z-target.z},L=Math.hypot(w.x,w.z);if(L<radius||L<1e-12)return[];
+ const roots=[],t=Math.sqrt(Math.max(0,1-radius*radius/(L*L)))/L;
+ for(const sign of [-1,1]){
+  const n={x:-radius*w.x/(L*L)-sign*t*w.z,z:-radius*w.z/(L*L)+sign*t*w.x},g={x:target.x-radius*n.x,z:target.z-radius*n.z};
+  const u={x:2*hx*pre.ix+(Math.abs(pre.ix)%2?-g.x:g.x),z:2*hz*pre.iz+(Math.abs(pre.iz)%2?-g.z:g.z)},ray=norm(u.x-origin.x,u.z-origin.z),d={x:ray.x*(Math.abs(pre.ix)%2?-1:1),z:ray.z*(Math.abs(pre.iz)%2?-1:1)},dot=d.x*n.x+d.z*n.z;
+  const v={x:d.x-dot*n.x,z:d.z-dot*n.z},out=norm(q.x-g.x,q.z-g.z);if(dot<=1e-6||v.x*out.x+v.z*out.z<=1e-6)continue;
+  const before=images(origin,g,cueRadius,Math.max(1,pre.order)).find(x=>x.ix===pre.ix&&x.iz===pre.iz),after=images(g,goal,cueRadius,Math.max(1,post.order)).find(x=>x.ix===post.ix&&x.iz===post.iz);
+  if(!before||!after||before.rails.join()!==pre.rails.join()||after.rails.join()!==post.rails.join())continue;
+  roots.push({g,angle:Math.atan2(ray.z,ray.x)*180/Math.PI,distance:Math.hypot(u.x-origin.x,u.z-origin.z)+Math.hypot(q.x-g.x,q.z-g.z),residual:Math.abs(v.x*out.z-v.z*out.x),source:'closed-form-stun',residualModel:'equal-mass-elastic-frictionless',prefix:pre.order,suffix:post.order,spread:.15});
+ }
+ return roots;
+}
+// Solve F(phi)=cross(v_out, reflectedGoal-contactPoint)=0 for an
+// ideal impact. Restitution/mass are included; spin/cloth remain forward-model
+// corrections. Bracketed roots are certified only within their brackets.
+function inverseRoots(origin,target,goal,radius,pre,post,cueRadius,kappa=1){
+ const hx=D.width/2-cueRadius,hz=D.depth/2-cueRadius;
+ const evaluate=phi=>{
+  const n={x:Math.cos(phi),z:Math.sin(phi)},g={x:target.x-radius*n.x,z:target.z-radius*n.z};
+  const unfolded={x:2*hx*pre.ix+(Math.abs(pre.ix)%2?-g.x:g.x),z:2*hz*pre.iz+(Math.abs(pre.iz)%2?-g.z:g.z)};
+  const ray=norm(unfolded.x-origin.x,unfolded.z-origin.z),d={x:ray.x*(Math.abs(pre.ix)%2?-1:1),z:ray.z*(Math.abs(pre.iz)%2?-1:1)},dot=d.x*n.x+d.z*n.z;
+  const v={x:d.x-kappa*dot*n.x,z:d.z-kappa*dot*n.z},q={x:2*hx*post.ix+(Math.abs(post.ix)%2?-goal.x:goal.x),z:2*hz*post.iz+(Math.abs(post.iz)%2?-goal.z:goal.z)},out=norm(q.x-g.x,q.z-g.z);
+  return{phi,g,angle:Math.atan2(ray.z,ray.x)*180/Math.PI,value:v.x*out.z-v.z*out.x,valid:dot>1e-6&&v.x*out.x+v.z*out.z>1e-6,distance:Math.hypot(unfolded.x-origin.x,unfolded.z-origin.z)+Math.hypot(q.x-g.x,q.z-g.z)};
+ };
+ const roots=closedFormContacts(origin,target,goal,radius,pre,post,cueRadius),steps=96;
+ let left=evaluate(-Math.PI);
+ for(let i=1;i<=steps;i++){
+  const right=evaluate(-Math.PI+2*Math.PI*i/steps);
+  if(left.value*right.value<=0){
+   let a=left,b=right,m=a,iterations=0;
+   for(;iterations<48;iterations++){m=evaluate((a.phi+b.phi)/2);if(Math.abs(m.value)<1e-10||b.phi-a.phi<1e-10)break;if(a.value*m.value<=0)b=m;else a=m;}
+   if(m.valid&&Math.abs(m.value)<1e-7&&!roots.some(r=>Math.abs(r.angle-m.angle)<1e-6)){
+    const before=images(origin,m.g,cueRadius,Math.max(1,pre.order)).find(x=>x.ix===pre.ix&&x.iz===pre.iz);
+    const after=images(m.g,goal,cueRadius,Math.max(1,post.order)).find(x=>x.ix===post.ix&&x.iz===post.iz);
+    if(before&&after&&before.rails.join()===pre.rails.join()&&after.rails.join()===post.rails.join())roots.push({...m,iterations,residual:Math.abs(m.value),source:'inverse-root',residualModel:'restitution-frictionless',prefix:pre.order,suffix:post.order,spread:.15});
+   }
+  }
+  left=right;
+ }
+ return roots;
+}
+// Enumerate both sides of the first object contact, rather than treating
+// free routes as a union of named families. Round-robin prefix/suffix buckets
+// prevents short object-first proposals monopolizing a bounded search.
+function freeProposals(req,order=3,prefix=null,maxSeeds=Infinity){
+ const cue=req.snapshot.objects.find(o=>o.id===req.selectedId),a=req.snapshot.objects.find(o=>o.id===req.options.targetId),b=req.snapshot.objects.find(o=>o.id===req.options.secondId);
+ const r=cue.radius,R=r+a.radius,hx=D.width/2-r,hz=D.depth/2-r;
+ const before=images(cue.pos,a.pos,r,order),after=images(a.pos,b.pos,r,order),buckets=[];
+ for(let n=order;n<=order;n++)for(let p=0;p<=n;p++){
+  if(prefix!==null&&p!==prefix)continue;
+  const q=n-p,bucket=[];
+  for(const pre of before.filter(s=>s.order===p))for(const post of after.filter(s=>s.order===q)){
+   const kappa=(1+(req.snapshot.params?.ballRestitution??.93))*(a.mass??.21)/((cue.mass??.21)+(a.mass??.21));
+   bucket.push(...inverseRoots(cue.pos,a.pos,b.pos,R,pre,post,r,kappa));
+   for(const sign of [-1,1]){
+   let ghost={...a.pos},normal,desired;
+   for(let i=0;i<12;i++){desired=norm(post.q.x-ghost.x,post.q.z-ghost.z);normal={x:-desired.z*sign,z:desired.x*sign};ghost={x:a.pos.x+normal.x*R,z:a.pos.z+normal.z*R};}
+   const reflected={x:2*hx*pre.ix+(Math.abs(pre.ix)%2?-ghost.x:ghost.x),z:2*hz*pre.iz+(Math.abs(pre.iz)%2?-ghost.z:ghost.z)};
+   const ray=norm(reflected.x-cue.pos.x,reflected.z-cue.pos.z),vin={x:ray.x*(Math.abs(pre.ix)%2?-1:1),z:ray.z*(Math.abs(pre.iz)%2?-1:1)},dot=vin.x*normal.x+vin.z*normal.z;
+   if(dot>=-.01||((vin.x-dot*normal.x)*desired.x+(vin.z-dot*normal.z)*desired.z)<.02)continue;
+   const distance=Math.hypot(reflected.x-cue.pos.x,reflected.z-cue.pos.z)+Math.hypot(post.q.x-ghost.x,post.q.z-ghost.z);
+   bucket.push({angle:Math.atan2(ray.z,ray.x)*180/Math.PI,distance,spread:Math.asin(Math.min(.95,R/Math.max(R,pre.distance)))*180/Math.PI*.2,source:'free-inverse',prefix:p,suffix:q});
+  }
+  }
+  buckets.push(bucket.sort((a,b)=>(['closed-form-stun','inverse-root'].indexOf(a.source)+1||3)-(['closed-form-stun','inverse-root'].indexOf(b.source)+1||3)||a.distance-b.distance).slice(0,maxSeeds));
+ }
+ const out=[];for(let k=0;buckets.some(b=>k<b.length);k++)for(const bucket of buckets)if(bucket[k])out.push(bucket[k]);
+ return out;
+}
+function freeProposalAt(req,index,search){
+ // Diagonal enumeration revisits shallow depths with new geometry variants
+ // while progressively opening deeper paths. No fixed maximum rail order.
+ const minimum=req.options.mode==='three'?3:0;let shell=0,offset=index;
+ const size=s=>(s+1)*(minimum+1)+s*(s+1)/2;
+ while(offset>=size(shell)){offset-=size(shell);shell++;}
+ let depth=0;while(offset>=minimum+depth+1){offset-=minimum+depth+1;depth++;}
+ const order=minimum+depth,prefix=offset,variant=shell-depth,key=order+':'+prefix;
+ const cache=search.freeSeedCache||(search.freeSeedCache=new Map());
+ if(!cache.has(key))cache.set(key,freeProposals(req,order,prefix));
+ search.seedMaxOrder=Math.max(search.seedMaxOrder??order,order);
+ const bucket=cache.get(key);
+ return bucket[variant%Math.max(1,bucket.length)]||{angle:0,spread:180,source:'explore',prefix,suffix:order-prefix};
+}
 function proposals(req){
+ if(['any','carom'].includes(req.options.methodId))return freeProposals(req);
+
  const cue=req.snapshot.objects.find(o=>o.id===req.selectedId),a=req.snapshot.objects.find(o=>o.id===req.options.targetId),b=req.snapshot.objects.find(o=>o.id===req.options.secondId),method=req.options.methodId;
  const p=cue.pos,t=a.pos,r=cue.radius,collisionRadius=r+a.radius,direct=Math.atan2(t.z-p.z,t.x-p.x)*180/Math.PI;
  const spread=Math.asin(Math.min(.95,collisionRadius/Math.max(collisionRadius,Math.hypot(t.x-p.x,t.z-p.z))))*180/Math.PI;
@@ -72,7 +163,10 @@ function proposals(req){
   }
  }else if(b){
   const desiredImages=images(t,b.pos,r,method==='grand'?5:4).filter(im=>matches(method,im.rails));
-  for(const im of desiredImages){const desired=norm(im.q.x-t.x,im.q.z-t.z);
+  for(const im of desiredImages){
+   const pre={ix:0,iz:0,order:0,rails:[]},kappa=(1+(req.snapshot.params?.ballRestitution??.93))*(a.mass??.21)/((cue.mass??.21)+(a.mass??.21));
+   for(const root of inverseRoots(p,t,b.pos,collisionRadius,pre,im,r,kappa))add(root.angle,root.distance,spread*.15,root.source);
+   const desired=norm(im.q.x-t.x,im.q.z-t.z);
    for(const sign of [-1,1]){
     const normal={x:-desired.z*sign,z:desired.x*sign},ghost={x:t.x+normal.x*collisionRadius,z:t.z+normal.z*collisionRadius},vin=norm(ghost.x-p.x,ghost.z-p.z),dot=vin.x*normal.x+vin.z*normal.z;
     if(dot>=-.01||((vin.x-dot*normal.x)*desired.x+(vin.z-dot*normal.z)*desired.z)<.02)continue;
@@ -91,7 +185,7 @@ function proposals(req){
 function next(search,normalize){
  const {req,count,pool}=search,o=req.options,three=o.mode==='three';
  if(count===0)return normalize({...req.settings,...(!o.spin?{tipX:0,tipY:0}:{})});
- const seeds=search.familySeeds||(search.familySeeds=proposals(req));
+ const seeds=['any','carom'].includes(o.methodId)?null:(search.familySeeds||(search.familySeeds=proposals(req)));
  // Refine actual near-misses at the angular scale needed by a 61.5mm ball.
  // The old 0.35-degree-only early refinements jumped over narrow winning intervals.
  const near=pool.find(x=>!x.success&&x.firstHit&&x.cushions>=(three?3:0)&&x.clearance<.16&&x.score<220);
@@ -112,7 +206,7 @@ function next(search,normalize){
  // Each input is still evaluated by the unmodified, full-resolution PhysicsLab.
  if(three&&(prefix===0||prefix===null)&&k<cuts.length)
   return normalize({...req.settings,angle:angle+cuts[k]*spread,speed:4.5,tipX:0,tipY:o.spin?.15:0});
- const offset=three&&(prefix===0||prefix===null)?cuts.length:0,j=Math.max(0,k-offset),seed=seeds[j%seeds.length],cycle=Math.floor(j/seeds.length);
+ const offset=three&&(prefix===0||prefix===null)?cuts.length:0,j=Math.max(0,k-offset),seed=['any','carom'].includes(o.methodId)?freeProposalAt(req,j,search):seeds[j%seeds.length],cycle=Math.floor(j/(seeds?.length||16));
  const speeds=three?[4.5,3.8,3.0,2.3]:[2.0,1.3,2.8,3.8];
  const shifts=[0,.15,-.15,.35,-.35];
  const perturb=cycle?((halton(j+1,5)*2-1)*seed.spread*.35):0;
@@ -120,5 +214,5 @@ function next(search,normalize){
   tipX:o.spin&&j>5?(halton(j+1,7)*2-1)*.45:0,
   tipY:o.spin?(three&&j<6?.15:shifts[(cycle+Math.floor(j/4))%shifts.length]):0});
 }
-G.LabRouteSampler={images,tangentContact,proposals,next};
+G.LabRouteSampler={images,tangentContact,closedFormContacts,inverseRoots,freeProposals,freeProposalAt,proposals,next};
 })(globalThis);

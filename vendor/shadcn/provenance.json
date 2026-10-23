@@ -136,6 +136,12 @@
       "sha256": "f4bfd840445a84352265d7cf66fcd886454b6a2f3834f7caf29d00f68620f87d"
     },
     {
+      "name": "popover",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/popover.json",
+      "target": "src/components/ui/popover.tsx",
+      "sha256": "ba5fe84f353f6c0fd2133a2ab893f5e8861fc60dc4dea548a7ec875acaa37b2c"
+    },
+    {
       "name": "checkbox",
       "url": "https://ui.shadcn.com/r/styles/base-nova/checkbox.json",
       "target": "src/components/ui/checkbox.tsx",

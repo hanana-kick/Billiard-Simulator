@@ -36,5 +36,12 @@ function forecastGeometry(result){
  }
  return result;
 }
-G.LabMath={forecastGeometry,V,add,sub,mul,dot,cross,len,norm,clamp,rotate,qident,qfromY,matrix,multiply,lookAt,ortho,perspective};
+const trailViews=new WeakMap();
+function visibleTrail(object,lab,state){
+ const points=object.trail||[];if(state.allPaths)return points;
+ const last=points[points.length-1],cached=trailViews.get(object);
+ if(cached&&cached.points===points&&cached.last===last&&cached.length===points.length&&cached.shot===lab.shots)return cached.result;
+ const result=points.filter(p=>(p.shot??lab.shots)===lab.shots);trailViews.set(object,{points,last,length:points.length,shot:lab.shots,result});return result;
+}
+G.LabMath={visibleTrail,forecastGeometry,V,add,sub,mul,dot,cross,len,norm,clamp,rotate,qident,qfromY,matrix,multiply,lookAt,ortho,perspective};
 })(globalThis);

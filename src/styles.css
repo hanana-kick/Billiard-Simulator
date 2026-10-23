@@ -110,9 +110,6 @@
 .path-legend { display: flex; align-items: center; gap: 7px; font-size: 14px; color: #f5f5f5; text-shadow: 0 1px 3px #000; }
 .path-legend i { width: 17px; border-top: 1px dashed currentColor; }
 .viewport-guide { position: absolute; left: 12px; right: 12px; bottom: 8px; text-align: center; pointer-events: none; font-size: 14px; color: #f5f5f5; text-shadow: 0 1px 3px #000; }
-.cue-handles { position: absolute; inset: 0; pointer-events: none; }
-.cue-handle { position: absolute; display: none; pointer-events: auto; touch-action: none; user-select: none; transform: translate(-50%, -50%); }
-.pull-meter { position: absolute; top: 44px; right: 12px; display: flex; flex-direction: column; gap: 4px; min-width: 140px; padding: 8px 12px; pointer-events: none; border: 1px solid var(--border); border-radius: var(--radius); background: var(--card); color: var(--card-foreground); font-size: 14px; }
 .section-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .section-heading h2 { margin: 0; font-size: 14px; font-weight: 600; }
 .section-heading > span { font-size: 14px; color: var(--muted-foreground); }
@@ -192,13 +189,6 @@
 .live-state dt { font-size: 14px; color: var(--muted-foreground); }
 .live-state dd { margin: 3px 0 0; font-size: 14px; font-variant-numeric: tabular-nums; }
 .score-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
-/* Scene focus uses the visual viewport, never browser fullscreen. */
-.app-shell[data-full-window=true] { position: fixed; z-index: 45; top: var(--focus-top,0px); left: var(--focus-left,0px); width: var(--focus-width,100vw); height: var(--focus-height,100dvh); background: var(--background); }
-.app-shell[data-full-window=true] .workspace-shell,
-.app-shell[data-full-window=true] .scene-inset { height: 100%; }
-.app-shell[data-full-window=true] [data-slot=sidebar],
-.app-shell[data-full-window=true] .workspace-header { display: none; }
-.app-shell[data-full-window=true] .stage-region { padding: max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left)); }
 @media (max-width: 639px) {
  .workspace-header { padding: 8px 12px; }
  .brand > span:last-child { display: none; }
@@ -217,10 +207,6 @@
 .side-view-wrap .side-view { height: 76px; }
 .scene-modes { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .notice-wrap { position: fixed; bottom: max(16px,env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 60; width: min(360px,calc(100vw - 32px)); pointer-events: none; }
-.app-shell[data-full-window=true] .scene-tools,
-.app-shell[data-full-window=true] .stage-toolbar > .view-controls:first-child { display: none; }
-.app-shell[data-full-window=true] .zoom-tools > :not(#fullscreen) { display: none; }
-.app-shell[data-full-window=true] .stage-toolbar { justify-content: flex-end; }
 @media (max-width: 639px), (max-height: 500px) { .side-view-wrap { display: none; } }
 .sidebar-opener, .zoom-tools { display: flex; align-items: center; gap: 8px; }
 .sidebar-opener { font-size: 14px; }
@@ -236,4 +222,5 @@
 
 /* Hit padding participates in layout; it never overlays adjacent targets. */
 .hit-target { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 4px; flex-shrink: 0; }
-.app-shell[data-full-window=true] .stage-toolbar > .hit-target { margin-left: auto; }
+
+.route-option-help { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }

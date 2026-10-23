@@ -110,7 +110,7 @@ class LabRenderer{
   gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,this.canvas.width,this.canvas.height);gl.clearColor(.032,.049,.077,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);this.drawCommands(cmds,this.main,this.vp);
   gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);
   if(state.predict&&state.forecast)for(const track of state.forecast.tracks){this.lines(track.segments,track.color,false,.90);this.lines(track.endRing,track.color,true,.70);}
-  if(state.paths)for(const o of lab.objects)this.lines(o.trail.flatMap(p=>[p.x,p.y,p.z]),o.color,true,.72);
+  if(state.paths)for(const o of lab.objects)this.lines(G.LabMath.visibleTrail(o,lab,state).flatMap(p=>[p.x,p.y,p.z]),o.color,true,.72);
   if(selected){const c=selected.body.translation(),r=(selected.radius||.045)+.012,points=[];for(let i=0;i<=64;i++){const a=i/64*Math.PI*2;points.push(c.x+r*Math.cos(a),c.y-(selected.radius||selected.half.y)+.002,c.z+r*Math.sin(a));}this.lines(points,'#a7f3d0',true,.95);}
   if(preview&&!state.forecast){const start=selected.body.translation(),flat=norm(V(preview.direction.x,0,preview.direction.z));const points=[];for(let i=1;i<10;i++){const a=add(start,mul(flat,.075*i)),b=add(start,mul(flat,.075*i+.038));points.push(a.x,a.y,a.z,b.x,b.y,b.z);}this.lines(points,'#bde5c1',false,.6);}
   if(state.debug){const data=lab.world.debugRender();this.lines(data.vertices,'#8ccbe0',false,.8);}

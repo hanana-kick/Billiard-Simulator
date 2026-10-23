@@ -83,14 +83,11 @@ async function reachable(page,selector){
   return {reachable:!!hit&&(e===hit||e.contains(hit)),interceptor:hit?.id||hit?.getAttribute('data-slot')||hit?.tagName||null};
  }),{message:selector+' unobscured center after layout/accordion transitions'}).toMatchObject({reachable:true});
 }
-async function handlesWithinTable(page){
- await expect(page.locator('.cue-handle:visible')).toHaveCount(2);
- await expect.poll(async()=>{
-  const table=await page.locator('#scene').boundingBox();
-  const handles=await page.locator('.cue-handle:visible').evaluateAll(els=>els.map(e=>{const r=e.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height};}));
-  return handles.every(r=>r.x>=table.x-1&&r.y>=table.y-1&&r.x+r.width<=table.x+table.width+1&&r.y+r.height<=table.y+table.height+1);
- },{message:'both cue handles stay within the canvas after layout changes'}).toBe(true);
- await disjointControls(page,'.cue-handle:visible','cue handles');
+async function directSceneWithinTable(page){
+ await expect(page.locator('.cue-handle,#fullscreen,.pull-meter')).toHaveCount(0);
+ await expect(page.locator('#scene')).toBeInViewport();
+ const canvas=await page.locator('#scene').boundingBox();expect(canvas.height).toBeGreaterThanOrEqual(60);
+ await disjointControls(page,'.scene-tools button:visible','direct scene controls');
 }
 async function preserved(page){
  expect(await page.evaluate(()=>({sameWorld:cueLab.lab===savedWorld,sameCanvas:document.getElementById('scene')===savedCanvas,angle:cueLab.state.settings.angle,shots:cueLab.lab.shots,positions:cueLab.lab.objects.map(o=>({...o.body.translation()}))}))).toEqual(await page.evaluate(()=>savedSnapshot));
@@ -107,7 +104,7 @@ for(const [width,height]of viewports)test(`coarse-pointer ${width}x${height}: ev
   await expect(page.locator('html')).not.toHaveClass(/dark/);
   
   await page.setViewportSize({width,height});await closeSidebar(page);
-  await chromeBounds(page,width,height,false);await handlesWithinTable(page);await openSidebar(page);
+  await chromeBounds(page,width,height,false);await directSceneWithinTable(page);await openSidebar(page);
   for(const [tab,panel,controls]of [
    ['타격','shotPanel',['#gameMode','#tipDisc','#elevationNumber','#cueSpeed','#angle']],
    ['경로','routesPanel',['#routeTarget','#findRoute','#routeAdvanced [data-slot=accordion-trigger]']],
@@ -133,7 +130,7 @@ for(const [width,height]of viewports)test(`coarse-pointer ${width}x${height}: ev
     const option=page.getByRole('option',{name:'1×',exact:true});await option.scrollIntoViewIfNeeded();
     contained(await option.boundingBox(),{x:0,y:0,width,height},'select option');await option.click();
    }
-   for(const selector of ['#undo','#reset','.panel-utility button[aria-label="조작 도움말"]'])await reachable(page,selector);
+   for(const selector of ['#undo','#redo','#reset','.panel-utility button[aria-label="조작 도움말"]'])await reachable(page,selector);
    await disjointControls(page,'.panel-utility button','utility controls');
    await preserved(page);
   }
@@ -141,14 +138,14 @@ for(const [width,height]of viewports)test(`coarse-pointer ${width}x${height}: ev
   await expect(page.locator('#gameSetup [data-slot=accordion-trigger]')).toHaveAttribute('aria-expanded','true');await expect(page.locator('#gameMode')).toBeVisible();
   fs.mkdirSync('test-results/renewal',{recursive:true});
   await page.screenshot({path:`test-results/renewal/${width}x${height}-sidebar.png`});
-  await closeSidebar(page);await chromeBounds(page,width,height,false);await handlesWithinTable(page);await preserved(page);
+  await closeSidebar(page);await chromeBounds(page,width,height,false);await directSceneWithinTable(page);await preserved(page);
   await page.screenshot({path:`test-results/renewal/${width}x${height}-scene.png`});
   // Opening and closing the mobile Sheet or desktop offcanvas cannot reset the table.
   await openSidebar(page);await expect(page.locator('#angle')).toHaveValue('17.23');await expect(page.locator('#gameSetup [data-slot=accordion-trigger]')).toHaveAttribute('aria-expanded','true');await preserved(page);
-  await closeSidebar(page);await handlesWithinTable(page);
+  await closeSidebar(page);await directSceneWithinTable(page);
   // Resize back across the mobile/desktop breakpoint and repeat the access cycle.
   await page.setViewportSize({width:390,height:844});await closeSidebar(page);
-  await chromeBounds(page,390,844,false);await handlesWithinTable(page);await preserved(page);
+  await chromeBounds(page,390,844,false);await directSceneWithinTable(page);await preserved(page);
   await openSidebar(page);await chromeBounds(page,390,844,true);await preserved(page);await closeSidebar(page);
   expect(errors).toEqual([]);
  }finally{await context.close();}
@@ -183,7 +180,7 @@ for(const width of [768,820,1024])test(`200% root text at ${width}px preserves r
   const baseFont=await page.locator('html').evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
   await page.evaluate(()=>{cueLab.option('predict',false);cueLab.changeSettings({angle:17.23});globalThis.savedWorld=cueLab.lab;globalThis.savedCanvas=document.getElementById('scene');globalThis.savedSnapshot={sameWorld:true,sameCanvas:true,angle:17.23,shots:cueLab.lab.shots,positions:cueLab.lab.objects.map(o=>({...o.body.translation()}))};document.documentElement.style.fontSize='200%';});
   expect(await page.locator('html').evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeCloseTo(baseFont*2,2);
-  await chromeBounds(page,width,height,false);await handlesWithinTable(page);
+  await chromeBounds(page,width,height,false);await directSceneWithinTable(page);
   await openSidebar(page);
   for(const [name,controls]of [
    ['타격',['#fineAim','#tipDisc','#angle','#cueSpeed','#gameMode']],
@@ -193,11 +190,11 @@ for(const width of [768,820,1024])test(`200% root text at ${width}px preserves r
    await page.getByRole('tab',{name,exact:true}).click();await chromeBounds(page,width,height,true);
    for(const tab of await page.locator('#panelGroup [role=tab]').all())await readableControl(tab,'tab');
    for(const selector of controls){await reachable(page,selector);if(await page.locator(selector).evaluate(el=>el.matches('button')))await readableControl(page.locator(selector),selector);}
-   for(const selector of ['#undo','#reset']){await reachable(page,selector);await readableControl(page.locator(selector),selector);}
+   for(const selector of ['#undo','#redo','#reset']){await reachable(page,selector);await readableControl(page.locator(selector),selector);}
    await disjointControls(page,'.panel-utility button','200% utility actions');
    await preserved(page);
   }
-  await closeSidebar(page);await chromeBounds(page,width,height,false);await handlesWithinTable(page);await preserved(page);
+  await closeSidebar(page);await chromeBounds(page,width,height,false);await directSceneWithinTable(page);await preserved(page);
   await openSidebar(page);await preserved(page);await closeSidebar(page);
   fs.mkdirSync('test-results/renewal',{recursive:true});await page.screenshot({path:`test-results/renewal/${width}-text-200.png`});
   expect(errors).toEqual([]);
@@ -240,10 +237,22 @@ for(const viewport of [{width:390,height:844},{width:844,height:650}])test(`rese
   await clickHitRegion(page,page.getByRole('button',{name:'확대',exact:true}));
   expect(await page.evaluate(()=>cueLab.renderer.camera.zoom)).toBeCloseTo(Math.max(.6,Math.min(2.5,zoomOut/1.12)),6);
   await clickHitRegion(page,page.locator('#fit'));
-  await clickHitRegion(page,page.locator('#fullscreen'));await expect(page.locator('#fullscreen')).toHaveAttribute('aria-pressed','true');
-  await clickHitRegion(page,page.locator('#fullscreen'),{padding:false});await expect(page.locator('#fullscreen')).toHaveAttribute('aria-pressed','false');
   await openSidebar(page);await expect(page.locator('#strike')).toBeEnabled();
   const shots=await page.evaluate(()=>cueLab.lab.shots);
   await clickHitRegion(page,page.locator('#strike'));await expect.poll(()=>page.evaluate(()=>cueLab.lab.shots)).toBe(shots+1);
+ }finally{await context.close();}
+});
+
+for(const width of [320,390])test(`kiss explanation supports tap, keyboard and focus return at ${width}px`,async({browser})=>{
+ const context=await browser.newContext({viewport:{width,height:844},hasTouch:true,reducedMotion:'reduce'});
+ try{
+  const page=await context.newPage();await page.goto('./');await page.waitForFunction(()=>globalThis.__LAB_READY__&&cueLab.state.ready);
+  await openSidebar(page);await page.getByRole('tab',{name:'경로',exact:true}).click();
+  const advanced=page.locator('#routeAdvanced [data-slot=accordion-trigger]');if(await advanced.getAttribute('aria-expanded')!=='true')await advanced.click();
+  const info=page.getByRole('button',{name:'키스 허용 설명',exact:true});await info.scrollIntoViewIfNeeded();await info.click();
+  const popup=page.locator('[data-slot=popover-content]');await expect(popup).toBeVisible();await expect(popup).toContainText('명중 후의 충돌은 결과를 바꾸지 않습니다');contained(await popup.boundingBox(),{x:0,y:0,width,height:844},'kiss explanation');
+  await page.keyboard.press('Escape');await expect(popup).not.toBeVisible();await expect(info).toBeFocused();
+  await info.press('Enter');await expect(popup).toBeVisible();await page.keyboard.press('Escape');await expect(info).toBeFocused();
+  const toggle=page.getByRole('checkbox',{name:'키스 허용',exact:true});await toggle.click();expect(await page.evaluate(()=>cueLab.state.routeOptions.allowKiss)).toBe(false);await toggle.click();expect(await page.evaluate(()=>cueLab.state.routeOptions.allowKiss)).toBe(true);
  }finally{await context.close();}
 });

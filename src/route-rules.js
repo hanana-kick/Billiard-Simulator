@@ -15,7 +15,8 @@ const catalog=Object.freeze([
  {id:'any',label:'3쿠션 자유 경로',short:'자유 경로',group:'제한 없음',description:'쿠션과 공의 중간 순서를 제한하지 않고 3쿠션 성립',rule:'둘째 공 전 총 3회 이상',prefix:null}
 ]);
 const direct={id:'direct',label:'두 공 바로 맞히기',short:'직접 두 공',group:'직접',description:'수구 → 첫 공 → 둘째 공, 완료 전 쿠션 접촉 없음',rule:'두 공에 닿기 전 쿠션 0회',prefix:0};
-const byId=new Map([...catalog,direct].map(x=>[x.id,x]));
+const carom={id:'carom',label:'쿠션 제한 없이 두 공',short:'자유 두 공',group:'제한 없음',description:'첫 공 → 둘째 공, 쿠션 횟수 제한 없음',rule:'두 공 순서만 판정',prefix:null};
+const byId=new Map([...catalog,direct,carom].map(x=>[x.id,x]));
 const railByLabel={'오른쪽 쿠션':'x+','왼쪽 쿠션':'x-','앞쪽 쿠션':'z+','뒤쪽 쿠션':'z-'};
 function railId(c){return c.rail||railByLabel[c.label]||null;}
 function features(contacts,firstId,secondId){
@@ -46,13 +47,13 @@ function condition(method,f){
   case 'bank2':return f.before===2;
   case 'bank3':return f.before===3&&f.after===0;
   case 'allWalls':return f.before>=4&&new Set(f.preIds.filter(Boolean)).size===4&&f.after===0;
-  case 'any':return true;
+  case 'any':case 'carom':return true;
   default:return false;
  }
 }
 function evaluate(contacts,{method='any',firstId,secondId,ambiguous=false}={}){
  if(!byId.has(method)||!Number.isInteger(firstId)||!Number.isInteger(secondId)||firstId===secondId)throw new Error('잘못된 경로 판정 조건');
- const f=features(contacts,firstId,secondId),required=method==='direct'?0:3;
+ const f=features(contacts,firstId,secondId),required=method==='direct'||method==='carom'?0:3;
  let invalid=f.wrong||ambiguous;
  if(method==='direct'&&f.total>0)invalid=true;
  const def=byId.get(method);
@@ -69,5 +70,24 @@ function evaluate(contacts,{method='any',firstId,secondId,ambiguous=false}={}){
  return{...f,method,success,invalid,missing:Math.max(0,required-f.total),reason:ambiguous?'동일 시간 단계의 접촉 순서를 확정할 수 없음':invalid?'접촉 순서·쿠션 조건 불충족':''};
 }
 function classify(contacts,firstId,secondId){return catalog.filter(d=>evaluate(contacts,{method:d.id,firstId,secondId}).success).map(d=>d.id);}
-G.LabRouteRules={catalog,direct,byId,railId,evaluate,classify,features};
+// A kiss is a new cue/object collision after the same pair separated, not
+// merely the first impact with a moving object. Legacy setting keeps polarity.
+function successIdentity(result){
+ return JSON.stringify([result.firstId,result.secondId,result.settings,result.contacts?.map(e=>[e.kind,e.id??null,railId(e)])]);
+}
+function kissAllowed(options={}){
+ return options.allowKiss??options.allowMovingTargets??true;
+}
+function createKissTracker(){return{pairs:new Map(),contacts:[]};}
+function observeKiss(tracker,id,{impact,separated,time}){
+ const pair=tracker.pairs.get(id)||{seen:false,active:false};
+ if(separated)pair.active=false;
+ if(impact&&!pair.active){
+  if(pair.seen)tracker.contacts.push({id,time});
+  pair.seen=true;pair.active=true;
+ }
+ tracker.pairs.set(id,pair);
+ return tracker.contacts.length>0;
+}
+G.LabRouteRules={catalog,direct,carom,byId,railId,evaluate,classify,features,successIdentity,kissAllowed,createKissTracker,observeKiss};
 })(globalThis);

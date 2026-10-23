@@ -5,16 +5,16 @@ const {V,add,sub,mul,dot,len,norm,clamp}=G.LabMath,D=G.LabDimensions;
 const normalizeAngle=a=>((a+180)%360+360)%360-180;
 class LabController{
  constructor(){
-  this.state={settings:{angle:0,elevation:8,tipX:0,tipY:0,speed:2},selectedId:1,paused:true,rate:1,paths:true,showCue:true,debug:false,vectors:false,mode:'cue',view:'3d',activePanel:'shot',fineAim:false,predict:true,horizon:8,forecast:null,forecastStatus:'물리엔진 준비 중',predictionBusy:false,obstruction:null,cuePull:0,gesture:'',notice:'',ready:false,engineError:null,previewCueVisible:false,canAim:false};
+  this.state={settings:{angle:0,elevation:8,tipX:0,tipY:0,speed:2},selectedId:1,paused:true,rate:1,paths:true,allPaths:false,showCue:true,debug:false,vectors:false,mode:'cue',view:'3d',activePanel:'shot',fineAim:false,predict:true,horizon:8,forecast:null,forecastStatus:'물리엔진 준비 중',predictionBusy:false,obstruction:null,cuePull:0,gesture:'',notice:'',ready:false,engineError:null,previewCueVisible:false,canAim:false};
   this.state.gameMode='free';this.state.game=null;
-  this.state.routeOptions={mode:'direct',targetId:2,secondId:3,budget:48,horizon:16,spin:true,objective:'shortest',order:'either',methods:['any'],allowMovingTargets:true,elevationMode:'fixed',minElevation:0,maxElevation:30,minSpeed:.5,maxSpeed:4.5,workers:0};this.state.routeStatus='idle';this.state.routeProgress=null;this.state.routeResult=null;this.state.routeError='';this.state.routeApplied=null;
-  this.renderCadence=new G.RenderCadence();this.renderMetrics={frames:0,cap:60};this.raf=null;this.disposed=false;this.listeners=new Set();this.lastSnapshot={...this.state,objects:[],events:[],time:0,shots:0,undo:false,params:{...G.LabDefaults}};this.dirty=true;this.accumulator=0;this.requestKey=null;this.token=0;this.gestures=new Map();this.cameraDrags=0;
+  this.state.routeOptions={mode:'direct',targetId:2,secondId:3,budget:48,horizon:16,spin:true,objective:'shortest',order:'either',methods:['any'],allowKiss:true,elevationMode:'fixed',minElevation:0,maxElevation:30,minSpeed:.5,maxSpeed:4.5,workers:0};this.state.routeStatus='idle';this.state.routeProgress=null;this.state.routeResult=null;this.state.routeError='';this.state.routeApplied=null;
+  this.undoStack=[];this.redoStack=[];this.inputMetrics={events:0,lastHandlerMs:0,maxHandlerMs:0,lastInputToFrameMs:0,maxInputToFrameMs:0};this.renderCadence=new G.RenderCadence();this.renderMetrics={frames:0,cap:60};this.raf=null;this.disposed=false;this.listeners=new Set();this.lastSnapshot={...this.state,objects:[],events:[],time:0,shots:0,undo:false,params:{...G.LabDefaults}};this.dirty=true;this.accumulator=0;this.requestKey=null;this.token=0;this.gestures=new Map();this.cameraDrags=0;
  }
  subscribe=(fn)=>{this.listeners.add(fn);return()=>this.listeners.delete(fn)};
  snapshot=()=>this.lastSnapshot;
  notify(redraw=true){
   const s=this.state,l=this.lab,o=l?.get(s.selectedId);s.game=this.game?.snapshot()||null;s.canAim=!!l&&s.paused&&!l.cue&&!l.anyMotion()&&!this.windup&&performance.now()>=(this.cooldownUntil||0);s.previewCueVisible=!!l&&s.showCue&&s.paused&&!l.cue&&!l.anyMotion()&&performance.now()>=(this.cooldownUntil||0);s.obstruction=l&&!l.cue?l.cueObstruction(o,s.settings):null;
-  this.lastSnapshot={...s,settings:{...s.settings},objects:l?l.objects.map(o=>({id:o.id,label:o.label,shape:o.shape,color:o.color,mass:o.mass,pos:{...o.body.translation()},radius:o.radius||o.half.y})):[],params:l?{...l.params}:{...G.LabDefaults},events:l?l.events.slice(-8):[],time:l?.time||0,shots:l?.shots||0,undo:!!l?.lastSnapshot,activeStroke:!!l?.cue,speed:o?len(o.body.linvel()):0,spin:o?len(o.body.angvel())*60/(2*Math.PI):0,height:o?(o.body.translation().y-(o.radius||o.half.y))*100:0,renderMode:this.renderer?.isFallback?'CPU 3D':this.renderer?.workerMode?'WebGL2 Worker':'WebGL2'};
+  this.lastSnapshot={...s,settings:{...s.settings},objects:l?l.objects.map(o=>({id:o.id,label:o.label,shape:o.shape,color:o.color,mass:o.mass,pos:{...o.body.translation()},radius:o.radius||o.half.y})):[],params:l?{...l.params}:{...G.LabDefaults},events:l?l.events.slice(-8):[],time:l?.time||0,shots:l?.shots||0,undo:this.undoStack.length>0,redo:this.redoStack.length>0,activeStroke:!!l?.cue,speed:o?len(o.body.linvel()):0,spin:o?len(o.body.angvel())*60/(2*Math.PI):0,height:o?(o.body.translation().y-(o.radius||o.half.y))*100:0,renderMode:this.renderer?.isFallback?'CPU 3D':this.renderer?.workerMode?'WebGL2 Worker':'WebGL2'};
   this.listeners.forEach(fn=>fn());if(redraw)this.dirty=true;
  }
  announce(message){this.state.notice=message;clearTimeout(this.noticeTimer);this.noticeTimer=setTimeout(()=>{this.state.notice='';this.notify()},2800);this.notify();}
@@ -48,12 +48,12 @@ class LabController{
   this.predictionTimer=setTimeout(()=>{if(!s.paused||this.windup||l.cue||!s.predict)return;this.predictor.request({snapshot:l.snapshot({trails:false}),selectedId:s.selectedId,settings:{...s.settings},horizon:s.horizon})},140);
  }
  adjustAngle(key,delta){if(key!=='angle'&&key!=='elevation')return;this.changeSettings({[key]:Math.round((this.state.settings[key]+delta)*100)/100});}
- changeSettings(patch){this.cancelSearch('타격 설정 변경으로 검색을 취소했습니다.');
+ changeSettings(patch,{interactive=false}={}){this.cancelSearch('타격 설정 변경으로 검색을 취소했습니다.');
   if(!this.lab||this.lab.cue||this.windup)return;
   const s=this.state.settings,limits={angle:[-180,180],elevation:[0,80],speed:[.25,5],tipX:[-.92,.92],tipY:[-.92,.92]};
   for(const [key,value]of Object.entries(patch))if(limits[key]&&Number.isFinite(value))s[key]=clamp(value,...limits[key]);
   const r=Math.hypot(s.tipX,s.tipY);if(r>.92){s.tipX*=.92/r;s.tipY*=.92/r;}
-  this.queuePrediction();this.notify();
+  this.redoStack=[];if(interactive){this.inputPending=true;this.dirty=true;}else{this.queuePrediction();this.notify();}
  }
  option(key,value){
   if(key==='mode'&&!['cue','place','orbit'].includes(value))return;if(key==='horizon'&&![4,8,16,30].includes(value))return;if(key==='rate'&&![.25,.5,1,2,4].includes(value))return;
@@ -71,16 +71,10 @@ class LabController{
   const s=this.state,key=JSON.stringify([this.lab.steps,this.lab.revision,s.selectedId,s.settings,s.horizon,this.lab.params]);
   if(!s.paused||s.predictionBusy||key!==this.requestKey)s.forecast=null;
   if(this.game&&!this.game.cueIds.includes(s.selectedId)){this.announce('4구에서는 흰 수구 또는 노란 수구를 선택하세요.');return false;}
-  const gameBefore=this.game?.snapshot();const result=this.lab.strike(s.selectedId,{...s.settings});if(!result.ok){this.announce(result.reason);return false;}
+  const before=this.captureHistory();const gameBefore=this.game?.snapshot();const result=this.lab.strike(s.selectedId,{...s.settings});if(!result.ok){this.announce(result.reason);return false;}
+  this.commitHistory(before,'shot');
   if(this.game){this.gameUndo=gameBefore;this.game.begin(s.selectedId);}
   this.cooldownUntil=performance.now()+300;this.state.previewCueVisible=false;this.state.canAim=false;this.state.cuePull=0;this.pause(false);this.state.gesture='';this.notify();return true;
- }
- beginStrokeAnimation(){
-  if(this.state.obstruction){this.state.cuePull=0;this.announce('큐가 다른 물체와 겹칩니다. 조준이나 기울기를 바꾸세요.');return;}
-  // Backswing is a positioning gesture, not simulated contact. Move the preview
-  // to the engine's actual starting pose, then launch the dynamic rigid cue.
-  this.windup={start:performance.now(),pull:this.state.cuePull,duration:Math.max(65,this.state.cuePull/this.state.settings.speed*1000)};
-  this.state.gesture='스트로크';this.notify();
  }
  setGameMode(mode){if(!['free','four'].includes(mode)||mode===this.state.gameMode)return;this.state.gameMode=mode;this.reset();}
  setupGame(){
@@ -91,52 +85,52 @@ class LabController{
   this.state.routeOptions={...this.state.routeOptions,mode:'carom',targetId:lab.objects[2].id,secondId:red.id};
  }
  finishGameShot(){if(this.game?.pending&&!this.lab.cue&&!this.lab.anyMotion()){const result=this.game.finish();this.state.selectedId=result.nextCue;this.repairRouteTargets();this.invalidate();this.queuePrediction(true);this.notify();}}
- reset(){this.cancelSearch('초기화되었습니다.',true);if(!this.lab)return;this.cooldownUntil=0;this.cancelGesture();this.windup=null;this.invalidate();this.lab.dispose();this.lab=new G.PhysicsLab(G.RAPIER);this.setupGame();Object.assign(this.state,{settings:{angle:0,elevation:8,tipX:0,tipY:0,speed:2},selectedId:1,paused:true,cuePull:0,gesture:''});this.accumulator=0;this.repairRouteTargets();this.queuePrediction();this.notify();}
- undo(){this.cancelSearch('타격을 되돌렸습니다.',true);this.cooldownUntil=0;this.cancelGesture();this.windup=null;if(this.lab?.undo()){if(this.game&&this.gameUndo){this.game.restore(this.gameUndo);this.state.selectedId=this.game.activeCue;this.gameUndo=null;}this.state.paused=true;this.state.cuePull=0;if(!this.lab.get(this.state.selectedId))this.state.selectedId=this.lab.objects[0].id;this.invalidate();this.queuePrediction();this.notify();}}
- step(){this.cancelSearch('물리 상태가 바뀌었습니다.',true);if(!this.lab)return;this.pause(true);this.lab.step(16);this.invalidate();this.queuePrediction();this.notify();}
- move(id,p){if(this.game?.pending){this.announce('타격 판정이 끝난 뒤 배치하세요. 초기화 또는 되돌리기로 취소할 수 있습니다.');return false;}this.cancelSearch('공 배치가 바뀌었습니다.',true);if(this.lab.cue){this.announce('스트로크가 끝난 뒤 배치할 수 있습니다.');return false;}this.state.paused=true;const okay=this.lab.move(id,p);if(okay){this.queuePrediction();this.notify()}return okay;}
+ reset(){this.cancelSearch('초기화되었습니다.',true);if(!this.lab)return;this.cooldownUntil=0;this.cancelGesture();this.windup=null;this.invalidate();this.lab.dispose();this.lab=new G.PhysicsLab(G.RAPIER);this.undoStack=[];this.redoStack=[];this.setupGame();Object.assign(this.state,{settings:{angle:0,elevation:8,tipX:0,tipY:0,speed:2},selectedId:1,paused:true,cuePull:0,gesture:''});this.accumulator=0;this.repairRouteTargets();this.queuePrediction();this.notify();}
+ captureHistory(){if(!this.lab||this.lab.cue)return null;return{world:this.lab.snapshot(),selectedId:this.state.selectedId,settings:{...this.state.settings},paused:this.state.paused,gameMode:this.state.gameMode,game:this.game?.snapshot()||null};}
+ commitHistory(before,kind='edit'){if(!before)return;this.undoStack.push({before,kind});if(this.undoStack.length>30)this.undoStack.shift();this.redoStack=[];}
+ restoreHistory(saved){
+  this.inputPending=false;this.invalidate();this.lab.restore(saved.world);this.lab.lastSnapshot=null;this.cooldownUntil=0;this.windup=null;this.accumulator=0;
+  Object.assign(this.state,{selectedId:saved.selectedId,settings:{...saved.settings},paused:saved.paused,gameMode:saved.gameMode,cuePull:0,gesture:''});
+  if(saved.game){this.game=new G.FourBallGame();this.game.restore(saved.game);}else this.game=null;
+  this.lab.onEvent=e=>this.game?.contact(e);this.repairRouteTargets();this.queuePrediction();this.notify();
+ }
+ undo(){
+  if(this.drag?.type==='ball'&&this.drag.changed){this.cancelGesture();return true;}
+  this.cancelGesture();const entry=this.undoStack.pop();if(!entry)return false;
+  this.cancelSearch('조작을 되돌렸습니다.',true);entry.after=this.captureHistory();this.redoStack.push(entry);this.restoreHistory({...entry.before,paused:true});return true;
+ }
+ redo(){
+  this.cancelGesture();const entry=this.redoStack.pop();if(!entry)return false;
+  this.cancelSearch('조작을 다시 적용했습니다.',true);
+  if(entry.after){this.restoreHistory(entry.after);this.undoStack.push(entry);this.notify();return true;}
+  // An in-flight physical cue cannot be snapshotted. Replay that authorized
+  // shot from the exact pre-shot world rather than inventing an intermediate state.
+  this.restoreHistory({...entry.before,paused:true});const remaining=this.redoStack.slice();const okay=this.fire();this.redoStack=remaining;if(!okay)this.redoStack.push(entry);this.notify();return okay;
+ }
+ step(){this.cancelSearch('물리 상태가 바뀌었습니다.',true);if(!this.lab||this.lab.cue)return;const before=this.captureHistory();this.pause(true);this.lab.step(16);this.commitHistory(before);this.invalidate();this.queuePrediction();this.notify();}
+ move(id,p,{interactive=false}={}){if(this.game?.pending){this.announce('타격 판정이 끝난 뒤 배치하세요. 초기화 또는 되돌리기로 취소할 수 있습니다.');return false;}this.cancelSearch('공 배치가 바뀌었습니다.',true);if(this.lab.cue){this.announce('스트로크가 끝난 뒤 배치할 수 있습니다.');return false;}const before=interactive?null:this.captureHistory();this.state.paused=true;const okay=this.lab.move(id,p);if(okay){if(interactive){this.inputPending=true;this.dirty=true;}else{this.commitHistory(before);this.queuePrediction();this.notify()}}return okay;}
  setPosition(p){const o=this.lab?.get(this.state.selectedId);if(!o)return;const pos={...o.body.translation(),...p};if(!this.move(o.id,pos))this.announce('다른 물체와 겹치는 위치에는 놓을 수 없습니다.');}
  setHeight(cm){const o=this.lab?.get(this.state.selectedId);if(o&&Number.isFinite(cm))this.setPosition({y:(o.radius||o.half.y)+cm/100+.00005});}
- add(shape){this.cancelSearch('물체가 추가되었습니다.',true);if(this.game)return this.announce('공 추가는 자유 실험 모드에서 가능합니다.');if(!this.lab||this.lab.cue)return;if(this.lab.objects.length>=12)return this.announce('최대 12개 물체까지 추가할 수 있습니다.');let pos;for(let z=-.4;z<.5&&!pos;z+=.16)for(let x=-1.1;x<1.1;x+=.16)if(this.lab.objects.every(o=>len(sub(o.body.translation(),V(x,.05,z)))>.13)){pos=V(x,shape==='sphere'?D.radius+.0001:.0451,z);break;}if(!pos)return;this.pause(true);const o=shape==='sphere'?this.lab.addSphere(pos,'공 '+this.lab.nextId,'#7dd3fc'):this.lab.addBox(pos,'블록 '+this.lab.nextId);this.select(o.id);}
- remove(){if(this.game)return this.announce('4구의 공은 삭제할 수 없습니다. 자유 실험 모드를 사용하세요.');this.cancelSearch('물체가 삭제되었습니다.',true);if(!this.lab||this.lab.cue||this.lab.objects.length<2)return;this.lab.removeObject(this.state.selectedId);this.select(this.lab.objects[0].id);}
- params(p){this.cancelSearch('물리 재질이 바뀌었습니다.',true);try{this.lab.setParams(p);this.queuePrediction();this.notify()}catch(error){this.announce(error.message)}}
+ add(shape){this.cancelSearch('물체가 추가되었습니다.',true);if(this.game)return this.announce('공 추가는 자유 실험 모드에서 가능합니다.');if(!this.lab||this.lab.cue)return;if(this.lab.objects.length>=12)return this.announce('최대 12개 물체까지 추가할 수 있습니다.');let pos;for(let z=-.4;z<.5&&!pos;z+=.16)for(let x=-1.1;x<1.1;x+=.16)if(this.lab.objects.every(o=>len(sub(o.body.translation(),V(x,.05,z)))>.13)){pos=V(x,shape==='sphere'?D.radius+.0001:.0451,z);break;}if(!pos)return;const before=this.captureHistory();this.pause(true);const o=shape==='sphere'?this.lab.addSphere(pos,'공 '+this.lab.nextId,'#7dd3fc'):this.lab.addBox(pos,'블록 '+this.lab.nextId);this.commitHistory(before);this.select(o.id);}
+ remove(){if(this.game)return this.announce('4구의 공은 삭제할 수 없습니다. 자유 실험 모드를 사용하세요.');this.cancelSearch('물체가 삭제되었습니다.',true);if(!this.lab||this.lab.cue||this.lab.objects.length<2)return;const before=this.captureHistory();this.lab.removeObject(this.state.selectedId);this.commitHistory(before);this.select(this.lab.objects[0].id);}
+ params(p){this.cancelSearch('물리 재질이 바뀌었습니다.',true);try{const before=this.captureHistory();this.lab.setParams(p);this.commitHistory(before);this.queuePrediction();this.notify()}catch(error){this.announce(error.message)}}
  clearTrails(){this.lab?.clearTrails();this.notify();}
  point(e){const r=this.canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
  cuePoints(){
   const o=this.lab?.get(this.state.selectedId);if(!o||o.shape!=='sphere'||this.lab.cue||!this.state.previewCueVisible)return null;
   const pose=this.lab.pose(o,this.state.settings,.012+this.state.cuePull),at=d=>sub(pose.tip,mul(pose.direction,d));
-  // Rear handle aims; the handle nearer the ball pulls the cue.
+  // Project the physical cue shaft for direct rear-side aiming.
   return{pose,aim:at(1.04),grip:at(.39),rear:at(D.cueLength),front:at(.12)};
  }
- updateHandles(){
-  if(!this.renderer)return;this.renderer.size();const p=this.cuePoints();
-  for(const [name,el]of Object.entries(this.handles||{})){
-   if(!el)continue;const q=p&&this.renderer.project(p[name]);const visible=q&&q.visible&&q.x>10&&q.x<this.renderer.width-10&&q.y>12&&q.y<this.renderer.height-50&&!this.windup&&this.state.mode==='cue';
-   el.style.display=visible?'flex':'none';if(visible){const hw=el.offsetWidth/2+4,hh=el.offsetHeight/2+4;el.style.left=clamp(q.x,hw,this.renderer.width-hw)+'px';el.style.top=clamp(q.y,hh,this.renderer.height-hh)+'px';}el.dataset.dragging=this.drag?.type===(name==='grip'?'stroke':'aim')?'true':'false';
-  }
-  const a=this.handles?.aim,b=this.handles?.grip;
-  if(a?.style.display==='flex'&&b?.style.display==='flex'){
-   const ax=parseFloat(a.style.left),ay=parseFloat(a.style.top),bx=parseFloat(b.style.left),by=parseFloat(b.style.top),gap=8;
-   const halfW=(a.offsetWidth+b.offsetWidth)/2+gap,halfH=(a.offsetHeight+b.offsetHeight)/2+gap;
-   if(Math.abs(ax-bx)<halfW&&Math.abs(ay-by)<halfH){
-    if(this.renderer.width>=a.offsetWidth+b.offsetWidth+gap+8){const left=clamp((ax+bx)/2-halfW/2,a.offsetWidth/2+4,this.renderer.width-b.offsetWidth/2-halfW-4);a.style.left=left+'px';b.style.left=(left+halfW)+'px';}
-    else{const top=clamp((ay+by)/2-halfH/2,a.offsetHeight/2+4,this.renderer.height-b.offsetHeight/2-halfH-4);a.style.top=top+'px';b.style.top=(top+halfH)+'px';}
-   }
-  }
- }
+ updateHandles(){this.renderer?.size();}
  hitCue(pt){const points=this.cuePoints();if(!points)return null;const a=this.renderer.project(points.front),b=this.renderer.project(points.rear),dx=b.x-a.x,dy=b.y-a.y,den=dx*dx+dy*dy,t=clamp(((pt.x-a.x)*dx+(pt.y-a.y)*dy)/(den||1),0,1),distance=Math.hypot(pt.x-(a.x+t*dx),pt.y-(a.y+t*dy));if(distance>=15)return null;
-  // Direct shaft interaction follows the nearest visible handle, including
-  // perspective and camera rotation, rather than an unrelated fixed split.
-  const aim=this.renderer.project(points.aim),grip=this.renderer.project(points.grip);
-  return Math.hypot(pt.x-aim.x,pt.y-aim.y)<=Math.hypot(pt.x-grip.x,pt.y-grip.y)?'aim':'stroke';}
+  return 'aim';}
  beginCue(type,e){
   if(!this.lab||this.lab.cue||this.windup||this.lab.anyMotion()||this.pinch||this.suppressTouch)return;e.preventDefault();e.stopPropagation();this.pause(true);
   const pt=this.point(e),points=this.cuePoints();if(!points)return;const center=this.lab.get(this.state.selectedId).body.translation();
   const hit=this.renderer.planePoint(pt.x,pt.y,center.y),baseAngle=hit?Math.atan2(center.z-hit.z,center.x-hit.x)*180/Math.PI:this.state.settings.angle;
-  const dScreen=this.renderer.project(add(points.grip,points.pose.direction)),gScreen=this.renderer.project(points.grip);
-  const dx=dScreen.x-gScreen.x,dy=dScreen.y-gScreen.y,scale=Math.hypot(dx,dy);
-  this.drag={type:e.shiftKey?'elevation':type,pointer:e.pointerId,x:e.clientX,y:e.clientY,initialAngle:this.state.settings.angle,angleOffset:normalizeAngle(this.state.settings.angle-baseAngle),elevation:this.state.settings.elevation,speed:this.state.settings.speed,axis:{x:dx/(scale||1),y:dy/(scale||1)},pixelsPerMeter:Math.max(35,scale),moved:false};
-  this.state.gesture=this.drag.type==='stroke'?'뒤로 당긴 뒤 놓으면 타격 · Esc 취소':this.drag.type==='elevation'?'큐 뒤쪽을 들어 올리는 중':'큐를 잡고 조준 중';
+  this.drag={type:e.shiftKey?'elevation':'aim',pointer:e.pointerId,x:e.clientX,y:e.clientY,initialAngle:this.state.settings.angle,angleOffset:normalizeAngle(this.state.settings.angle-baseAngle),elevation:this.state.settings.elevation,speed:this.state.settings.speed,moved:false};
+  this.invalidate();this.state.gesture=this.drag.type==='elevation'?'큐 뒤쪽을 들어 올리는 중':'큐를 잡고 조준 중';
   e.currentTarget.setPointerCapture?.(e.pointerId);this.canvas.style.cursor='grabbing';this.notify();
  }
  pointerMove(e){
@@ -146,26 +140,22 @@ class LabController{
    if(points.length>=2){const distance=Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y);this.renderer.camera.zoom=clamp(this.pinch.zoom*this.pinch.distance/Math.max(20,distance),.6,2.5);this.dirty=true;this.updateHandles();}return;
   }
   if(this.suppressTouch&&e.pointerType==='touch')return;
-  const d=this.drag;if(!d||e.pointerId!==d.pointer)return;e.preventDefault();const dx=e.clientX-d.x,dy=e.clientY-d.y;if(Math.hypot(dx,dy)>3)d.moved=true;
+  const d=this.drag;if(!d||e.pointerId!==d.pointer)return;e.preventDefault();const started=performance.now();this.lastInputAt=started;this.inputMetrics.events++;const dx=e.clientX-d.x,dy=e.clientY-d.y;if(Math.hypot(dx,dy)>3)d.moved=true;
   if(d.type==='orbit'){this.renderer.camera.yaw-=dx*.006;this.renderer.camera.pitch=clamp(this.renderer.camera.pitch+dy*.006,.14,Math.PI/2-.001);d.x=e.clientX;d.y=e.clientY;this.state.view='';this.dirty=true;this.updateHandles();return;}
-  if(d.type==='fine-aim'){this.changeSettings({angle:normalizeAngle(d.initialAngle+dx*(this.state.fineAim?.01:.15))});}
+  if(d.type==='fine-aim'){this.changeSettings({angle:normalizeAngle(d.initialAngle+dx*(this.state.fineAim?.01:.15))},{interactive:true});}
   else if(d.type==='aim'){
-   const pt=this.point(e),o=this.lab.get(this.state.selectedId),c=o.body.translation(),q=this.renderer.planePoint(pt.x,pt.y,c.y);if(q&&Math.hypot(q.x-c.x,q.z-c.z)>.04)this.changeSettings({angle:normalizeAngle(d.initialAngle+normalizeAngle(Math.atan2(c.z-q.z,c.x-q.x)*180/Math.PI+d.angleOffset-d.initialAngle)*((e.altKey||this.state.fineAim)?.05:1))});
-  }else if(d.type==='elevation')this.changeSettings({elevation:clamp(d.elevation-dy*.36*((e.altKey||this.state.fineAim)?.05:1),0,80)});
-  else if(d.type==='stroke'){
-   const pull=clamp(-(dx*d.axis.x+dy*d.axis.y)/d.pixelsPerMeter,0,.28);this.state.cuePull=pull;
-   if(pull>.004)this.changeSettings({speed:.25+4.75*Math.pow(pull/.28,.85)});this.notify();
-  }else if(d.type==='ball'){
-   if(!d.moved)return;const pt=this.point(e),q=this.renderer.planePoint(pt.x,pt.y,d.height);if(q)this.move(d.id,add(q,d.offset));
+   const pt=this.point(e),o=this.lab.get(this.state.selectedId),c=o.body.translation(),q=this.renderer.planePoint(pt.x,pt.y,c.y);if(q&&Math.hypot(q.x-c.x,q.z-c.z)>.04)this.changeSettings({angle:normalizeAngle(d.initialAngle+normalizeAngle(Math.atan2(c.z-q.z,c.x-q.x)*180/Math.PI+d.angleOffset-d.initialAngle)*((e.altKey||this.state.fineAim)?.05:1))},{interactive:true});
+  }else if(d.type==='elevation')this.changeSettings({elevation:clamp(d.elevation-dy*.36*((e.altKey||this.state.fineAim)?.05:1),0,80)},{interactive:true});
+  else if(d.type==='ball'){
+   if(!d.moved)return;const pt=this.point(e),q=this.renderer.planePoint(pt.x,pt.y,d.height);if(q&&this.move(d.id,add(q,d.offset),{interactive:true}))d.changed=true;
   }
+  this.inputMetrics.lastHandlerMs=performance.now()-started;this.inputMetrics.maxHandlerMs=Math.max(this.inputMetrics.maxHandlerMs,this.inputMetrics.lastHandlerMs);
  }
  endGesture(e,canceled=false){
   const d=this.drag;if(!d||e&&e.pointerId!==undefined&&e.pointerId!==d.pointer)return;
   this.drag=null;this.canvas.style.cursor=this.state.mode==='orbit'?'grab':'default';this.state.gesture='';
-  if(d.type==='stroke'){
-   if(!canceled&&d.moved&&this.state.cuePull>.015)this.beginStrokeAnimation();
-   else{this.state.cuePull=0;this.state.settings.speed=d.speed;this.queuePrediction();}
-  }
+  if(d.type==='ball'&&d.changed){if(canceled)this.restoreHistory(d.before);else this.commitHistory(d.before);}
+  this.queuePrediction();
   this.notify();
  }
  cancelGesture(){this.endGesture(null,true);if(this.windup){this.windup=null;this.state.cuePull=0;this.state.gesture='';this.notify();}}
@@ -194,20 +184,23 @@ class LabController{
   c.addEventListener('pointerdown',e=>{
    if(e.button!==0&&e.button!==2)return;e.preventDefault();if(this.lab.cue||this.windup||this.pinch||this.suppressTouch)return;
    c.focus({preventScroll:true});const pt=this.point(e);c.setPointerCapture(e.pointerId);
-   if(e.button===2||this.state.mode==='orbit'){this.drag={type:'orbit',pointer:e.pointerId,x:e.clientX,y:e.clientY};c.style.cursor='grabbing';return;}
+   if(e.button===2){this.drag={type:'orbit',pointer:e.pointerId,x:e.clientX,y:e.clientY};c.style.cursor='grabbing';return;}
    const o=this.renderer.pick(this.lab.objects,pt.x,pt.y);
-   if(o){this.select(o.id);this.pause(true);if(this.state.mode!=='place')return;const pos=o.body.translation(),hit=this.renderer.planePoint(pt.x,pt.y,pos.y);this.drag={type:'ball',pointer:e.pointerId,id:o.id,height:pos.y,offset:hit?sub(pos,hit):V(),x:e.clientX,y:e.clientY,moved:false};this.state.gesture='공 배치 중';this.notify();return;}
-   if(this.state.mode==='place')return;
+   if(o){
+    if(this.game?.pending){this.announce('타격 판정이 끝난 뒤 공을 옮기세요. 되돌리기로 타격을 취소할 수 있습니다.');return;}
+    const before=this.captureHistory();this.select(o.id);this.pause(true);this.invalidate();const pos=o.body.translation(),hit=this.renderer.planePoint(pt.x,pt.y,pos.y);
+    this.drag={type:'ball',pointer:e.pointerId,id:o.id,height:pos.y,offset:hit?sub(pos,hit):V(),x:e.clientX,y:e.clientY,moved:false,changed:false,before};this.state.gesture='공을 옮기는 중 · Esc 취소';this.notify();return;
+   }
+   if(this.state.mode==='orbit'){this.drag={type:'orbit',pointer:e.pointerId,x:e.clientX,y:e.clientY};c.style.cursor='grabbing';return;}
    const type=this.hitCue(pt);if(type){this.beginCue(type,e);return;}
-   // Empty table click remains a precise alternate aiming operation. Primary
-   // manipulation is the cue itself, not a detached angle slider.
+   // Empty table points forward; touching the actual cue aims from the rear.
    const selected=this.lab.get(this.state.selectedId),q=selected&&this.renderer.planePoint(pt.x,pt.y,selected.body.translation().y);
-   if(q){const p=selected.body.translation();if(Math.hypot(q.x-p.x,q.z-p.z)>.06)this.changeSettings({angle:normalizeAngle(Math.atan2(q.z-p.z,q.x-p.x)*180/Math.PI)});}
+   if(q&&this.state.canAim){this.lastInputAt=performance.now();const p=selected.body.translation();if(Math.hypot(q.x-p.x,q.z-p.z)>.06)this.changeSettings({angle:normalizeAngle(Math.atan2(q.z-p.z,q.x-p.x)*180/Math.PI)});}
   });
   this.moveListener=e=>this.pointerMove(e);this.endListener=e=>this.touchEnd(e);this.cancelListener=e=>this.touchEnd(e,true);
   window.addEventListener('pointermove',this.moveListener,{passive:false});window.addEventListener('pointerup',this.endListener);window.addEventListener('pointercancel',this.cancelListener);
   c.addEventListener('wheel',e=>{e.preventDefault();this.renderer.camera.zoom=clamp((this.renderer.camera.zoom||1)*Math.exp(e.deltaY*.001),.6,2.5);this.dirty=true;this.updateHandles()},{passive:false});
-  this.keyListener=e=>{if(e.key==='Escape'){this.cancelGesture();return;}if(/INPUT|SELECT|TEXTAREA|BUTTON/.test(e.target.tagName)||e.target.closest('dialog,[role=dialog],[role=menu],[role=slider],[role=combobox],[role=listbox],[role=tablist]'))return;if(e.code==='Space'){e.preventDefault();this.fire()}else if(e.key.toLowerCase()==='p')this.pause(!this.state.paused)};
+  this.keyListener=e=>{if(e.key==='Escape'){this.cancelGesture();return;}if(/INPUT|SELECT|TEXTAREA|BUTTON/.test(e.target.tagName)||e.target.closest('dialog,[role=dialog],[role=menu],[role=slider],[role=combobox],[role=listbox],[role=tablist]'))return;if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?this.redo():this.undo();return;}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y'){e.preventDefault();this.redo();return;}if(e.code==='Space'){e.preventDefault();this.fire()}else if(e.key.toLowerCase()==='p')this.pause(!this.state.paused)};
   window.addEventListener('keydown',this.keyListener);
   this.lostCaptureListener=e=>this.touchEnd(e,true);window.addEventListener('lostpointercapture',this.lostCaptureListener);
   this.blurListener=()=>{this.gestures.clear();this.pinch=null;this.suppressTouch=false;this.cancelGesture();};window.addEventListener('blur',this.blurListener);this.visibilityListener=()=>{if(document.hidden){this.blurListener();this.renderCadence.suspend();this.renderer?.setHidden?.(true);if(this.raf!==null)cancelAnimationFrame(this.raf);this.raf=null;}else{this.renderCadence.resume();this.renderer?.setHidden?.(false);this.last=0;this.accumulator=0;this.dirty=true;this.scheduleFrame();}};document.addEventListener('visibilitychange',this.visibilityListener);
@@ -232,13 +225,13 @@ class LabController{
  scheduleFrame(){if(this.disposed||this.raf!==null||document.hidden)return;this.raf=requestAnimationFrame(t=>{this.raf=null;this.frame(t);});}
  frame(t){
   if(!this.lab||this.disposed||document.hidden)return;const elapsed=this.last?Math.min(.06,(t-this.last)/1000):0;this.last=t;
-  if(this.windup){const f=clamp((t-this.windup.start)/this.windup.duration,0,1);this.state.cuePull=this.windup.pull*(1-f);this.dirty=true;if(f>=1){this.windup=null;this.fire();}}
   if(!this.state.paused&&!this.drag){this.accumulator+=elapsed*this.state.rate;let n=0;while(this.accumulator>=this.lab.dt&&n<384){this.lab.step();this.accumulator-=this.lab.dt;n++;}if(n===384)this.accumulator=0;this.dirty=true;if(!this.lab.cue&&this.lab.objects.every(o=>o.body.isSleeping())){this.state.paused=true;this.queuePrediction(true);}}
+  if(this.inputPending){this.inputPending=false;this.notify();}
   this.finishGameShot();
   const visible=this.state.showCue&&this.state.paused&&!this.lab.cue&&!this.lab.anyMotion()&&t>=(this.cooldownUntil||0);if(visible!==this.state.previewCueVisible)this.notify();
   if(t-(this.lastUI||0)>120&&(!this.state.paused||this.state.gesture||this.windup)){this.notify();this.lastUI=t;}
   this.renderMetrics.cap=this.renderer.isFallback?30:60;
-  if((this.dirty||this.renderer.needsFrame)&&this.renderCadence.allow(t,this.renderMetrics.cap)){this.renderer.render(this.lab,this.state,{update:this.dirty});this.renderSide();this.updateHandles();this.dirty=false;this.lastDraw=t;this.renderMetrics.frames++;}
+  if((this.dirty||this.renderer.needsFrame)&&this.renderCadence.allow(t,this.renderMetrics.cap)){this.renderer.render(this.lab,this.state,{update:this.dirty});this.renderSide();this.updateHandles();this.dirty=false;this.lastDraw=t;this.renderMetrics.frames++;if(this.lastInputAt!==undefined){this.inputMetrics.lastInputToFrameMs=performance.now()-this.lastInputAt;this.inputMetrics.maxInputToFrameMs=Math.max(this.inputMetrics.maxInputToFrameMs,this.inputMetrics.lastInputToFrameMs);this.lastInputAt=undefined;}}
   this.scheduleFrame();
  }
  dispose(){this.disposed=true;cancelAnimationFrame(this.raf);this.raf=null;this.renderCadence.suspend();clearTimeout(this.predictionTimer);clearTimeout(this.noticeTimer);this.predictor?.dispose();this.optimizer?.dispose();this.renderer?.dispose?.();this.resizeObserver?.disconnect();this.lab?.dispose();window.removeEventListener('pointermove',this.moveListener);window.removeEventListener('pointerup',this.endListener);window.removeEventListener('pointercancel',this.cancelListener);window.removeEventListener('keydown',this.keyListener);this.canvas?.parentElement.removeEventListener('pointerdown',this.touchStartListener,true);window.removeEventListener('lostpointercapture',this.lostCaptureListener);window.removeEventListener('blur',this.blurListener);document.removeEventListener('visibilitychange',this.visibilityListener);this.lab=null;}

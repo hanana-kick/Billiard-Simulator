@@ -106,19 +106,40 @@ class PhysicsLab{
   const rotation=qfromY(direction),shaftCenter=sub(tip,mul(direction,D.tipRadius+D.cueLength/2));
   return{direction,side,up,contact,tip,rotation,shaftCenter,surface};
  }
- cueObstruction(o,settings){
-  if(!o||o.shape!=='sphere')return '공을 선택하세요';
-  const p=this.pose(o,settings),rear=D.cueLength-D.flexibleLength;
-  const parts=[{shape:new this.R.Cylinder(rear/2,D.cueRadius),center:sub(p.tip,mul(p.direction,D.tipRadius+D.flexibleLength+rear/2))},{shape:new this.R.Cylinder(D.flexibleLength/2,.0058),center:sub(p.tip,mul(p.direction,D.tipRadius+D.flexibleLength/2))}];
+ cueClearance(o,settings,{pull=0}={}){
+  if(!o||o.shape!=='sphere')return{clear:false,distance:-Infinity,obstacle:'공을 선택하세요'};
+  const p=this.pose(o,settings,.012+Math.max(0,pull)),rear=D.cueLength-D.flexibleLength,travel=.012+Math.max(0,pull),velocity=mul(p.direction,travel);
+  const parts=[{kind:'shaft',shape:new this.R.Cylinder(rear/2,D.cueRadius),center:sub(p.tip,mul(p.direction,D.tipRadius+D.flexibleLength+rear/2))},{kind:'neck',shape:new this.R.Cylinder(D.flexibleLength/2,.0058),center:sub(p.tip,mul(p.direction,D.tipRadius+D.flexibleLength/2))},{kind:'tip',shape:new this.R.Ball(D.tipRadius),center:p.tip}];
   this.world.propagateModifiedBodyPositionsToColliders();
-  for(const other of [...this.statics,...this.objects]){
-   if(other===o)continue;
-   if(parts.some(part=>other.collider.intersectsShape(part.shape,part.center,p.rotation)))return other.label;
+  let distance=.1,obstacle=null,swept=false;
+  for(const other of [...this.statics,...this.objects])for(const part of parts){
+   // Only the intended tip/cue-ball contact is exempt, never the shaft.
+   if(other===o&&part.kind==='tip')continue;
+   let gap=.1;
+   for(const fraction of [0,.5,1]){const c=other.collider.contactShape(part.shape,add(part.center,mul(velocity,fraction)),p.rotation,.1);if(c)gap=Math.min(gap,c.distance);}
+   const hit=other.collider.castShape(V(),part.shape,part.center,p.rotation,velocity,0,1,true);
+   if(hit){gap=Math.min(gap,-1e-7);swept=true;}
+   if(gap<distance){distance=gap;obstacle=other.label;}
   }
-  const tipShape=new this.R.Ball(D.tipRadius);
-  for(const other of [...this.statics,...this.objects])if(other!==o&&other.collider.intersectsShape(tipShape,p.tip,p.rotation))return other.label;
-  return null;
+  return{clear:distance>=0,distance,obstacle:distance<0?obstacle:null,swept,travel};
  }
+ findCueFeasible(o,settings,{minElevation=0,maxElevation=80,iterations=8}={}){
+  // Bounded geometric feasibility restoration, not proof that other poses do
+  // not exist. Keep a verified clear upper endpoint; never disable collisions.
+  let queries=0,best=null;
+  for(const elevation of [maxElevation,(minElevation+maxElevation)/2,minElevation]){
+   const candidate={...settings,elevation},clearance=this.cueClearance(o,candidate);queries++;
+   if(clearance.clear){best={settings:candidate,clearance};break;}
+  }
+  if(!best)return{found:false,queries,reason:'not-found-within-geometric-budget'};
+  let low=Math.max(minElevation,Math.min(settings.elevation,best.settings.elevation)),high=best.settings.elevation;
+  for(let i=0;i<iterations&&high-low>.1;i++){
+   const middle=(low+high)/2,candidate={...settings,elevation:middle},clearance=this.cueClearance(o,candidate);queries++;
+   if(clearance.clear){high=middle;best={settings:candidate,clearance};}else low=middle;
+  }
+  return{found:true,...best,queries,reason:'verified-geometric-clearance'};
+ }
+ cueObstruction(o,settings,options){return this.cueClearance(o,settings,options).obstacle;}
  strike(id,settings,{ignoreObstruction=false,saveSnapshot=true}={}){
   if(!settings||![settings.angle,settings.elevation,settings.tipX,settings.tipY,settings.speed].every(Number.isFinite)||Math.hypot(settings.tipX,settings.tipY)>=1||settings.speed<=0||settings.speed>10||settings.elevation<0||settings.elevation>85)return{ok:false,reason:"유효하지 않은 타격 설정입니다."};
   const o=this.get(id);if(!o||o.shape!=='sphere')return{ok:false,reason:'타격할 공을 선택하세요.'};
@@ -140,9 +161,9 @@ class PhysicsLab{
   const guide=this.world.createRigidBody(R.RigidBodyDesc.fixed().setTranslation(p.tip.x,p.tip.y,p.tip.z).setRotation(p.rotation));
   const joint=this.world.createImpulseJoint(R.JointData.prismatic(V(),V(),V(0,1,0)),guide,body,true);joint.setLimits(-.08,.13);joint.setContactsEnabled(false);
   body.setLinvel(mul(p.direction,settings.speed),true);head.setLinvel(mul(p.direction,settings.speed),true);
-  this.cue={body,head,guide,joint,flex,tip,shaft,neck,pose:p,started:this.time,contacted:false,contacts:new Map(),stats:{firstContact:null,lastContact:null,peakNormalForce:0,maxCompression:0,normalImpulse:0,contactEpisodes:0}};
+  this.cue={body,head,guide,joint,flex,tip,shaft,neck,selectedId:id,obstructions:new Set(),pose:p,started:this.time,contacted:false,contacts:new Map(),stats:{firstContact:null,lastContact:null,peakNormalForce:0,maxCompression:0,normalImpulse:0,contactEpisodes:0}};
   this.byCollider.set(tip.handle,{kind:'tip',label:'큐 팁',body:head});this.byCollider.set(shaft.handle,{kind:'shaft',label:'큐 샤프트',body});this.byCollider.set(neck.handle,{kind:'shaft',label:'큐 앞부분',body:head});
-  this.shots++;this.revision++;this.emit({kind:'stroke',label: this.shots+'번째 타격 · '+settings.speed.toFixed(2)+' m/s',time:this.time});return{ok:true};
+  this.shots++;for(const object of this.objects){object.trail.push({...object.body.translation(),shot:this.shots});if(object.trail.length>4000)object.trail.shift();}this.revision++;this.emit({kind:'stroke',label: this.shots+'번째 타격 · '+settings.speed.toFixed(2)+' m/s',time:this.time});return{ok:true};
  }
  removeCue(){
   if(!this.cue)return;const c=this.cue;
@@ -167,6 +188,7 @@ class PhysicsLab{
    if(!contact){contact={tangent:V()};c.contacts.set(o.id,contact);c.stats.contactEpisodes++;c.contacted=true;
     if(c.stats.firstContact===null)c.stats.firstContact=this.time;
     this.emit({kind:'contact',label:o.label+' ↔ 큐 팁',time:this.time,position:{...point}});
+    if(o.id!==c.selectedId)this.emit({kind:'cue-obstruction',label:o.label,part:'tip',time:this.time});
    }
    const relative=sub(o.body.velocityAtPoint(point),c.head.velocityAtPoint(point)),vn=dot(relative,n),vt=sub(relative,mul(n,vn));
    // Kelvin–Voigt normal compliance, no tensile force. Tangential spring stores
@@ -212,13 +234,24 @@ class PhysicsLab{
    });
   }
  }
+ observeCueObstructions(){
+  const c=this.cue;if(!c)return;
+  for(const [name,part] of [['shaft',c.shaft],['neck',c.neck],['tip',c.tip]]){
+   this.world.contactPairsWith(part,other=>{
+    const object=this.byCollider.get(other.handle);if(!object||['shaft','tip'].includes(object.kind)||(name==='tip'&&object.id===c.selectedId))return;
+    let impulse=0;this.world.contactPair(part,other,m=>{for(let j=0;j<m.numContacts();j++)impulse+=Math.max(0,m.contactImpulse(j));});
+    const key=name+':'+other.handle;
+    if(impulse>0&&!c.obstructions.has(key)){c.obstructions.add(key);this.emit({kind:'cue-obstruction',label:object.label,part:name,impulse,time:this.time});}
+   });
+  }
+ }
  step(n=1){
   for(let i=0;i<n;i++){
    const subdivisions=this.cue?this.strokeSubsteps:1,h=this.dt/subdivisions;
    this.world.integrationParameters.dt=h;
    for(let substep=0;substep<subdivisions;substep++){
    this.compliantTipContact(h);
-   this.world.step(this.queue);this.time+=h;
+   this.world.step(this.queue);this.time+=h;this.observeCueObstructions();
    this.queue.drainCollisionEvents((h1,h2,started)=>{
     if(!started)return;const a=this.byCollider.get(h1),b=this.byCollider.get(h2);if(!a||!b)return;
     // Native tip/box and shaft contacts are independent of compliant sphere contacts.
@@ -237,7 +270,7 @@ class PhysicsLab{
    for(const o of this.objects){
     const pos=o.body.translation(),height=pos.y-(o.radius||o.half.y);o.maxHeight=Math.max(o.maxHeight,height);
     o.distance+=len(sub(pos,o.lastPos));o.lastPos={...pos};
-    if(this.steps%6===0){const last=o.trail[o.trail.length-1];if(!last||len(sub(pos,last))>.004){o.trail.push({...pos});if(o.trail.length>4000)o.trail.shift();}}
+    if(this.steps%6===0){const last=o.trail[o.trail.length-1];if(!last||len(sub(pos,last))>.004){o.trail.push({...pos,shot:this.shots});if(o.trail.length>4000)o.trail.shift();}}
    }
   }
  }

@@ -13,15 +13,18 @@ function resultCompare(objective){return(a,b)=>{
  const primary=objective==='gentle'?a.settings.speed-b.settings.speed:a.distance-b.distance;
  return primary||a.distance-b.distance||a.settings.speed-b.settings.speed||String(a.method||'').localeCompare(String(b.method||''))||a.firstId-b.firstId||a.settings.angle-b.settings.angle||a.settings.elevation-b.settings.elevation||a.settings.tipX-b.settings.tipX||a.settings.tipY-b.settings.tipY;
 };}
+function doneReason(parts){return parts.every(p=>p?.terminationReason==='candidate-budget-exhausted')?'candidate-budget-exhausted':'partial';}
 function mergeResults(parts,req,elapsedMs,workerCount,mode){
  const compare=resultCompare(req.options.objective),all=parts.flatMap(p=>p?.results||[]).sort(compare),unique=[];
- for(const r of all){if(!unique.some(p=>p.method===r.method&&p.firstId===r.firstId&&p.secondId===r.secondId&&Math.abs(p.settings.angle-r.settings.angle)<.1&&Math.abs(p.settings.speed-r.settings.speed)<.12&&Math.abs(p.settings.elevation-r.settings.elevation)<.1&&Math.abs(p.settings.tipX-r.settings.tipX)<.05&&Math.abs(p.settings.tipY-r.settings.tipY)<.05))unique.push({...r});}
- const methods=req.options.mode==='direct'?['direct']:req.options.methods;
- const selected=Array.isArray(methods)?methods.flatMap(id=>unique.filter(r=>r.method===id).slice(0,2)).sort(compare):unique.slice(0,3);
+ const identity=G.LabRouteRules?.successIdentity||(r=>JSON.stringify([r.method,r.firstId,r.secondId,r.settings,(r.contacts||[]).map(e=>[e.kind,e.id,e.label])]));
+ const seen=new Set();for(const r of all){const key=identity(r);if(!seen.has(key)){seen.add(key);unique.push({...r});}}
+
+ const methods=req.options.mode==='direct'?['direct']:req.options.mode==='carom'?['any']:req.options.methods;
+ const selected=unique;
  selected.forEach((r,i)=>r.id=i+1);
  const sum=k=>parts.reduce((n,p)=>n+(Number(p?.[k])||0),0),byMethod=new Map();
  for(const p of parts)for(const m of p?.methods||[]){const old=byMethod.get(m.id)||{id:m.id,label:m.label,tested:0,total:0,found:0,evaluated:0,rejected:0,fraction:0};for(const k of ['tested','total','found','evaluated','rejected','fraction'])old[k]+=Number(m[k])||0;byMethod.set(m.id,old);}
- return{tested:sum('tested'),total:req.options.budget*(req.options.mode==='three'&&Array.isArray(req.options.methods)?req.options.methods.length:1),found:sum('found'),evaluated:sum('evaluated'),rejected:sum('rejected'),fraction:sum('fraction'),elapsedMs,workerCount,executionMode:mode,methods:[...byMethod.values()],results:selected,nearest:parts.map(p=>p?.nearest).filter(Boolean).sort((a,b)=>a.score-b.score)[0]||null,options:{...req.options},hz:Math.round(1/req.snapshot.dt),globalOptimal:false};
+ return{tested:sum('tested'),total:req.options.budget*(req.options.mode==='three'&&Array.isArray(req.options.methods)?req.options.methods.length:1),found:sum('found'),evaluated:sum('evaluated'),rejected:sum('rejected'),fraction:sum('fraction'),elapsedMs,workerCount,executionMode:mode,methods:[...byMethod.values()],results:selected,nearest:parts.map(p=>p?.nearest).filter(Boolean).sort((a,b)=>a.score-b.score)[0]||null,options:{...req.options},hz:Math.round(1/req.snapshot.dt),globalOptimal:false,exhaustive:false,searchModel:parts.some(p=>p?.searchModel==='inverse-root-and-damped-physical-solver')?'inverse-root-and-damped-physical-solver':'inverse-seeds-forward-validation',physicsSteps:sum('physicsSteps'),solverStats:parts.reduce((a,p)=>{for(const k of ['probes','steps','accepted','rejected'])a[k]+=(p?.solverStats?.[k]||0);return a;},{probes:0,steps:0,accepted:0,rejected:0}),terminationReason:doneReason(parts),seedMaxOrder:Math.max(0,...parts.map(p=>p?.seedMaxOrder||0)),seedCushionRange:(req.options.mode==='carom'||req.options.mode==='three'&&req.options.methods?.includes('any'))?[req.options.mode==='three'?3:0,Math.max(req.options.mode==='three'?3:0,...parts.map(p=>p?.seedMaxOrder||0))]:undefined,feasibilityStatus:selected.length?'verified-feasible-shot':'not-found-within-budget'};
 }
 class OptimizerService{
  constructor(onProgress,onResult,onError){this.version=0;this.onProgress=onProgress;this.onResult=onResult;this.onError=onError;this.workers=[];this.worker=null;this.latest=null;this.mode='worker';}

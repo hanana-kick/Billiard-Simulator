@@ -22,12 +22,21 @@ test('all proposed shot inputs obey speed and elevation ranges',()=>{
 test('invalid ranges and malformed policy fail before simulating',()=>{
  for(const patch of [{minSpeed:3,maxSpeed:2},{minSpeed:NaN},{maxElevation:81},{minElevation:20,maxElevation:10},{elevationMode:'magic'},{allowMovingTargets:'false'}])assert.throws(()=>ShotSearchCore.validate({...req,options:{...req.options,...patch}}));
 });
-test('moving target filter uses pre-impact motion or prior displacement, never post-impact velocity',()=>{
- const initial=new Map([[2,{position:{x:0,y:0,z:0},speed:0}]]),t={initialTargets:initial,beforeTargets:new Map([[2,{position:{x:0,y:0,z:0},speed:0}]])};
- assert.equal(ShotSearchCore.movingTargetContact(t,2),false);
- t.beforeTargets.get(2).speed=.02;assert.equal(ShotSearchCore.movingTargetContact(t,2),true);
- t.beforeTargets.get(2).speed=0;t.beforeTargets.get(2).position.x=.002;assert.equal(ShotSearchCore.movingTargetContact(t,2),true);
- t.beforeTargets.get(2).position.x=.0001;assert.equal(ShotSearchCore.movingTargetContact(t,2),false);
+test('kiss option migrates legacy polarity and explicit new values take precedence',()=>{
+ for(const value of [true,false])assert.equal(LabRouteRules.kissAllowed({allowMovingTargets:value}),value);
+ assert.equal(LabRouteRules.kissAllowed({}),true);
+ assert.equal(LabRouteRules.kissAllowed({allowKiss:false,allowMovingTargets:true}),false);
+ assert.equal(LabRouteRules.kissAllowed({allowKiss:true,allowMovingTargets:false}),true);
+ assert.throws(()=>ShotSearchCore.validate({...req,options:{...req.options,allowKiss:'false'}}));
+});
+test('kiss tracker requires an actual repeat impact after separation, not chatter or first moving contact',()=>{
+ const t=LabRouteRules.createKissTracker(),hit=(id,impact,separated,time)=>LabRouteRules.observeKiss(t,id,{impact,separated,time});
+ assert.equal(hit(2,true,false,0),false);
+ assert.equal(hit(2,true,false,.001),false);
+ assert.equal(hit(3,true,false,.002),false);
+ assert.equal(hit(2,false,true,.003),false);
+ assert.equal(hit(2,true,false,.01),true);
+ assert.deepEqual(t.contacts,[{id:2,time:.01}]);
 });
 test('inverse contact seed lies on contact circle and leaves along tangent towards goal',()=>{
  const p={x:-1,z:0},target={x:0,z:0},destination={x:.3,z:.5},r=.0615;
@@ -44,4 +53,17 @@ test('partition budgets exactly preserve total and reject malformed splits',()=>
  const empty=ShotSearchCore.createSearch(null,{...req,testBudget:true,options:{...req.options,budget:1},partition:{index:3,count:4}});
  assert.equal(empty.req.options.budget,0);assert.equal(ShotSearchCore.advanceSearch(empty),true);
  for(const partition of [{index:4,count:4},{index:0,count:0},{index:-1,count:2}])assert.throws(()=>ShotSearchCore.createSearch(null,{...req,partition}));
+});
+
+test('free route inverse seeds cover mixed prefix and suffix cushion counts',()=>{
+ const request={...req,options:{...req.options,mode:'three',methodId:'any'}},search={};
+ const seeds=Array.from({length:4*(4+5+6+7)},(_,i)=>LabRouteSampler.freeProposalAt(request,i,search));
+ for(let n=3;n<=6;n++)for(let p=0;p<=n;p++)assert.ok(seeds.some(s=>s.prefix===p&&s.suffix===n-p),`${p} before / ${n-p} after`);
+ assert.ok(search.seedMaxOrder>=6);
+});
+test('success archive is not truncated by refinement or display caps',()=>{
+ const search=ShotSearchCore.createSearch(null,req);
+ search.successes=Array.from({length:25},(_,i)=>({success:true,settings:{...settings,angle:i*.01},distance:i+1}));
+ search.pool=search.successes.slice(0,18);
+ assert.equal(ShotSearchCore.finishSearch(search).results.length,25);
 });

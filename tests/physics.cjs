@@ -96,3 +96,14 @@ test('continuous collision detection prevents high-speed sphere tunnelling',()=>
  isolate(lab);const a=lab.addSphere(V(-.2,.5,0)),b=lab.addSphere(V(.15,.5,0));a.body.setLinvel(V(20,0,0),true);step(lab,16);
  assert.ok(b.body.linvel().x>19);assert.ok(a.body.translation().x<b.body.translation().x);
 }));
+
+test('shot-tagged trail history survives snapshot undo and filters latest shot without erasing history',()=>run({},lab=>{
+ const o=lab.objects[0];assert.equal(lab.strike(o.id,settings({speed:.2})).ok,true);step(lab,2000);
+ const first=o.trail.map(p=>({...p}));assert.ok(first.some(p=>p.shot===1));
+ assert.equal(lab.strike(o.id,settings({speed:.2})).ok,true);step(lab,180);
+ assert.ok(o.trail.some(p=>p.shot===1));assert.ok(o.trail.some(p=>p.shot===2));
+ assert.ok(LabMath.visibleTrail(o,lab,{}).every(p=>p.shot===2));assert.equal(LabMath.visibleTrail(o,lab,{allPaths:true}).length,o.trail.length);
+ const clone=PhysicsLab.fromSnapshot(R,lab.snapshot());try{assert.deepEqual(clone.objects[0].trail,o.trail);}finally{clone.dispose();}
+ assert.equal(lab.undo(),true);assert.equal(lab.shots,1);assert.deepEqual(lab.objects[0].trail,first);
+ lab.clearTrails();assert.equal(lab.objects[0].trail.length,0);
+}));
