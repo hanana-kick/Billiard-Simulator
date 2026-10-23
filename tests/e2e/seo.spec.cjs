@@ -27,7 +27,8 @@ test('deployed HTML exposes Korean metadata before JavaScript runs',async({brows
   expect(data.subjectOf.url).toBe(origin+'/guide.html');
   expect(data.description).toContain('공식 경기 채점이나 실물 명중을 보장하지 않습니다');
   expect(data.featureList).toContain('3쿠션 경로 탐색');
-  await expect(page.locator('noscript')).toContainText('JavaScript');
+  await expect(page.locator('noscript p')).toBeVisible();
+  await expect(page.locator('noscript p')).toContainText('JavaScript');
   await expect(page.getByRole('link',{name:'당구 연습 사용 안내',exact:true})).toBeVisible();
  }finally{await context.close();}
 });
