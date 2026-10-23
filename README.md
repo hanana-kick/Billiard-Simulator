@@ -14,7 +14,7 @@ npm start
 # http://localhost:8787
 ```
 
-빌드 결과는 `dist/` 및 `standalone.html`입니다. 실제 React·Base UI·물리엔진이 함께 번들되어 실행 시 CDN 연결이 필요하지 않습니다. `dist/`를 정적 호스팅할 수 있습니다.
+빌드 결과는 `dist/` 및 `standalone.html`입니다. 실제 React·Base UI·물리엔진은 함께 번들됩니다. 글꼴은 버전을 고정한 공식 Pretendard Variable CDN을 사용하며, 연결 실패 시 일반 sans-serif로 표시합니다. `dist/`를 정적 호스팅할 수 있습니다.
 
 ## GitHub Pages
 
@@ -53,7 +53,7 @@ google-chrome --version
 npm run test:e2e
 ```
 
-E2E는 별도 모형 UI가 아닌 실제 배포 빌드에서 실행합니다. 세 탭과 상태 유지, 모든 설정의 접근·값 반영, 9개 재질 슬라이더의 실제 표시·키보드 입력, 다양한 CSS 화면 크기와 200% 글자 확대, 터치·핀치 취소, 3쿠션 검색·적용·타격, 공 이동과 실행 취소·재실행, CDN 미사용을 검사합니다.
+E2E는 별도 모형 UI가 아닌 실제 배포 빌드에서 실행합니다. 세 탭과 상태 유지, 모든 설정의 접근·값 반영, 9개 재질 슬라이더의 실제 표시·키보드 입력, 다양한 CSS 화면 크기와 200% 글자 확대, 터치·핀치 취소, 3쿠션 검색·적용·타격, 공 이동과 실행 취소·재실행, 외부 실행 코드 미사용과 실제 Pretendard Variable 한글 로드를 검사합니다.
 
 `BROWSER_EXECUTABLE`로 설치된 Chromium 경로를 지정할 수 있습니다. `APP_URL`은 이미 실행 중인 정적 서버의 주소입니다. 네트워크 탐색이 제한된 환경에서는 `LOCAL_HTML=/절대경로/standalone.html`로 동일 HTML을 브라우저에 직접 로드해 시험할 수 있습니다. CI에서는 실제 HTTP 서버를 사용합니다.
 

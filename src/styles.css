@@ -71,7 +71,7 @@
 @layer base {
   * { border-color: var(--border); }
   html, body, #app { width: 100%; height: 100%; margin: 0; overflow: hidden; }
-  body { background: var(--background); color: var(--foreground); font-family: Inter, Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; -webkit-font-smoothing: antialiased; }
+  body { background: var(--background); color: var(--foreground); font-family: 'Pretendard Variable', sans-serif; -webkit-font-smoothing: antialiased; }
   button { touch-action: manipulation; }
   button:not(:disabled), [role=button]:not([aria-disabled=true]) { cursor: pointer; }
   [hidden]:not([hidden="until-found"]) { display: none !important; }

@@ -14,6 +14,6 @@ let html=fs.readFileSync(path.join(root,'index.template.html'),'utf8').replace('
 html=html.replace('</head>',()=>script('third-party-licenses',notices,'text/plain')+'</head>');
 fs.writeFileSync(path.join(dist,'index.html'),html);fs.cpSync(path.join(root,'public'),dist,{recursive:true});
 fs.writeFileSync(path.join(root,online?'online.html':'standalone.html'),html.replace(/<link rel="icon"[^>]*>/,''));
-fs.writeFileSync(path.join(root,'docs/build-mode.json'),JSON.stringify({mode:online?'real-cdn-modules':'real-bundled-packages',requiresNetwork:online,bytes:Buffer.byteLength(html),uiSource:'vendor/shadcn/base',runtime:'@base-ui/react'},null,2));
+fs.writeFileSync(path.join(root,'docs/build-mode.json'),JSON.stringify({mode:online?'real-cdn-modules':'real-bundled-packages',requiresNetwork:online,externalFont:'Pretendard Variable CDN (fallback available)',bytes:Buffer.byteLength(html),uiSource:'vendor/shadcn/base',runtime:'@base-ui/react'},null,2));
 fs.writeFileSync(path.join(dist,'.nojekyll'),'');
 console.log(`Built ${online?'online':'self-contained'} application (${(Buffer.byteLength(html)/1048576).toFixed(2)} MiB).`);

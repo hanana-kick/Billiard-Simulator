@@ -1,5 +1,6 @@
 const {test,expect}=require('@playwright/test');
 const fs=require('node:fs');
+const {waitForPretendard}=require('./font-helper.cjs');
 
 // Generic CSS viewport sizes, not model-specific device/DPR claims. Touch support
 // explicitly exercises coarse-pointer layout at every responsive boundary.
@@ -134,9 +135,9 @@ for(const [width,height]of viewports)test(`coarse-pointer ${width}x${height}: ev
   await page.getByRole('tab',{name:'수동',exact:true}).click();
   await page.getByRole('tab',{name:'경로 탐색',exact:true}).click();await expect(page.locator('#gameMode')).toBeVisible();
   fs.mkdirSync('test-results/renewal',{recursive:true});
-  await page.screenshot({path:`test-results/renewal/${width}x${height}-sidebar.png`});
+  await waitForPretendard(page);await page.screenshot({path:`test-results/renewal/${width}x${height}-sidebar.png`});
   await closeSidebar(page);await chromeBounds(page,width,height,false);await directSceneWithinTable(page);await preserved(page);
-  await page.screenshot({path:`test-results/renewal/${width}x${height}-scene.png`});
+  await waitForPretendard(page);await page.screenshot({path:`test-results/renewal/${width}x${height}-scene.png`});
   // Opening and closing the mobile Sheet or desktop offcanvas cannot reset the table.
   await openSidebar(page);await page.getByRole('tab',{name:'수동',exact:true}).click();await expect(page.locator('#angle')).toHaveValue('17.23');await page.getByRole('tab',{name:'경로 탐색',exact:true}).click();await expect(page.locator('#gameMode')).toBeVisible();await preserved(page);
   await closeSidebar(page);await directSceneWithinTable(page);
@@ -193,7 +194,7 @@ for(const width of [768,820,1024])test(`200% root text at ${width}px preserves r
   }
   await closeSidebar(page);await chromeBounds(page,width,height,false);await directSceneWithinTable(page);await preserved(page);
   await openSidebar(page);await preserved(page);await closeSidebar(page);
-  fs.mkdirSync('test-results/renewal',{recursive:true});await page.screenshot({path:`test-results/renewal/${width}-text-200.png`});
+  fs.mkdirSync('test-results/renewal',{recursive:true});await waitForPretendard(page);await page.screenshot({path:`test-results/renewal/${width}-text-200.png`});
   expect(errors).toEqual([]);
  }finally{await context.close();}
 });

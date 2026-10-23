@@ -1,5 +1,6 @@
 const {test,expect}=require('@playwright/test');
 const fs=require('node:fs');
+const {waitForPretendard}=require('./font-helper.cjs');
 const tab=(page,name)=>page.getByRole('tab',{name,exact:true});
 async function settleSidebarLayout(page){
  // matchMedia updates synchronously; React's useIsMobile switches branches later.
@@ -77,7 +78,7 @@ test('desktop and small-screen layout keeps table and one scrollable panel usabl
   expect(sizes.overflow).toBe(false);expect(sizes.tableVisible).toBe(true);expect(sizes.tableHeight).toBeGreaterThan(60);expect(sizes.tabsVisible).toBe(true);expect(sizes.sliderReachable).toBe(true);
   await tab(page,'수동').click();await assertOnePanel(page,'shotPanel');
   await closeSidebar(page);await expect(page.locator('#scene')).toBeInViewport();
-  await page.screenshot({path:`test-results/screenshots/${width}x${height}.png`});
+  await waitForPretendard(page);await page.screenshot({path:`test-results/screenshots/${width}x${height}.png`});
  }
  expect(errors).toEqual([]);
 });
@@ -126,9 +127,9 @@ test('three-cushion search yields a real candidate, applies and preserves it acr
  await closeSidebar(page);await page.locator('#strike').click();await page.waitForFunction(()=>cueLab.lab.time>.5);expect(await page.evaluate(()=>cueLab.state.previewCueVisible)).toBe(false);expect(await page.evaluate(()=>cueLab.lab.shots)).toBe(1);expect(errors).toEqual([]);
 });
 
-test('bundled build has no runtime dependency on external CDNs',async({page})=>{
- const external=[];page.on('request',r=>{const url=r.url();if(/^https?:/.test(url)&&new URL(url).origin!==new URL(process.env.APP_URL||'http://127.0.0.1:8787').origin)external.push(url);});
- await boot(page);await tab(page,'설정').click();await select(page,'horizon','8초');expect(external).toEqual([]);
+test('bundled runtime only requests the explicitly allowed version-pinned Pretendard CDN font',async({page})=>{
+ const external=[];page.on('request',r=>{const url=r.url();if(/^https?:/.test(url)&&new URL(url).origin!==new URL(process.env.APP_URL||'http://127.0.0.1:8787').origin)external.push({url,type:r.resourceType()});});
+ await boot(page);await tab(page,'설정').click();await select(page,'horizon','8초');await waitForPretendard(page);expect(external.length).toBeGreaterThan(0);for(const r of external){expect(r.url).toMatch(/^https:\/\/cdn\.jsdelivr\.net\/gh\/orioncactus\/pretendard@v1\.3\.9\/dist\/web\/variable\//);expect(['stylesheet','font']).toContain(r.type);}
 });
 
 test('direct scene remains usable across sizes without removed fullscreen or cue overlays',async({page})=>{
@@ -180,7 +181,7 @@ test('all three physically verified baseline candidates are accessible, not a to
 });
 
 test('forward line owns continuous aiming while empty cloth drag does not and floor drag owns the camera',async({page})=>{
- await boot(page);await closeSidebar(page);await page.getByRole('checkbox',{name:'상단',exact:true}).click();
+ await boot(page);await closeSidebar(page);await page.locator('#viewGroup').getByRole('button',{name:'상단',exact:true}).click();
  const coordinates=await page.evaluate(()=>{const c=cueLab,r=c.canvas.getBoundingClientRect(),p=c.lab.get(c.state.selectedId).body.translation(),at=(x,z)=>{const q=c.renderer.project({x,y:p.y,z});return{x:r.left+q.x,y:r.top+q.y};};return{line:at(p.x+.45,p.z),lineEnd:at(p.x+.45,p.z+.35),blank:at(.1,.5),blankEnd:at(.3,.55),floor:{x:r.left+15,y:r.top+50},inside:at(0,0)};});
  const speed=await page.evaluate(()=>cueLab.state.settings.speed);
  await page.mouse.move(coordinates.line.x,coordinates.line.y);await page.mouse.down();await page.waitForFunction(()=>cueLab.drag?.type==='forward-aim');await page.mouse.move(coordinates.lineEnd.x,coordinates.lineEnd.y,{steps:8});
