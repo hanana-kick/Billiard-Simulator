@@ -1,11 +1,21 @@
 const {test,expect}=require('@playwright/test');
 const fs=require('node:fs');
 const tab=(page,name)=>page.getByRole('tab',{name,exact:true});
+async function settleSidebarLayout(page){
+ // matchMedia updates synchronously; React's useIsMobile switches branches later.
+ await expect.poll(()=>page.evaluate(()=>{
+  const mobile=matchMedia('(max-width: 767px)').matches;
+  const desktopBranch=!!document.querySelector('[data-slot="sidebar"][data-state]:not([data-mobile])');
+  return mobile?!desktopBranch:desktopBranch;
+ }),{message:'React Sidebar branch matches the resized CSS viewport'}).toBe(true);
+}
 async function openSidebar(page){
+ await settleSidebarLayout(page);
  if(await page.locator('#sidebarTrigger').getAttribute('aria-expanded')!=='true')await page.locator('#sidebarTrigger').click();
  await expect(page.locator('#tab-shot')).toBeInViewport({ratio:1});
 }
 async function closeSidebar(page){
+ await settleSidebarLayout(page);
  if(await page.locator('#sidebarTrigger').getAttribute('aria-expanded')==='true')await page.locator('.toolbox-heading').getByRole('button',{name:'설정 패널 닫기',exact:true}).click();
  await expect(page.locator('#tab-shot')).not.toBeInViewport();
 }
@@ -40,7 +50,7 @@ test('three real Base UI tabs preserve world, settings, focus and mounted canvas
 
 test('all settings work through actual Base UI controls',async({page})=>{
  const errors=await boot(page);await tab(page,'설정').click();
- for(const id of ['horizon','speed','step','clearTrails','placement','posX','posZ','posY','height','addBall','addBox','remove','materials','contacts']){
+ for(const id of ['horizon','speed','step','clearTrails','placement','posX','posZ','posY','height','addBall','addBox','remove','materials','contacts','undo','reset']){
   const el=page.locator('#'+id);await el.scrollIntoViewIfNeeded();await expect(el).toBeVisible();
  }
  for(const [id,key]of [['조준 큐 표시','showCue'],['실제 이동 궤적','paths'],['충돌 형상','debug'],['속도 벡터','vectors']]){

@@ -28,8 +28,8 @@ jobs:
         run: npm test
       - name: Official component provenance
         run: npm run test:provenance
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Verify preinstalled sandboxed Google Chrome
+        run: google-chrome --version
       - name: Full rendered application, desktop and mobile
         run: npm run test:e2e
       - name: Preserve test evidence

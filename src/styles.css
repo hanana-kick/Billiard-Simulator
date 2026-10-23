@@ -139,15 +139,15 @@
 .tip-data > div > span { display: block; color: var(--muted-foreground); }
 .tip-data strong { display: block; font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; }
 .tip-data small, .muted-caption { color: var(--muted-foreground); font-size: 14px; font-weight: 400; }
-.field-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.field-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
 .field-heading output { font-size: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.number-with-unit { display: flex; align-items: center; gap: 5px; width: 112px; flex-shrink: 0; }
+.number-with-unit { display: flex; align-items: center; gap: 5px; width: 7rem; max-width: 100%; flex-shrink: 0; }
 .number-with-unit span { color: var(--muted-foreground); }
 .angle-nudges { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .scale { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; color: var(--muted-foreground); }
 .side-view { display: block; width: 100%; height: 112px; touch-action: none; }
 .helper, .gesture-note { margin: 0; font-size: 14px; line-height: 1.65; color: var(--muted-foreground); overflow-wrap: anywhere; }
-.coordinates { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.coordinates { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 5rem), 1fr)); gap: 8px; }
 .coordinates input { min-width: 0; }
 .action-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .advanced-body { display: flex; flex-direction: column; gap: 16px; }
@@ -224,3 +224,16 @@
 @media (max-width: 639px), (max-height: 500px) { .side-view-wrap { display: none; } }
 .sidebar-opener, .zoom-tools { display: flex; align-items: center; gap: 8px; }
 .sidebar-opener { font-size: 14px; }
+
+/* HIG-informed surrounding layout: use space without restyling controls. */
+.workspace-header { padding-top: max(12px,env(safe-area-inset-top)); padding-left: max(16px,env(safe-area-inset-left)); padding-right: max(16px,env(safe-area-inset-right)); }
+.stage-region { padding-bottom: max(16px,env(safe-area-inset-bottom)); padding-left: max(16px,env(safe-area-inset-left)); padding-right: max(16px,env(safe-area-inset-right)); }
+[data-slot=sidebar][data-mobile=true] { width: min(22rem,calc(100vw - 16px)); }
+.toolbox-heading { padding-top: max(8px,env(safe-area-inset-top)); }
+.sidebar-playback { padding-bottom: max(8px,env(safe-area-inset-bottom)); }
+.panel-utility { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+@media (max-width:639px) { .workspace-header .desktop-label { display: none; } }
+
+/* Hit padding participates in layout; it never overlays adjacent targets. */
+.hit-target { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 4px; flex-shrink: 0; }
+.app-shell[data-full-window=true] .stage-toolbar > .hit-target { margin-left: auto; }

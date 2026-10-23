@@ -12,7 +12,13 @@ import {Dialog,DialogContent,DialogHeader,DialogTitle,DialogDescription,DialogFo
 import {createRoot} from 'react-dom/client'
 import {Alert,AlertDescription} from '@/components/ui/alert'
 import {RoutePlanner} from '@/components/route-planner'
+import {InspectorSection} from '@/components/inspector-section'
 import {Icon} from '@/icons'
+// A surrounding hit region forwards only clicks on its own empty padding.
+// The official button, keyboard behavior and visible registry styles stay intact.
+function HitTarget({children}:{children:React.ReactNode}){
+ return <span className="hit-target" onClick={e=>{if(e.target===e.currentTarget){const button=e.currentTarget.querySelector('button');if(button&&!button.disabled)button.click()}}}>{children}</span>
+}
 const G=globalThis as any
 const controller=new G.LabController()
 const n=(x:number,p=2)=>Number(x||0).toFixed(p)
@@ -21,7 +27,7 @@ function TipSelector({state:s}:{state:any}){
  const moving=React.useRef(false)
  const set=(e:React.PointerEvent<HTMLDivElement>)=>{if(!s.canAim)return;const b=e.currentTarget.getBoundingClientRect();controller.changeSettings({tipX:(e.clientX-b.left-b.width/2)/(b.width/2),tipY:-(e.clientY-b.top-b.height/2)/(b.height/2)})}
  return <Card size="sm" className="inspector-section">
-  <CardHeader><div className="section-heading"><CardTitle>타점</CardTitle><Button variant="ghost" size="sm" id="centerTip" onClick={()=>controller.changeSettings({tipX:0,tipY:0})}>중앙</Button></div><CardDescription>수구에서 큐가 닿는 위치를 조절합니다.</CardDescription></CardHeader>
+  <CardHeader><div className="section-heading"><CardTitle>타점</CardTitle><HitTarget><Button variant="ghost" size="sm" id="centerTip" onClick={()=>controller.changeSettings({tipX:0,tipY:0})}>중앙</Button></HitTarget></div><CardDescription>수구에서 큐가 닿는 위치를 조절합니다.</CardDescription></CardHeader>
   <CardContent className="tip-section">
    <div className="tip-wrapper"><span className="tip-up">상단</span><div id="tipDisc" role="group" aria-label="수구 타점: 좌우·상하 화살표로 조절" tabIndex={0} className="tip-disc"
     onPointerDown={e=>{e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);moving.current=true;set(e)}} onPointerMove={e=>{if(moving.current)set(e)}} onPointerUp={()=>moving.current=false} onPointerCancel={()=>moving.current=false} onLostPointerCapture={()=>moving.current=false}
@@ -77,6 +83,7 @@ function Workspace(){
  const {open:sidebarOpen,setOpen:setSidebarOpen,openMobile:mobileOpen,setOpenMobile:setMobileOpen,isMobile}=useSidebar()
  const [helpOpen,setHelpOpen]=React.useState(false),sideHeld=React.useRef(false)
  const [fullWindow,setFullWindow]=React.useState(false)
+ React.useEffect(()=>{const media=matchMedia('(max-width:1099px)');const changed=()=>{if(media.matches)setSidebarOpen(false)};media.addEventListener('change',changed);return()=>media.removeEventListener('change',changed)},[setSidebarOpen])
  const appShell=React.useRef<HTMLDivElement>(null)
  const scrollPositions=React.useRef<Record<string,number>>({shot:0,routes:0,settings:0})
  const changePanel=(value:unknown)=>{
@@ -121,19 +128,20 @@ function Workspace(){
       <TabsTrigger value="settings" id="tab-settings">설정</TabsTrigger>
      </TabsList></div>
      <SidebarContent className="panel-scroll" id="panelScroll" ref={attachPanelScroll} onScroll={e=>{scrollPositions.current[s.activePanel]=e.currentTarget.scrollTop}}>
-     <TabsContent value="shot" keepMounted id="shotPanel" className="tool-panel" aria-label="타격 설정">
-      <Card size="sm"><CardHeader><CardTitle>게임 설정</CardTitle><CardDescription>연습 방식을 선택하고 수구를 지정하세요.</CardDescription></CardHeader><CardContent><Field><FieldLabel htmlFor="gameMode">게임 모드</FieldLabel><SelectField id="gameMode" aria-label="게임 모드" value={s.gameMode} onChange={(e:any)=>controller.setGameMode(e.target.value)}><option value="free">자유 실험 · 3구 배치</option><option value="four">한국 4구 · 연습 규칙</option></SelectField><FieldDescription>모드를 변경하면 배치와 점수가 초기화됩니다.</FieldDescription></Field></CardContent></Card>
+     <TabsContent value="shot" id="shotPanel" className="tool-panel" aria-label="타격 설정">
+
       {s.game?<Card size="sm" className="game-score" aria-label="4구 점수"><CardHeader><CardTitle>4구 점수</CardTitle><CardDescription>연습 규칙 · 현재 차례 {selected?.label}</CardDescription></CardHeader><CardContent><div className="score-row"><strong>흰 수구 {s.game.scores[s.game.cueIds[0]]}</strong><strong>노란 수구 {s.game.scores[s.game.cueIds[1]]}</strong></div><p role="status">{s.game.pending?'타격 판정 중':s.game.lastResult}</p><p className="helper">두 적구 +1 · 상대 수구 접촉/수구 장외 −1 · 실패 시 교대. 음수 허용, 종료 점수 없는 연습입니다. 수구는 직접 바꿀 수 있습니다. 규격은 기존 캐롬 실험 설정을 유지합니다.</p></CardContent></Card>:null}
       <FieldGroup><Field><FieldLabel>타격할 공</FieldLabel>
       <OptionGroup id="ballChoices" label="선택 물체" value={String(s.selectedId)} onChange={id=>controller.select(Number(id))} options={s.objects.filter((o:any)=>!s.game||s.game.cueIds.includes(o.id)).map((o:any)=>({value:String(o.id),label:<><i className="ball-dot" style={{background:o.color}}/>{o.label}</>}))}/></Field></FieldGroup>
       <TipSelector state={s}/><Separator/>
       <SwitchField id="fineAim" checked={s.fineAim} onChange={v=>controller.option('fineAim',v)} label="미세 조준"/><PrecisionControls state={s}/>
+      <InspectorSection id="gameSetup" title="게임 방식 및 규칙" defaultOpen={false}><Card size="sm"><CardHeader><CardTitle>게임 설정</CardTitle><CardDescription>연습 방식을 선택하고 수구를 지정하세요.</CardDescription></CardHeader><CardContent><Field><FieldLabel htmlFor="gameMode">게임 모드</FieldLabel><SelectField id="gameMode" aria-label="게임 모드" value={s.gameMode} onChange={(e:any)=>controller.setGameMode(e.target.value)}><option value="free">자유 실험 · 3구 배치</option><option value="four">한국 4구 · 연습 규칙</option></SelectField><FieldDescription>모드를 변경하면 배치와 점수가 초기화됩니다.</FieldDescription></Field></CardContent></Card></InspectorSection>
 
       {s.obstruction?<Alert id="strikeWarning"><AlertDescription>큐가 {s.obstruction}에 닿습니다. 기울기나 조준을 바꾸세요.</AlertDescription></Alert>:null}
       <p className="helper">미세 조준을 켜면 드래그 감도가 낮아집니다. 숫자와 ± 버튼은 0.01° 단위입니다.</p>
      </TabsContent>
-     <TabsContent value="routes" keepMounted id="routesPanel" className="tool-panel route-panel" aria-label="경로 탐색"><RoutePlanner state={s} controller={controller}/></TabsContent>
-     <TabsContent value="settings" keepMounted id="settingsPanel" className="tool-panel" aria-label="시뮬레이션 설정">
+     <TabsContent value="routes" id="routesPanel" className="tool-panel route-panel" aria-label="경로 탐색"><RoutePlanner state={s} controller={controller}/></TabsContent>
+     <TabsContent value="settings" id="settingsPanel" className="tool-panel" aria-label="시뮬레이션 설정">
       <section className="settings-section" id="preview-settings" tabIndex={-1} aria-labelledby="preview-settings-title">
       <div className="section-heading"><h2 id="preview-settings-title">표시·재생</h2></div><FieldGroup>
        <SwitchField id="predict" checked={s.predict} onChange={v=>controller.option('predict',v)} label="예상 궤적"/>
@@ -147,21 +155,22 @@ function Workspace(){
       <p className="helper"><a href="./guide.html" target="_blank" rel="noopener">3구·삼구·4구·사구·3쿠션 연습 안내 (새 탭)</a></p>
      </TabsContent>
 
+     <section className="panel-utility" aria-label="기록 및 도움말"><Separator/><p className="muted-caption">기록 및 도움말</p><div className="action-row"><Button id="undo" variant="outline" size="sm" disabled={!s.undo} onClick={()=>controller.undo()}><Icon name="undo" data-icon="inline-start"/>되돌리기</Button><Button id="reset" variant="outline" size="sm" onClick={()=>controller.reset()}><Icon name="reset" data-icon="inline-start"/>초기화</Button><Button variant="ghost" size="icon" aria-label="조작 도움말" onClick={()=>setHelpOpen(true)}><Icon name="info"/></Button></div></section>
      </SidebarContent>
     </Tabs>
     <SidebarFooter className="sidebar-playback">
-     <div className="playback-controls"><Button id="strike" disabled={disabled} onClick={()=>{controller.fire();setMobileOpen(false)}}><Icon name="arrow" data-icon="inline-start"/>타격</Button><Button id="pause" variant="outline" aria-label={s.paused?'계속 실행':'일시정지'} onClick={()=>controller.pause(!s.paused)}><Icon name={s.paused?'play':'pause'} data-icon="inline-start"/>{s.paused?'계속':'일시정지'}</Button></div>
-     <div className="action-row"><Button id="undo" variant="outline" size="sm" disabled={!s.undo} onClick={()=>controller.undo()}><Icon name="undo" data-icon="inline-start"/>되돌리기</Button><Button id="reset" variant="outline" size="sm" onClick={()=>controller.reset()}><Icon name="reset" data-icon="inline-start"/>초기화</Button><Button variant="ghost" size="icon" aria-label="조작 도움말" onClick={()=>setHelpOpen(true)}><Icon name="info"/></Button></div>
+     <div className="playback-controls"><HitTarget><Button id="strike" disabled={disabled} onClick={()=>{controller.fire();setMobileOpen(false)}}><Icon name="arrow" data-icon="inline-start"/>타격</Button></HitTarget><HitTarget><Button id="pause" variant="outline" aria-label={s.paused?'계속 실행':'일시정지'} onClick={()=>controller.pause(!s.paused)}><Icon name={s.paused?'play':'pause'} data-icon="inline-start"/>{s.paused?'계속':'일시정지'}</Button></HitTarget></div>
+
      <span className="forecast-status" id="forecastStatus" title={s.forecastStatus} aria-live="polite">{s.routeStatus==='searching'?`경로 탐색 ${s.routeProgress?.tested||0}/${s.routeProgress?.total||0}`:s.predictionBusy?'예측 중…':s.forecastStatus}</span>
     </SidebarFooter>
    </Sidebar>
    <SidebarInset className="scene-inset">
-    <header className="workspace-header"><div className="sidebar-opener"><SidebarTrigger id="sidebarTrigger" aria-label={(isMobile?mobileOpen:sidebarOpen)?"설정 패널 닫기":"설정 패널 열기"} aria-expanded={isMobile?mobileOpen:sidebarOpen}/><span>게임·타격·경로</span></div><p className="muted-caption">Cue Lab <span className="desktop-label">· 3D 물리 실험실</span></p></header>
+    <header className="workspace-header"><div className="sidebar-opener"><HitTarget><SidebarTrigger id="sidebarTrigger" aria-label={(isMobile?mobileOpen:sidebarOpen)?"설정 패널 닫기":"설정 패널 열기"} aria-expanded={isMobile?mobileOpen:sidebarOpen}/></HitTarget><span>게임·타격·경로</span></div><p className="muted-caption">Cue Lab <span className="desktop-label">· 3D 물리 실험실</span></p></header>
     <section id="stagePreview" className="stage-region" aria-label="당구대와 직접 조작">
      <div className="stage-toolbar">
       <div className="view-controls"><OptionGroup id="viewGroup" label="카메라 시점" value={s.view||'3d'} onChange={v=>controller.view(v)} options={[{value:'top',label:'상단'},{value:'3d',label:'3D'},{value:'side',label:'측면'}]}/></div>
-      <div className="zoom-tools"><Button variant="outline" size="icon" aria-label="축소" onClick={()=>controller.zoom(1.12)}><Icon name="minus"/></Button><Button variant="outline" size="icon" id="fit" aria-label="화면 맞춤" onClick={()=>controller.fit()}><Icon name="frame"/></Button><Button variant="outline" size="icon" aria-label="확대" onClick={()=>controller.zoom(1/1.12)}><Icon name="plus"/></Button></div>
-      <Button id="fullscreen" variant="outline" aria-label={fullWindow?"당구대 집중 모드 나가기":"당구대 집중 모드"} aria-pressed={fullWindow} onClick={fullscreen}><Icon name={fullWindow?"x":"expand"} data-icon="inline-start"/>{fullWindow?'집중 모드 나가기':'집중 모드'}</Button>
+      <div className="zoom-tools"><HitTarget><Button variant="outline" size="icon" aria-label="축소" onClick={()=>controller.zoom(1.12)}><Icon name="minus"/></Button></HitTarget><HitTarget><Button variant="outline" size="icon" id="fit" aria-label="화면 맞춤" onClick={()=>controller.fit()}><Icon name="frame"/></Button></HitTarget><HitTarget><Button variant="outline" size="icon" aria-label="확대" onClick={()=>controller.zoom(1/1.12)}><Icon name="plus"/></Button></HitTarget></div>
+      <HitTarget><Button id="fullscreen" variant="outline" aria-label={fullWindow?"당구대 집중 모드 나가기":"당구대 집중 모드"} aria-pressed={fullWindow} onClick={fullscreen}><Icon name={fullWindow?"x":"expand"} data-icon="inline-start"/>{fullWindow?'집중 모드 나가기':'집중 모드'}</Button></HitTarget>
      </div>
       <div className="viewport" id="viewport">
        <canvas ref={scene} id="scene" tabIndex={0} aria-label="물리 공간. 큐 손잡이를 드래그하거나 공 배치 모드에서 공을 옮깁니다. 두 손가락으로 확대합니다."/>
@@ -189,5 +198,5 @@ function Workspace(){
   <HelpDialog open={helpOpen} onOpenChange={setHelpOpen}/>{s.notice?<div className="notice-wrap"><Alert role="status" aria-live="polite"><AlertDescription>{s.notice}</AlertDescription></Alert></div>:null}
  </div>
 }
-function App(){return <SidebarProvider className="workspace-shell" style={{'--sidebar-width':'22rem'} as React.CSSProperties}><Workspace/></SidebarProvider>}
+function App(){return <SidebarProvider defaultOpen={window.innerWidth>=1100} className="workspace-shell" style={{'--sidebar-width':'22rem'} as React.CSSProperties}><Workspace/></SidebarProvider>}
 createRoot(document.getElementById('app')!).render(<App/>);
