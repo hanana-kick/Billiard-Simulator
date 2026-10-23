@@ -51,3 +51,43 @@ test('angle finite differences use the short signed perturbation across wrap bou
 test('fixed cue speed removes only that numerical axis',()=>{
  const settings={angle:0,elevation:8,speed:2,tipX:0,tipY:0};const search={req:{settings,options:{spin:true,budget:48,minSpeed:2,maxSpeed:2}},count:12,pool:[{success:false,firstHit:true,score:100,residual:[.1,.1,.1],settings}]};ShotSearchCore.nextDls(search);assert.deepEqual(search.dls.axes,['angle','tipX','tipY']);
 });
+function idealRequest(){return{snapshot:{objects:[{id:1,pos:{x:-.3,z:0},radius:.03075,mass:.21},{id:2,pos:{x:0,z:0},radius:.03075,mass:.21},{id:3,pos:{x:.3,z:.3},radius:.03075,mass:.21}],params:{}},selectedId:1,settings:{angle:0,elevation:0,speed:2,tipX:0,tipY:0},options:{targetId:2,secondId:3,methodId:'carom',mode:'carom',spin:true,inputStrategy:'analytic'}};}
+test('closed-form cue input inverse satisfies ideal energy and first-contact stun equations',()=>{
+ const req=idealRequest(),seed=LabRouteSampler.inverseInputSeeds(req).find(x=>x.ok);assert.ok(seed);const a=.2*9.81,R=.03075,t=2*seed.geometry.beforeDistance/(seed.ballSpeed+seed.firstContactSpeed);
+ assert.ok(Math.abs(seed.ballSpeed**2-seed.firstContactSpeed**2-2*a*seed.geometry.beforeDistance)<1e-10);
+ assert.ok(Math.abs(seed.initialBackspin-5*a*t/(2*R))<1e-10);assert.ok(Math.abs(seed.afterContactSpeed**2-seed.lambda*seed.firstContactSpeed**2)<1e-10);
+ assert.ok(seed.settings.tipY<0&&seed.settings.tipY>=-.45);assert.ok(seed.terminalSpeed>=.25);assert.equal(seed.approximate,true);
+});
+test('closed-form input proposals precede sampled fallback and reject out-of-range exact inputs instead of clipping',()=>{
+ const req=idealRequest(),search={req,count:1,pool:[]};const settings=LabRouteSampler.next(search,x=>x);assert.equal(search.pendingModel.stage,'closed-form-input-estimate');assert.ok(settings.tipY<0);
+ req.options.maxSpeed=.6;const bad=LabRouteSampler.inverseInputSeeds(req);assert.ok(bad.every(x=>!x.ok));assert.ok(bad.some(x=>x.reason==='required-cue-speed-outside-range'));
+});
+test('ideal input equations handle zero friction and reject singular or unphysical constraints',()=>{
+ const req=idealRequest(),geometry=LabRouteSampler.inverseInputSeeds(req)[0].geometry;
+ req.snapshot.params={clothFriction:0,rollingLength:0};
+ const zero=LabRouteSampler.idealCueInputs(req,geometry,{terminalSpeed:1});assert.ok(zero.ok);assert.equal(zero.settings.tipY,0);assert.equal(zero.initialBackspin,0);assert.equal(zero.terminalSpeed,1);
+ assert.equal(LabRouteSampler.idealCueInputs(req,{...geometry,impactCosine:1}).ok,false);
+ assert.equal(LabRouteSampler.idealCueInputs(req,geometry,{terminalSpeed:0}).ok,false);
+ const immediate=LabRouteSampler.idealCueInputs(req,{...geometry,beforeDistance:0},{terminalSpeed:1});assert.ok(immediate.ok);assert.equal(immediate.initialBackspin,0);
+});
+test('analytical candidate ordinals are partitioned without duplicate input seeds',()=>{
+ const zero={ix:0,iz:0,order:0,rails:[]};
+ for(const workers of [1,2,4]){const keys=[];
+  for(let index=0;index<workers;index++){
+   const req=idealRequest();req.partition={index,count:workers};const seeds=LabRouteSampler.inverseInputSeeds(req).filter(x=>x.ok);
+   const search={req,count:0,pool:[],refs:{cue:req.snapshot.objects[0],first:req.snapshot.objects[1]},analyticSeeds:Array.from({length:8},(_,k)=>({...seeds[0],settings:{...seeds[0].settings,angle:k}}))};
+   for(let local=0;local<64;local++){search.count=local*workers+index;const s=LabRouteSampler.next(search,x=>x);if(search.pendingModel.stage==='closed-form-input-estimate')keys.push(s.angle);}
+  }
+  assert.equal(keys.length,8);assert.equal(new Set(keys).size,8);
+ }
+});
+test('analytical elevation is preserved through range constraints instead of being resampled',()=>{
+ const req=idealRequest();req.settings.elevation=8;req.options={...req.options,elevationMode:'search',minElevation:0,maxElevation:30};
+ const settings={...req.settings,angle:10,speed:1.5,tipY:-.3};const constrained=ShotSearchCore.constrainSettings({req,count:1,pool:[],pendingModel:{stage:'closed-form-input-estimate'}},settings);
+ assert.equal(constrained.elevation,8);assert.equal(constrained.tipY,-.3);
+});
+test('default hybrid strategy never consumes direct cue-input candidates',()=>{
+ const req=idealRequest();delete req.options.inputStrategy;
+ const s={req,count:1,pool:[],refs:{cue:req.snapshot.objects[0],first:req.snapshot.objects[1]}};
+ LabRouteSampler.next(s,x=>x);assert.equal(s.analyticCursor,undefined);assert.equal(s.analyticSeeds,undefined);assert.equal(s.pendingModel.stage,'sampled-or-adaptive-fallback');
+});

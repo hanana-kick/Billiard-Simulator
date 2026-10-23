@@ -46,7 +46,7 @@ test('inverse contact seed lies on contact circle and leaves along tangent towar
 });
 
 test('partition budgets exactly preserve total and reject malformed splits',()=>{
- for(const count of [1,2,3,4,8]){
+ for(const count of [1,2,3,4,8,16,32,64]){
   const groups=Array.from({length:count},(_,index)=>ShotSearchCore.createSearch(null,{...req,partition:{index,count}}));
   assert.equal(groups.reduce((sum,g)=>sum+g.req.options.budget,0),req.options.budget);
  }
@@ -67,3 +67,5 @@ test('success archive is not truncated by refinement or display caps',()=>{
  search.pool=search.successes.slice(0,18);
  assert.equal(ShotSearchCore.finishSearch(search).results.length,25);
 });
+
+test('modern 32-way worker partitions preserve the complete finite candidate budget',()=>{require('../src/optimizer.js');const request={...req,options:{...req.options,mode:'three',methods:['any'],order:'either'}};const searches=Array.from({length:32},(_,index)=>LabOptimizer.createSearch(null,{...request,partition:{index,count:32}}));assert.equal(searches.reduce((n,s)=>n+s.groups.reduce((m,g)=>m+g.req.options.budget,0),0),48);for(const s of searches)LabOptimizer.disposeSearch(s);assert.throws(()=>LabOptimizer.createSearch(null,{...request,partition:{index:0,count:65}}));});

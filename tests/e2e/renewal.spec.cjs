@@ -63,19 +63,14 @@ async function chromeBounds(page,width,height,sidebarOpen){
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
  if(!sidebarOpen)expect((await page.locator('#scene').boundingBox()).height).toBeGreaterThanOrEqual(60);
 }
-async function expandGameSetup(page){
- const trigger=page.locator('#gameSetup [data-slot=accordion-trigger]');
- if(await trigger.getAttribute('aria-expanded')!=='true')await trigger.click();
- await expect(page.locator('#gameMode')).toBeVisible();
-}
 async function reachable(page,selector){
- if(selector==='#gameMode')await expandGameSetup(page);
  // Base UI Checkbox assigns the supplied id to its hidden form input.
  // Inspect and hit-test the visible semantic control, never that hidden input.
  let el=page.locator(selector);
  if(await el.evaluate(e=>e.matches('input[type=checkbox][aria-hidden=true]')))el=el.locator('..').getByRole('checkbox');
- await page.locator('#panelScroll').evaluate(async e=>{await Promise.all(e.getAnimations({subtree:true}).map(a=>a.finished.catch(()=>{})))});await el.scrollIntoViewIfNeeded();await expect(el).toBeVisible();
- const box=await el.boundingBox(),scroll=await page.locator('#panelScroll').boundingBox();
+ const scrollSelector=await el.evaluate(e=>e.closest('#routeDetailsScroll')?'#routeDetailsScroll':'#panelScroll');
+ await page.locator(scrollSelector).evaluate(async e=>{await Promise.all(e.getAnimations({subtree:true}).map(a=>a.finished.catch(()=>{})))});await el.scrollIntoViewIfNeeded();await expect(el).toBeVisible();
+ const box=await el.boundingBox(),scroll=await page.locator(scrollSelector).boundingBox();
  contained(box,scroll,selector+' inside inspector scrollport');
  // Visibility alone does not catch another control painted on top of this one.
  if(!await el.isDisabled())await expect.poll(()=>el.evaluate(e=>{
@@ -106,8 +101,8 @@ for(const [width,height]of viewports)test(`coarse-pointer ${width}x${height}: ev
   await page.setViewportSize({width,height});await closeSidebar(page);
   await chromeBounds(page,width,height,false);await directSceneWithinTable(page);await openSidebar(page);
   for(const [tab,panel,controls]of [
-   ['타격','shotPanel',['#gameMode','#tipDisc','#elevationNumber','#cueSpeed','#angle']],
-   ['경로','routesPanel',['#routeTarget','#findRoute','#routeAdvanced [data-slot=accordion-trigger]']],
+   ['수동','shotPanel',['#tipDisc','#elevationNumber','#cueSpeed','#angle']],
+   ['경로 탐색','routesPanel',['#gameMode','#findRoute','#routeDetails']],
    ['설정','settingsPanel',['#horizon','#speed','#placementObject','#height','#p-spinLength']]
   ]){
    await page.getByRole('tab',{name:tab,exact:true}).click();
@@ -121,9 +116,9 @@ for(const [width,height]of viewports)test(`coarse-pointer ${width}x${height}: ev
     await disjointControls(page,id,tab+' sibling controls');await group.evaluate(el=>delete el.dataset.overlapProbe);
    }
    if(panel==='routesPanel'){
-    await page.locator('#routeAdvanced [data-slot=accordion-trigger]').click();
-    for(const selector of ['#routeOrder','#routeWorkers','#routemaxSpeed'])await reachable(page,selector);
-    await page.locator('#routeAdvanced [data-slot=accordion-trigger]').click();
+    await page.locator('#routeDetails').click();
+    for(const selector of ['#routeTarget','#routeOrder','#routeInputStrategy','#routemaxSpeed'])await reachable(page,selector);
+    await expect(page.locator('#routeWorkers,#routeObjective')).toHaveCount(0);await page.locator('#closeRouteDetails').click();await expect(page.locator('#routeDetails')).toBeFocused();
    }
    if(panel==='settingsPanel'){
     await reachable(page,'#speed');await page.locator('#speed').click();
@@ -134,14 +129,14 @@ for(const [width,height]of viewports)test(`coarse-pointer ${width}x${height}: ev
    await disjointControls(page,'.panel-utility button','utility controls');
    await preserved(page);
   }
-  await page.getByRole('tab',{name:'타격',exact:true}).click();
-  await expect(page.locator('#gameSetup [data-slot=accordion-trigger]')).toHaveAttribute('aria-expanded','true');await expect(page.locator('#gameMode')).toBeVisible();
+  await page.getByRole('tab',{name:'수동',exact:true}).click();
+  await page.getByRole('tab',{name:'경로 탐색',exact:true}).click();await expect(page.locator('#gameMode')).toBeVisible();
   fs.mkdirSync('test-results/renewal',{recursive:true});
   await page.screenshot({path:`test-results/renewal/${width}x${height}-sidebar.png`});
   await closeSidebar(page);await chromeBounds(page,width,height,false);await directSceneWithinTable(page);await preserved(page);
   await page.screenshot({path:`test-results/renewal/${width}x${height}-scene.png`});
   // Opening and closing the mobile Sheet or desktop offcanvas cannot reset the table.
-  await openSidebar(page);await expect(page.locator('#angle')).toHaveValue('17.23');await expect(page.locator('#gameSetup [data-slot=accordion-trigger]')).toHaveAttribute('aria-expanded','true');await preserved(page);
+  await openSidebar(page);await page.getByRole('tab',{name:'수동',exact:true}).click();await expect(page.locator('#angle')).toHaveValue('17.23');await page.getByRole('tab',{name:'경로 탐색',exact:true}).click();await expect(page.locator('#gameMode')).toBeVisible();await preserved(page);
   await closeSidebar(page);await directSceneWithinTable(page);
   // Resize back across the mobile/desktop breakpoint and repeat the access cycle.
   await page.setViewportSize({width:390,height:844});await closeSidebar(page);
@@ -183,8 +178,8 @@ for(const width of [768,820,1024])test(`200% root text at ${width}px preserves r
   await chromeBounds(page,width,height,false);await directSceneWithinTable(page);
   await openSidebar(page);
   for(const [name,controls]of [
-   ['타격',['#fineAim','#tipDisc','#angle','#cueSpeed','#gameMode']],
-   ['경로',['#routeTarget','#findRoute','#routeAdvanced [data-slot=accordion-trigger]']],
+   ['수동',['#fineAim','#tipDisc','#angle','#cueSpeed']],
+   ['경로 탐색',['#gameMode','#findRoute','#routeDetails']],
    ['설정',['#speed','#placementObject','#p-spinLength']]
   ]){
    await page.getByRole('tab',{name,exact:true}).click();await chromeBounds(page,width,height,true);
@@ -223,7 +218,7 @@ for(const viewport of [{width:390,height:844},{width:844,height:650}])test(`rese
   await closeSidebar(page);
   await clickHitRegion(page,page.locator('#sidebarTrigger'));await expect(page.locator('#sidebarTrigger')).toHaveAttribute('aria-expanded','true');
   await expect(page.locator('#tab-shot')).toBeInViewport({ratio:1});
-  await page.getByRole('tab',{name:'타격',exact:true}).click();
+  await page.getByRole('tab',{name:'수동',exact:true}).click();
   await page.evaluate(()=>cueLab.changeSettings({tipX:.12,tipY:.08}));
   await clickHitRegion(page,page.locator('#centerTip'));expect(await page.evaluate(()=>[cueLab.state.settings.tipX,cueLab.state.settings.tipY])).toEqual([0,0]);
   const paused=await page.evaluate(()=>cueLab.state.paused);
@@ -247,12 +242,27 @@ for(const width of [320,390])test(`kiss explanation supports tap, keyboard and f
  const context=await browser.newContext({viewport:{width,height:844},hasTouch:true,reducedMotion:'reduce'});
  try{
   const page=await context.newPage();await page.goto('./');await page.waitForFunction(()=>globalThis.__LAB_READY__&&cueLab.state.ready);
-  await openSidebar(page);await page.getByRole('tab',{name:'경로',exact:true}).click();
-  const advanced=page.locator('#routeAdvanced [data-slot=accordion-trigger]');if(await advanced.getAttribute('aria-expanded')!=='true')await advanced.click();
+  await openSidebar(page);await page.getByRole('tab',{name:'경로 탐색',exact:true}).click();
+  await page.locator('#routeDetails').click();
   const info=page.getByRole('button',{name:'키스 허용 설명',exact:true});await info.scrollIntoViewIfNeeded();await info.click();
   const popup=page.locator('[data-slot=popover-content]');await expect(popup).toBeVisible();await expect(popup).toContainText('명중 후의 충돌은 결과를 바꾸지 않습니다');contained(await popup.boundingBox(),{x:0,y:0,width,height:844},'kiss explanation');
   await page.keyboard.press('Escape');await expect(popup).not.toBeVisible();await expect(info).toBeFocused();
   await info.press('Enter');await expect(popup).toBeVisible();await page.keyboard.press('Escape');await expect(info).toBeFocused();
   const toggle=page.getByRole('checkbox',{name:'키스 허용',exact:true});await toggle.click();expect(await page.evaluate(()=>cueLab.state.routeOptions.allowKiss)).toBe(false);await toggle.click();expect(await page.evaluate(()=>cueLab.state.routeOptions.allowKiss)).toBe(true);
+ }finally{await context.close();}
+});
+
+for(const viewport of [{width:320,height:568},{width:844,height:390}])test(`preset details drawer preserves values and nested focus at ${viewport.width}x${viewport.height}`,async({browser})=>{
+ const context=await browser.newContext({viewport,hasTouch:true,reducedMotion:'reduce'});
+ try{
+  const page=await context.newPage();await page.goto('./');await page.waitForFunction(()=>globalThis.__LAB_READY__);await openSidebar(page);
+  const strike=await page.locator('#strike').boundingBox(),tabs=await page.locator('#panelGroup').boundingBox();expect(strike.y+strike.height).toBeLessThanOrEqual(tabs.y);await expect(page.locator('#strike')).toHaveCount(1);
+  expect(await page.evaluate(()=>({mode:cueLab.state.routeOptions.mode,methods:cueLab.state.routeOptions.methods,kiss:cueLab.state.routeOptions.allowKiss,order:cueLab.state.routeOptions.order}))).toEqual({mode:'three',methods:['any'],kiss:true,order:'either'});
+  await page.getByRole('tab',{name:'경로 탐색',exact:true}).click();await expect(page.locator('#routeTarget')).toHaveCount(0);await expect(page.locator('#routeMode,#routeWorkers,#routeObjective')).toHaveCount(0);
+  await page.locator('#routeDetails').click();await expect(page.getByRole('dialog',{name:'경로 상세 설정',exact:true})).toBeVisible();
+  for(const selector of ['#routeTarget','#routeOrder','#routeHorizon','#routeInputStrategy','#routemaxSpeed'])await reachable(page,selector);
+  await page.locator('#routeHorizon').click();await page.getByRole('option',{name:'30초',exact:true}).click();await page.locator('#closeRouteDetails').click();await expect(page.locator('#routeDetails')).toBeFocused();await expect(page.locator('#tab-routes')).toBeInViewport();
+  await page.locator('#routeDetails').click();await expect(page.locator('#routeHorizon')).toContainText('30초');await page.keyboard.press('Escape');await expect(page.locator('#routeDetails')).toBeFocused();expect(await page.evaluate(()=>cueLab.state.routeOptions.horizon)).toBe(30);
+  await closeSidebar(page);await expect(page.locator('#scene')).toBeInViewport();
  }finally{await context.close();}
 });

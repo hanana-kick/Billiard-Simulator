@@ -216,7 +216,7 @@
 .stage-region { padding-bottom: max(16px,env(safe-area-inset-bottom)); padding-left: max(16px,env(safe-area-inset-left)); padding-right: max(16px,env(safe-area-inset-right)); }
 [data-slot=sidebar][data-mobile=true] { width: min(22rem,calc(100vw - 16px)); }
 .toolbox-heading { padding-top: max(8px,env(safe-area-inset-top)); }
-.sidebar-playback { padding-bottom: max(8px,env(safe-area-inset-bottom)); }
+.sidebar-playback { padding-bottom: 0; }
 .panel-utility { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
 @media (max-width:639px) { .workspace-header .desktop-label { display: none; } }
 
@@ -225,5 +225,11 @@
 
 .route-option-help { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
 
-/* Gesture feedback must not resize the surface being dragged. */
+/* Detail drawer uses the official Sheet; only its inner content owns scrolling. */
+.route-details-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 16px 16px; display: flex; flex-direction: column; gap: 24px; }
+.route-details-body .route-settings { display: flex; flex-direction: column; gap: 16px; }
+.route-details-body h3 { font-size: 14px; font-weight: 600; }
+.route-details-body [data-slot=select-trigger] { width: 100%; min-width: 0; }
+.route-details-sheet { max-height: 100dvh; }
+
 .gesture-cancel { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 3; }

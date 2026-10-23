@@ -2,7 +2,7 @@ import * as React from 'react'
 import {Button} from '@/components/ui/button'
 import {Card,CardHeader,CardTitle,CardDescription,CardContent} from '@/components/ui/card'
 import {Tabs,TabsList,TabsTrigger,TabsContent} from '@/components/ui/tabs'
-import {Sidebar,SidebarContent,SidebarFooter,SidebarHeader,SidebarInset,SidebarProvider,SidebarTrigger,useSidebar} from '@/components/ui/sidebar'
+import {Sidebar,SidebarContent,SidebarHeader,SidebarInset,SidebarProvider,SidebarTrigger,useSidebar} from '@/components/ui/sidebar'
 import {Badge} from '@/components/ui/badge'
 import {Input} from '@/components/ui/input'
 import {Field,FieldGroup,FieldLabel,FieldDescription} from '@/components/ui/field'
@@ -11,7 +11,6 @@ import {Dialog,DialogContent,DialogHeader,DialogTitle,DialogDescription,DialogFo
 import {createRoot} from 'react-dom/client'
 import {Alert,AlertDescription} from '@/components/ui/alert'
 import {RoutePlanner} from '@/components/route-planner'
-import {InspectorSection} from '@/components/inspector-section'
 import {Icon} from '@/icons'
 // A surrounding hit region forwards only clicks on its own empty padding.
 // The official button, keyboard behavior and visible registry styles stay intact.
@@ -108,27 +107,30 @@ function Workspace(){
    <Sidebar className="toolbox" id="toolbox" aria-label="게임과 타격 설정" collapsible="offcanvas">
     <SidebarHeader className="toolbox-heading">
      <div className="section-heading"><div><h1>Cue Lab</h1><p className="muted-caption">당구 물리 실험실</p></div><Button variant="ghost" size="icon" aria-label="설정 패널 닫기" onClick={()=>{setMobileOpen(false);setSidebarOpen(false)}}><Icon name="x"/></Button></div>
+     <div className="sidebar-playback">
+     <div className="playback-controls"><HitTarget><Button id="strike" disabled={disabled} onClick={()=>{controller.fire();setMobileOpen(false)}}><Icon name="arrow" data-icon="inline-start"/>타격</Button></HitTarget><HitTarget><Button id="pause" variant="outline" aria-label={s.paused?'계속 실행':'일시정지'} onClick={()=>controller.pause(!s.paused)}><Icon name={s.paused?'play':'pause'} data-icon="inline-start"/>{s.paused?'계속':'일시정지'}</Button></HitTarget></div>
+     </div>
     </SidebarHeader>
     <Tabs className="toolbox-tabs" value={s.activePanel} onValueChange={changePanel}>
      <div className="toolbox-nav"><TabsList activateOnFocus id="panelGroup" aria-label="설정 패널" className="grid w-full grid-cols-3">
-      <TabsTrigger value="shot" id="tab-shot">타격</TabsTrigger>
-      <TabsTrigger value="routes" id="tab-routes">경로</TabsTrigger>
+      <TabsTrigger value="routes" id="tab-routes">경로 탐색</TabsTrigger>
+      <TabsTrigger value="shot" id="tab-shot">수동</TabsTrigger>
       <TabsTrigger value="settings" id="tab-settings">설정</TabsTrigger>
      </TabsList></div>
      <SidebarContent className="panel-scroll" id="panelScroll" ref={attachPanelScroll} onScroll={e=>{scrollPositions.current[s.activePanel]=e.currentTarget.scrollTop}}>
      <TabsContent value="shot" id="shotPanel" className="tool-panel" aria-label="타격 설정">
 
-      {s.game?<Card size="sm" className="game-score" aria-label="4구 점수"><CardHeader><CardTitle>4구 점수</CardTitle><CardDescription>연습 규칙 · 현재 차례 {selected?.label}</CardDescription></CardHeader><CardContent><div className="score-row"><strong>흰 수구 {s.game.scores[s.game.cueIds[0]]}</strong><strong>노란 수구 {s.game.scores[s.game.cueIds[1]]}</strong></div><p role="status">{s.game.pending?'타격 판정 중':s.game.lastResult}</p><p className="helper">두 적구 +1 · 상대 수구 접촉/수구 장외 −1 · 실패 시 교대. 음수 허용, 종료 점수 없는 연습입니다. 수구는 직접 바꿀 수 있습니다. 규격은 기존 캐롬 실험 설정을 유지합니다.</p></CardContent></Card>:null}
+
+      {s.game?<Card size="sm" className="game-score" aria-label="4구 점수"><CardHeader><CardTitle>4구 점수</CardTitle><CardDescription>연습 규칙 · 현재 차례 {s.objects.find((o:any)=>o.id===s.game.activeCue)?.label}</CardDescription></CardHeader><CardContent><div className="score-row"><strong>흰 수구 {s.game.scores[s.game.cueIds[0]]}</strong><strong>노란 수구 {s.game.scores[s.game.cueIds[1]]}</strong></div><p role="status">{s.game.pending?'타격 판정 중':s.game.lastResult}</p><p className="helper">두 적구 +1 · 상대 수구 접촉/수구 장외 −1 · 실패 시 교대. 음수 허용, 종료 점수 없는 연습입니다. 수구는 직접 바꿀 수 있습니다. 규격은 기존 캐롬 실험 설정을 유지합니다.</p></CardContent></Card>:null}
       <FieldGroup><Field><FieldLabel>타격할 공</FieldLabel>
       <OptionGroup id="ballChoices" label="선택 물체" value={String(s.selectedId)} onChange={id=>controller.select(Number(id))} options={s.objects.filter((o:any)=>!s.game||s.game.cueIds.includes(o.id)).map((o:any)=>({value:String(o.id),label:<><i className="ball-dot" style={{background:o.color}}/>{o.label}</>}))}/></Field></FieldGroup>
       <TipSelector state={s}/><Separator/>
       <SwitchField id="fineAim" checked={s.fineAim} onChange={v=>controller.option('fineAim',v)} label="미세 조준"/><PrecisionControls state={s}/>
-      <InspectorSection id="gameSetup" title="게임 방식 및 규칙" defaultOpen={false}><Card size="sm"><CardHeader><CardTitle>게임 설정</CardTitle><CardDescription>연습 방식을 선택하고 수구를 지정하세요.</CardDescription></CardHeader><CardContent><Field><FieldLabel htmlFor="gameMode">게임 모드</FieldLabel><SelectField id="gameMode" aria-label="게임 모드" value={s.gameMode} onChange={(e:any)=>controller.setGameMode(e.target.value)}><option value="free">자유 실험 · 3구 배치</option><option value="four">한국 4구 · 연습 규칙</option></SelectField><FieldDescription>모드를 변경하면 배치와 점수가 초기화됩니다.</FieldDescription></Field></CardContent></Card></InspectorSection>
 
       {s.obstruction?<Alert id="strikeWarning"><AlertDescription>큐가 {s.obstruction}에 닿습니다. 기울기나 조준을 바꾸세요.</AlertDescription></Alert>:null}
       <p className="helper">미세 조준을 켜면 드래그 감도가 낮아집니다. 숫자와 ± 버튼은 0.01° 단위입니다.</p>
      </TabsContent>
-     <TabsContent value="routes" id="routesPanel" className="tool-panel route-panel" aria-label="경로 탐색"><RoutePlanner state={s} controller={controller}/></TabsContent>
+     <TabsContent value="routes" id="routesPanel" className="tool-panel route-panel" aria-label="경로 탐색">      <Field><FieldLabel>게임 모드</FieldLabel><OptionGroup id="gameMode" label="게임 모드" value={s.gameMode} onChange={mode=>controller.setGameMode(mode)} options={[{value:'free',label:'3구'},{value:'four',label:'4구'}]}/><FieldDescription>모드를 변경하면 배치와 점수가 초기화됩니다. 4구는 연습 규칙입니다.</FieldDescription></Field><RoutePlanner state={s} controller={controller}/></TabsContent>
      <TabsContent value="settings" id="settingsPanel" className="tool-panel" aria-label="시뮬레이션 설정">
       <section className="settings-section" id="preview-settings" tabIndex={-1} aria-labelledby="preview-settings-title">
       <div className="section-heading"><h2 id="preview-settings-title">표시·재생</h2></div><FieldGroup>
@@ -143,14 +145,11 @@ function Workspace(){
       <p className="helper"><a href="./guide.html" target="_blank" rel="noopener">3구·삼구·4구·사구·3쿠션 연습 안내 (새 탭)</a></p>
      </TabsContent>
 
+     <span className="forecast-status" id="forecastStatus" title={s.forecastStatus} aria-live="polite">{s.routeStatus==='searching'?`경로 탐색 ${s.routeProgress?.tested||0}/${s.routeProgress?.total||0}`:s.predictionBusy?'예측 중…':s.forecastStatus}</span>
      <section className="panel-utility" aria-label="기록 및 도움말"><Separator/><p className="muted-caption">기록 및 도움말</p><div className="action-row"><Button id="undo" variant="outline" size="sm" disabled={!s.undo} onClick={()=>controller.undo()}><Icon name="undo" data-icon="inline-start"/>되돌리기</Button><Button id="redo" variant="outline" size="sm" disabled={!s.redo} onClick={()=>controller.redo()}>다시 실행</Button><Button id="reset" variant="outline" size="sm" onClick={()=>controller.reset()}><Icon name="reset" data-icon="inline-start"/>초기화</Button><Button variant="ghost" size="icon" aria-label="조작 도움말" onClick={()=>setHelpOpen(true)}><Icon name="info"/></Button></div></section>
      </SidebarContent>
     </Tabs>
-    <SidebarFooter className="sidebar-playback">
-     <div className="playback-controls"><HitTarget><Button id="strike" disabled={disabled} onClick={()=>{controller.fire();setMobileOpen(false)}}><Icon name="arrow" data-icon="inline-start"/>타격</Button></HitTarget><HitTarget><Button id="pause" variant="outline" aria-label={s.paused?'계속 실행':'일시정지'} onClick={()=>controller.pause(!s.paused)}><Icon name={s.paused?'play':'pause'} data-icon="inline-start"/>{s.paused?'계속':'일시정지'}</Button></HitTarget></div>
 
-     <span className="forecast-status" id="forecastStatus" title={s.forecastStatus} aria-live="polite">{s.routeStatus==='searching'?`경로 탐색 ${s.routeProgress?.tested||0}/${s.routeProgress?.total||0}`:s.predictionBusy?'예측 중…':s.forecastStatus}</span>
-    </SidebarFooter>
    </Sidebar>
    <SidebarInset className="scene-inset">
     <header className="workspace-header"><div className="sidebar-opener"><HitTarget><SidebarTrigger id="sidebarTrigger" aria-label={(isMobile?mobileOpen:sidebarOpen)?"설정 패널 닫기":"설정 패널 열기"} aria-expanded={isMobile?mobileOpen:sidebarOpen}/></HitTarget><span>게임·타격·경로</span></div><p className="muted-caption">Cue Lab <span className="desktop-label">· 3D 물리 실험실</span></p></header>
@@ -176,6 +175,7 @@ function Workspace(){
        onPointerDown={e=>{e.currentTarget.setPointerCapture(e.pointerId);sideHeld.current=true;controller.sideDrag(e)}} onPointerMove={e=>{if(sideHeld.current)controller.sideDrag(e)}} onPointerUp={()=>sideHeld.current=false} onPointerCancel={()=>sideHeld.current=false} onLostPointerCapture={()=>sideHeld.current=false} onKeyDown={e=>handleKey(e,'aim')}/>
       </div></div>
      </div>
+
     </section>
    </SidebarInset>
   <HelpDialog open={helpOpen} onOpenChange={setHelpOpen}/>{s.notice?<div className="notice-wrap"><Alert role="status" aria-live="polite"><AlertDescription>{s.notice}</AlertDescription></Alert></div>:null}

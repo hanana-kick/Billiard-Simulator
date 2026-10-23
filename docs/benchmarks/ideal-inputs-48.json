@@ -1,0 +1,196 @@
+{
+  "baseline": "bbf2a32",
+  "budgets": [
+    48
+  ],
+  "physics": "same frozen current source for both",
+  "rows": {
+    "before": [
+      {
+        "fixture": "default",
+        "budget": 48,
+        "tested": 48,
+        "successes": 3,
+        "firstSuccessCandidate": 11,
+        "elapsedMs": 14586,
+        "cpuMs": 16954,
+        "closestFailedGapM": 0.01811657925576869,
+        "solver": [
+          {
+            "probes": 1,
+            "steps": 0,
+            "accepted": 0,
+            "rejected": 1
+          },
+          {
+            "probes": 4,
+            "steps": 1,
+            "accepted": 1,
+            "rejected": 0
+          }
+        ],
+        "seedMaxOrder": 3,
+        "analytic": null,
+        "feasibility": {
+          "checked": 48,
+          "blocked": 0,
+          "restored": 0
+        }
+      },
+      {
+        "fixture": "shifted",
+        "budget": 48,
+        "tested": 48,
+        "successes": 0,
+        "firstSuccessCandidate": null,
+        "elapsedMs": 12812,
+        "cpuMs": 13151,
+        "closestFailedGapM": 0.009359877479998863,
+        "solver": [
+          {
+            "probes": 4,
+            "steps": 1,
+            "accepted": 1,
+            "rejected": 0
+          },
+          {
+            "probes": 3,
+            "steps": 0,
+            "accepted": 0,
+            "rejected": 1
+          }
+        ],
+        "seedMaxOrder": 4,
+        "analytic": null,
+        "feasibility": {
+          "checked": 48,
+          "blocked": 0,
+          "restored": 0
+        }
+      },
+      {
+        "fixture": "corner",
+        "budget": 48,
+        "tested": 48,
+        "successes": 41,
+        "firstSuccessCandidate": 1,
+        "elapsedMs": 3154,
+        "cpuMs": 3502,
+        "closestFailedGapM": 0.20367891065805166,
+        "solver": [
+          null
+        ],
+        "seedMaxOrder": null,
+        "analytic": null,
+        "feasibility": {
+          "checked": 258,
+          "blocked": 0,
+          "restored": 21
+        }
+      }
+    ],
+    "after": [
+      {
+        "fixture": "default",
+        "budget": 48,
+        "tested": 48,
+        "successes": 2,
+        "firstSuccessCandidate": 11,
+        "elapsedMs": 13230,
+        "cpuMs": 15649,
+        "closestFailedGapM": 0.01811657925576869,
+        "solver": [
+          {
+            "probes": 1,
+            "steps": 0,
+            "accepted": 0,
+            "rejected": 1
+          },
+          {
+            "probes": 4,
+            "steps": 1,
+            "accepted": 0,
+            "rejected": 1
+          }
+        ],
+        "seedMaxOrder": 3,
+        "analytic": {
+          "proposed": 9,
+          "feasible": 7,
+          "evaluated": 6,
+          "rejectedReasons": [
+            "required-cue-speed-outside-range"
+          ]
+        },
+        "feasibility": {
+          "checked": 48,
+          "blocked": 0,
+          "restored": 0
+        }
+      },
+      {
+        "fixture": "shifted",
+        "budget": 48,
+        "tested": 48,
+        "successes": 0,
+        "firstSuccessCandidate": null,
+        "elapsedMs": 12841,
+        "cpuMs": 13176,
+        "closestFailedGapM": 0.009359877479998863,
+        "solver": [
+          {
+            "probes": 4,
+            "steps": 1,
+            "accepted": 1,
+            "rejected": 0
+          },
+          {
+            "probes": 3,
+            "steps": 0,
+            "accepted": 0,
+            "rejected": 1
+          }
+        ],
+        "seedMaxOrder": 3,
+        "analytic": {
+          "proposed": 11,
+          "feasible": 9,
+          "evaluated": 6,
+          "rejectedReasons": [
+            "required-cue-speed-outside-range"
+          ]
+        },
+        "feasibility": {
+          "checked": 48,
+          "blocked": 0,
+          "restored": 0
+        }
+      },
+      {
+        "fixture": "corner",
+        "budget": 48,
+        "tested": 48,
+        "successes": 41,
+        "firstSuccessCandidate": 1,
+        "elapsedMs": 3067,
+        "cpuMs": 3427,
+        "closestFailedGapM": 0.20367891065805166,
+        "solver": [
+          null
+        ],
+        "seedMaxOrder": null,
+        "analytic": {
+          "proposed": 0,
+          "feasible": 0,
+          "evaluated": 0,
+          "rejectedReasons": []
+        },
+        "feasibility": {
+          "checked": 258,
+          "blocked": 0,
+          "restored": 21
+        }
+      }
+    ]
+  }
+}

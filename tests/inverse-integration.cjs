@@ -20,3 +20,12 @@ test('modern four-ball carom requests accept zero-cushion successes and start in
   const search=LabOptimizer.createSearch(R,req);try{while(!LabOptimizer.advanceSearch(search,960));const result=LabOptimizer.finishSearch(search);assert.equal(result.tested,48);assert.equal(result.seedCushionRange[0],0);assert.ok(result.results.length);for(const r of result.results)assert.ok(LabRouteRules.evaluate(r.contacts,{method:'carom',firstId:r.firstId,secondId:r.secondId}).success);}finally{LabOptimizer.disposeSearch(search);}
  }finally{lab.dispose();}
 });
+test('default hybrid preserves the stable baseline successes and first-success physical cost at budget 48',()=>{
+ const lab=new PhysicsLab(R);try{const req={snapshot:lab.snapshot({trails:false}),selectedId:1,settings:{angle:0,elevation:8,speed:2,tipX:0,tipY:0},options:{mode:'three',methods:['any'],order:'either',targetId:2,secondId:3,budget:48,horizon:16,spin:true,objective:'shortest',allowKiss:true}};
+ const s=LabOptimizer.createSearch(R,req);try{while(!LabOptimizer.advanceSearch(s,960));const r=LabOptimizer.finishSearch(s),expected=require('./fixtures/hybrid-search-baseline.json');
+ assert.equal(r.inputStrategy,'hybrid');assert.equal(r.analyticStats.evaluated,0);assert.equal(r.results.length,expected.length);
+ for(const shot of expected)assert.ok(r.results.some(x=>JSON.stringify(x.settings)===JSON.stringify(shot.settings)&&JSON.stringify(x.contacts)===JSON.stringify(shot.contacts)));
+ assert.equal(r.firstSuccessCost.tested,11);assert.equal(r.firstSuccessCost.physicsSteps,71622);
+ }finally{LabOptimizer.disposeSearch(s);}
+ }finally{lab.dispose();}
+});

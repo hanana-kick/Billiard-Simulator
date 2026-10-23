@@ -16,6 +16,7 @@ function validate(req){
  if(!Number.isInteger(o.budget)||o.budget<1||o.budget>1024||![8,16,30].includes(o.horizon))throw new Error('탐색량·시간 범위를 확인하세요.');
  if(!['shortest','gentle'].includes(o.objective)||!req.settings||!Number.isFinite(req.settings.elevation)||req.settings.elevation<0||req.settings.elevation>80||typeof o.spin!=='boolean')throw new Error('목표 설정이 올바르지 않습니다.');
  for(const [lo,hi,min,max] of [['minSpeed','maxSpeed',.5,4.5],['minElevation','maxElevation',0,80]]){const a=o[lo]??min,b=o[hi]??max;if(!Number.isFinite(a)||!Number.isFinite(b)||a<min||b>max||a>b)throw new Error('탐색 범위가 올바르지 않습니다.');}
+ if(o.inputStrategy!==undefined&&!['hybrid','analytic'].includes(o.inputStrategy))throw new Error('지원하지 않는 입력 추정 방식입니다.');
  if(o.elevationMode!==undefined&&!['fixed','search'].includes(o.elevationMode))throw new Error('큐 들림 탐색 조건이 올바르지 않습니다.');
  if(o.allowKiss!==undefined&&typeof o.allowKiss!=='boolean')throw new Error('키스 허용 옵션이 올바르지 않습니다.');
  if(o.allowMovingTargets!==undefined&&typeof o.allowMovingTargets!=='boolean')throw new Error('움직이는 목적구 옵션이 올바르지 않습니다.');
@@ -45,7 +46,7 @@ function proposalAngles(req){
 }
 function createSearch(R,req){
  const refs=validate(req),seeds=proposalAngles(req);
- if(req.partition){const {index,count}=req.partition;if(!Number.isInteger(index)||!Number.isInteger(count)||count<1||count>8||index<0||index>=count)throw new Error('잘못된 병렬 탐색 분할');const budget=Math.floor(req.options.budget/count)+(index<req.options.budget%count?1:0);req={...req,testBudget:true,options:{...req.options,budget}};}
+ if(req.partition){const {index,count}=req.partition;if(!Number.isInteger(index)||!Number.isInteger(count)||count<1||count>64||index<0||index>=count)throw new Error('잘못된 병렬 탐색 분할');const budget=Math.floor(req.options.budget/count)+(index<req.options.budget%count?1:0);req={...req,testBudget:true,options:{...req.options,budget}};}
  return {R,req,refs,seeds,count:0,evaluated:0,rejected:0,successCount:0,pool:[],successes:[],seen:new Set(),bestMiss:null,started:performance.now(),active:null,finished:false};
 }
 function nextSettings(search){
@@ -77,6 +78,7 @@ function nextSettings(search){
 function constrainSettings(search,settings){
  const o=search.req.options,s={...settings};
  s.speed=clamp(s.speed,o.minSpeed??.5,o.maxSpeed??4.5);
+ if(search.pendingModel?.stage==='closed-form-input-estimate')return projectInputs(s,search.req);
  if(o.elevationMode==='search'){
   const low=o.minElevation??0,high=o.maxElevation??30;
   // Interleave low-discrepancy elevation exploration and local refinement.
@@ -185,7 +187,7 @@ function beginTrial(search,settings){
  if(!clearance.clear&&req.options.elevationMode==='search'){
   const restored=lab.findCueFeasible(lab.get(req.selectedId),settings,{minElevation:req.options.minElevation??0,maxElevation:req.options.maxElevation??30});
   fs.checked+=restored.queries;
-  if(restored.found){settings=normalize(restored.settings);clearance=lab.cueClearance(lab.get(req.selectedId),settings);fs.checked++;fs.restored++;search.dlsPending=null;search.dls=null;}
+  if(restored.found){if(search.pendingModel)search.pendingModel={...search.pendingModel,modified:true,modification:'geometric-cue-elevation-restoration'};settings=normalize(restored.settings);clearance=lab.cueClearance(lab.get(req.selectedId),settings);fs.checked++;fs.restored++;search.dlsPending=null;search.dls=null;}
  }
  if(!clearance.clear){
   fs.blocked++;
@@ -194,7 +196,7 @@ function beginTrial(search,settings){
  }
  if(search.feasibility){fs.restored++;search.feasibility=null;}
 
- const trial={lab,settings,start:lab.time,steps:0,rails:0,firstHit:false,success:false,invalid:false,contacts:[],closest:Infinity,afterFirstClosest:Infinity,firstClosest:Infinity,residual:null,residualDistance:Infinity,length:0,previous:{...lab.get(req.selectedId).body.translation()},maxHeight:0,pending:[],ambiguous:false,kisses:G.LabRouteRules.createKissTracker()};
+ const trial={lab,settings,searchModel:search.pendingModel,start:lab.time,steps:0,rails:0,firstHit:false,success:false,invalid:false,contacts:[],closest:Infinity,afterFirstClosest:Infinity,firstClosest:Infinity,residual:null,residualDistance:Infinity,length:0,previous:{...lab.get(req.selectedId).body.translation()},maxHeight:0,pending:[],ambiguous:false,kisses:G.LabRouteRules.createKissTracker()};
  const first=req.options.targetId,second=req.options.secondId,needed=req.options.mode==='three'?3:0;
  lab.onEvent=e=>{
   if(e.kind==='cue-obstruction'){trial.cueObstructed=true;trial.invalid=true;return;}
@@ -268,9 +270,11 @@ function finishTrial(search,t){
  const cost=o.objective==='gentle'?t.settings.speed:t.length;
  const missing=Math.max(0,(o.mode==='three'?3:0)-t.rails);
  const penalty=success?0:t.invalid?600:t.firstHit?(missing?220+20*missing:100)+25*clearance:450+20*clearance;
- const result={settings:t.settings,success,residual:t.residual,topology:t.residualTopology,score:penalty+cost/100,clearance,firstHit:t.firstHit,cushions:t.hitRails??t.rails,distance:t.length,seconds:t.hitTime??(t.lab.time-t.start),contacts:t.contacts.slice(),maxHeight:t.maxHeight,kissContacts:t.kisses.contacts.slice(),method:o.methodId||null,firstId:o.targetId,secondId:o.secondId,ambiguous:t.ambiguous||false,matchedMethods:success&&o.methodId&&o.mode==='three'?G.LabRouteRules.classify(t.contacts,o.targetId,o.secondId):[]};
+ const failureReason=success?null:t.cueObstructed?'cue-obstruction':t.verificationIncomplete?'cue-tail-incomplete':t.invalid?(t.rule?.reason||'invalid-contact-or-table-state'):!t.firstHit?'first-target-not-hit':missing?'insufficient-cushions':'final-target-not-hit';
+ const result={settings:t.settings,searchModel:t.searchModel,success,failureReason,residual:t.residual,topology:t.residualTopology,score:penalty+cost/100,clearance,firstHit:t.firstHit,cushions:t.hitRails??t.rails,distance:t.length,seconds:t.hitTime??(t.lab.time-t.start),contacts:t.contacts.slice(),maxHeight:t.maxHeight,kissContacts:t.kisses.contacts.slice(),method:o.methodId||null,firstId:o.targetId,secondId:o.secondId,ambiguous:t.ambiguous||false,matchedMethods:success&&o.methodId&&o.mode==='three'?G.LabRouteRules.classify(t.contacts,o.targetId,o.secondId):[]};
+ if(t.searchModel?.stage==='closed-form-input-estimate'){(search.analyticDiagnostics||(search.analyticDiagnostics=[])).push({settings:t.settings,geometricResidual:t.searchModel.geometricResidual,physicalResidualNorm:t.residual?Math.hypot(...t.residual):null,success,failureReason,cushions:result.cushions,firstId:result.firstId,secondId:result.secondId});}
  finishDls(search,result);
- t.lab.dispose();search.evaluated++;search.physicsSteps=(search.physicsSteps||0)+t.steps;if(success){search.successCount++;search.successes.push(result);}search.pool.push(result);search.pool.sort((a,b)=>{if(a.success&&b.success){const primary=o.objective==='gentle'?a.settings.speed-b.settings.speed:a.distance-b.distance;return primary||(o.objective==='gentle'?a.distance-b.distance:a.settings.speed-b.settings.speed);}return a.score-b.score});search.pool=search.pool.slice(0,18);
+ t.lab.dispose();search.evaluated++;search.physicsSteps=(search.physicsSteps||0)+t.steps;if(success){search.firstSuccessCost??={tested:search.count,physicsSteps:search.physicsSteps,elapsedMs:performance.now()-search.started};search.successCount++;search.successes.push(result);}search.pool.push(result);search.pool.sort((a,b)=>{if(a.success&&b.success){const primary=o.objective==='gentle'?a.settings.speed-b.settings.speed:a.distance-b.distance;return primary||(o.objective==='gentle'?a.distance-b.distance:a.settings.speed-b.settings.speed);}return a.score-b.score});search.pool=search.pool.slice(0,18);
  if(!success&&(!search.bestMiss||result.score<search.bestMiss.score))search.bestMiss=result;
  return result;
 }
@@ -280,8 +284,8 @@ function advanceSearch(search,budget=240){
   if(search.count>=search.req.options.budget){search.finished=true;return true;}
   const localCount=search.count,partition=search.req.partition;
   if(partition)search.count=localCount*partition.count+partition.index;
-  let settings;try{const dls=restoreClearance(search)||nextDls(search);settings=dls?projectInputs(dls,search.req):constrainSettings(search,nextSettings(search));}finally{search.count=localCount+1;}
-  let key=JSON.stringify(settings);if(search.seen.has(key)){settings=normalize({...settings,angle:settings.angle+.023*search.count});key=JSON.stringify(settings);}search.seen.add(key);
+  search.pendingModel=null;let settings;try{const dls=restoreClearance(search)||nextDls(search);if(dls)search.pendingModel={stage:'iterative-physical-correction',approximate:true};settings=dls?projectInputs(dls,search.req):constrainSettings(search,nextSettings(search));}finally{search.count=localCount+1;}
+  let key=JSON.stringify(settings);if(search.seen.has(key)){if(search.pendingModel)search.pendingModel={...search.pendingModel,modified:true,modification:'duplicate-angle-perturbation'};settings=normalize({...settings,angle:settings.angle+.023*search.count});key=JSON.stringify(settings);}search.seen.add(key);
   search.active=beginTrial(search,settings);
   if(!search.active)return false;
  }
@@ -292,7 +296,7 @@ function progress(search){const fraction=search.active?Math.min(.99,search.activ
 function finishSearch(search){
  const unique=[];
  for(const r of search.successes.slice().sort((a,b)=>search.req.options.objective==='gentle'?a.settings.speed-b.settings.speed||a.distance-b.distance:a.distance-b.distance||a.settings.speed-b.settings.speed))if(!unique.some(p=>G.LabRouteRules.successIdentity(p)===G.LabRouteRules.successIdentity(r)))unique.push({...r,id:unique.length+1});
- return{...progress(search),results:unique,nearest:unique.length?null:search.bestMiss,options:{...search.req.options},hz:Math.round(1/search.req.snapshot.dt),solverStats:search.solverStats||{probes:0,steps:0,accepted:0,rejected:0},globalOptimal:false,exhaustive:false,seedCushionRange:search.req.options.methodId==='carom'?[0,search.seedMaxOrder??0]:search.req.options.methodId==='any'?[3,search.seedMaxOrder??3]:null,seedMaxOrder:search.seedMaxOrder??null,searchModel:'inverse-root-and-damped-physical-solver',physicsSteps:search.physicsSteps||0,feasibilityStats:search.feasibilityStats,feasibilityStatus:search.successes.length?'verified-feasible-shot':'not-found-within-budget',terminationReason:search.finished?'candidate-budget-exhausted':'partial'};
+ return{...progress(search),results:unique,resultCount:unique.length,resultLimit:null,nearest:unique.length?null:search.bestMiss,options:{...search.req.options},hz:Math.round(1/search.req.snapshot.dt),solverStats:search.solverStats||{probes:0,steps:0,accepted:0,rejected:0},globalOptimal:false,exhaustive:false,seedCushionRange:search.req.options.methodId==='carom'?[0,search.seedMaxOrder??0]:search.req.options.methodId==='any'?[3,search.seedMaxOrder??3]:null,seedMaxOrder:search.seedMaxOrder??null,searchModel:search.req.options.inputStrategy==='analytic'?'closed-form-inputs-with-physical-fallback':'hybrid-physical-search',inputStrategy:search.req.options.inputStrategy||'hybrid',physicsSteps:search.physicsSteps||0,firstSuccessCost:search.firstSuccessCost??null,analyticDiagnostics:search.analyticDiagnostics||[],analyticStats:{proposed:search.analyticSeeds?.length||0,feasible:search.analyticSeeds?.filter(x=>x.ok).length||0,evaluated:search.analyticCursor||0,rejectedReasons:[...new Set((search.analyticSeeds||[]).filter(x=>!x.ok).map(x=>x.reason))]},feasibilityStats:search.feasibilityStats,feasibilityStatus:search.successes.length?'verified-feasible-shot':'not-found-within-budget',terminationReason:search.finished?'candidate-budget-exhausted':'partial'};
 }
 function disposeSearch(search){if(search.active){search.active.lab.dispose();search.active=null;}}
 G.ShotSearchCore={validate,constrainSettings,sampleKisses,solveLinear,dampedStep,projectInputs,nextDls,createSearch,advanceSearch,finishSearch,disposeSearch,progress,beginTrial,stepTrial,finishTrial};

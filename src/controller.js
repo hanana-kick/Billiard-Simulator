@@ -5,9 +5,9 @@ const {V,add,sub,mul,dot,len,norm,clamp}=G.LabMath,D=G.LabDimensions;
 const normalizeAngle=a=>((a+180)%360+360)%360-180;
 class LabController{
  constructor(){
-  this.state={settings:{angle:0,elevation:8,tipX:0,tipY:0,speed:2},selectedId:1,paused:true,rate:1,paths:true,allPaths:false,showCue:true,debug:false,vectors:false,mode:'cue',view:'3d',activePanel:'shot',fineAim:false,predict:true,horizon:8,forecast:null,forecastStatus:'물리엔진 준비 중',predictionBusy:false,obstruction:null,cuePull:0,gesture:'',notice:'',ready:false,engineError:null,previewCueVisible:false,canAim:false};
+  this.state={settings:{angle:0,elevation:8,tipX:0,tipY:0,speed:2},selectedId:1,paused:true,rate:1,paths:true,allPaths:false,showCue:true,debug:false,vectors:false,mode:'cue',view:'3d',activePanel:'routes',fineAim:false,predict:true,horizon:8,forecast:null,forecastStatus:'물리엔진 준비 중',predictionBusy:false,obstruction:null,cuePull:0,gesture:'',notice:'',ready:false,engineError:null,previewCueVisible:false,canAim:false};
   this.state.gameMode='free';this.state.game=null;
-  this.state.routeOptions={mode:'direct',targetId:2,secondId:3,budget:48,horizon:16,spin:true,objective:'shortest',order:'either',methods:['any'],allowKiss:true,elevationMode:'fixed',minElevation:0,maxElevation:30,minSpeed:.5,maxSpeed:4.5,workers:0};this.state.routeStatus='idle';this.state.routeProgress=null;this.state.routeResult=null;this.state.routeError='';this.state.routeApplied=null;
+  this.state.routeOptions={inputStrategy:'hybrid',mode:'three',targetId:2,secondId:3,budget:48,horizon:16,spin:true,objective:'shortest',order:'either',methods:['any'],allowKiss:true,elevationMode:'fixed',minElevation:0,maxElevation:30,minSpeed:.5,maxSpeed:4.5,workers:0};this.state.routeStatus='idle';this.state.routeProgress=null;this.state.routeResult=null;this.state.routeError='';this.state.routeApplied=null;
   this.undoStack=[];this.redoStack=[];this.inputMetrics={events:0,lastHandlerMs:0,maxHandlerMs:0,lastInputToFrameMs:0,maxInputToFrameMs:0};this.renderCadence=new G.RenderCadence();this.renderMetrics={frames:0,cap:60};this.raf=null;this.disposed=false;this.listeners=new Set();this.lastSnapshot={...this.state,objects:[],events:[],time:0,shots:0,undo:false,params:{...G.LabDefaults}};this.dirty=true;this.accumulator=0;this.requestKey=null;this.token=0;this.gestures=new Map();this.cameraDrags=0;
  }
  subscribe=(fn)=>{this.listeners.add(fn);return()=>this.listeners.delete(fn)};
@@ -78,7 +78,7 @@ class LabController{
  }
  setGameMode(mode){if(!['free','four'].includes(mode)||mode===this.state.gameMode)return;this.state.gameMode=mode;this.reset();}
  setupGame(){
-  this.game=null;this.gameUndo=null;if(this.state.gameMode!=='four')return;
+  this.game=null;this.gameUndo=null;this.state.routeOptions={...this.state.routeOptions,mode:'three',methods:['any'],order:'either',allowKiss:true,workers:0,targetId:2,secondId:3};if(this.state.gameMode!=='four')return;
   const lab=this.lab;lab.objects[0].label='흰 수구';lab.objects[1].label='노란 수구';lab.objects[2].label='적구 1';
   const red=lab.addSphere(V(.64,D.radius+.00005,.30),'적구 2','#ed7770');
   this.game=new G.FourBallGame([lab.objects[0].id,lab.objects[1].id],[lab.objects[2].id,red.id]);lab.onEvent=e=>this.game?.contact(e);

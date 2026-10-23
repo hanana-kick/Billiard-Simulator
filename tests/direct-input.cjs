@@ -17,3 +17,11 @@ test('interactive coordinate updates are synchronous and coalesce expensive Reac
 test('every physical shaft segment is rear-side aim, never a stroke trigger',()=>{const c=lab();try{c.renderer.project=p=>({x:p.x*100,y:p.z*100,visible:true});c.state.previewCueVisible=true;const points=c.cuePoints();for(const key of ['front','grip','aim','rear'])assert.equal(c.hitCue(c.renderer.project(points[key])),'aim');assert.equal(typeof c.beginStrokeAnimation,'undefined');}finally{cleanup(c);}});
 
 test('kiss option UI key changes the actual search request polarity',()=>{const c=lab();try{assert.equal(c.state.routeOptions.allowKiss,true);c.routeOption('allowKiss',false);assert.equal(c.state.routeOptions.allowKiss,false);c.routeOption('allowKiss',true);assert.equal(c.state.routeOptions.allowKiss,true);}finally{cleanup(c);}});
+test('route strategy defaults safely and survives UI state changes into the search request',()=>{
+ for(const n of ['route-rules','route-sampler','optimizer-core','optimizer'])require('../src/'+n+'.js');
+ const c=lab();try{let request;c.optimizer={cancel(){},request(r){request=r;}};
+ assert.equal(c.state.routeOptions.inputStrategy,'hybrid');c.routeOption('inputStrategy','analytic');c.option('activePanel','settings');c.option('activePanel','routes');assert.equal(c.state.routeOptions.inputStrategy,'analytic');
+ c.startSearch();assert.equal(request.options.inputStrategy,'analytic');assert.equal(c.state.routeOptions.inputStrategy,'analytic');
+ c.stopSearch();c.routeOption('inputStrategy','hybrid');c.startSearch();assert.equal(request.options.inputStrategy,'hybrid');
+ }finally{cleanup(c);}
+});

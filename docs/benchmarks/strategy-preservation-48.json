@@ -1,0 +1,270 @@
+{
+  "budget": 48,
+  "baseline": "bbf2a32",
+  "candidateAndOutcomeSequencePreserved": true,
+  "modes": {
+    "baseline": {
+      "tested": 48,
+      "successes": 3,
+      "firstSuccess": 11,
+      "firstSuccessCost": {
+        "cpuMs": 4958.178,
+        "elapsedMs": 3150.2620890000003,
+        "physicsSteps": 71622
+      },
+      "cpuMs": 16817.484
+    },
+    "hybrid": {
+      "tested": 48,
+      "successes": 3,
+      "firstSuccess": 11,
+      "firstSuccessCost": {
+        "cpuMs": 5211.567,
+        "elapsedMs": 3291.102739,
+        "physicsSteps": 71622
+      },
+      "cpuMs": 17245.624
+    },
+    "analytic": {
+      "tested": 48,
+      "successes": 2,
+      "firstSuccess": 11,
+      "firstSuccessCost": {
+        "cpuMs": 4996.269,
+        "elapsedMs": 3076.270389,
+        "physicsSteps": 67164
+      },
+      "cpuMs": 15865.162
+    }
+  },
+  "analyticDiagnostics": [
+    {
+      "globalIndex": 3,
+      "firstTarget": 2,
+      "settings": {
+        "angle": -0.52955,
+        "elevation": 8,
+        "speed": 2.02049,
+        "tipX": 0,
+        "tipY": -0.27271
+      },
+      "success": false,
+      "residual": [
+        -0.4087841451973931,
+        -3.273996686896739e-06,
+        0.5470797064106986
+      ],
+      "clearance": 0.6829353428706839,
+      "cushions": 2,
+      "invalid": false,
+      "cueObstructed": false,
+      "firstState": {
+        "position": {
+          "x": 0.12180063128471375,
+          "y": 0.030681319534778595,
+          "z": 0.09277109056711197
+        },
+        "velocity": {
+          "x": 1.3427716493606567,
+          "y": 0,
+          "z": -0.012419160455465317
+        },
+        "spin": {
+          "x": -0.23829105496406555,
+          "y": 2.0683899037976516e-11,
+          "z": -25.752323150634766
+        }
+      }
+    },
+    {
+      "globalIndex": 4,
+      "firstTarget": 3,
+      "settings": {
+        "angle": -16.42129,
+        "elevation": 8,
+        "speed": 2.73929,
+        "tipX": 0,
+        "tipY": -0.39611
+      },
+      "success": false,
+      "residual": [
+        0.570450596585543,
+        -2.946291299453663e-06,
+        -0.35115216751986145
+      ],
+      "clearance": 0.6698669479138222,
+      "cushions": 2,
+      "invalid": false,
+      "cueObstructed": false,
+      "firstState": {
+        "position": {
+          "x": 0.7918984889984131,
+          "y": 0.03067619539797306,
+          "z": -0.3278373181819916
+        },
+        "velocity": {
+          "x": 1.1509069204330444,
+          "y": 0,
+          "z": -0.33906853199005127
+        },
+        "spin": {
+          "x": -11.036426544189453,
+          "y": -8.981260180007666e-11,
+          "z": -37.461158752441406
+        }
+      }
+    },
+    {
+      "globalIndex": 17,
+      "firstTarget": 2,
+      "settings": {
+        "angle": -5.63405,
+        "elevation": 8,
+        "speed": 2.07584,
+        "tipX": 0,
+        "tipY": -0.24011
+      },
+      "success": false,
+      "residual": [
+        -0.1633564747990942,
+        -3.0135887785555016e-06,
+        -0.1645807308864544
+      ],
+      "clearance": 0.2318882378366534,
+      "cushions": 2,
+      "invalid": false,
+      "cueObstructed": false,
+      "firstState": {
+        "position": {
+          "x": 0.11827938258647919,
+          "y": 0.03068183921277523,
+          "z": 0.02320070005953312
+        },
+        "velocity": {
+          "x": 1.502145528793335,
+          "y": 0,
+          "z": -0.14823973178863525
+        },
+        "spin": {
+          "x": -2.4022629261016846,
+          "y": 1.922018100231071e-11,
+          "z": -24.343334197998047
+        }
+      }
+    },
+    {
+      "globalIndex": 18,
+      "firstTarget": 3,
+      "settings": {
+        "angle": -12.60446,
+        "elevation": 8,
+        "speed": 2.74384,
+        "tipX": 0,
+        "tipY": -0.39611
+      },
+      "success": false,
+      "residual": [
+        0.3392411986379732,
+        -2.396739618555167e-06,
+        -0.0029647259112908454
+      ],
+      "clearance": 0.3392541531931514,
+      "cushions": 1,
+      "invalid": false,
+      "cueObstructed": false,
+      "firstState": {
+        "position": {
+          "x": 0.8220298290252686,
+          "y": 0.030676303431391716,
+          "z": -0.23135223984718323
+        },
+        "velocity": {
+          "x": 1.1769886016845703,
+          "y": 0,
+          "z": -0.26310819387435913
+        },
+        "spin": {
+          "x": -8.563972473144531,
+          "y": -2.546585164964199e-11,
+          "z": -38.31008529663086
+        }
+      }
+    },
+    {
+      "globalIndex": 33,
+      "firstTarget": 2,
+      "settings": {
+        "angle": -4.20065,
+        "elevation": 8,
+        "speed": 3.66805,
+        "tipX": 0,
+        "tipY": -0.05709
+      },
+      "success": false,
+      "residual": [
+        0,
+        0,
+        0
+      ],
+      "clearance": 0,
+      "cushions": 1,
+      "invalid": true,
+      "cueObstructed": false,
+      "firstState": {
+        "position": {
+          "x": 0.10972729325294495,
+          "y": 0.030691012740135193,
+          "z": 0.04346229508519173
+        },
+        "velocity": {
+          "x": 4.010499000549316,
+          "y": 0,
+          "z": -0.2945626378059387
+        },
+        "spin": {
+          "x": -1.0426427125930786,
+          "y": 3.403721748895805e-12,
+          "z": -14.213528633117676
+        }
+      }
+    },
+    {
+      "globalIndex": 34,
+      "firstTarget": 3,
+      "settings": {
+        "angle": -12.37344,
+        "elevation": 8,
+        "speed": 2.75737,
+        "tipX": 0,
+        "tipY": -0.39611
+      },
+      "success": false,
+      "residual": [
+        0.17421504955212838,
+        -2.4360631023099726e-06,
+        -0.34079493813397416
+      ],
+      "clearance": 0.3827428292654537,
+      "cushions": 1,
+      "invalid": false,
+      "cueObstructed": false,
+      "firstState": {
+        "position": {
+          "x": 0.8380852341651917,
+          "y": 0.03067619539797306,
+          "z": -0.22866392135620117
+        },
+        "velocity": {
+          "x": 1.1819610595703125,
+          "y": 0,
+          "z": -0.2592832148075104
+        },
+        "spin": {
+          "x": -8.439496040344238,
+          "y": -2.7330315788276494e-10,
+          "z": -38.472049713134766
+        }
+      }
+    }
+  ]
+}

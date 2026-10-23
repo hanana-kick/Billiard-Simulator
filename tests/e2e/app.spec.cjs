@@ -23,7 +23,7 @@ async function boot(page){
  page.setDefaultTimeout(15000);const errors=[];page.on('pageerror',e=>errors.push(e.message));
  if(process.env.LOCAL_HTML)await page.setContent(fs.readFileSync(process.env.LOCAL_HTML,'utf8'));else await page.goto('./');await page.waitForFunction(()=>globalThis.__LAB_READY__&&cueLab.state.ready);
  await page.evaluate(()=>cueLab.option('predict',false));
- await openSidebar(page);
+ await openSidebar(page);await tab(page,'수동').click();
  return errors;
 }
 async function select(page,id,label){await page.locator('#'+id).click();await page.getByRole('option',{name:label,exact:true}).click();}
@@ -38,13 +38,13 @@ test('three real Base UI tabs preserve world, settings, focus and mounted canvas
  await assertOnePanel(page,'shotPanel');
  await settleInput(page,'angle','17.23');
  const positions=await page.evaluate(()=>{globalThis.savedLab=cueLab.lab;globalThis.savedCanvas=document.getElementById('scene');return cueLab.lab.objects.map(o=>({...o.body.translation()}));});
- await tab(page,'경로').click();await assertOnePanel(page,'routesPanel');
+ await tab(page,'경로 탐색').click();await assertOnePanel(page,'routesPanel');
  await tab(page,'설정').click();await assertOnePanel(page,'settingsPanel');
  await select(page,'horizon','16초');await select(page,'speed','0.5×');
- await tab(page,'타격').click();await expect(page.locator('#angle')).toHaveValue('17.23');
+ await tab(page,'수동').click();await expect(page.locator('#angle')).toHaveValue('17.23');
  expect(await page.evaluate(()=>({sameWorld:cueLab.lab===savedLab,sameCanvas:document.getElementById('scene')===savedCanvas,positions:cueLab.lab.objects.map(o=>({...o.body.translation()})),horizon:cueLab.state.horizon,rate:cueLab.state.rate}))).toEqual({sameWorld:true,sameCanvas:true,positions,horizon:16,rate:.5});
- await tab(page,'타격').focus();await page.keyboard.press('ArrowRight');
- await expect(tab(page,'경로')).toHaveAttribute('aria-selected','true');
+ await tab(page,'수동').focus();await page.keyboard.press('ArrowLeft');
+ await expect(tab(page,'경로 탐색')).toHaveAttribute('aria-selected','true');
  await assertOnePanel(page,'routesPanel');expect(errors).toEqual([]);
 });
 
@@ -72,7 +72,7 @@ test('desktop and small-screen layout keeps table and one scrollable panel usabl
   await page.locator('#p-spinLength').scrollIntoViewIfNeeded();
   const sizes=await page.evaluate(()=>{const table=document.getElementById('scene').getBoundingClientRect(),tabs=document.getElementById('panelGroup').getBoundingClientRect(),s=document.querySelector('#p-spinLength').getBoundingClientRect();return{overflow:document.documentElement.scrollWidth>innerWidth+1,tableVisible:table.top>=0&&table.bottom<=innerHeight,tableHeight:table.height,tabsVisible:tabs.top>=0&&tabs.bottom<=innerHeight,sliderReachable:s.top>=0&&s.bottom<=innerHeight}});
   expect(sizes.overflow).toBe(false);expect(sizes.tableVisible).toBe(true);expect(sizes.tableHeight).toBeGreaterThan(60);expect(sizes.tabsVisible).toBe(true);expect(sizes.sliderReachable).toBe(true);
-  await tab(page,'타격').click();await assertOnePanel(page,'shotPanel');
+  await tab(page,'수동').click();await assertOnePanel(page,'shotPanel');
   await closeSidebar(page);await expect(page.locator('#scene')).toBeInViewport();
   await page.screenshot({path:`test-results/screenshots/${width}x${height}.png`});
  }
@@ -81,11 +81,11 @@ test('desktop and small-screen layout keeps table and one scrollable panel usabl
 
 test('touch navigation, fine aim and pinch cancellation work without firing',async({browser})=>{
  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1});const page=await context.newPage();const errors=await boot(page);
- await tab(page,'설정').tap();await assertOnePanel(page,'settingsPanel');await tab(page,'경로').tap();await assertOnePanel(page,'routesPanel');await tab(page,'타격').tap();await closeSidebar(page);
+ await tab(page,'설정').tap();await assertOnePanel(page,'settingsPanel');await tab(page,'경로 탐색').tap();await assertOnePanel(page,'routesPanel');await tab(page,'수동').tap();await closeSidebar(page);
  const before=await page.evaluate(()=>cueLab.state.settings.angle);const r=await page.locator('#aimPad').boundingBox(),cdp=await context.newCDPSession(page);
  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:r.x+60,y:r.y+r.height/2,id:1}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:r.x+110,y:r.y+r.height/2,id:1}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
  expect(await page.evaluate(()=>cueLab.state.settings.angle)).not.toBe(before);expect(await page.evaluate(()=>cueLab.lab.shots)).toBe(0);
- await openSidebar(page);await tab(page,'타격').tap();await page.getByRole('checkbox',{name:'미세 조준',exact:true}).tap();await expect.poll(()=>page.evaluate(()=>cueLab.state.fineAim)).toBe(true);await closeSidebar(page);
+ await openSidebar(page);await tab(page,'수동').tap();await page.getByRole('checkbox',{name:'미세 조준',exact:true}).tap();await expect.poll(()=>page.evaluate(()=>cueLab.state.fineAim)).toBe(true);await closeSidebar(page);
  const fineBefore=await page.evaluate(()=>cueLab.state.settings.angle),x=r.x+60,y=r.y+r.height/2;
  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y,id:1}]});
  await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+30,y,id:1}]});
@@ -111,13 +111,13 @@ test('touch navigation, fine aim and pinch cancellation work without firing',asy
 });
 
 test('three-cushion search yields a real candidate, applies and preserves it across tabs',async({page})=>{
- const errors=await boot(page);await tab(page,'경로').click();await page.locator('#routeMode button').filter({hasText:'3쿠션'}).click();
+ const errors=await boot(page);await tab(page,'경로 탐색').click();expect(await page.evaluate(()=>cueLab.state.routeOptions.mode)).toBe('three');
  await page.locator('#findRoute').click();
  await page.waitForFunction(()=>cueLab.state.routeResult?.results.length>0||cueLab.state.routeStatus==='error',{},{timeout:150000});
  expect(await page.evaluate(()=>cueLab.state.routeStatus)).not.toBe('error');
  await page.locator('.route-result button').first().click();
  expect(await page.evaluate(()=>cueLab.lab.shots)).toBe(0);const setting=await page.evaluate(()=>({...cueLab.state.settings}));
- await tab(page,'설정').click();await tab(page,'타격').click();expect(await page.evaluate(()=>({...cueLab.state.settings}))).toEqual(setting);
+ await tab(page,'설정').click();await tab(page,'수동').click();expect(await page.evaluate(()=>({...cueLab.state.settings}))).toEqual(setting);
  await page.locator('#strike').click();await page.waitForFunction(()=>cueLab.lab.time>.5);expect(await page.evaluate(()=>cueLab.state.previewCueVisible)).toBe(false);expect(await page.evaluate(()=>cueLab.lab.shots)).toBe(1);expect(errors).toEqual([]);
 });
 
@@ -148,13 +148,28 @@ test('empty-space forward aim, rear shaft drag, automatic ball movement and undo
  const rear=await page.evaluate(()=>{const p=cueLab.cuePoints().grip,q=cueLab.renderer.project(p),r=cueLab.canvas.getBoundingClientRect();return {x:r.left+q.x,y:r.top+q.y};});
  await page.mouse.move(rear.x,rear.y);await page.mouse.down();await page.waitForFunction(()=>cueLab.drag?.type==='aim');await page.mouse.move(rear.x+20,rear.y+30,{steps:5});await page.mouse.up();
  expect(await page.evaluate(()=>cueLab.lab.shots)).toBe(0);expect(await page.evaluate(()=>cueLab.state.settings.angle)).not.toBeCloseTo(45,0);
- const beforeDragBounds=await page.locator('#scene').boundingBox();
  const origin=await worldPoint(page,initial),destination=await worldPoint(page,{...initial,x:initial.x+.15,z:initial.z-.18});
- await page.mouse.move(origin.x,origin.y);await page.mouse.down();await page.waitForFunction(()=>cueLab.drag?.type==='ball');await expect(page.locator('#cancelGesture')).toBeVisible();expect(await page.locator('#scene').boundingBox()).toEqual(beforeDragBounds);await page.mouse.move(destination.x,destination.y,{steps:15});await page.mouse.up();
+ const canvasBeforeDrag=await page.locator('#scene').boundingBox();await page.mouse.move(origin.x,origin.y);await page.mouse.down();await page.waitForFunction(()=>cueLab.drag?.type==='ball');await expect(page.locator('#cancelGesture')).toBeVisible();expect(await page.locator('#scene').boundingBox()).toEqual(canvasBeforeDrag);await page.mouse.move(destination.x,destination.y,{steps:15});await page.mouse.up();
  const moved=await page.evaluate(()=>({...cueLab.lab.get(1).body.translation()}));expect(moved.x).toBeCloseTo(initial.x+.15,2);expect(moved.z).toBeCloseTo(initial.z-.18,2);expect(await page.evaluate(()=>cueLab.undoStack.length)).toBe(1);
  await openSidebar(page);await page.locator('#undo').click();expect(await page.evaluate(()=>({...cueLab.lab.get(1).body.translation()}))).toEqual(initial);await page.locator('#redo').click();expect(await page.evaluate(()=>({...cueLab.lab.get(1).body.translation()}))).toEqual(moved);
  await closeSidebar(page);const at=await worldPoint(page,moved);await page.mouse.move(at.x,at.y);await page.mouse.down();await page.mouse.move(at.x+15,at.y+20,{steps:5});await page.keyboard.press('Escape');await page.mouse.up();expect(await page.evaluate(()=>({...cueLab.lab.get(1).body.translation()}))).toEqual(moved);
  await expect.poll(()=>page.evaluate(()=>cueLab.inputMetrics.lastInputToFrameMs)).toBeGreaterThan(0);
  const inputMetrics=await page.evaluate(()=>cueLab.inputMetrics);console.log('Real coordinate input to render submission (not presentation):',JSON.stringify(inputMetrics));expect(inputMetrics.events).toBeGreaterThan(10);expect(inputMetrics.maxHandlerMs).toBeLessThan(200);
  expect(errors).toEqual([]);
+});
+
+// Deterministic single-search fixture uses the actual physics optimizer, not
+// fabricated success objects. Worker-count performance is tested separately.
+test('all three physically verified baseline candidates are accessible, not a top-two subset',async({page})=>{
+ const errors=await boot(page);await tab(page,'경로 탐색').click();
+ const count=await page.evaluate(()=>{
+  const req={snapshot:cueLab.lab.snapshot({trails:false}),selectedId:1,settings:{angle:0,elevation:8,speed:2,tipX:0,tipY:0},options:{mode:'three',methods:['any'],order:'either',targetId:2,secondId:3,budget:48,horizon:16,spin:true,objective:'shortest',allowKiss:true,inputStrategy:'hybrid'}};
+  const search=LabOptimizer.createSearch(RAPIER,req);try{while(!LabOptimizer.advanceSearch(search,960));const result=LabOptimizer.finishSearch(search);cueLab.routeStamp=cueLab.worldStamp();cueLab.state.routeResult=result;cueLab.state.routeStatus='done';cueLab.notify();return result.results.length;}finally{LabOptimizer.disposeSearch(search);}
+ });
+ expect(count).toBeGreaterThanOrEqual(3);
+ while(await page.locator('#moreRoutes').count())await page.locator('#moreRoutes').click();
+ await expect(page.locator('.route-result')).toHaveCount(count);await expect(page.locator('#routePageCount')).toHaveText(`${count}개 중 ${count}개 표시`);
+ const ids=await page.evaluate(()=>cueLab.state.routeResult.results.map(r=>r.id));for(const id of ids){const button=page.locator('#applyRoute'+id);await button.scrollIntoViewIfNeeded();await expect(button).toBeVisible();}
+ await tab(page,'수동').click();await tab(page,'경로 탐색').click();await expect(page.locator('.route-result')).toHaveCount(count);
+ expect(await page.evaluate(()=>cueLab.lab.shots)).toBe(0);expect(errors).toEqual([]);
 });

@@ -1,0 +1,140 @@
+[
+  {
+    "settings": {
+      "angle": -1.09169,
+      "elevation": 8,
+      "speed": 4.5,
+      "tipX": 0,
+      "tipY": 0.15
+    },
+    "contacts": [
+      {
+        "label": "\ub178\ub791",
+        "id": 2,
+        "rail": null,
+        "kind": "object",
+        "time": 0.1604166666666664
+      },
+      {
+        "label": "\uc55e\ucabd \ucfe0\uc158",
+        "id": null,
+        "rail": "z+",
+        "kind": "cushion",
+        "time": 0.5249999999999998
+      },
+      {
+        "label": "\uc624\ub978\ucabd \ucfe0\uc158",
+        "id": null,
+        "rail": "x+",
+        "kind": "cushion",
+        "time": 1.0125000000000226
+      },
+      {
+        "label": "\ub4a4\ucabd \ucfe0\uc158",
+        "id": null,
+        "rail": "z-",
+        "kind": "cushion",
+        "time": 4.307291666666503
+      },
+      {
+        "label": "\ube68\uac15",
+        "id": 3,
+        "rail": null,
+        "kind": "object",
+        "time": 4.886458333333136
+      }
+    ]
+  },
+  {
+    "settings": {
+      "angle": -1.06669,
+      "elevation": 8,
+      "speed": 4.38,
+      "tipX": 0,
+      "tipY": 0.15
+    },
+    "contacts": [
+      {
+        "label": "\ub178\ub791",
+        "id": 2,
+        "rail": null,
+        "kind": "object",
+        "time": 0.16458333333333305
+      },
+      {
+        "label": "\uc55e\ucabd \ucfe0\uc158",
+        "id": null,
+        "rail": "z+",
+        "kind": "cushion",
+        "time": 0.542708333333334
+      },
+      {
+        "label": "\uc624\ub978\ucabd \ucfe0\uc158",
+        "id": null,
+        "rail": "x+",
+        "kind": "cushion",
+        "time": 1.0343750000000214
+      },
+      {
+        "label": "\ub4a4\ucabd \ucfe0\uc158",
+        "id": null,
+        "rail": "z-",
+        "kind": "cushion",
+        "time": 4.692708333333147
+      },
+      {
+        "label": "\ube68\uac15",
+        "id": 3,
+        "rail": null,
+        "kind": "object",
+        "time": 5.373958333333109
+      }
+    ]
+  },
+  {
+    "settings": {
+      "angle": -16.02063,
+      "elevation": 8,
+      "speed": 4.5,
+      "tipX": -0.05,
+      "tipY": 0.1
+    },
+    "contacts": [
+      {
+        "label": "\ube68\uac15",
+        "id": 3,
+        "rail": null,
+        "kind": "object",
+        "time": 0.30937499999999923
+      },
+      {
+        "label": "\ub4a4\ucabd \ucfe0\uc158",
+        "id": null,
+        "rail": "z-",
+        "kind": "cushion",
+        "time": 0.46041666666666536
+      },
+      {
+        "label": "\uc624\ub978\ucabd \ucfe0\uc158",
+        "id": null,
+        "rail": "x+",
+        "kind": "cushion",
+        "time": 0.790625000000013
+      },
+      {
+        "label": "\uc55e\ucabd \ucfe0\uc158",
+        "id": null,
+        "rail": "z+",
+        "kind": "cushion",
+        "time": 1.8760416666666402
+      },
+      {
+        "label": "\ub178\ub791",
+        "id": 2,
+        "rail": null,
+        "kind": "object",
+        "time": 4.215624999999841
+      }
+    ]
+  }
+]

@@ -61,9 +61,40 @@ function closedFormContacts(origin,target,goal,radius,pre,post,cueRadius){
   const v={x:d.x-dot*n.x,z:d.z-dot*n.z},out=norm(q.x-g.x,q.z-g.z);if(dot<=1e-6||v.x*out.x+v.z*out.z<=1e-6)continue;
   const before=images(origin,g,cueRadius,Math.max(1,pre.order)).find(x=>x.ix===pre.ix&&x.iz===pre.iz),after=images(g,goal,cueRadius,Math.max(1,post.order)).find(x=>x.ix===post.ix&&x.iz===post.iz);
   if(!before||!after||before.rails.join()!==pre.rails.join()||after.rails.join()!==post.rails.join())continue;
-  roots.push({g,angle:Math.atan2(ray.z,ray.x)*180/Math.PI,distance:Math.hypot(u.x-origin.x,u.z-origin.z)+Math.hypot(q.x-g.x,q.z-g.z),residual:Math.abs(v.x*out.z-v.z*out.x),source:'closed-form-stun',residualModel:'equal-mass-elastic-frictionless',prefix:pre.order,suffix:post.order,spread:.15});
+  roots.push({g,normal:n,incoming:d,initialDirection:ray,beforeDistance:Math.hypot(u.x-origin.x,u.z-origin.z),afterDistance:Math.hypot(q.x-g.x,q.z-g.z),impactCosine:dot,angle:Math.atan2(ray.z,ray.x)*180/Math.PI,distance:Math.hypot(u.x-origin.x,u.z-origin.z)+Math.hypot(q.x-g.x,q.z-g.z),residual:Math.abs(v.x*out.z-v.z*out.x),source:'closed-form-stun',residualModel:'equal-mass-elastic-frictionless',prefix:pre.order,suffix:post.order,spread:.15});
  }
  return roots;
+}
+// Closed-form energy/slip/impulse inverse for a deliberately restricted ideal
+// model. Returned inputs are proposals, not predictions of compliant Rapier.
+function idealCueInputs(req,seed,{terminalSpeed=.25}={}){
+ if(seed.source!=='closed-form-stun'||seed.prefix!==0)return{ok:false,reason:'unsupported-contact-model'};
+ const cue=req.snapshot.objects.find(o=>o.id===req.selectedId),p=req.snapshot.params||{},o=req.options;
+ const g=p.gravity??9.81,R=cue.radius,m=cue.mass??.21,a=(p.clothFriction??.2)*g;
+ const ar=(5/7)*g*(p.rollingLength??.00045)/R,lambda=1-seed.impactCosine**2,L=seed.afterDistance;
+ if(!(a>=0&&lambda>1e-8&&L>=0&&seed.beforeDistance>=0&&terminalSpeed>0))return{ok:false,reason:'degenerate-energy-model'};
+ let after2=terminalSpeed**2+2*a*L,branch='sliding';
+ if(a>0&&L>12*after2/(49*a)){after2=49*(terminalSpeed**2+2*ar*L)/(25+24*ar/a);branch='rolling';}
+ const tipBound=.4,ratio2=(1-tipBound)**2,before2=Math.max(after2/lambda,ratio2*2*a*seed.beforeDistance/(1-ratio2));
+ after2=before2*lambda;const slideDistance=a>0?12*after2/(49*a):Infinity;
+ const achievedTerminalSpeed=Math.sqrt(Math.max(0,L<=slideDistance?after2-2*a*L:25*after2/49-2*ar*(L-slideDistance)));
+ branch=L<=slideDistance?'sliding':'rolling';
+ const v0=Math.sqrt(before2+2*a*seed.beforeDistance),time=2*seed.beforeDistance/(v0+Math.sqrt(before2));
+ const angle=seed.angle*Math.PI/180,elevation=req.settings.elevation,e=elevation*Math.PI/180;
+ // Vertical launch/cloth support at a raised cue is an approximation; exact
+ // algebra below is for the guide impulse, not the nonlinear spring-tip map.
+ const {V,mul,cross,dot,add}=G.LabMath,ray=V(Math.cos(angle),0,Math.sin(angle)),up=V(0,1,0),side=V(-Math.sin(angle),0,Math.cos(angle));
+ const direction=V(ray.x*Math.cos(e),-Math.sin(e),ray.z*Math.cos(e)),cueUp=cross(side,direction),Jmag=m*v0/Math.cos(e),J=mul(direction,Jmag),I=2*m*R*R/5;
+ const omega=mul(cross(up,ray),-5*a*time/(2*R)),angular=mul(omega,I),rperp=mul(cross(J,angular),1/(Jmag*Jmag)),r2=dot(rperp,rperp);
+ if(r2>=R*R)return{ok:false,reason:'required-spin-outside-sphere'};
+ const r=add(rperp,mul(direction,-Math.sqrt(R*R-r2))),tipX=dot(r,side)/R,tipY=dot(r,cueUp)/R;
+ if(!o.spin&&Math.hypot(tipX,tipY)>1e-6)return{ok:false,reason:'stun-needs-enabled-tip-control'};
+ // Explicit ideal elastic tip selection; actual spring damping is replayed.
+ const cueMass=D.cueMass??.54,tipRestitution=1,crossTerm=cross(r,direction),speed=Jmag*(1/cueMass+1/m+dot(crossTerm,crossTerm)/I)/(1+tipRestitution);
+ if(![speed,tipX,tipY].every(Number.isFinite)||Math.abs(tipX)>.55||Math.abs(tipY)>.45||Math.hypot(tipX,tipY)>.6)return{ok:false,reason:'required-tip-outside-ui-range'};
+ if(speed<(o.minSpeed??.5)||speed>(o.maxSpeed??4.5))return{ok:false,reason:'required-cue-speed-outside-range'};
+ if(o.elevationMode==='search'&&(elevation<(o.minElevation??0)||elevation>(o.maxElevation??30)))return{ok:false,reason:'specified-elevation-outside-range'};
+ return{ok:true,settings:{angle:seed.angle,elevation,speed,tipX,tipY},model:'ideal-stun-energy-guide-impulse',branch,terminalSpeed:achievedTerminalSpeed,minimumTerminalSpeed:terminalSpeed,regularizer:'minimum-launch-energy-with-tip-margin',ballSpeed:v0,firstContactSpeed:Math.sqrt(before2),afterContactSpeed:Math.sqrt(after2),initialBackspin:5*a*time/(2*R),lambda,approximate:true,idealRails:seed.suffix>0};
 }
 // Solve F(phi)=cross(v_out, reflectedGoal-contactPoint)=0 for an
 // ideal impact. Restitution/mass are included; spin/cloth remain forward-model
@@ -182,10 +213,25 @@ function proposals(req){
  const unique=[];for(const s of candidates.sort((a,b)=>a.distance-b.distance))if(!unique.some(p=>Math.abs(p.angle-s.angle)<.0001))unique.push(s);
  return unique;
 }
+function inverseInputSeeds(req){
+ const o=req.options;if((G.LabRouteRules.byId.get(o.methodId)?.prefix??0)>0)return[];const cue=req.snapshot.objects.find(x=>x.id===req.selectedId),a=req.snapshot.objects.find(x=>x.id===o.targetId),b=req.snapshot.objects.find(x=>x.id===o.secondId);if(!b)return[];
+ let geometry;
+ if(['any','carom'].includes(o.methodId))geometry=freeProposals(req,o.mode==='three'?3:0,0);
+ else{const pre={ix:0,iz:0,order:0,rails:[]};geometry=images(a.pos,b.pos,cue.radius,o.mode==='three'?5:0).filter(im=>matches(o.methodId,im.rails)).flatMap(post=>closedFormContacts(cue.pos,a.pos,b.pos,cue.radius+a.radius,pre,post,cue.radius));}
+ return geometry.filter(seed=>seed.source==='closed-form-stun').map(seed=>({...idealCueInputs(req,seed),geometry:seed}));
+}
 function next(search,normalize){
  const {req,count,pool}=search,o=req.options,three=o.mode==='three';
- if(count===0)return normalize({...req.settings,...(!o.spin?{tipX:0,tipY:0}:{})});
- const seeds=['any','carom'].includes(o.methodId)?null:(search.familySeeds||(search.familySeeds=proposals(req)));
+ const partition=req.partition,localCount=partition?(count-partition.index)/partition.count:count;
+ if(count===0){search.pendingModel={stage:'current-user-settings'};return normalize({...req.settings,...(!o.spin?{tipX:0,tipY:0}:{})});}
+ const analytic=o.inputStrategy==='analytic'?(search.analyticSeeds||(search.analyticSeeds=inverseInputSeeds(req))):[];
+ const usable=analytic.filter(s=>s.ok),cursor=search.analyticCursor||0,ordinal=partition?cursor*partition.count+partition.index:cursor;
+ if(usable.length&&(localCount===0||localCount===1||localCount%8===0)&&ordinal<usable.length){
+  const seed=usable[ordinal];search.analyticCursor=cursor+1;search.seedMaxOrder=Math.max(search.seedMaxOrder??0,(seed.geometry?.prefix??0)+(seed.geometry?.suffix??0));search.pendingModel={stage:'closed-form-input-estimate',model:seed.model,approximate:true,branch:seed.branch,terminalSpeed:seed.terminalSpeed,idealRails:seed.idealRails,geometricResidual:seed.geometry.residual,predictedFirstContactSpeed:seed.firstContactSpeed,predictedFirstContactSpin:0};
+  return normalize(seed.settings);
+ }
+ search.pendingModel={stage:'sampled-or-adaptive-fallback',approximate:true};
+  const seeds=['any','carom'].includes(o.methodId)?null:(search.familySeeds||(search.familySeeds=proposals(req)));
  // Refine actual near-misses at the angular scale needed by a 61.5mm ball.
  // The old 0.35-degree-only early refinements jumped over narrow winning intervals.
  const near=pool.find(x=>!x.success&&x.firstHit&&x.cushions>=(three?3:0)&&x.clearance<.16&&x.score<220);
@@ -214,5 +260,5 @@ function next(search,normalize){
   tipX:o.spin&&j>5?(halton(j+1,7)*2-1)*.45:0,
   tipY:o.spin?(three&&j<6?.15:shifts[(cycle+Math.floor(j/4))%shifts.length]):0});
 }
-G.LabRouteSampler={images,tangentContact,closedFormContacts,inverseRoots,freeProposals,freeProposalAt,proposals,next};
+G.LabRouteSampler={images,tangentContact,closedFormContacts,idealCueInputs,inverseInputSeeds,inverseRoots,freeProposals,freeProposalAt,proposals,next};
 })(globalThis);
