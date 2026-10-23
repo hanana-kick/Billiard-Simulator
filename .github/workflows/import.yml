@@ -1,0 +1,39 @@
+name: Import reviewed application source
+on:
+  push:
+    branches: [main]
+    paths: ['.bootstrap/**', '.github/workflows/import.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: import-source
+  cancel-in-progress: false
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Restore verified source archive
+        run: node .bootstrap/import.cjs
+      - name: Install real application dependencies
+        run: npm install --no-audit --no-fund
+      - name: Inspect official Tabs documentation
+        run: npx --yes shadcn@latest docs tabs
+      - name: Install official Base UI shadcn Tabs
+        run: npx --yes shadcn@latest add tabs --yes
+      - name: Verify actual Base UI dependency
+        run: |
+          node -e "const fs=require('fs');const s=fs.readFileSync('src/components/ui/tabs.tsx','utf8');if(!s.includes('@base-ui/react/tabs'))throw Error('Wrong primitive base');"
+      - name: Commit normal source and dependency lockfile
+        run: |
+          rm -rf .bootstrap
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'feat: import Cue Lab source and restore official Base UI inspector tabs'
+          git push origin HEAD:main
