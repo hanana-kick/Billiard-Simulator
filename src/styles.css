@@ -31,6 +31,7 @@
 }
 :root {
   color-scheme: light;
+  --control-size: 32px;
   --radius: .625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(.145 0 0);
@@ -226,8 +227,9 @@
   .route-form { grid-template-columns: minmax(0, 1fr); }
 }
 @media (pointer: coarse) {
+  :root { --control-size: 44px; }
   /* Expand hit areas only; retain every official component visual variant. */
-  button, [role=tab], [role=combobox] { min-height: 44px; }
+  button:not([role=switch]), [role=tab], [role=combobox] { min-height: 44px; }
   .cue-handle { min-width: 60px; min-height: 44px; }
   .aim-pad { min-height: 44px; }
   .panel-scroll { touch-action: pan-y; }
