@@ -164,6 +164,7 @@ function Workspace(){
        <canvas ref={scene} id="scene" tabIndex={0} aria-label="빈 곳을 누르면 그 방향으로 조준합니다. 큐를 드래그하면 반대쪽에서 조준하고, 공을 드래그하면 이동합니다. 두 손가락으로 확대합니다."/>
        <div className="viewport-meta"><span className="path-legend"><i/>예상 궤적</span><Badge variant="secondary">{s.activeStroke?'타격 중':s.canAim?'준비':s.paused?'일시정지':'운동 중'}</Badge></div>
        <div className="viewport-guide">{s.gesture||(s.mode==='orbit'?'빈 곳 드래그로 회전 · 공 드래그로 이동':'빈 곳을 눌러 조준 · 공을 드래그해 이동')}</div>
+     {s.gesture==='공을 옮기는 중 · Esc 취소'?<div className="gesture-cancel"><Button variant="outline" id="cancelGesture" onPointerDown={e=>{e.preventDefault();controller.cancelGesture()}} onClick={()=>controller.cancelGesture()}>이동 취소</Button></div>:null}
        {!s.ready?<div className="loading"><Icon name="cube"/><strong>{s.engineError?'초기화 오류':'물리 월드 준비 중'}</strong><p>{s.engineError||'Rapier 3D'}</p></div>:null}
       </div>
 
@@ -175,7 +176,6 @@ function Workspace(){
        onPointerDown={e=>{e.currentTarget.setPointerCapture(e.pointerId);sideHeld.current=true;controller.sideDrag(e)}} onPointerMove={e=>{if(sideHeld.current)controller.sideDrag(e)}} onPointerUp={()=>sideHeld.current=false} onPointerCancel={()=>sideHeld.current=false} onLostPointerCapture={()=>sideHeld.current=false} onKeyDown={e=>handleKey(e,'aim')}/>
       </div></div>
      </div>
-     {s.gesture==='공을 옮기는 중 · Esc 취소'?<div className="gesture-cancel"><Button variant="outline" id="cancelGesture" onPointerDown={e=>{e.preventDefault();controller.cancelGesture()}} onClick={()=>controller.cancelGesture()}>이동 취소</Button></div>:null}
     </section>
    </SidebarInset>
   <HelpDialog open={helpOpen} onOpenChange={setHelpOpen}/>{s.notice?<div className="notice-wrap"><Alert role="status" aria-live="polite"><AlertDescription>{s.notice}</AlertDescription></Alert></div>:null}

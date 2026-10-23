@@ -224,3 +224,6 @@
 .hit-target { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 4px; flex-shrink: 0; }
 
 .route-option-help { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+
+/* Gesture feedback must not resize the surface being dragged. */
+.gesture-cancel { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 3; }
