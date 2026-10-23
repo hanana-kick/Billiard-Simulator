@@ -12,7 +12,7 @@ if(online){const {url,imports}=require('./tools/ui-dependencies.cjs'),deps=JSON.
 const notices=fs.readFileSync(path.join(root,'THIRD_PARTY_NOTICES.txt'),'utf8')+'\n'+fs.readFileSync(path.join(root,'vendor/RAPIER-LICENSE.txt'),'utf8');
 let html=fs.readFileSync(path.join(root,'index.template.html'),'utf8').replace('/*__CSS__*/',()=>fs.readFileSync(path.join(root,'src/styles.compiled.css'),'utf8')).replace('<!--__SCRIPTS__-->',()=>scripts).replace('<!--__IMPORTMAP__-->',()=>head).replace('<!--__NETWORK_NOTE__-->',online?'이 실행 파일은 실제 Base UI·React를 CDN에서 불러오므로 인터넷 연결이 필요합니다.':'UI와 물리엔진이 모두 파일에 포함되어 있습니다.');
 html=html.replace('</head>',()=>script('third-party-licenses',notices,'text/plain')+'</head>');
-fs.writeFileSync(path.join(dist,'index.html'),html);fs.copyFileSync(path.join(root,'public/icon.svg'),path.join(dist,'icon.svg'));
+fs.writeFileSync(path.join(dist,'index.html'),html);fs.cpSync(path.join(root,'public'),dist,{recursive:true});
 fs.writeFileSync(path.join(root,online?'online.html':'standalone.html'),html.replace(/<link rel="icon"[^>]*>/,''));
 fs.writeFileSync(path.join(root,'docs/build-mode.json'),JSON.stringify({mode:online?'real-cdn-modules':'real-bundled-packages',requiresNetwork:online,bytes:Buffer.byteLength(html),uiSource:'vendor/shadcn/base',runtime:'@base-ui/react'},null,2));
 fs.writeFileSync(path.join(dist,'.nojekyll'),'');
