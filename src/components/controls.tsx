@@ -12,8 +12,9 @@ export function SliderField({ value, min, max, step, onChange, id, label, disabl
   value: number; min: number; max: number; step: number; onChange: (value: number) => void;
   id?: string; label: string; disabled?: boolean
 }) {
-  return <Slider id={id} value={[value]} min={min} max={max} step={step}
-    onValueChange={value => onChange(Array.isArray(value) ? value[0] : value)} aria-label={label} disabled={disabled} />
+  const labelId = React.useId()
+  return <><span id={labelId} className="sr-only">{label}</span><Slider id={id} value={[value]} min={min} max={max} step={step} thumbAlignment="center" aria-labelledby={labelId}
+    onValueChange={value => onChange(Array.isArray(value) ? value[0] : value)} aria-label={label} disabled={disabled} /></>
 }
 export function SwitchField({ checked, onChange, label, id, disabled = false }: {
   checked: boolean; onChange: (value: boolean) => void; label: string; id?: string; disabled?: boolean

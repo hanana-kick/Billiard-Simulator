@@ -161,7 +161,7 @@ function App(){
    </main>
    <aside className="toolbox" aria-label="타격과 경로 설정" id="toolbox">
     <Tabs className="toolbox-tabs" value={s.activePanel} onValueChange={changePanel}>
-    <div className="toolbox-nav"><TabsList id="panelGroup" aria-label="설정 패널" className="grid w-full grid-cols-3">
+    <div className="toolbox-nav"><TabsList activateOnFocus id="panelGroup" aria-label="설정 패널" className="grid w-full grid-cols-3">
      <TabsTrigger value="shot" id="tab-shot">타격</TabsTrigger>
      <TabsTrigger value="routes" id="tab-routes">경로 {s.routeResult?.results.length?<Badge variant="secondary">{s.routeResult.results.length}</Badge>:null}</TabsTrigger>
      <TabsTrigger value="settings" id="tab-settings">전체 설정</TabsTrigger>
