@@ -69,3 +69,14 @@ test('success archive is not truncated by refinement or display caps',()=>{
 });
 
 test('modern 32-way worker partitions preserve the complete finite candidate budget',()=>{require('../src/optimizer.js');const request={...req,options:{...req.options,mode:'three',methods:['any'],order:'either'}};const searches=Array.from({length:32},(_,index)=>LabOptimizer.createSearch(null,{...request,partition:{index,count:32}}));assert.equal(searches.reduce((n,s)=>n+s.groups.reduce((m,g)=>m+g.req.options.budget,0),0),48);for(const s of searches)LabOptimizer.disposeSearch(s);assert.throws(()=>LabOptimizer.createSearch(null,{...request,partition:{index:0,count:65}}));});
+test('staged feasibility observations fold by candidate order and clear after a passed clearance',()=>{
+ const g=ShotSearchCore.createSearch(null,req);g.count=4;g.feasibility={settings,distance:-.2,probes:4};g.dls={};g.dlsPending={};
+ const blocked=distance=>({rejected:true,clearancePassed:false,resetDls:true,feasibility:{settings,distance,probes:0},feasibilityStats:{checked:1,blocked:1,restored:0}});
+ ShotSearchCore.commitCandidate(g,{ordinal:1},blocked(-.1));assert.equal(g.feasibility.distance,-.1);assert.equal(g.feasibility.probes,4);assert.equal(g.dls,null);
+ ShotSearchCore.commitCandidate(g,{ordinal:2},blocked(-.3));assert.equal(g.feasibility.distance,-.1);
+ ShotSearchCore.commitCandidate(g,{ordinal:3},{rejected:true,clearancePassed:true,resetDls:false,feasibility:null,feasibilityStats:{checked:1,blocked:0,restored:0}});assert.equal(g.feasibility,null);assert.equal(g.feasibilityStats.restored,1);assert.equal(g.rejected,3);assert.equal(g.count,4);
+});
+test('staged method progress counts committed work rather than reserved wave candidates',()=>{
+ require('../src/optimizer.js');const s=LabOptimizer.createStagedSearch(null,{...req,options:{...req.options,mode:'three',methods:['any'],order:'either'}}),jobs=LabOptimizer.planWave(s);let p=LabOptimizer.stagedResult(s);assert.equal(jobs.length,8);assert.equal(p.tested,0);assert.equal(p.methods.reduce((n,m)=>n+m.tested,0),0);
+ assert.throws(()=>LabOptimizer.commitWave(s,[]));LabOptimizer.commitWave(s,jobs.map(j=>({id:j.id,outcome:{rejected:true,clearancePassed:false,feasibility:null,feasibilityStats:{checked:1,blocked:1,restored:0},resetDls:true}})).reverse());p=LabOptimizer.stagedResult(s);assert.equal(p.tested,8);assert.equal(p.methods.reduce((n,m)=>n+m.tested,0),8);assert.equal(p.total,48);
+});

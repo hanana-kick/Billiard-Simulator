@@ -10,7 +10,7 @@
   "scripts": {
     "build": "node build.cjs",
     "start": "node server.cjs",
-    "test": "node --test --test-concurrency=2 tests/physics.cjs tests/accuracy.cjs tests/repair-v5.cjs tests/optimizer.cjs tests/route-families.cjs tests/official-ui.cjs tests/search-repair-v8.cjs tests/ui-inventory.cjs tests/four-ball.cjs tests/table-geometry.cjs tests/physics-invariants.cjs tests/search-options.cjs tests/render-service.cjs tests/search-motion.cjs tests/worker-pool.cjs tests/four-ball-integration.cjs tests/frame-cap.cjs tests/controller-render-cap.cjs tests/seo.cjs tests/inverse-solver.cjs tests/inverse-integration.cjs tests/cue-feasibility.cjs tests/direct-input.cjs",
+    "test": "node --test --test-concurrency=2 tests/physics.cjs tests/accuracy.cjs tests/repair-v5.cjs tests/optimizer.cjs tests/route-families.cjs tests/official-ui.cjs tests/search-repair-v8.cjs tests/ui-inventory.cjs tests/four-ball.cjs tests/table-geometry.cjs tests/physics-invariants.cjs tests/search-options.cjs tests/render-service.cjs tests/search-motion.cjs tests/worker-pool.cjs tests/four-ball-integration.cjs tests/frame-cap.cjs tests/controller-render-cap.cjs tests/seo.cjs tests/inverse-solver.cjs tests/inverse-integration.cjs tests/cue-feasibility.cjs tests/direct-input.cjs && node --test tests/deterministic-workers.cjs",
     "test:routes": "node --test tests/route-families.cjs",
     "test:provenance": "node tools/install-official-ui.cjs --check",
     "test:sensitivity": "node tests/sensitivity.cjs",

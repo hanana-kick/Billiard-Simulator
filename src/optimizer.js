@@ -63,5 +63,34 @@ function collectResults(s){
 function finishSearch(s){return collectResults(s);}
 function previewSearch(s){const result=collectResults(s);return{...result,partial:!s.finished};}
 function disposeSearch(s){if(s.familySearch){s.groups.forEach(Core.disposeSearch);s.active=null;s.finished=true;}else Core.disposeSearch(s);}
-G.LabOptimizer={...Core,validate,createSearch,advanceSearch,finishSearch,disposeSearch,progress,previewSearch};
+// Fixed waves are independent of hardware concurrency. Only evaluation is parallel.
+function createStagedSearch(R,req){
+ const started=performance.now(),root=createSearch(R,{...req,partition:undefined}),initializationMs=performance.now()-started;
+ return{initializationMs,planningMs:0,maxPlanningMs:0,root,groups:root.familySearch?root.groups:[root],wave:0,nextId:0,pending:[],trace:[],finished:false};
+}
+function planWave(staged){
+ if(staged.pending.length)throw Error('Commit the current wave before planning another.');
+ const started=performance.now(),jobs=[];
+ for(let groupIndex=0;groupIndex<staged.groups.length;groupIndex++){
+  const group=staged.groups[groupIndex];if(group.count>=group.req.options.budget){group.finished=true;continue;}
+  const first=Core.proposeCandidate(group);if(!first)continue;
+  const proposals=[first],dependent=first.searchModel?.stage==='iterative-physical-correction';
+  if(!dependent)while(proposals.length<4&&group.count<group.req.options.budget)proposals.push(Core.proposeCandidate(group,false));
+  for(const proposal of proposals)jobs.push({...proposal,id:staged.nextId++,groupIndex,req:group.req,wave:staged.wave});
+ }
+ const duration=performance.now()-started;staged.planningMs+=duration;staged.maxPlanningMs=Math.max(staged.maxPlanningMs,duration);staged.pending=jobs;staged.wave++;if(!jobs.length){staged.finished=true;staged.root.finished=true;}return jobs;
+}
+function commitWave(staged,outcomes){
+ const ids=new Set(outcomes.map(x=>x.id));if(ids.size!==staged.pending.length||outcomes.length!==ids.size||staged.pending.some(j=>!ids.has(j.id)))throw Error('Incomplete or duplicate candidate wave');
+ const byId=new Map(outcomes.map(x=>[x.id,x.outcome]));
+ for(const job of staged.pending){const outcome=byId.get(job.id);Core.commitCandidate(staged.groups[job.groupIndex],job,outcome);staged.trace.push({id:job.id,groupIndex:job.groupIndex,settings:job.settings,stage:job.searchModel?.stage||'sampled-or-adaptive-fallback'});if(outcome.result?.success&&!staged.firstSuccessCost){staged.firstSuccessCost={tested:staged.trace.length,physicsSteps:staged.groups.reduce((n,g)=>n+(g.physicsSteps||0),0),elapsedMs:performance.now()-staged.root.started,scope:'global-plan'};}}
+ staged.pending=[];for(const group of staged.groups)group.finished=group.count>=group.req.options.budget;
+ staged.finished=staged.groups.every(g=>g.finished);staged.root.finished=staged.finished;
+}
+function stagedResult(staged){
+ const result=finishSearch(staged.root);result.firstSuccessCost=staged.firstSuccessCost||null;result.tested=staged.groups.reduce((n,g)=>n+g.evaluated+g.rejected,0);result.fraction=0;if(result.methods)result.methods=result.methods.map(m=>({...m,tested:staged.groups.filter(g=>g.method===m.id).reduce((n,g)=>n+g.evaluated+g.rejected,0)}));
+ result.terminationReason=staged.finished?'candidate-budget-exhausted':'partial';result.candidatePlan={version:1,waveWidthPerGroup:4,committed:staged.trace.length,waves:staged.wave,workerIndependent:true,initializationMs:staged.initializationMs,planningMs:staged.planningMs,maxPlanningMs:staged.maxPlanningMs};
+ return result;
+}
+G.LabOptimizer={...Core,createStagedSearch,planWave,commitWave,stagedResult,validate,createSearch,advanceSearch,finishSearch,disposeSearch,progress,previewSearch};
 })(globalThis);

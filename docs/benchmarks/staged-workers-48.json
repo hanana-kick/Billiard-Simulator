@@ -1,0 +1,120 @@
+{
+  "planVersion": 1,
+  "fixture": "default three-cushion, either order, any route, kisses allowed",
+  "budget": 48,
+  "horizonSeconds": 16,
+  "physics": "same unchanged full-resolution Rapier PhysicsLab, fresh snapshot per candidate",
+  "rows": [
+    {
+      "workers": 1,
+      "tested": 48,
+      "results": 4,
+      "solver": {
+        "probes": 5,
+        "steps": 1,
+        "accepted": 1,
+        "rejected": 1
+      },
+      "physicsSteps": 352867,
+      "elapsedMs": 14605.304240000001,
+      "cpuMs": 16721.127,
+      "planning": {
+        "version": 1,
+        "waveWidthPerGroup": 4,
+        "committed": 48,
+        "waves": 10,
+        "workerIndependent": true,
+        "initializationMs": 0.6161199999999951,
+        "planningMs": 19.64589000000055,
+        "maxPlanningMs": 10.51531100000011
+      }
+    },
+    {
+      "workers": 2,
+      "tested": 48,
+      "results": 4,
+      "solver": {
+        "probes": 5,
+        "steps": 1,
+        "accepted": 1,
+        "rejected": 1
+      },
+      "physicsSteps": 352867,
+      "elapsedMs": 8880.830691000001,
+      "cpuMs": 17374.944,
+      "planning": {
+        "version": 1,
+        "waveWidthPerGroup": 4,
+        "committed": 48,
+        "waves": 10,
+        "workerIndependent": true,
+        "initializationMs": 0.23511499999949592,
+        "planningMs": 16.75129100000595,
+        "maxPlanningMs": 12.10234599999967
+      }
+    },
+    {
+      "workers": 4,
+      "tested": 48,
+      "results": 4,
+      "solver": {
+        "probes": 5,
+        "steps": 1,
+        "accepted": 1,
+        "rejected": 1
+      },
+      "physicsSteps": 352867,
+      "elapsedMs": 5436.890276000002,
+      "cpuMs": 18723.568,
+      "planning": {
+        "version": 1,
+        "waveWidthPerGroup": 4,
+        "committed": 48,
+        "waves": 10,
+        "workerIndependent": true,
+        "initializationMs": 0.11243000000104075,
+        "planningMs": 8.045072999993863,
+        "maxPlanningMs": 4.9676780000008876
+      }
+    },
+    {
+      "workers": 9,
+      "tested": 48,
+      "results": 4,
+      "solver": {
+        "probes": 5,
+        "steps": 1,
+        "accepted": 1,
+        "rejected": 1
+      },
+      "physicsSteps": 352867,
+      "elapsedMs": 4681.584697000002,
+      "cpuMs": 23124.169,
+      "planning": {
+        "version": 1,
+        "waveWidthPerGroup": 4,
+        "committed": 48,
+        "waves": 10,
+        "workerIndependent": true,
+        "initializationMs": 0.16804300000148942,
+        "planningMs": 7.453146999996534,
+        "maxPlanningMs": 4.339970000000903
+      }
+    }
+  ],
+  "canonicalInputAndOutcomeEquality": true,
+  "actualDlsStepExecuted": true,
+  "fallbackDuringNormalRuns": false,
+  "injectedFailureDuringDlsPreservesCanonicalOutput": true,
+  "freshWinningShotReplayPassed": true,
+  "originalWorldUnchanged": true,
+  "measurementNotes": [
+    "cpuMs is process CPU time including Node worker threads, not GPU utilization.",
+    "Parallel elapsed time decreases here while total CPU consumption increases.",
+    "One fixture on one cloud host; not a general quality or speed guarantee.",
+    "The staged plan differs from the historical sequential adaptive schedule equally for all worker counts.",
+    "Final evaluator avoids regenerating proposal seeds per candidate. Measurements were collected after the standard test suite completed, with the actual worker integration run sequentially.",
+    "An earlier combined concurrent test run exited its worker integration file without an assertion or explicit signal; resource exhaustion is suspected, not proven. This does not validate the product 128 MiB-per-worker estimate.",
+    "Browser UI validation was not completed: the local preview tab crashed with Chrome error code 9 before search was started. Node worker integration is separate evidence."
+  ]
+}

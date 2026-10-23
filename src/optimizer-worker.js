@@ -1,21 +1,16 @@
+
 'use strict';
-const ready=RAPIER.init();let activeId=0;
+const ready=RAPIER.init();let activeToken=0;
 self.onmessage=async({data})=>{
- activeId=data.requestId;if(data.type==='cancel')return;
- const id=activeId;let search;
+ const token=++activeToken;if(data.type!=='evaluate')return;
+ const reply=payload=>self.postMessage({requestId:data.requestId,candidateId:data.candidateId,...payload});let evaluation;
  try{
-  await ready;if(id!==activeId)return;
-  search=LabOptimizer.createSearch(RAPIER,data);let last=0,done=false;
-  self.postMessage({requestId:id,progress:LabOptimizer.progress(search)});
-  while(!done){
-   const until=performance.now()+32;
-   do {done=LabOptimizer.advanceSearch(search,64);}while(!done&&performance.now()<until);
-   const now=performance.now();
-   if(now-last>=160||done){self.postMessage({requestId:id,progress:{...LabOptimizer.progress(search),partialResult:LabOptimizer.previewSearch(search)}});last=now;}
-   if(!done)await new Promise(r=>setTimeout(r,0));
-   if(id!==activeId){LabOptimizer.disposeSearch(search);return;}
+  await ready;if(token!==activeToken)return;
+  evaluation=ShotSearchCore.beginCandidate(RAPIER,data.job);let last=0,done=!evaluation.trial;reply({steps:0});
+  while(!done){const until=performance.now()+32;do{done=ShotSearchCore.stepTrial(evaluation.search,evaluation.trial,64);}while(!done&&performance.now()<until);
+   if(performance.now()-last>=160){reply({steps:evaluation.trial.steps});last=performance.now();}
+   if(!done)await new Promise(r=>setTimeout(r,0));if(token!==activeToken){evaluation.trial?.lab.dispose();return;}
   }
-  const result=LabOptimizer.finishSearch(search);search=null;
-  if(id===activeId)self.postMessage({requestId:id,result});
- }catch(e){if(search){try{LabOptimizer.disposeSearch(search);}catch{ /* Preserve the originating error if WASM cleanup also fails. */ }}if(id===activeId)self.postMessage({requestId:id,error:e.message||String(e),errorStack:e.stack});}
+  const outcome=ShotSearchCore.finishCandidate(evaluation);evaluation=null;if(token===activeToken)reply({outcome});
+ }catch(e){try{evaluation?.trial?.lab.dispose();}catch{}if(token===activeToken)reply({error:e.message||String(e),stack:e.stack,failedStep:evaluation?.trial?.steps});}
 };
