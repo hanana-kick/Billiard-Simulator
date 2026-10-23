@@ -1,0 +1,75 @@
+name: Test and deploy GitHub Pages
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['.bootstrap/**', '.github/workflows/import.yml']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run prepare:engine
+      - name: Build real UI and WASM without runtime CDN loading
+        run: npm run build
+      - name: Physics, search and feature regressions
+        run: npm test
+      - name: Official component provenance
+        run: npm run test:provenance
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Full rendered application, desktop and mobile
+        run: npm run test:e2e
+      - name: Preserve test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-evidence
+          path: |
+            playwright-report/
+            test-results/
+            docs/ui-bundle-audit.json
+          retention-days: 14
+      - name: Preserve compiled app
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-app
+          path: |
+            dist/
+            standalone.html
+          if-no-files-found: ignore
+          retention-days: 14
+      - uses: actions/upload-pages-artifact@v3
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        with:
+          path: dist
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check Pages configuration
+        uses: actions/configure-pages@v5
+      - name: Deploy tested build
+        id: deployment
+        uses: actions/deploy-pages@v4
