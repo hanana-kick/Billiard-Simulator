@@ -243,7 +243,9 @@ class LabController{
   if(invalidate&&this.state.routeResult){this.state.routeStatus='stale';this.state.routeError=reason;this.state.routeApplied=null;}
  }
  repairRouteTargets(){
-  if(!this.lab)return;const ids=this.lab.objects.filter(o=>o.shape==='sphere'&&o.id!==this.state.selectedId).map(o=>o.id),o=this.state.routeOptions;
+  if(!this.lab)return;const o=this.state.routeOptions;
+  // Inspecting or moving a red ball must never replace the game's two red targets.
+  const ids=this.game?this.game.redIds.filter(id=>this.lab.get(id)):this.lab.objects.filter(o=>o.shape==='sphere'&&o.id!==this.state.selectedId).map(o=>o.id);
   const targetId=ids.includes(o.targetId)?o.targetId:(ids[0]??0),secondId=ids.includes(o.secondId)&&o.secondId!==targetId?o.secondId:(ids.find(id=>id!==targetId)??0);
   this.state.routeOptions={...o,targetId,secondId};
  }
