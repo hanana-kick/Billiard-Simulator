@@ -1,0 +1,28 @@
+# Cue Lab · 당구 연습 시뮬레이터
+
+> Cue Lab is a free Korean-language, browser-based 3D rigid-body billiards practice simulator. Canonical URL: https://dangoo.hananakick.cc/
+
+## Pages
+
+- [당구 연습 앱](https://dangoo.hananakick.cc/): Interactive simulation; requires JavaScript and WebAssembly.
+- [사용 안내](https://dangoo.hananakick.cc/guide.html): Static Korean guide covering practice, routes, controls and limitations. Readable without JavaScript.
+- [사이트맵](https://dangoo.hananakick.cc/sitemap.xml): Public indexable pages.
+- [Source and README](https://github.com/hanana-kick/Billiard-Simulator): Current source, build instructions and validation commands.
+
+## Korean terminology and supported features
+
+당구 연습, 당구 시뮬레이터, 캐롬 당구, 3구(삼구), 4구(사구), 3쿠션(쓰리쿠션·스리쿠션), 당구 타점, 회전, 힘 조절, 쿠션 경로.
+
+These are practice/search terms, not a list of official game modes. Users can place, add and remove balls, select a cue ball, adjust tip position, aim, elevation and shot strength, and inspect predicted trajectories. Routes include direct contact with two object balls and three-cushion candidate search. Cloth, cushion and ball parameters are adjustable.
+
+## Interaction
+
+The persistent inspector has 타격 (shot), 경로 (routes), 전체 설정 (settings) tabs; switching tabs preserves the world and settings. Aim from the rear cue handle; pull and release the front handle to shoot. Fine aim supports 0.01-degree numeric adjustments. The cue hides during ball motion. On mobile, a second touch cancels an active pull. Calculating or applying a route does not fire a shot.
+
+## Limitations
+
+Rapier 3D computes genuine rigid-body contacts; successful outcomes are not hardcoded. Predictions use the same physical model. Search considers finite candidates and cannot guarantee a global optimum or a successful shot. There are no official 3구/4구 match modes, complete rules enforcement or official scoring. The model is not calibrated to real equipment and cannot guarantee real-table accuracy or training results.
+
+## Delivery
+
+Production runtime dependencies are bundled; no runtime library CDN fetch is required. This file is an informational navigation aid, not an API or a crawler permission standard. Crawler discovery is also provided through robots.txt and sitemap.xml.

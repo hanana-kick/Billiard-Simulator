@@ -188,6 +188,7 @@ function App(){
       </FieldGroup></section><Separator/><Placement state={s}/><Separator/><MaterialSettings state={s}/><Separator/>
       <section id="contacts" className="settings-section contact-log" tabIndex={-1} aria-labelledby="contacts-title"><div className="section-heading"><h2 id="contacts-title">접촉 기록</h2><span>{s.events.length}개</span></div><div>{s.events.length?s.events.map((e:any,i:number)=><p key={i}><time>{n(e.time)}s</time> {e.label}</p>):<p>타격 후 접촉을 기록합니다.</p>}</div></section>
       <p className="helper">실제 Base UI 기반 shadcn/ui · 동일 물리 월드 예측<br/>실측 보정되지 않은 강체·접촉 근사 모델입니다.</p>
+      <p className="helper"><a href="./guide.html" target="_blank" rel="noopener">3구·삼구·4구·사구·3쿠션 연습 안내 (새 탭)</a></p>
      </TabsContent>
     </div>
     </Tabs>

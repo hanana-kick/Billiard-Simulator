@@ -20,7 +20,9 @@ npm start
 
 저장소 **Settings → Pages → Build and deployment → Source = GitHub Actions**를 한 번 선택해야 합니다. 이후 `main` 푸시는 `.github/workflows/pages.yml`을 통해 빌드·회귀·실제 브라우저 E2E를 통과한 경우에만 배포됩니다. 설정 전에는 공개 사이트가 활성화된 상태가 아닙니다.
 
-예정 주소: https://hanana-kick.github.io/Billiard-Simulator/
+검색 기준 주소: https://dangoo.hananakick.cc/
+
+`public/CNAME`과 canonical·Open Graph·JSON-LD·사이트맵은 이 주소를 사용합니다. 도메인을 변경할 때 함께 수정해야 합니다. DNS 연결 및 HTTPS 인증서 발급은 호스팅 설정에서 별도로 확인해야 합니다.
 
 설정을 변경한 뒤 Actions의 **Test and deploy GitHub Pages → Run workflow**로 실행할 수 있습니다. PR에서는 테스트만 수행하고 배포하지 않습니다. 실패한 검사의 스크린샷·trace 및 브라우저 보고서는 `browser-evidence`, 빌드 결과는 `compiled-app` artifact에 보관됩니다.
 
@@ -33,6 +35,12 @@ npm start
 - 전체 설정: 표시·재생, 공 배치·추가·삭제, 재질·중력, 접촉 기록.
 
 모바일은 조준 패드·미세 조준·두 손가락 확대를 지원합니다. 당기는 중 두 번째 손가락을 올리면 타격을 취소합니다. 공이 움직이는 동안 큐는 숨겨집니다.
+
+## 한국어 검색과 에이전트 탐색
+
+당구 연습·3구(삼구)·4구(사구)·3쿠션(쓰리쿠션·스리쿠션) 검색에 맞춰 한국어 제목·설명, 공유 메타데이터와 WebApplication JSON-LD를 제공합니다. 종목별 공식 경기 모드나 채점을 지원한다는 의미는 아닙니다.
+
+`public/guide.html`은 JavaScript 없이 읽는 사용법·모델 한계 안내이며, `public/llms.txt`는 AI 에이전트용 기능·용어·문서 링크입니다. `llms.txt`는 탐색 보조 문서이지 검색 노출 보장이나 크롤러 접근 제어 표준이 아닙니다. `robots.txt`와 `sitemap.xml`도 함께 배포합니다. `public/` 파일은 빌드 시 `dist/`로 복사됩니다. 안내 문서는 정적 배포 디렉터리에서 제공되며, `standalone.html` 단일 파일에는 포함되지 않습니다.
 
 ## 검증
 
