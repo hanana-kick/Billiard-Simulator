@@ -1,6 +1,7 @@
 const {test,expect}=require('@playwright/test');
 const fs=require('node:fs');
 const path=require('node:path');
+const {pathToFileURL}=require('node:url');
 const origin='https://dangoo.hananakick.cc';
 const read=name=>fs.readFileSync(path.join(__dirname,'../../dist',name),'utf8');
 
@@ -8,7 +9,7 @@ test('deployed HTML exposes Korean metadata before JavaScript runs',async({brows
  const context=await browser.newContext({javaScriptEnabled:false});
  try{
   const page=await context.newPage();
-  await page.setContent(read('index.html'));
+  await page.goto(process.env.LOCAL_HTML?pathToFileURL(path.join(__dirname,'../../dist/index.html')).href:'./');
   await expect(page.locator('html')).toHaveAttribute('lang','ko');
   await expect(page).toHaveTitle(/당구 연습.*3구·삼구·4구·사구·3쿠션.*Cue Lab/);
   for(const term of ['당구 연습','3구','삼구','4구','사구','3쿠션']){
@@ -56,7 +57,7 @@ test('static Korean guide is readable without scripts on narrow and wide screens
  const context=await browser.newContext({javaScriptEnabled:false});
  try{
   const page=await context.newPage();
-  if(process.env.LOCAL_HTML)await page.setContent(read('guide.html'));else await page.goto('./guide.html');
+  await page.goto(process.env.LOCAL_HTML?pathToFileURL(path.join(__dirname,'../../dist/guide.html')).href:'./guide.html');
   await expect(page.locator('link[rel=canonical]')).toHaveAttribute('href',origin+'/guide.html');
   await expect(page.getByRole('heading',{level:1})).toContainText('3구·삼구·4구·사구·3쿠션');
   await expect(page.locator('main')).toContainText('공식 경기 진행·채점 도구가 아니라');
