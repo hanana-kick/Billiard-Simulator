@@ -70,7 +70,11 @@ async function expandGameSetup(page){
 }
 async function reachable(page,selector){
  if(selector==='#gameMode')await expandGameSetup(page);
- const el=page.locator(selector);await page.locator('#panelScroll').evaluate(async e=>{await Promise.all(e.getAnimations({subtree:true}).map(a=>a.finished.catch(()=>{})))});await el.scrollIntoViewIfNeeded();await expect(el).toBeVisible();
+ // Base UI Checkbox assigns the supplied id to its hidden form input.
+ // Inspect and hit-test the visible semantic control, never that hidden input.
+ let el=page.locator(selector);
+ if(await el.evaluate(e=>e.matches('input[type=checkbox][aria-hidden=true]')))el=el.locator('..').getByRole('checkbox');
+ await page.locator('#panelScroll').evaluate(async e=>{await Promise.all(e.getAnimations({subtree:true}).map(a=>a.finished.catch(()=>{})))});await el.scrollIntoViewIfNeeded();await expect(el).toBeVisible();
  const box=await el.boundingBox(),scroll=await page.locator('#panelScroll').boundingBox();
  contained(box,scroll,selector+' inside inspector scrollport');
  // Visibility alone does not catch another control painted on top of this one.
