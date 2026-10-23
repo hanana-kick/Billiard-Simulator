@@ -129,7 +129,7 @@ test('three-cushion search yields a real candidate, applies and preserves it acr
 
 test('bundled runtime only requests the explicitly allowed version-pinned Pretendard CDN font',async({page})=>{
  const external=[];page.on('request',r=>{const url=r.url();if(/^https?:/.test(url)&&new URL(url).origin!==new URL(process.env.APP_URL||'http://127.0.0.1:8787').origin)external.push({url,type:r.resourceType()});});
- await boot(page);await tab(page,'설정').click();await select(page,'horizon','8초');await waitForPretendard(page);expect(external.length).toBeGreaterThan(0);for(const r of external){expect(r.url).toMatch(/^https:\/\/cdn\.jsdelivr\.net\/gh\/orioncactus\/pretendard@v1\.3\.9\/dist\/web\/variable\//);expect(['stylesheet','font']).toContain(r.type);}
+ await boot(page);await tab(page,'설정').click();await select(page,'horizon','8초');await waitForPretendard(page);expect(external.length).toBeGreaterThan(0);for(const r of external){expect(r.url).toMatch(/^https:\/\/cdn\.jsdelivr\.net\/gh\/orioncactus\/pretendard@v1\.3\.9\/(?:packages\/pretendard\/)?dist\/web\/variable\//);expect(['stylesheet','font']).toContain(r.type);}
 });
 
 test('direct scene remains usable across sizes without removed fullscreen or cue overlays',async({page})=>{
