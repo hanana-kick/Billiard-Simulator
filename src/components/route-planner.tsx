@@ -62,7 +62,7 @@ export function RoutePlanner({state:s,controller:c}:{state:any;controller:any}){
      <FieldDescription>이름보다 표시된 접촉 순서로 판정합니다. 돌리기는 앞·뒤·옆 계열을 묶은 3면 경로입니다.</FieldDescription>
     </FieldSet>:<p className="helper">두 공을 모두 맞힐 때까지 수구의 쿠션 접촉이 0회인 후보만 성공입니다.</p>}
    </InspectorSection>
-   <InspectorSection id="routeAdvanced" title="탐색 설정" className="route-settings"><FieldGroup>
+   <InspectorSection id="routeAdvanced" title="고급 탐색 설정" defaultOpen={false} className="route-settings"><FieldGroup>
     <Field><FieldLabel htmlFor="routeOrder">맞히는 순서</FieldLabel><SelectField id="routeOrder" aria-label="목적구 순서" value={o.order} onChange={change('order')}><option value="either">양쪽 순서 모두</option><option value="fixed">A → B 고정</option></SelectField></Field>
     <div className="route-form"><Field><FieldLabel htmlFor="routeBudget">방법별 후보</FieldLabel><SelectField id="routeBudget" aria-label="방법별 후보 수" value={o.budget} onChange={change('budget')}><option value={48}>빠르게 · 48</option><option value={128}>표준 · 128</option><option value={320}>넓게 · 320</option></SelectField></Field><Field><FieldLabel htmlFor="routeHorizon">계산 구간</FieldLabel><SelectField id="routeHorizon" aria-label="후보당 계산 시간" value={o.horizon} onChange={change('horizon')}><option value={8}>8초</option><option value={16}>16초</option><option value={30}>30초</option></SelectField></Field></div>
     <Field><FieldLabel htmlFor="routeObjective">추천 기준</FieldLabel><SelectField id="routeObjective" aria-label="추천 기준" value={o.objective} onChange={change('objective')}><option value="shortest">짧은 이동거리</option><option value="gentle">낮은 타격 세기</option></SelectField></Field>

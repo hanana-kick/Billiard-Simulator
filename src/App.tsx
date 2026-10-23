@@ -18,17 +18,17 @@ const n=(x:number,p=2)=>Number(x||0).toFixed(p)
 function TipSelector({state:s}:{state:any}){
  const moving=React.useRef(false)
  const set=(e:React.PointerEvent<HTMLDivElement>)=>{if(!s.canAim)return;const b=e.currentTarget.getBoundingClientRect();controller.changeSettings({tipX:(e.clientX-b.left-b.width/2)/(b.width/2),tipY:-(e.clientY-b.top-b.height/2)/(b.height/2)})}
- return <section className="inspector-section">
-  <div className="section-heading"><h2>타점</h2><Button variant="ghost" size="sm" id="centerTip" onClick={()=>controller.changeSettings({tipX:0,tipY:0})}>중앙</Button></div>
-  <div className="tip-section">
+ return <Card size="sm" className="inspector-section">
+  <CardHeader><div className="section-heading"><CardTitle>타점</CardTitle><Button variant="ghost" size="sm" id="centerTip" onClick={()=>controller.changeSettings({tipX:0,tipY:0})}>중앙</Button></div><CardDescription>수구에서 큐가 닿는 위치를 조절합니다.</CardDescription></CardHeader>
+  <CardContent className="tip-section">
    <div className="tip-wrapper"><span className="tip-up">상단</span><div id="tipDisc" role="group" aria-label="수구 타점: 좌우·상하 화살표로 조절" tabIndex={0} className="tip-disc"
     onPointerDown={e=>{e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);moving.current=true;set(e)}} onPointerMove={e=>{if(moving.current)set(e)}} onPointerUp={()=>moving.current=false} onPointerCancel={()=>moving.current=false} onLostPointerCapture={()=>moving.current=false}
     onKeyDown={e=>{const delta=e.shiftKey?.08:.02;const a=s.settings;if(e.key==='ArrowLeft')controller.changeSettings({tipX:a.tipX-delta});else if(e.key==='ArrowRight')controller.changeSettings({tipX:a.tipX+delta});else if(e.key==='ArrowUp')controller.changeSettings({tipY:a.tipY+delta});else if(e.key==='ArrowDown')controller.changeSettings({tipY:a.tipY-delta});else return;e.preventDefault()}}>
     <div className="tip-safe"/><div className="tip-dot" style={{left:`${50+s.settings.tipX*50}%`,top:`${50-s.settings.tipY*50}%`}}/>
    </div><span className="tip-down">하단</span></div>
    <div className="tip-data"><div><span>좌우</span><strong>{s.settings.tipX<0?'좌':'우'} {n(Math.abs(s.settings.tipX)*30.75,1)} <small>mm</small></strong></div><div><span>상하</span><strong>{s.settings.tipY<0?'하':'상'} {n(Math.abs(s.settings.tipY)*30.75,1)} <small>mm</small></strong></div><span className="muted-caption">{Math.hypot(s.settings.tipX,s.settings.tipY)>.55?'가장자리 타점 · 미스큐 가능':'큐에서 바라본 공'}</span></div>
-  </div>
- </section>
+  </CardContent>
+ </Card>
 }
 function AngleInput({id,label,value,kind,disabled}:{id:string,label:string,value:number,kind:'angle'|'elevation',disabled:boolean}){
  const [draft,setDraft]=React.useState(n(value)),[editing,setEditing]=React.useState(false),skipCommit=React.useRef(false)
@@ -72,6 +72,7 @@ function App(){
  const s:any=React.useSyncExternalStore(controller.subscribe,controller.snapshot)
  const scene=React.useRef<HTMLCanvasElement>(null),side=React.useRef<HTMLCanvasElement>(null)
  const aim=React.useRef<HTMLButtonElement>(null),grip=React.useRef<HTMLButtonElement>(null),panelScroll=React.useRef<HTMLDivElement>(null)
+ const [previewCollapsed,setPreviewCollapsed]=React.useState(false)
  const [helpOpen,setHelpOpen]=React.useState(false),sideHeld=React.useRef(false)
  const [fullWindow,setFullWindow]=React.useState(false),[browserFullscreen,setBrowserFullscreen]=React.useState(false)
  const appShell=React.useRef<HTMLDivElement>(null)
@@ -112,15 +113,15 @@ function App(){
  return <div className="app-shell" ref={appShell} data-full-window={fullWindow||undefined}>
   <header className="app-header">
    <div className="brand"><span className="brand-icon"><Icon name="cube"/></span><h1>Cue Lab</h1><span className="desktop-label">물리 실험실</span></div>
-   <div className="header-actions">
+   <div className="header-actions"><Button id="togglePreview" className="preview-toggle" variant="outline" size="sm" aria-expanded={!previewCollapsed} aria-controls="stagePreview" onClick={()=>{setPreviewCollapsed(v=>!v);controller.dirty=true}}>{previewCollapsed?'당구대 펼치기':'당구대 접기'}</Button>
     <Button id="undo" variant="ghost" size="icon" disabled={!s.undo} aria-label="이전 타격 되돌리기" onClick={()=>controller.undo()}><Icon name="undo" data-icon="inline-start"/></Button>
     <Button id="reset" variant="ghost" size="icon" aria-label="초기 배치로 돌아가기" onClick={()=>controller.reset()}><Icon name="reset" data-icon="inline-start"/></Button>
     <Button variant="ghost" size="icon" aria-label="조작 도움말" onClick={()=>setHelpOpen(true)}><Icon name="info" data-icon="inline-start"/></Button>
    </div>
   </header>
-  <div className="workspace">
-   <main className="stage-region" aria-label="당구대와 타격">
-    <Card className="stage-card">
+  <div className="workspace" data-preview-collapsed={previewCollapsed||undefined}>
+   <main id="stagePreview" className="stage-region" aria-label="당구대와 타격">
+    <Card size="sm" className="stage-card">
      <CardHeader className="stage-header">
       <CardTitle className="sr-only">3D 물리 월드</CardTitle>
       <div className="view-controls"><OptionGroup id="viewGroup" label="카메라 시점" value={s.view||'3d'} onChange={v=>controller.view(v)} options={[{value:'top',label:'상단'},{value:'3d',label:'3D'},{value:'side',label:'측면'}]}/></div>
@@ -135,8 +136,8 @@ function App(){
        <canvas ref={scene} id="scene" tabIndex={0} aria-label="물리 공간. 큐 손잡이를 드래그하거나 공 배치 모드에서 공을 옮깁니다. 두 손가락으로 확대합니다."/>
        <div className="viewport-meta"><span className="path-legend"><i/>예상 궤적</span><Badge variant="secondary">{s.activeStroke?'타격 중':s.canAim?'준비':s.paused?'일시정지':'운동 중'}</Badge></div>
        <div className="cue-handles" aria-label="큐 직접 조작">
-        <button ref={aim} id="aimHandle" className="cue-handle aim-handle" aria-label="큐 뒤쪽 조준 손잡이" onPointerDown={e=>controller.beginCue('aim',e)} onKeyDown={e=>handleKey(e,'aim')}><Icon name="move"/><span>조준</span></button>
-        <button ref={grip} id="gripHandle" className="cue-handle grip-handle" aria-label="공 가까운 당기기 손잡이. 당겼다 놓으면 타격" onPointerDown={e=>controller.beginCue('stroke',e)} onKeyDown={e=>handleKey(e,'stroke')}><Icon name="grip"/><span>당기기</span></button>
+        <Button variant="outline" ref={aim} id="aimHandle" className="cue-handle aim-handle" aria-label="큐 뒤쪽 조준 손잡이" onPointerDown={e=>controller.beginCue('aim',e)} onKeyDown={e=>handleKey(e,'aim')}><Icon name="move" data-icon="inline-start"/><span>조준</span></Button>
+        <Button variant="outline" ref={grip} id="gripHandle" className="cue-handle grip-handle" aria-label="공 가까운 당기기 손잡이. 당겼다 놓으면 타격" onPointerDown={e=>controller.beginCue('stroke',e)} onKeyDown={e=>handleKey(e,'stroke')}><Icon name="grip" data-icon="inline-start"/><span>당기기</span></Button>
        </div>
        <div className="viewport-guide">{s.gesture||(s.mode==='place'?'공을 잡고 옮기세요':s.mode==='orbit'?'드래그로 회전 · 두 손가락으로 확대':'뒤쪽 조준 · 앞쪽 당겨서 타격')}</div>
        {s.cuePull>.005?<div className="pull-meter"><span>{n(s.cuePull*100,1)} cm 당김</span><strong>{n(s.settings.speed)} m/s</strong><div><i style={{width:`${s.cuePull/.28*100}%`}}/></div></div>:null}
@@ -146,7 +147,7 @@ function App(){
      <CardFooter className="stage-footer">
       <div className="scene-modes"><OptionGroup id="interactionMode" label="장면 조작" value={s.mode} onChange={v=>controller.option('mode',v)} options={[{value:'cue',label:'큐 조작'},{value:'place',label:'공 배치'},{value:'orbit',label:'시점'}]}/><span className="shot-counter">{s.shots}회 · {n(s.time,1)}s</span></div>
       <div className="aim-toolbar">
-       <button id="aimPad" className="aim-pad" disabled={!s.canAim||s.routeStatus==='searching'} onPointerDown={e=>controller.beginAimPad(e)} onKeyDown={e=>handleKey(e,'aim')} aria-label="좌우 드래그로 조준 방향 조절"><Icon name="move"/><span>밀어서 조준</span><output>{n(s.settings.angle)}°</output></button>
+       <Button variant="outline" id="aimPad" className="aim-pad" disabled={!s.canAim||s.routeStatus==='searching'} onPointerDown={e=>controller.beginAimPad(e)} onKeyDown={e=>handleKey(e,'aim')} aria-label="좌우 드래그로 조준 방향 조절"><Icon name="move" data-icon="inline-start"/><span>밀어서 조준</span><output>{n(s.settings.angle)}°</output></Button>
        <SwitchField id="fineAim" checked={s.fineAim} onChange={v=>controller.option('fineAim',v)} label="미세"/>
       </div>
       <div className="playback-controls">
@@ -160,7 +161,7 @@ function App(){
     <div className="stage-bottom"><span>{n(s.speed)} m/s · {n(s.spin,0)} rpm</span><span>{s.renderMode||'3D'} · 960 Hz</span></div>
    </main>
    <aside className="toolbox" aria-label="타격과 경로 설정" id="toolbox">
-    <Tabs className="toolbox-tabs" value={s.activePanel} onValueChange={changePanel}>
+    <Card className="toolbox-card"><Tabs className="toolbox-tabs" value={s.activePanel} onValueChange={changePanel}>
     <div className="toolbox-nav"><TabsList activateOnFocus id="panelGroup" aria-label="설정 패널" className="grid w-full grid-cols-3">
      <TabsTrigger value="shot" id="tab-shot">타격</TabsTrigger>
      <TabsTrigger value="routes" id="tab-routes">경로 {s.routeResult?.results.length?<Badge variant="secondary">{s.routeResult.results.length}</Badge>:null}</TabsTrigger>
@@ -168,10 +169,10 @@ function App(){
     </TabsList></div>
     <div className="panel-scroll" id="panelScroll" ref={panelScroll}>
      <TabsContent value="shot" keepMounted id="shotPanel" className="tool-panel" aria-label="타격 설정">
-      <Field><FieldLabel htmlFor="gameMode">게임 모드</FieldLabel><SelectField id="gameMode" aria-label="게임 모드" value={s.gameMode} onChange={(e:any)=>controller.setGameMode(e.target.value)}><option value="free">자유 실험 · 3구 배치</option><option value="four">한국 4구 · 연습 규칙</option></SelectField><FieldDescription>모드를 변경하면 배치와 점수가 초기화됩니다.</FieldDescription></Field>
-      {s.game?<section className="game-score" aria-label="4구 점수"><div className="score-row"><strong>흰 수구 {s.game.scores[s.game.cueIds[0]]}</strong><strong>노란 수구 {s.game.scores[s.game.cueIds[1]]}</strong></div><p role="status">{s.game.pending?'타격 판정 중':s.game.lastResult}</p><p className="helper">두 적구 +1 · 상대 수구 접촉/수구 장외 −1 · 실패 시 교대. 음수 허용, 종료 점수 없는 연습입니다. 수구는 직접 바꿀 수 있습니다. 규격은 기존 캐롬 실험 설정을 유지합니다.</p></section>:null}
-      <div className="section-heading"><h2>타격할 공</h2><span>{selected?.label}</span></div>
-      <OptionGroup id="ballChoices" label="선택 물체" value={String(s.selectedId)} onChange={id=>controller.select(Number(id))} options={s.objects.filter((o:any)=>!s.game||s.game.cueIds.includes(o.id)).map((o:any)=>({value:String(o.id),label:<><i className="ball-dot" style={{background:o.color}}/>{o.label}</>}))}/>
+      <Card size="sm"><CardHeader><CardTitle>게임 설정</CardTitle><CardDescription>연습 방식을 선택하고 수구를 지정하세요.</CardDescription></CardHeader><CardContent><Field><FieldLabel htmlFor="gameMode">게임 모드</FieldLabel><SelectField id="gameMode" aria-label="게임 모드" value={s.gameMode} onChange={(e:any)=>controller.setGameMode(e.target.value)}><option value="free">자유 실험 · 3구 배치</option><option value="four">한국 4구 · 연습 규칙</option></SelectField><FieldDescription>모드를 변경하면 배치와 점수가 초기화됩니다.</FieldDescription></Field></CardContent></Card>
+      {s.game?<Card size="sm" className="game-score" aria-label="4구 점수"><CardHeader><CardTitle>4구 점수</CardTitle><CardDescription>연습 규칙 · 현재 차례 {selected?.label}</CardDescription></CardHeader><CardContent><div className="score-row"><strong>흰 수구 {s.game.scores[s.game.cueIds[0]]}</strong><strong>노란 수구 {s.game.scores[s.game.cueIds[1]]}</strong></div><p role="status">{s.game.pending?'타격 판정 중':s.game.lastResult}</p><p className="helper">두 적구 +1 · 상대 수구 접촉/수구 장외 −1 · 실패 시 교대. 음수 허용, 종료 점수 없는 연습입니다. 수구는 직접 바꿀 수 있습니다. 규격은 기존 캐롬 실험 설정을 유지합니다.</p></CardContent></Card>:null}
+      <FieldGroup><Field><FieldLabel>타격할 공</FieldLabel>
+      <OptionGroup id="ballChoices" label="선택 물체" value={String(s.selectedId)} onChange={id=>controller.select(Number(id))} options={s.objects.filter((o:any)=>!s.game||s.game.cueIds.includes(o.id)).map((o:any)=>({value:String(o.id),label:<><i className="ball-dot" style={{background:o.color}}/>{o.label}</>}))}/></Field></FieldGroup>
       <TipSelector state={s}/><Separator/>
       <PrecisionControls state={s}/>
       <canvas ref={side} id="sideView" className="side-view" tabIndex={0} role="slider" aria-label="큐 옆면. 드래그로 기울기 조절" aria-valuemin={0} aria-valuemax={80} aria-valuenow={s.settings.elevation}
@@ -182,18 +183,18 @@ function App(){
      <TabsContent value="routes" keepMounted id="routesPanel" className="tool-panel route-panel" aria-label="경로 탐색"><RoutePlanner state={s} controller={controller}/></TabsContent>
      <TabsContent value="settings" keepMounted id="settingsPanel" className="tool-panel" aria-label="시뮬레이션 설정">
       <section className="settings-section" id="preview-settings" tabIndex={-1} aria-labelledby="preview-settings-title">
-      <div className="section-heading"><h2 id="preview-settings-title">표시·재생</h2></div><FieldGroup>
+      <div className="section-heading"><h2 id="preview-settings-title">표시·재생</h2></div><FieldGroup><Field><FieldLabel>장면 조작</FieldLabel><OptionGroup id="inspectorInteractionMode" label="설정에서 장면 조작" value={s.mode} onChange={v=>controller.option('mode',v)} options={[{value:'cue',label:'큐 조작'},{value:'place',label:'공 배치'},{value:'orbit',label:'시점'}]}/><FieldDescription>공 배치로 위치를 옮기거나 시점으로 당구대를 회전합니다.</FieldDescription></Field>
        <Field><FieldLabel htmlFor="horizon">예측할 시간</FieldLabel><SelectField aria-label="예측 시간" id="horizon" value={s.horizon} onChange={(e:any)=>controller.option('horizon',Number(e.target.value))}>{[4,8,16,30].map(v=><option value={v} key={v}>{v}초</option>)}</SelectField></Field>
        <Field><FieldLabel htmlFor="speed">재생 속도</FieldLabel><SelectField aria-label="재생 속도" id="speed" value={s.rate} onChange={(e:any)=>controller.option('rate',Number(e.target.value))}>{[.25,.5,1,2,4].map(v=><option key={v} value={v}>{v}×</option>)}</SelectField></Field>
        <SwitchField id="showCue" label="조준 큐 표시" checked={s.showCue} onChange={v=>controller.option('showCue',v)}/><SwitchField id="paths" label="실제 이동 궤적" checked={s.paths} onChange={v=>controller.option('paths',v)}/><SwitchField id="wire" label="충돌 형상" checked={s.debug} onChange={v=>controller.option('debug',v)}/><SwitchField id="vectors" label="속도 벡터" checked={s.vectors} onChange={v=>controller.option('vectors',v)}/>
        <dl className="live-state" aria-label="현재 물리 상태"><div><dt>속력</dt><dd id="statSpeed">{n(s.speed)} m/s</dd></div><div><dt>회전</dt><dd id="statSpin">{n(s.spin,0)} rpm</dd></div><div><dt>공 하단 높이</dt><dd id="statHeight">{n(s.height,1)} cm</dd></div><div><dt>누적 타격</dt><dd id="statShots">{s.shots}회</dd></div></dl><div className="action-row"><Button id="step" variant="outline" onClick={()=>controller.step()}>1 프레임</Button><Button id="clearTrails" variant="outline" onClick={()=>controller.clearTrails()}>궤적 지우기</Button></div>
       </FieldGroup></section><Separator/><Placement state={s}/><Separator/><MaterialSettings state={s}/><Separator/>
       <section id="contacts" className="settings-section contact-log" tabIndex={-1} aria-labelledby="contacts-title"><div className="section-heading"><h2 id="contacts-title">접촉 기록</h2><span>{s.events.length}개</span></div><div>{s.events.length?s.events.map((e:any,i:number)=><p key={i}><time>{n(e.time)}s</time> {e.label}</p>):<p>타격 후 접촉을 기록합니다.</p>}</div></section>
-      <p className="helper">실제 Base UI 기반 shadcn/ui · 동일 물리 월드 예측<br/>실측 보정되지 않은 강체·접촉 근사 모델입니다.</p>
+      <p className="helper">동일한 물리 모델로 타격과 예상 경로를 계산합니다.<br/>실측 보정되지 않은 강체·접촉 근사 모델입니다.</p>
       <p className="helper"><a href="./guide.html" target="_blank" rel="noopener">3구·삼구·4구·사구·3쿠션 연습 안내 (새 탭)</a></p>
      </TabsContent>
     </div>
-    </Tabs>
+    </Tabs></Card>
    </aside>
   </div>
   <HelpDialog open={helpOpen} onOpenChange={setHelpOpen}/><div className={'toast'+(s.notice?' visible':'')} role="status" aria-live="polite">{s.notice}</div>

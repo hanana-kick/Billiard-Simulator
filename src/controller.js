@@ -112,7 +112,16 @@ class LabController{
   if(!this.renderer)return;this.renderer.size();const p=this.cuePoints();
   for(const [name,el]of Object.entries(this.handles||{})){
    if(!el)continue;const q=p&&this.renderer.project(p[name]);const visible=q&&q.visible&&q.x>10&&q.x<this.renderer.width-10&&q.y>12&&q.y<this.renderer.height-50&&!this.windup&&this.state.mode==='cue';
-   el.style.display=visible?'flex':'none';if(visible){el.style.left=q.x+'px';el.style.top=q.y+'px';}el.dataset.dragging=this.drag?.type===(name==='grip'?'stroke':'aim')?'true':'false';
+   el.style.display=visible?'flex':'none';if(visible){const hw=el.offsetWidth/2+4,hh=el.offsetHeight/2+4;el.style.left=clamp(q.x,hw,this.renderer.width-hw)+'px';el.style.top=clamp(q.y,hh,this.renderer.height-hh)+'px';}el.dataset.dragging=this.drag?.type===(name==='grip'?'stroke':'aim')?'true':'false';
+  }
+  const a=this.handles?.aim,b=this.handles?.grip;
+  if(a?.style.display==='flex'&&b?.style.display==='flex'){
+   const ax=parseFloat(a.style.left),ay=parseFloat(a.style.top),bx=parseFloat(b.style.left),by=parseFloat(b.style.top),gap=8;
+   const halfW=(a.offsetWidth+b.offsetWidth)/2+gap,halfH=(a.offsetHeight+b.offsetHeight)/2+gap;
+   if(Math.abs(ax-bx)<halfW&&Math.abs(ay-by)<halfH){
+    if(this.renderer.width>=a.offsetWidth+b.offsetWidth+gap+8){const left=clamp((ax+bx)/2-halfW/2,a.offsetWidth/2+4,this.renderer.width-b.offsetWidth/2-halfW-4);a.style.left=left+'px';b.style.left=(left+halfW)+'px';}
+    else{const top=clamp((ay+by)/2-halfH/2,a.offsetHeight/2+4,this.renderer.height-b.offsetHeight/2-halfH-4);a.style.top=top+'px';b.style.top=(top+halfH)+'px';}
+   }
   }
  }
  hitCue(pt){const points=this.cuePoints();if(!points)return null;const a=this.renderer.project(points.front),b=this.renderer.project(points.rear),dx=b.x-a.x,dy=b.y-a.y,den=dx*dx+dy*dy,t=clamp(((pt.x-a.x)*dx+(pt.y-a.y)*dy)/(den||1),0,1),distance=Math.hypot(pt.x-(a.x+t*dx),pt.y-(a.y+t*dy));if(distance>=15)return null;
@@ -268,7 +277,7 @@ class LabController{
   const result=this.state.routeResult?.results.find(r=>r.id===id);if(!result)return;if(this.state.routeStatus==='searching')this.stopSearch();
   this.state.predict=true;this.state.horizon=this.state.routeOptions.horizon;this.state.paused=true;this.changeSettings(result.settings);this.state.routeApplied=id;this.notify();this.announce('후보 '+id+'의 경로와 타격 설정을 적용했습니다. 타격은 직접 실행하세요.');
  }
- render(){this.notify();this.queuePrediction();this.renderer.render(this.lab,this.state);this.updateHandles();}
+ render(){this.notify();this.queuePrediction();this.dirty=true;this.scheduleFrame();}
  requestPrediction(){this.queuePrediction(true);this.notify();}
  setPause(p){this.pause(p)}
  advanceSeconds(s){this.pause(true);this.lab.step(Math.round(s/this.lab.dt));this.render();}

@@ -14,7 +14,7 @@ test('interactive controls delegate to real @base-ui/react, not local primitive 
 test('Base UI array selection, real Select items/portal composition and real Dialog are used by the app',()=>{
  const t=fs.readFileSync(path.join(root,'src/components/controls.tsx'),'utf8');assert.ok(t.includes('value={[value]}'));assert.ok(!t.includes('type="single"'));assert.ok(t.includes('<Select items={items}'));assert.ok(t.includes('<SelectGroup>'));
  const app=fs.readFileSync(path.join(root,'src/App.tsx'),'utf8');assert.ok(app.includes('<Dialog open={open}'));assert.ok(!app.includes('<dialog'));
- const css=fs.readFileSync(path.join(root,'index.template.html'),'utf8');assert.ok(css.includes('class="dark style-nova"'));
+ const css=fs.readFileSync(path.join(root,'index.template.html'),'utf8');assert.ok(css.includes('class="style-nova"'));
 });
 test('worker uses the exact rules, sampler and physical evaluator that the main thread uses',()=>{
  const t=fs.readFileSync(path.join(root,'src/optimizer-service.js'),'utf8');for(const n of ['route-rules','route-sampler','optimizer-core'])assert.ok(t.includes("'"+n+"'"));
