@@ -1,0 +1,2 @@
+const {defineConfig}=require('@playwright/test');
+module.exports=defineConfig({testDir:'./tests/e2e',timeout:180000,expect:{timeout:15000},workers:1,retries:0,reporter:[['list'],['html',{open:'never'}]],use:{baseURL:process.env.APP_URL||'http://127.0.0.1:8787',headless:true,viewport:{width:1440,height:900},screenshot:'only-on-failure',trace:'retain-on-failure'},webServer:process.env.APP_URL?undefined:{command:'node server.cjs',url:'http://127.0.0.1:8787',timeout:20000,reuseExistingServer:!process.env.CI}});

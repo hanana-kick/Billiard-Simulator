@@ -1,0 +1,44 @@
+{
+  "name": "billiard-simulator",
+  "version": "10.0.0",
+  "private": true,
+  "description": "3D rigid-body billiards laboratory with official Base UI shadcn components",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node build.cjs",
+    "build:online": "node build.cjs --online",
+    "start": "node server.cjs",
+    "test": "node --test tests/physics.cjs tests/accuracy.cjs tests/repair-v5.cjs tests/optimizer.cjs tests/route-families.cjs tests/official-ui.cjs tests/search-repair-v8.cjs tests/ui-inventory.cjs",
+    "test:routes": "node --test tests/route-families.cjs",
+    "test:provenance": "node tools/install-official-ui.cjs --check",
+    "test:sensitivity": "node tests/sensitivity.cjs",
+    "test:ui": "playwright test",
+    "test:core-browser": "node tests/core-browser-v8.cjs",
+    "test:layout": "playwright test",
+    "test:inventory": "node --test tests/ui-inventory.cjs",
+    "prepare:engine": "node tools/prepare-engine.cjs",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@base-ui/react": "1.9.0",
+    "@dimforge/rapier3d-compat": "0.21.0",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "cn": "^0.5.0",
+    "lucide-react": "0.468.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "tailwind-merge": "3.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "esbuild": "0.25.5",
+    "tailwindcss": "4.1.10",
+    "typescript": "5.8.3"
+  }
+}

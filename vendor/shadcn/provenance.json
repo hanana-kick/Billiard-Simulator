@@ -1,0 +1,88 @@
+{
+  "retrievedAt": "2026-10-23",
+  "base": "base",
+  "style": "nova",
+  "installation": "manual: official registry sources; import aliases and icon selection only",
+  "files": [
+    {
+      "file": "button.tsx",
+      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/button.tsx",
+      "gitBlobSha": "2007374034d564bb926915baa057e500cab631a4"
+    },
+    {
+      "file": "slider.tsx",
+      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/slider.tsx",
+      "gitBlobSha": "2e55a9a0fc07b66fc86ce1df33c86c2501939088"
+    },
+    {
+      "file": "switch.tsx",
+      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/switch.tsx",
+      "gitBlobSha": "753fd22a92536c103d3ff4c4c6171d48f428ead7"
+    },
+    {
+      "file": "toggle.tsx",
+      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/toggle.tsx",
+      "gitBlobSha": "b058b4d0e74ccc7de2258b63a77f0136bb391b11"
+    },
+    {
+      "file": "toggle-group.tsx",
+      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/toggle-group.tsx",
+      "gitBlobSha": "f2d9475eaaa1132ea00efd113a415dac46cd2bb3"
+    },
+    {
+      "file": "select.tsx",
+      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/select.tsx",
+      "gitBlobSha": "2cb76c117197336324cfaed1300e92ca65273b40"
+    },
+    {
+      "file": "input.tsx",
+      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/input.tsx",
+      "gitBlobSha": "06c96abffafcd0fbbedb24778f0c2f668e1b2109"
+    },
+    {
+      "file": "card.tsx",
+      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/card.tsx",
+      "gitBlobSha": "2062884f29a8044fa48edf86605182eca29f8716"
+    },
+    {
+      "file": "badge.tsx",
+      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/badge.tsx",
+      "gitBlobSha": "10a7f676f81090c851211f363057238d5906e2ca"
+    },
+    {
+      "file": "progress.tsx",
+      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/progress.tsx",
+      "gitBlobSha": "43df6eb11e1c55ad939e24dc408042efa6fe8f93"
+    },
+    {
+      "file": "accordion.tsx",
+      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/accordion.tsx",
+      "gitBlobSha": "182ccd8e3e872fc0b0a24bb72c0469b6a5857b16"
+    },
+    {
+      "file": "alert.tsx",
+      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/alert.tsx",
+      "gitBlobSha": "e9aa02f381ef6e588cfb57696f76703c0f7c4ceb"
+    },
+    {
+      "file": "field.tsx",
+      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/field.tsx",
+      "gitBlobSha": "d58e0d29dbfe52053a21eff0b837f571b278f1ef"
+    },
+    {
+      "file": "separator.tsx",
+      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/separator.tsx",
+      "gitBlobSha": "d69c13426761105ab42e5a6bd364dc54bd70f78c"
+    },
+    {
+      "file": "label.tsx",
+      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/label.tsx",
+      "gitBlobSha": "3b0886ba1826c80e7c6e0c22b699a43cb6df5bc9"
+    },
+    {
+      "file": "dialog.tsx",
+      "upstream": "https://github.com/shadcn-ui/ui/blob/main/apps/v4/registry/bases/base/ui/dialog.tsx",
+      "gitBlobSha": "8c68524ade906dc3754769729ae3cbcb1b9d7b55"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+node_modules/
+dist/
+online.html
+standalone.html
+src/ui.compiled.js
+src/styles.compiled.css
+src/ui-externals.json
+vendor/rapier.cjs
+playwright-report/
+test-results/
+*.log

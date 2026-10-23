@@ -1,0 +1,19 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),{spawnSync}=require('node:child_process');
+const root=__dirname,online=process.argv.includes('--online'),dist=path.join(root,'dist');fs.mkdirSync(dist,{recursive:true});fs.mkdirSync(path.join(root,'docs'),{recursive:true});
+for(const args of [['tools/install-official-ui.cjs','--check'],['tools/build-ui.cjs',...(online?['--online']:[])]]){const r=spawnSync(process.execPath,args,{cwd:root,stdio:'inherit'});if(r.status!==0)process.exit(r.status||1);}
+const engine=fs.readFileSync(path.join(root,'vendor/rapier.cjs'),'utf8').replace(/\/\/# sourceMappingURL=.*$/mg,'');
+const script=(name,source,type='text/javascript')=>`<script id="source-${name}" type="${type}">\n${source.replace(/<\/script/gi,'<\\/script')}\n</script>`;
+const modules=['math','physics','forecast','route-rules','route-sampler','optimizer-core','optimizer','optimizer-service','renderer','software-renderer','prediction-service'];
+let scripts=[script('engine',`globalThis.RAPIER=(()=>{const exports={};const module={exports};\n${engine}\nreturn module.exports;})();`),...modules.map(x=>script(x,fs.readFileSync(path.join(root,'src',x+'.js'),'utf8'))),script('worker',fs.readFileSync(path.join(root,'src/forecast-worker.js'),'utf8'),'text/plain'),script('optimizer-worker',fs.readFileSync(path.join(root,'src/optimizer-worker.js'),'utf8'),'text/plain'),script('controller',fs.readFileSync(path.join(root,'src/controller.js'),'utf8')),script('ui',fs.readFileSync(path.join(root,'src/ui.compiled.js'),'utf8'))].join('\n');
+let head='';
+if(online){const {url,imports}=require('./tools/ui-dependencies.cjs'),deps=JSON.parse(fs.readFileSync(path.join(root,'src/ui-externals.json'),'utf8'));head='';scripts+=script('cdn-loader',fs.readFileSync(path.join(root,'src/cdn-modules.js'),'utf8'));
+ scripts+=script('real-ui-loader',`const status=document.getElementById('dependency-status');let loaded=0;globalThis.CueUIExternal={};try{await Promise.all(${JSON.stringify(deps.map(name=>[name,url(name)]))}.map(async([name,url])=>{const module=await globalThis.CueRealModules.load(url);globalThis.CueUIExternal[name]=module;if(status)status.textContent=(++loaded)+' / '+${deps.length}+' 실제 UI 모듈 로딩';}));globalThis.initializeCueUI();}catch(error){if(status)status.textContent='UI 모듈을 불러오지 못했습니다. 인터넷 연결 또는 CDN 차단을 확인하세요.\\n'+String(error);console.error(error);}`, 'module');}
+const notices=fs.readFileSync(path.join(root,'THIRD_PARTY_NOTICES.txt'),'utf8')+'\n'+fs.readFileSync(path.join(root,'vendor/RAPIER-LICENSE.txt'),'utf8');
+let html=fs.readFileSync(path.join(root,'index.template.html'),'utf8').replace('/*__CSS__*/',()=>fs.readFileSync(path.join(root,'src/styles.compiled.css'),'utf8')).replace('<!--__SCRIPTS__-->',()=>scripts).replace('<!--__IMPORTMAP__-->',()=>head).replace('<!--__NETWORK_NOTE__-->',online?'이 실행 파일은 실제 Base UI·React를 CDN에서 불러오므로 인터넷 연결이 필요합니다.':'UI와 물리엔진이 모두 파일에 포함되어 있습니다.');
+html=html.replace('</head>',()=>script('third-party-licenses',notices,'text/plain')+'</head>');
+fs.writeFileSync(path.join(dist,'index.html'),html);fs.copyFileSync(path.join(root,'public/icon.svg'),path.join(dist,'icon.svg'));
+fs.writeFileSync(path.join(root,online?'online.html':'standalone.html'),html.replace(/<link rel="icon"[^>]*>/,''));
+fs.writeFileSync(path.join(root,'docs/build-mode.json'),JSON.stringify({mode:online?'real-cdn-modules':'real-bundled-packages',requiresNetwork:online,bytes:Buffer.byteLength(html),uiSource:'vendor/shadcn/base',runtime:'@base-ui/react'},null,2));
+fs.writeFileSync(path.join(dist,'.nojekyll'),'');
+console.log(`Built ${online?'online':'self-contained'} application (${(Buffer.byteLength(html)/1048576).toFixed(2)} MiB).`);

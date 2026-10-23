@@ -1,0 +1,125 @@
+{
+  "bank3": {
+    "settings": {
+      "angle": 17,
+      "elevation": 8,
+      "speed": 4.5,
+      "tipX": 0,
+      "tipY": 0.15
+    },
+    "points": [
+      {
+        "x": -1.2535667538349198,
+        "y": 0.0308,
+        "z": -0.1520444726032844
+      },
+      {
+        "x": -1.087010383605957,
+        "y": 0.0308,
+        "z": -0.05882292240858078
+      }
+    ],
+    "contacts": [
+      {
+        "time": 0.4260416666666655,
+        "id": null,
+        "kind": "cushion",
+        "rail": "z+",
+        "label": "앞쪽 쿠션"
+      },
+      {
+        "time": 0.464583333333332,
+        "id": null,
+        "kind": "cushion",
+        "rail": "x+",
+        "label": "오른쪽 쿠션"
+      },
+      {
+        "time": 2.0958333333332946,
+        "id": null,
+        "kind": "cushion",
+        "rail": "x-",
+        "label": "왼쪽 쿠션"
+      },
+      {
+        "time": 2.23229166666662,
+        "id": 4,
+        "kind": "object",
+        "rail": null,
+        "label": "목적구"
+      },
+      {
+        "time": 2.5708333333332676,
+        "id": 5,
+        "kind": "object",
+        "rail": null,
+        "label": "목적구"
+      }
+    ]
+  },
+  "allWalls": {
+    "settings": {
+      "angle": 23,
+      "elevation": 8,
+      "speed": 4.5,
+      "tipX": 0,
+      "tipY": 0.15
+    },
+    "points": [
+      {
+        "x": -0.9999454684461185,
+        "y": 0.0308,
+        "z": -0.666452341998093
+      },
+      {
+        "x": -0.9217782020568848,
+        "y": 0.0308,
+        "z": -0.4924059808254242
+      }
+    ],
+    "contacts": [
+      {
+        "time": 0.3124999999999992,
+        "id": null,
+        "kind": "cushion",
+        "rail": "z+",
+        "label": "앞쪽 쿠션"
+      },
+      {
+        "time": 0.4927083333333319,
+        "id": null,
+        "kind": "cushion",
+        "rail": "x+",
+        "label": "오른쪽 쿠션"
+      },
+      {
+        "time": 2.23541666666662,
+        "id": null,
+        "kind": "cushion",
+        "rail": "x-",
+        "label": "왼쪽 쿠션"
+      },
+      {
+        "time": 2.593749999999933,
+        "id": null,
+        "kind": "cushion",
+        "rail": "z-",
+        "label": "뒤쪽 쿠션"
+      },
+      {
+        "time": 2.8447916666665853,
+        "id": 4,
+        "kind": "object",
+        "rail": null,
+        "label": "목적구"
+      },
+      {
+        "time": 3.3249999999998914,
+        "id": 5,
+        "kind": "object",
+        "rail": null,
+        "label": "목적구"
+      }
+    ]
+  }
+}
