@@ -134,6 +134,12 @@
       "url": "https://ui.shadcn.com/r/styles/base-nova/use-mobile.json",
       "target": "src/hooks/use-mobile.ts",
       "sha256": "f4bfd840445a84352265d7cf66fcd886454b6a2f3834f7caf29d00f68620f87d"
+    },
+    {
+      "name": "checkbox",
+      "url": "https://ui.shadcn.com/r/styles/base-nova/checkbox.json",
+      "target": "src/components/ui/checkbox.tsx",
+      "sha256": "e6df7b595f25a7ee97c3fb94e0ddc35998f74c98b990d3030e485905ec677178"
     }
   ]
 }

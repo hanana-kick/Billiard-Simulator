@@ -1,9 +1,9 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{spawnSync}=require('node:child_process');
 const root=path.join(__dirname,'..');
-test('all 22 official styled registry items retain verified snapshots and only import/icon transforms',()=>{
+test('all 23 official styled registry items retain verified snapshots and only import/icon transforms',()=>{
  const p=spawnSync(process.execPath,['tools/install-official-ui.cjs','--check'],{cwd:root,encoding:'utf8'});assert.equal(p.status,0,p.stdout+p.stderr);
- const manifest=JSON.parse(fs.readFileSync(path.join(root,'vendor/shadcn/provenance.json')));assert.equal(manifest.files.length,22);assert.equal(manifest.base,'base-nova');
+ const manifest=JSON.parse(fs.readFileSync(path.join(root,'vendor/shadcn/provenance.json')));assert.equal(manifest.files.length,23);assert.equal(manifest.base,'base-nova');
 });
 test('interactive controls delegate to real @base-ui/react, not local primitive reimplementations',()=>{
  for(const [file,name]of Object.entries({button:'button',slider:'slider',switch:'switch',select:'select',accordion:'accordion',dialog:'dialog',input:'input',progress:'progress',toggle:'toggle','toggle-group':'toggle-group',separator:'separator'})){

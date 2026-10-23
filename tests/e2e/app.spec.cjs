@@ -54,7 +54,7 @@ test('all settings work through actual Base UI controls',async({page})=>{
   const el=page.locator('#'+id);await el.scrollIntoViewIfNeeded();await expect(el).toBeVisible();
  }
  for(const [id,key]of [['조준 큐 표시','showCue'],['실제 이동 궤적','paths'],['충돌 형상','debug'],['속도 벡터','vectors']]){
-  const before=await page.evaluate(key=>cueLab.state[key],key);await page.getByRole('switch',{name:id,exact:true}).click();expect(await page.evaluate(key=>cueLab.state[key],key)).toBe(!before);await page.getByRole('switch',{name:id,exact:true}).click();
+  const before=await page.evaluate(key=>cueLab.state[key],key);await page.getByRole('checkbox',{name:id,exact:true}).click();expect(await page.evaluate(key=>cueLab.state[key],key)).toBe(!before);await page.getByRole('checkbox',{name:id,exact:true}).click();
  }
  await settleInput(page,'posX','-60');expect(await page.evaluate(()=>cueLab.lab.get(cueLab.state.selectedId).body.translation().x)).toBeCloseTo(-.6,4);
  await settleInput(page,'posY','10');expect(await page.evaluate(()=>cueLab.lab.get(cueLab.state.selectedId).body.translation().y)).toBeGreaterThan(.12);await page.locator('#putOnTable').click();
@@ -85,7 +85,7 @@ test('touch navigation, fine aim and pinch cancellation work without firing',asy
  const before=await page.evaluate(()=>cueLab.state.settings.angle);const r=await page.locator('#aimPad').boundingBox(),cdp=await context.newCDPSession(page);
  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:r.x+60,y:r.y+r.height/2,id:1}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:r.x+110,y:r.y+r.height/2,id:1}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
  expect(await page.evaluate(()=>cueLab.state.settings.angle)).not.toBe(before);expect(await page.evaluate(()=>cueLab.lab.shots)).toBe(0);
- await openSidebar(page);await tab(page,'타격').tap();await page.getByRole('switch',{name:'미세 조준',exact:true}).tap();await expect.poll(()=>page.evaluate(()=>cueLab.state.fineAim)).toBe(true);await closeSidebar(page);
+ await openSidebar(page);await tab(page,'타격').tap();await page.getByRole('checkbox',{name:'미세 조준',exact:true}).tap();await expect.poll(()=>page.evaluate(()=>cueLab.state.fineAim)).toBe(true);await closeSidebar(page);
  const fineBefore=await page.evaluate(()=>cueLab.state.settings.angle),x=r.x+60,y=r.y+r.height/2;
  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y,id:1}]});
  await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+30,y,id:1}]});

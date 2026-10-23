@@ -70,7 +70,7 @@ async function expandGameSetup(page){
 }
 async function reachable(page,selector){
  if(selector==='#gameMode')await expandGameSetup(page);
- const el=page.locator(selector);await el.scrollIntoViewIfNeeded();await expect(el).toBeVisible();
+ const el=page.locator(selector);await page.locator('#panelScroll').evaluate(async e=>{await Promise.all(e.getAnimations({subtree:true}).map(a=>a.finished.catch(()=>{})))});await el.scrollIntoViewIfNeeded();await expect(el).toBeVisible();
  const box=await el.boundingBox(),scroll=await page.locator('#panelScroll').boundingBox();
  contained(box,scroll,selector+' inside inspector scrollport');
  // Visibility alone does not catch another control painted on top of this one.
@@ -162,7 +162,8 @@ async function readableControl(locator,label){
    const range=document.createRange();range.selectNodeContents(node);
    for(const r of range.getClientRects())if(r.left<bounds.left-1||r.right>bounds.right+1||r.top<bounds.top-1||r.bottom>bounds.bottom+1)clipped.push(node.textContent.trim());
   }
-  return {horizontalOverflow:el.scrollWidth>el.clientWidth+1,verticalOverflow:el.scrollHeight>el.clientHeight+1,clipped};
+  // Scroll extents include the official Tabs underline pseudo-element. Text ranges above test actual clipping.
+  const ownStyle=getComputedStyle(el);return {horizontalOverflow:['hidden','clip'].includes(ownStyle.overflowX)&&el.scrollWidth>el.clientWidth+1,verticalOverflow:['hidden','clip'].includes(ownStyle.overflowY)&&el.scrollHeight>el.clientHeight+1,clipped};
  });
  expect(clipping,label+' readable without clipped text').toEqual({horizontalOverflow:false,verticalOverflow:false,clipped:[]});
 }

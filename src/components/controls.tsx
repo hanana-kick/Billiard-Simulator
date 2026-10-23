@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Slider } from '@/components/ui/slider'
-import { Switch } from '@/components/ui/switch'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -20,8 +20,8 @@ export function SwitchField({ checked, onChange, label, id, disabled = false }: 
   checked: boolean; onChange: (value: boolean) => void; label: string; id?: string; disabled?: boolean
 }) {
   const generated = React.useId(), key = id || generated
-  return <div className="flex items-center gap-2"><Switch id={key} checked={checked}
-    onCheckedChange={onChange} aria-label={label} disabled={disabled} size="default" /><Label htmlFor={key}>{label}</Label></div>
+  return <div className="flex items-center gap-2"><Checkbox id={key} checked={checked}
+    onCheckedChange={onChange} aria-label={label} disabled={disabled} /><Label htmlFor={key}>{label}</Label></div>
 }
 export function OptionGroup({ value, onChange, options, label, id, disabled = false }: {
   value: string; onChange: (value: string) => void;
