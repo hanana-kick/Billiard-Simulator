@@ -1,7 +1,7 @@
 const {test,expect}=require('@playwright/test');
-test('explicit fixed-angle baseline uses the global worker-independent plan and retains numerical correction',async({page})=>{
+test('historical explicit fixed-angle baseline uses the global worker-independent plan and retains numerical correction',async({page})=>{
  await page.goto('./');await page.waitForFunction(()=>globalThis.__LAB_READY__&&cueLab.state.ready);
- await page.evaluate(()=>cueLab.option('predict',false));
+ await page.evaluate(()=>{cueLab.option('predict',false);cueLab.state.routeOptions={...cueLab.state.routeOptions,searchAlgorithm:'legacy-reference',budget:48};});
  if(await page.locator('#sidebarTrigger').getAttribute('aria-expanded')!=='true')await page.locator('#sidebarTrigger').click();
  await expect(page.locator('#tab-routes')).toHaveAttribute('aria-selected','true');
  await page.locator('#routeDetails').click();await page.locator('#routeElevation').click();await page.getByRole('option',{name:/현재.*고정/}).click();await page.locator('#closeRouteDetails').click();
@@ -16,10 +16,20 @@ test('explicit fixed-angle baseline uses the global worker-independent plan and 
 });
 
 test('default all-angle four-ball search applies a verified red-only shot and scores it with the same rules',async({page})=>{
+ test.setTimeout(240000);
  await page.goto('./');await page.waitForFunction(()=>globalThis.__LAB_READY__&&cueLab.state.ready);await page.evaluate(()=>cueLab.option('predict',false));
  if(await page.locator('#sidebarTrigger').getAttribute('aria-expanded')!=='true')await page.locator('#sidebarTrigger').click();
  await page.locator('#gameMode').getByRole('button',{name:'4구',exact:true}).click();await page.locator('#findRoute').click();
- await page.waitForFunction(()=>['done','error'].includes(cueLab.state.routeStatus),{},{timeout:150000});
+ // Inverse solving pauses with its state preserved; the observation window
+ // covers all slices together and still requires an actual verified solution.
+ const deadline=Date.now()+150000;
+ for(;;){
+  await page.waitForFunction(()=>cueLab.state.routeResult?.results?.length>0||['done','error'].includes(cueLab.state.routeStatus),{},{timeout:Math.max(1,deadline-Date.now())});
+  const status=await page.evaluate(()=>({status:cueLab.state.routeStatus,found:cueLab.state.routeResult?.results?.length||0,continuable:cueLab.state.routeResult?.continuable}));
+  expect(status.status).not.toBe('error');if(status.found)break;
+  expect(Date.now()).toBeLessThan(deadline);expect(status.continuable).toBe(true);await page.locator('#resumeSearch').click();
+ }
+ if(await page.evaluate(()=>cueLab.state.routeStatus==='searching'))await page.locator('#cancelRoute').click();
  const r=await page.evaluate(()=>cueLab.state.routeResult);expect(r).toBeTruthy();expect(r.options.gameMode).toBe('four');expect(r.options.elevationMode).toBe('search');expect(r.options.minElevation).toBe(0);expect(r.options.maxElevation).toBe(85);expect(r.options.fourBallThreeCushion).toBe(false);expect(r.results.length).toBeGreaterThan(0);
  expect(await page.evaluate(()=>[cueLab.state.routeResult.options.targetId,cueLab.state.routeResult.options.secondId].every(id=>cueLab.game.redIds.includes(id)))).toBe(true);
  await page.locator('#applyRoute1').click();const cue=await page.evaluate(()=>cueLab.state.selectedId);

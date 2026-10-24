@@ -7,7 +7,7 @@ class LabController{
  constructor(){
   this.state={settings:{angle:0,elevation:8,tipX:0,tipY:0,speed:2},selectedId:1,paused:true,rate:1,paths:false,allPaths:false,showCue:true,debug:false,vectors:false,mode:'cue',view:'3d',activePanel:'routes',fineAim:false,predict:true,horizon:8,forecast:null,forecastStatus:'물리엔진 준비 중',predictionBusy:false,obstruction:null,cuePull:0,gesture:'',notice:'',ready:false,engineError:null,previewCueVisible:false,canAim:false};
   this.state.gameMode='free';this.state.game=null;
-  this.state.routeOptions={inputStrategy:'hybrid',mode:'three',targetId:2,secondId:3,budget:48,horizon:16,spin:true,objective:'shortest',order:'either',methods:['any'],allowKiss:true,elevationMode:'search',minElevation:0,maxElevation:85,fourBallThreeCushion:false,minSpeed:.5,maxSpeed:4.5,workers:0};this.state.routeStatus='idle';this.state.routeProgress=null;this.state.routeResult=null;this.state.routeError='';this.state.routeApplied=null;
+  this.state.routeOptions={searchAlgorithm:'inverse-constraints',maxCushions:3,maxKisses:1,solveTimeMs:20000,inputStrategy:'hybrid',mode:'three',targetId:2,secondId:3,horizon:16,spin:true,objective:'shortest',order:'either',methods:['any'],allowKiss:true,elevationMode:'search',minElevation:0,maxElevation:85,fourBallThreeCushion:false,minSpeed:.5,maxSpeed:4.5,workers:0};this.state.routeStatus='idle';this.state.routeProgress=null;this.state.routeResult=null;this.state.routeError='';this.state.routeApplied=null;
   this.undoStack=[];this.redoStack=[];this.inputMetrics={events:0,presented:0,lastBoundary:null,lastHandlerMs:0,maxHandlerMs:0,lastDispatchMs:0,maxDispatchMs:0,lastInputToFrameMs:0,maxInputToFrameMs:0,lastInputToCanvasMs:0,maxInputToCanvasMs:0,samples:[]};this.inputSequence=0;this.measuredInputSequence=0;this.pendingInput=null;this.renderCadence=new G.RenderCadence();this.renderMetrics={frames:0,presentations:0,cap:60};this.raf=null;this.disposed=false;this.listeners=new Set();this.lastSnapshot={...this.state,objects:[],events:[],time:0,shots:0,undo:false,params:{...G.LabDefaults}};this.dirty=true;this.accumulator=0;this.requestKey=null;this.token=0;this.gestures=new Map();this.cameraDrags=0;
  }
  subscribe=(fn)=>{this.listeners.add(fn);return()=>this.listeners.delete(fn)};
@@ -291,7 +291,7 @@ class LabController{
  cancelSearch(reason='검색을 취소했습니다.',invalidate=false){
   const running=this.state.routeStatus==='searching';
   if(running){this.optimizer?.cancel();this.state.routeStatus='canceled';this.state.routeError=reason;}
-  if(invalidate&&this.state.routeResult){this.state.routeStatus='stale';this.state.routeError=reason;this.state.routeApplied=null;}
+  if(invalidate&&this.state.routeResult){this.state.routeResult={...this.state.routeResult,continuable:false};this.state.routeStatus='stale';this.state.routeError=reason;this.state.routeApplied=null;}
  }
  repairRouteTargets(){
   if(!this.lab)return;const o=this.state.routeOptions;
@@ -309,9 +309,13 @@ class LabController{
   if(this.game&&!this.game.cueIds.includes(this.state.selectedId)){this.state.routeStatus='error';this.state.routeError='4구에서는 흰 수구 또는 노란 수구를 선택하세요.';this.notify();return;}
   const gameRules=this.game?{gameMode:'four',opponentId:this.game.cueIds.find(id=>id!==this.state.selectedId)}:{gameMode:'free',opponentId:null};
   const req={snapshot:this.lab.snapshot({trails:false}),selectedId:this.state.selectedId,settings:{...this.state.settings},options:{...this.state.routeOptions,...gameRules}};
-  try{G.LabOptimizer.validate(req)}catch(e){this.state.routeError=e.message;this.state.routeStatus='error';this.notify();return;}
-  this.state.paused=true;this.invalidate();this.routeStamp=this.worldStamp();this.state.routeStatus='searching';this.state.routeResult=null;this.state.routeError='';this.state.routeApplied=null;this.state.routeProgress={tested:0,evaluated:0,rejected:0,total:req.options.budget*(req.options.mode==='three'?req.options.methods.length:1),found:0};
+  try{G.LabInversePlanner.validate(req)}catch(e){this.state.routeError=e.message;this.state.routeStatus='error';this.notify();return;}
+  this.state.paused=true;this.invalidate();this.routeStamp=this.worldStamp();this.routeRequestStamp=JSON.stringify([this.state.routeOptions,this.state.settings]);this.state.routeStatus='searching';this.state.routeResult=null;this.state.routeError='';this.state.routeApplied=null;this.state.routeProgress={tested:0,evaluated:0,rejected:0,total:null,topologiesResolved:0,rootIterations:0,found:0};
   this.optimizer.request(req);this.notify();
+ }
+ resumeSearch(){
+  if(!['done','canceled'].includes(this.state.routeStatus)||this.worldStamp()!==this.routeStamp||this.routeRequestStamp!==JSON.stringify([this.state.routeOptions,this.state.settings]))return this.announce('배치나 조건이 바뀌었습니다. 새로 계산하세요.');
+  if(this.optimizer?.resume()){this.state.routeStatus='searching';this.state.routeError='';this.notify();}
  }
  stopSearch(){
   if(this.state.routeStatus==='searching'){

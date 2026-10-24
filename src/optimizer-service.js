@@ -5,7 +5,7 @@
 function workerPlan(req={},env=G){
  const n=env.navigator||{},raw=Number(n.hardwareConcurrency),cores=Number.isFinite(raw)&&raw>0?Math.floor(raw):2;
  const memory=Number(n.deviceMemory),memoryCap=Number.isFinite(memory)&&memory>0?Math.max(1,Math.floor(memory*1024/2/128)):64;
- const o=req.options||{},jobs=Math.max(1,Math.floor(Number(o.budget)||48))*(o.mode==='three'?Math.max(1,o.methods?.length||1):1);
+ const o=req.options||{},jobs=o.searchAlgorithm==='inverse-constraints'?40:Math.max(1,Math.floor(Number(o.budget)||48))*(o.mode==='three'?Math.max(1,o.methods?.length||1):1);
  const count=Math.max(1,Math.min(cores,memoryCap,64,jobs));
  return{hardwareConcurrency:cores,requestedWorkers:count,resourceMaximum:64,memoryWorkerEstimateMiB:128,memoryBudgetFraction:.5,memoryCap,workItems:jobs};
 }
@@ -32,13 +32,13 @@ class OptimizerService{
  request(req){
   this.cancel();const id=this.version;this.latest=req;this.started=performance.now();this.mode='worker';
   this.plan={...workerPlan(req),startupTimeoutMs:45000,progressTimeoutMs:30000};this.retryOverhead={tested:0,physicsSteps:0};this.workerFallbackReason=null;
-  try{this.search=G.LabOptimizer.createStagedSearch(G.RAPIER,req);this.loadWave();this.startPool(req,id,this.plan.requestedWorkers);}catch(e){this.fail(e,id);}
+  try{this.api=req.options.searchAlgorithm==='inverse-constraints'?G.LabInversePlanner:G.LabOptimizer;this.search=this.api.createStagedSearch(G.RAPIER,req);this.loadWave();this.startPool(req,id,this.plan.requestedWorkers);}catch(e){this.fail(e,id);}
  }
- loadWave(){this.jobs=G.LabOptimizer.planWave(this.search);this.queue=this.jobs.slice();this.outcomes=new Map();}
+ loadWave(){this.jobs=this.api.planWave(this.search);this.queue=this.jobs.slice();this.outcomes=new Map();}
  startPool(req,id,wanted){
   let count=wanted;
   try{
-   const code=['engine','math','physics','forecast','route-rules','route-sampler','optimizer-core','optimizer','optimizer-worker'].map(k=>document.getElementById('source-'+k).textContent).join('\n');
+   const code=['engine','math','physics','forecast','route-rules','route-sampler','optimizer-core','optimizer',...(req.options.searchAlgorithm==='inverse-constraints'?['inverse-events']:[]),'optimizer-worker'].map(k=>document.getElementById('source-'+k).textContent).join('\n');
    const url=URL.createObjectURL(new Blob([code],{type:'text/javascript'}));
    try{
     while(count>=1){try{for(let i=0;i<count;i++)this.workers.push(new Worker(url));break;}catch{this.stopWorkers();if(count===1)throw Error('Worker construction unavailable');count=Math.max(1,Math.floor(count/2));}}
@@ -61,17 +61,18 @@ class OptimizerService{
   if(id!==this.version||this.mode==='cooperative')return;
   if(this.outcomes.size===this.jobs.length){if(this.completeWave())return;}
   if(id!==this.version||this.mode==='cooperative')return;
+  if(!this.jobs.length){setTimeout(()=>this.pump(req,id),0);return;}
   for(const worker of this.workers){if(this.busy.has(worker)||!this.queue.length)continue;const job=this.queue.shift();this.busy.set(worker,{job,steps:0});this.armWatchdog(worker,req,id,true);worker.postMessage({type:'evaluate',requestId:id,candidateId:job.id,job});}
  }
  completeWave(){
-  G.LabOptimizer.commitWave(this.search,this.jobs.map(job=>({id:job.id,outcome:this.outcomes.get(job.id)})));
+  this.api.commitWave(this.search,this.jobs.map(job=>({id:job.id,outcome:this.outcomes.get(job.id)})));
   if(this.search.finished){this.stopWorkers();this.latest=null;this.report(true);return true;}
-  this.loadWave();this.report(false);return false;
+  this.loadWave();if(this.search.finished){this.stopWorkers();this.latest=null;this.report(true);return true;}this.report(false);return false;
  }
  report(final){
-  const result=G.LabOptimizer.stagedResult(this.search),elapsedMs=performance.now()-this.started;
+  const result=this.api.stagedResult(this.search),elapsedMs=this.api===G.LabInversePlanner?result.elapsedMs:performance.now()-this.started;
   // Expose already verified in-flight-wave successes without committing adaptive state.
-  if(!final&&this.outcomes.size){
+  if(!final&&this.outcomes.size&&this.latest?.options.searchAlgorithm!=='inverse-constraints'){
    const rows=[...result.results];for(const job of this.jobs){const r=this.outcomes.get(job.id)?.result;if(r?.success)rows.push({...r,methodLabel:G.LabRouteRules?.byId.get(r.method)?.label});}
    const identity=G.LabRouteRules?.successIdentity||(r=>JSON.stringify([r.firstId,r.secondId,r.settings,r.contacts]));const seen=new Set();result.results=rows.sort(resultCompare(this.latest?.options.objective)).filter(r=>{const key=identity(r);if(seen.has(key))return false;seen.add(key);return true;}).map((r,i)=>({...r,id:i+1}));result.resultCount=result.results.length;if(result.results.length){result.feasibilityStatus='verified-feasible-shot';result.nearest=null;}result.found+=Array.from(this.outcomes.values()).filter(x=>x.result?.success).length;
   }
@@ -93,17 +94,23 @@ class OptimizerService{
    while(id===this.version){
     for(const job of this.queue){
      if(id!==this.version)return;
-     evaluation=G.ShotSearchCore.beginCandidate(G.RAPIER,job);
-     let done=!evaluation.trial;
-     while(!done){const until=performance.now()+8;do{done=G.ShotSearchCore.stepTrial(evaluation.search,evaluation.trial,16);}while(!done&&performance.now()<until);if(performance.now()-lastReport>160){this.report(false);lastReport=performance.now();}if(!done)await new Promise(r=>setTimeout(r,0));if(id!==this.version){evaluation.trial?.lab.dispose();return;}}
-     this.outcomes.set(job.id,G.ShotSearchCore.finishCandidate(evaluation));evaluation=null;this.report(false);
+     evaluation=job.kind==='inverse-constraint'?G.LabInverseEvents.begin(G.RAPIER,job.req,job.topology,job.settings,{purpose:job.purpose}):G.ShotSearchCore.beginCandidate(G.RAPIER,job);
+     let done=job.kind==='inverse-constraint'?false:!evaluation.trial;
+     while(!done){const until=performance.now()+8;do{done=job.kind==='inverse-constraint'?G.LabInverseEvents.advance(evaluation,16):G.ShotSearchCore.stepTrial(evaluation.search,evaluation.trial,16);}while(!done&&performance.now()<until);if(performance.now()-lastReport>160){this.report(false);lastReport=performance.now();}if(!done)await new Promise(r=>setTimeout(r,0));if(id!==this.version){if(job.kind==='inverse-constraint')G.LabInverseEvents.dispose(evaluation);else evaluation.trial?.lab.dispose();return;}}
+     this.outcomes.set(job.id,job.kind==='inverse-constraint'?G.LabInverseEvents.finish(evaluation):G.ShotSearchCore.finishCandidate(evaluation));evaluation=null;this.report(false);
     }
-    if(id!==this.version)return;if(this.completeWave())return;
+    if(id!==this.version)return;if(this.completeWave())return;if(req.options.searchAlgorithm==='inverse-constraints')await new Promise(r=>setTimeout(r,0));
    }
   }catch(e){try{evaluation?.trial?.lab.dispose();}catch{}this.fail(e,id);}
  }
  fail(error,id){if(id!==this.version)return;this.stopWorkers();this.latest=null;this.onError(error.message||String(error));}
- cancel(){this.version++;this.stopWorkers();this.busy.clear();this.latest=null;this.recovering=null;}
+ resume(){
+  if(this.api!==G.LabInversePlanner||!this.search)return false;
+  this.cancel();if(!this.api.resume(this.search))return false;const id=this.version,req=this.search.req;this.latest=req;this.started=performance.now();this.recovering=null;
+  if(this.search.pending.length){this.queue=this.jobs.filter(j=>!this.outcomes.has(j.id));}else this.loadWave();
+  this.startPool(req,id,this.plan.requestedWorkers);return true;
+ }
+ cancel(){if(this.search&&this.latest)this.api?.pause?.(this.search);this.version++;this.stopWorkers();this.busy.clear();this.latest=null;this.recovering=null;}
  dispose(){this.cancel();}
 }
 G.OptimizerService=OptimizerService;G.OptimizerPool={workerLimit,workerPlan,mergeResults};

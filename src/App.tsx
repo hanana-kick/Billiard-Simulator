@@ -132,7 +132,7 @@ function Workspace(){
       <p className="helper"><a href="./guide.html" target="_blank" rel="noopener">3구·삼구·4구·사구·3쿠션 연습 안내 (새 탭)</a></p>
      </TabsContent>
 
-     <span className="forecast-status" id="forecastStatus" title={s.forecastStatus} aria-live="polite">{s.routeStatus==='searching'?`경로 탐색 ${s.routeProgress?.tested||0}/${s.routeProgress?.total||0}`:s.predictionBusy?'예측 중…':s.forecastStatus}</span>
+     <span className="forecast-status" id="forecastStatus" title={s.forecastStatus} aria-live="polite">{s.routeStatus==='searching'?`제약식 계산 · 물리 평가 ${s.routeProgress?.evaluated||0}회`:s.predictionBusy?'예측 중…':s.forecastStatus}</span>
      <section className="panel-utility" aria-label="기록 및 도움말"><Separator/><p className="muted-caption">기록 및 도움말</p><div className="action-row"><Button id="undo" variant="outline" size="sm" disabled={!s.undo} onClick={()=>controller.undo()}><Icon name="undo" data-icon="inline-start"/>되돌리기</Button><Button id="redo" variant="outline" size="sm" disabled={!s.redo} onClick={()=>controller.redo()}>다시 실행</Button><Button id="reset" variant="outline" size="sm" onClick={()=>controller.reset()}><Icon name="reset" data-icon="inline-start"/>초기화</Button><Button variant="ghost" size="icon" aria-label="조작 도움말" onClick={()=>setHelpOpen(true)}><Icon name="info"/></Button></div></section>
      </SidebarContent>
     </Tabs>

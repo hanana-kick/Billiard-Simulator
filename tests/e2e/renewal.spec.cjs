@@ -149,7 +149,7 @@ for(const [width,height]of viewports)test(`coarse-pointer ${width}x${height}: ev
    if(panel==='routesPanel'){
     const dialogCount=await page.getByRole('dialog').count();
     await page.locator('#routeDetails').click();await inlineDetails(page,dialogCount);await horizontalGutters(page,panel);
-    for(const selector of ['#routeTarget','#routeOrder','#routeInputStrategy','#routemaxSpeed'])await reachable(page,selector);
+    for(const selector of ['#routeTarget','#routeOrder','#routeDepth','#routemaxSpeed'])await reachable(page,selector);
     await expect(page.locator('#routeWorkers,#routeObjective')).toHaveCount(0);await page.locator('#closeRouteDetails').click();await expect(page.locator('#routeDetails')).toBeFocused();
    }
    if(panel==='settingsPanel'){
@@ -295,7 +295,7 @@ for(const viewport of [{width:320,height:568},{width:390,height:844},{width:844,
   await page.evaluate(()=>{globalThis.inlineDetailsBaseline={panel:document.getElementById('panelScroll'),world:cueLab.lab,canvas:document.getElementById('scene')};});
   await page.locator('#routeDetails').click();await inlineDetails(page,dialogCount);await horizontalGutters(page,'routesPanel');
   expect(await page.locator('#panelScroll').evaluate(el=>el.scrollHeight)).toBeGreaterThan(collapsedHeight);
-  for(const selector of ['#routeTarget','#routeOrder','#routeHorizon','#routeInputStrategy','#routemaxSpeed'])await reachable(page,selector);
+  for(const selector of ['#routeTarget','#routeOrder','#routeHorizon','#routeDepth','#routemaxSpeed'])await reachable(page,selector);
   await page.locator('#routeHorizon').click();await page.getByRole('option',{name:'30초',exact:true}).click();await page.locator('#closeRouteDetails').click();await expect(page.locator('#routeDetails')).toBeFocused();await expect(page.locator('#tab-routes')).toBeInViewport();
   await expect(page.locator('#routeDetails')).toHaveAttribute('aria-expanded','false');await expect(page.locator('#routeDetailsBody')).not.toBeVisible();
   await page.locator('#routeDetails').click();await expect(page.locator('#routeHorizon')).toContainText('30초');await inlineDetails(page,dialogCount);

@@ -1,0 +1,1262 @@
+{
+  "branchId": "[3,4,\"carom\",[{\"kind\":\"object\",\"id\":3},{\"kind\":\"cushion\",\"rail\":\"x+\"},{\"kind\":\"object\",\"id\":4}]]:root:1",
+  "seed": {
+    "angle": -14.509771463552596,
+    "elevation": 0,
+    "speed": 4.5,
+    "tipX": 0,
+    "tipY": 0
+  },
+  "settings": {
+    "angle": -14.22861549377933,
+    "elevation": 7.719557124428105,
+    "speed": 4.5,
+    "tipX": 0.017462063993127885,
+    "tipY": 0.07924144540041428
+  },
+  "rootIterations": 9,
+  "evaluations": 50,
+  "physicsSteps": 321699,
+  "verificationCount": 1,
+  "score": {
+    "cueId": 1,
+    "delta": 1,
+    "nextCue": 1
+  },
+  "replaySeconds": 9.497916666667484,
+  "replaySteps": 9118,
+  "cueObstruction": false,
+  "independentUninstrumentedReplay": true,
+  "legacySamplingDisabled": true,
+  "globalOptimal": false,
+  "exhaustive": false,
+  "trace": [
+    {
+      "purpose": "residual",
+      "settings": {
+        "angle": -14.509771463552596,
+        "elevation": 0,
+        "speed": 4.5,
+        "tipX": 0,
+        "tipY": 0
+      },
+      "stage": "clearance",
+      "eventPrefix": 0,
+      "status": "cue-clearance",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 0
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.473771463552595,
+        "elevation": 0,
+        "speed": 4.5,
+        "tipX": 0,
+        "tipY": 0
+      },
+      "stage": "clearance",
+      "eventPrefix": 0,
+      "status": "cue-clearance",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 0
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.437771463552593,
+        "elevation": 0,
+        "speed": 4.5,
+        "tipX": 0,
+        "tipY": 0
+      },
+      "stage": "clearance",
+      "eventPrefix": 0,
+      "status": "cue-clearance",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 0
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.509771463552596,
+        "elevation": 0.0085,
+        "speed": 4.5,
+        "tipX": 0,
+        "tipY": 0
+      },
+      "stage": "clearance",
+      "eventPrefix": 0,
+      "status": "cue-clearance",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 0
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.509771463552596,
+        "elevation": 0.017,
+        "speed": 4.5,
+        "tipX": 0,
+        "tipY": 0
+      },
+      "stage": "clearance",
+      "eventPrefix": 0,
+      "status": "cue-clearance",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 0
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.509771463552596,
+        "elevation": 0,
+        "speed": 4.4996,
+        "tipX": 0,
+        "tipY": 0
+      },
+      "stage": "clearance",
+      "eventPrefix": 0,
+      "status": "cue-clearance",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 0
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.509771463552596,
+        "elevation": 0,
+        "speed": 4.4992,
+        "tipX": 0,
+        "tipY": 0
+      },
+      "stage": "clearance",
+      "eventPrefix": 0,
+      "status": "cue-clearance",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 0
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.509771463552596,
+        "elevation": 0,
+        "speed": 4.5,
+        "tipX": 0.00010999999999994348,
+        "tipY": 0
+      },
+      "stage": "clearance",
+      "eventPrefix": 0,
+      "status": "cue-clearance",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 0
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.509771463552596,
+        "elevation": 0,
+        "speed": 4.5,
+        "tipX": 0.00021999999999999797,
+        "tipY": 0
+      },
+      "stage": "clearance",
+      "eventPrefix": 0,
+      "status": "cue-clearance",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 0
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.509771463552596,
+        "elevation": 0,
+        "speed": 4.5,
+        "tipX": 0,
+        "tipY": 0.00008999999999997899
+      },
+      "stage": "clearance",
+      "eventPrefix": 0,
+      "status": "cue-clearance",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 0
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.509771463552596,
+        "elevation": 0,
+        "speed": 4.5,
+        "tipX": 0,
+        "tipY": 0.00017999999999995797
+      },
+      "stage": "clearance",
+      "eventPrefix": 0,
+      "status": "cue-clearance",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 0
+    },
+    {
+      "purpose": "trial",
+      "settings": {
+        "angle": -14.509771463552596,
+        "elevation": 3.259528847865505,
+        "speed": 4.5,
+        "tipX": 6.249205634079047e-7,
+        "tipY": 0.0009090889869023955
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 8006
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.473771463552595,
+        "elevation": 3.259528847865505,
+        "speed": 4.5,
+        "tipX": 6.249205634079047e-7,
+        "tipY": 0.0009090889869023955
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 7950
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.437771463552593,
+        "elevation": 3.259528847865505,
+        "speed": 4.5,
+        "tipX": 6.249205634079047e-7,
+        "tipY": 0.0009090889869023955
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 8070
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.509771463552596,
+        "elevation": 3.268028847865505,
+        "speed": 4.5,
+        "tipX": 6.249205634079047e-7,
+        "tipY": 0.0009090889869023955
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 7893
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.509771463552596,
+        "elevation": 3.276528847865505,
+        "speed": 4.5,
+        "tipX": 6.249205634079047e-7,
+        "tipY": 0.0009090889869023955
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 7976
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.509771463552596,
+        "elevation": 3.259528847865505,
+        "speed": 4.4996,
+        "tipX": 6.249205634079047e-7,
+        "tipY": 0.0009090889869023955
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 7934
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.509771463552596,
+        "elevation": 3.259528847865505,
+        "speed": 4.4992,
+        "tipX": 6.249205634079047e-7,
+        "tipY": 0.0009090889869023955
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 7887
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.509771463552596,
+        "elevation": 3.259528847865505,
+        "speed": 4.5,
+        "tipX": 0.00022062492056340588,
+        "tipY": 0.0009090889869023955
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 7966
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.509771463552596,
+        "elevation": 3.259528847865505,
+        "speed": 4.5,
+        "tipX": 0.00044062492056340385,
+        "tipY": 0.0009090889869023955
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 7956
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.509771463552596,
+        "elevation": 3.259528847865505,
+        "speed": 4.5,
+        "tipX": 6.249205634079047e-7,
+        "tipY": 0.0009990889869023745
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 7967
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.509771463552596,
+        "elevation": 3.259528847865505,
+        "speed": 4.5,
+        "tipX": 6.249205634079047e-7,
+        "tipY": 0.001089088986902409
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 7972
+    },
+    {
+      "purpose": "trial",
+      "settings": {
+        "angle": -14.388186017249609,
+        "elevation": 7.225816411888688,
+        "speed": 4.5,
+        "tipX": 0.010317051069305583,
+        "tipY": 0.08006083656185042
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "topology-mismatch",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 7531
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.352186017249608,
+        "elevation": 7.225816411888688,
+        "speed": 4.5,
+        "tipX": 0.010317051069305583,
+        "tipY": 0.08006083656185042
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 7902
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.316186017249606,
+        "elevation": 7.225816411888688,
+        "speed": 4.5,
+        "tipX": 0.010317051069305583,
+        "tipY": 0.08006083656185042
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 8308
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.388186017249609,
+        "elevation": 7.2300664118886875,
+        "speed": 4.5,
+        "tipX": 0.010317051069305583,
+        "tipY": 0.08006083656185042
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 7743
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.388186017249609,
+        "elevation": 7.234316411888687,
+        "speed": 4.5,
+        "tipX": 0.010317051069305583,
+        "tipY": 0.08006083656185042
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "topology-mismatch",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 7476
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.388186017249609,
+        "elevation": 7.225816411888688,
+        "speed": 4.4998000000000005,
+        "tipX": 0.010317051069305583,
+        "tipY": 0.08006083656185042
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "topology-mismatch",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 7537
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.388186017249609,
+        "elevation": 7.225816411888688,
+        "speed": 4.4996,
+        "tipX": 0.010317051069305583,
+        "tipY": 0.08006083656185042
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 7674
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.388186017249609,
+        "elevation": 7.225816411888688,
+        "speed": 4.5,
+        "tipX": 0.01053705106930558,
+        "tipY": 0.08006083656185042
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "topology-mismatch",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 7437
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.388186017249609,
+        "elevation": 7.225816411888688,
+        "speed": 4.5,
+        "tipX": 0.010757051069305579,
+        "tipY": 0.08006083656185042
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "topology-mismatch",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 7496
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.388186017249609,
+        "elevation": 7.225816411888688,
+        "speed": 4.5,
+        "tipX": 0.010317051069305583,
+        "tipY": 0.08024083656185038
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "topology-mismatch",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 7407
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.388186017249609,
+        "elevation": 7.225816411888688,
+        "speed": 4.5,
+        "tipX": 0.010317051069305583,
+        "tipY": 0.08042083656185034
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "topology-mismatch",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 7530
+    },
+    {
+      "purpose": "trial",
+      "settings": {
+        "angle": -14.23589737891345,
+        "elevation": 7.590939778374062,
+        "speed": 4.5,
+        "tipX": 0.015693261209618004,
+        "tipY": 0.07944455705606829
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 8233
+    },
+    {
+      "purpose": "trial",
+      "settings": {
+        "angle": -14.231570550867417,
+        "elevation": 7.660830606117339,
+        "speed": 4.5,
+        "tipX": 0.016722444779401102,
+        "tipY": 0.07932637581750729
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 8751
+    },
+    {
+      "purpose": "trial",
+      "settings": {
+        "angle": -14.23014874037861,
+        "elevation": 7.683716185675415,
+        "speed": 4.5,
+        "tipX": 0.017059448360683405,
+        "tipY": 0.0792876776973081
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 8944
+    },
+    {
+      "purpose": "trial",
+      "settings": {
+        "angle": -14.230148861670983,
+        "elevation": 7.683710155970791,
+        "speed": 4.5,
+        "tipX": 0.017059361070636325,
+        "tipY": 0.07928768829883187
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 8813
+    },
+    {
+      "purpose": "trial",
+      "settings": {
+        "angle": -14.230150066919691,
+        "elevation": 7.683650567680515,
+        "speed": 4.5,
+        "tipX": 0.017058483735356123,
+        "tipY": 0.07928778911978868
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 8914
+    },
+    {
+      "purpose": "trial",
+      "settings": {
+        "angle": -14.22861549377933,
+        "elevation": 7.7110571244281045,
+        "speed": 4.5,
+        "tipX": 0.017462063993127885,
+        "tipY": 0.07924144540041428
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 8930
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.192615493779329,
+        "elevation": 7.7110571244281045,
+        "speed": 4.5,
+        "tipX": 0.017462063993127885,
+        "tipY": 0.07924144540041428
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 9123
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.156615493779356,
+        "elevation": 7.7110571244281045,
+        "speed": 4.5,
+        "tipX": 0.017462063993127885,
+        "tipY": 0.07924144540041428
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 9071
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.22861549377933,
+        "elevation": 7.719557124428105,
+        "speed": 4.5,
+        "tipX": 0.017462063993127885,
+        "tipY": 0.07924144540041428
+      },
+      "stage": 3,
+      "eventPrefix": 3,
+      "status": "goal-verified",
+      "goalVerified": true,
+      "verified": false,
+      "steps": 9118
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.22861549377933,
+        "elevation": 7.728057124428105,
+        "speed": 4.5,
+        "tipX": 0.017462063993127885,
+        "tipY": 0.07924144540041428
+      },
+      "stage": 3,
+      "eventPrefix": 3,
+      "status": "goal-verified",
+      "goalVerified": true,
+      "verified": false,
+      "steps": 8779
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.22861549377933,
+        "elevation": 7.7110571244281045,
+        "speed": 4.4996,
+        "tipX": 0.017462063993127885,
+        "tipY": 0.07924144540041428
+      },
+      "stage": 3,
+      "eventPrefix": 3,
+      "status": "goal-verified",
+      "goalVerified": true,
+      "verified": false,
+      "steps": 8731
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.22861549377933,
+        "elevation": 7.7110571244281045,
+        "speed": 4.4992,
+        "tipX": 0.017462063993127885,
+        "tipY": 0.07924144540041428
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 8674
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.22861549377933,
+        "elevation": 7.7110571244281045,
+        "speed": 4.5,
+        "tipX": 0.01790206399312788,
+        "tipY": 0.07924144540041428
+      },
+      "stage": 3,
+      "eventPrefix": 3,
+      "status": "goal-verified",
+      "goalVerified": true,
+      "verified": false,
+      "steps": 8715
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.22861549377933,
+        "elevation": 7.7110571244281045,
+        "speed": 4.5,
+        "tipX": 0.01834206399312799,
+        "tipY": 0.07924144540041428
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 8712
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.22861549377933,
+        "elevation": 7.7110571244281045,
+        "speed": 4.5,
+        "tipX": 0.017462063993127885,
+        "tipY": 0.0796014454004143
+      },
+      "stage": 2,
+      "eventPrefix": 2,
+      "status": "missing-event",
+      "goalVerified": false,
+      "verified": false,
+      "steps": 8686
+    },
+    {
+      "purpose": "jacobian",
+      "settings": {
+        "angle": -14.22861549377933,
+        "elevation": 7.7110571244281045,
+        "speed": 4.5,
+        "tipX": 0.017462063993127885,
+        "tipY": 0.07996144540041433
+      },
+      "stage": 3,
+      "eventPrefix": 3,
+      "status": "goal-verified",
+      "goalVerified": true,
+      "verified": false,
+      "steps": 8769
+    },
+    {
+      "purpose": "verify",
+      "settings": {
+        "angle": -14.22861549377933,
+        "elevation": 7.719557124428105,
+        "speed": 4.5,
+        "tipX": 0.017462063993127885,
+        "tipY": 0.07924144540041428
+      },
+      "stage": 3,
+      "eventPrefix": 3,
+      "status": "goal-verified",
+      "goalVerified": true,
+      "verified": true,
+      "steps": 9118
+    }
+  ],
+  "threeBall": {
+    "branchId": "[3,2,\"any\",[{\"kind\":\"object\",\"id\":3},{\"kind\":\"cushion\",\"rail\":\"z-\"},{\"kind\":\"cushion\",\"rail\":\"x+\"},{\"kind\":\"cushion\",\"rail\":\"z+\"},{\"kind\":\"object\",\"id\":2}]]:root:1",
+    "seed": {
+      "angle": -16.38445509375199,
+      "elevation": 0,
+      "speed": 4.5,
+      "tipX": 0,
+      "tipY": 0
+    },
+    "settings": {
+      "angle": -16.312455093751993,
+      "elevation": 3.230695061472865,
+      "speed": 4.5,
+      "tipX": 0,
+      "tipY": 0.0008920514276190006
+    },
+    "rootIterations": 2,
+    "evaluations": 23,
+    "physicsSteps": 86509,
+    "verificationCount": 1,
+    "contacts": [
+      {
+        "kind": "object",
+        "id": 3,
+        "time": 0.29999999999999927
+      },
+      {
+        "kind": "cushion",
+        "rail": "z-",
+        "time": 0.4260416666666655
+      },
+      {
+        "kind": "cushion",
+        "rail": "x+",
+        "time": 0.6385416666666721
+      },
+      {
+        "kind": "cushion",
+        "rail": "z+",
+        "time": 1.4791666666666627
+      },
+      {
+        "kind": "object",
+        "id": 2,
+        "time": 2.782291666666589
+      }
+    ],
+    "threeCushionSuccess": true,
+    "replaySeconds": 7.424999999999659,
+    "replaySteps": 7128,
+    "cueObstruction": false,
+    "offTable": false,
+    "independentUninstrumentedReplay": true,
+    "legacySamplingDisabled": true,
+    "globalOptimal": false,
+    "exhaustive": false,
+    "trace": [
+      {
+        "purpose": "residual",
+        "settings": {
+          "angle": -16.384455093751995,
+          "elevation": 0,
+          "speed": 4.5,
+          "tipX": 0,
+          "tipY": 0
+        },
+        "stage": "clearance",
+        "eventPrefix": 0,
+        "status": "cue-clearance",
+        "goalVerified": false,
+        "verified": false,
+        "steps": 0
+      },
+      {
+        "purpose": "jacobian",
+        "settings": {
+          "angle": -16.348455093751994,
+          "elevation": 0,
+          "speed": 4.5,
+          "tipX": 0,
+          "tipY": 0
+        },
+        "stage": "clearance",
+        "eventPrefix": 0,
+        "status": "cue-clearance",
+        "goalVerified": false,
+        "verified": false,
+        "steps": 0
+      },
+      {
+        "purpose": "jacobian",
+        "settings": {
+          "angle": -16.312455093751993,
+          "elevation": 0,
+          "speed": 4.5,
+          "tipX": 0,
+          "tipY": 0
+        },
+        "stage": "clearance",
+        "eventPrefix": 0,
+        "status": "cue-clearance",
+        "goalVerified": false,
+        "verified": false,
+        "steps": 0
+      },
+      {
+        "purpose": "jacobian",
+        "settings": {
+          "angle": -16.384455093751995,
+          "elevation": 0.0085,
+          "speed": 4.5,
+          "tipX": 0,
+          "tipY": 0
+        },
+        "stage": "clearance",
+        "eventPrefix": 0,
+        "status": "cue-clearance",
+        "goalVerified": false,
+        "verified": false,
+        "steps": 0
+      },
+      {
+        "purpose": "jacobian",
+        "settings": {
+          "angle": -16.384455093751995,
+          "elevation": 0.017,
+          "speed": 4.5,
+          "tipX": 0,
+          "tipY": 0
+        },
+        "stage": "clearance",
+        "eventPrefix": 0,
+        "status": "cue-clearance",
+        "goalVerified": false,
+        "verified": false,
+        "steps": 0
+      },
+      {
+        "purpose": "jacobian",
+        "settings": {
+          "angle": -16.384455093751995,
+          "elevation": 0,
+          "speed": 4.4996,
+          "tipX": 0,
+          "tipY": 0
+        },
+        "stage": "clearance",
+        "eventPrefix": 0,
+        "status": "cue-clearance",
+        "goalVerified": false,
+        "verified": false,
+        "steps": 0
+      },
+      {
+        "purpose": "jacobian",
+        "settings": {
+          "angle": -16.384455093751995,
+          "elevation": 0,
+          "speed": 4.4992,
+          "tipX": 0,
+          "tipY": 0
+        },
+        "stage": "clearance",
+        "eventPrefix": 0,
+        "status": "cue-clearance",
+        "goalVerified": false,
+        "verified": false,
+        "steps": 0
+      },
+      {
+        "purpose": "jacobian",
+        "settings": {
+          "angle": -16.384455093751995,
+          "elevation": 0,
+          "speed": 4.5,
+          "tipX": 0.00010999999999994348,
+          "tipY": 0
+        },
+        "stage": "clearance",
+        "eventPrefix": 0,
+        "status": "cue-clearance",
+        "goalVerified": false,
+        "verified": false,
+        "steps": 0
+      },
+      {
+        "purpose": "jacobian",
+        "settings": {
+          "angle": -16.384455093751995,
+          "elevation": 0,
+          "speed": 4.5,
+          "tipX": 0.00021999999999999797,
+          "tipY": 0
+        },
+        "stage": "clearance",
+        "eventPrefix": 0,
+        "status": "cue-clearance",
+        "goalVerified": false,
+        "verified": false,
+        "steps": 0
+      },
+      {
+        "purpose": "jacobian",
+        "settings": {
+          "angle": -16.384455093751995,
+          "elevation": 0,
+          "speed": 4.5,
+          "tipX": 0,
+          "tipY": 0.00008999999999997899
+        },
+        "stage": "clearance",
+        "eventPrefix": 0,
+        "status": "cue-clearance",
+        "goalVerified": false,
+        "verified": false,
+        "steps": 0
+      },
+      {
+        "purpose": "jacobian",
+        "settings": {
+          "angle": -16.384455093751995,
+          "elevation": 0,
+          "speed": 4.5,
+          "tipX": 0,
+          "tipY": 0.00017999999999995797
+        },
+        "stage": "clearance",
+        "eventPrefix": 0,
+        "status": "cue-clearance",
+        "goalVerified": false,
+        "verified": false,
+        "steps": 0
+      },
+      {
+        "purpose": "trial",
+        "settings": {
+          "angle": -16.384455093751995,
+          "elevation": 3.230695061472865,
+          "speed": 4.5,
+          "tipX": 0,
+          "tipY": 0.0008920514276190006
+        },
+        "stage": 4,
+        "eventPrefix": 4,
+        "status": "topology-mismatch",
+        "goalVerified": false,
+        "verified": false,
+        "steps": 8210
+      },
+      {
+        "purpose": "jacobian",
+        "settings": {
+          "angle": -16.348455093751994,
+          "elevation": 3.230695061472865,
+          "speed": 4.5,
+          "tipX": 0,
+          "tipY": 0.0008920514276190006
+        },
+        "stage": 3,
+        "eventPrefix": 3,
+        "status": "topology-mismatch",
+        "goalVerified": false,
+        "verified": false,
+        "steps": 7483
+      },
+      {
+        "purpose": "jacobian",
+        "settings": {
+          "angle": -16.312455093751993,
+          "elevation": 3.230695061472865,
+          "speed": 4.5,
+          "tipX": 0,
+          "tipY": 0.0008920514276190006
+        },
+        "stage": 5,
+        "eventPrefix": 5,
+        "status": "goal-verified",
+        "goalVerified": true,
+        "verified": false,
+        "steps": 2671
+      },
+      {
+        "purpose": "jacobian",
+        "settings": {
+          "angle": -16.384455093751995,
+          "elevation": 3.239195061472865,
+          "speed": 4.5,
+          "tipX": 0,
+          "tipY": 0.0008920514276190006
+        },
+        "stage": 4,
+        "eventPrefix": 4,
+        "status": "topology-mismatch",
+        "goalVerified": false,
+        "verified": false,
+        "steps": 8105
+      },
+      {
+        "purpose": "jacobian",
+        "settings": {
+          "angle": -16.384455093751995,
+          "elevation": 3.247695061472865,
+          "speed": 4.5,
+          "tipX": 0,
+          "tipY": 0.0008920514276190006
+        },
+        "stage": 4,
+        "eventPrefix": 4,
+        "status": "topology-mismatch",
+        "goalVerified": false,
+        "verified": false,
+        "steps": 8218
+      },
+      {
+        "purpose": "jacobian",
+        "settings": {
+          "angle": -16.384455093751995,
+          "elevation": 3.230695061472865,
+          "speed": 4.4996,
+          "tipX": 0,
+          "tipY": 0.0008920514276190006
+        },
+        "stage": 4,
+        "eventPrefix": 4,
+        "status": "topology-mismatch",
+        "goalVerified": false,
+        "verified": false,
+        "steps": 8195
+      },
+      {
+        "purpose": "jacobian",
+        "settings": {
+          "angle": -16.384455093751995,
+          "elevation": 3.230695061472865,
+          "speed": 4.4992,
+          "tipX": 0,
+          "tipY": 0.0008920514276190006
+        },
+        "stage": 4,
+        "eventPrefix": 4,
+        "status": "topology-mismatch",
+        "goalVerified": false,
+        "verified": false,
+        "steps": 8188
+      },
+      {
+        "purpose": "jacobian",
+        "settings": {
+          "angle": -16.384455093751995,
+          "elevation": 3.230695061472865,
+          "speed": 4.5,
+          "tipX": 0.00010999999999994348,
+          "tipY": 0.0008920514276190006
+        },
+        "stage": 4,
+        "eventPrefix": 4,
+        "status": "topology-mismatch",
+        "goalVerified": false,
+        "verified": false,
+        "steps": 8188
+      },
+      {
+        "purpose": "jacobian",
+        "settings": {
+          "angle": -16.384455093751995,
+          "elevation": 3.230695061472865,
+          "speed": 4.5,
+          "tipX": 0.00021999999999999797,
+          "tipY": 0.0008920514276190006
+        },
+        "stage": 4,
+        "eventPrefix": 4,
+        "status": "topology-mismatch",
+        "goalVerified": false,
+        "verified": false,
+        "steps": 8140
+      },
+      {
+        "purpose": "jacobian",
+        "settings": {
+          "angle": -16.384455093751995,
+          "elevation": 3.230695061472865,
+          "speed": 4.5,
+          "tipX": 0,
+          "tipY": 0.0009820514276189796
+        },
+        "stage": 4,
+        "eventPrefix": 4,
+        "status": "topology-mismatch",
+        "goalVerified": false,
+        "verified": false,
+        "steps": 8208
+      },
+      {
+        "purpose": "jacobian",
+        "settings": {
+          "angle": -16.384455093751995,
+          "elevation": 3.230695061472865,
+          "speed": 4.5,
+          "tipX": 0,
+          "tipY": 0.001072051427619014
+        },
+        "stage": 4,
+        "eventPrefix": 4,
+        "status": "topology-mismatch",
+        "goalVerified": false,
+        "verified": false,
+        "steps": 8232
+      },
+      {
+        "purpose": "verify",
+        "settings": {
+          "angle": -16.312455093751993,
+          "elevation": 3.230695061472865,
+          "speed": 4.5,
+          "tipX": 0,
+          "tipY": 0.0008920514276190006
+        },
+        "stage": 5,
+        "eventPrefix": 5,
+        "status": "goal-verified",
+        "goalVerified": true,
+        "verified": true,
+        "steps": 2671
+      }
+    ]
+  }
+}
