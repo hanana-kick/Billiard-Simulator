@@ -66,12 +66,12 @@ class LabController{
  zoom(factor){if(!this.renderer)return;this.renderer.camera.zoom=clamp((this.renderer.camera.zoom||1)*factor,.6,2.5);this.dirty=true;this.updateHandles();}
  fire(){
   if(!this.lab||this.windup||this.lab.cue)return false;
-  if(this.game?.pending){this.announce('4구 판정이 끝날 때까지 기다리세요.');return false;}
+  if(this.game?.pending){this.announce('타격 판정이 끝날 때까지 기다리세요.');return false;}
   if(this.lab.anyMotion()){this.announce('공이 움직이는 동안에는 큐가 대기합니다. 멈춘 뒤 타격하세요.');return false;}
   if(performance.now()<(this.cooldownUntil||0))return false;
   const s=this.state,key=JSON.stringify([this.lab.steps,this.lab.revision,s.selectedId,s.settings,s.horizon,this.lab.params]);
   if(!s.paused||s.predictionBusy||key!==this.requestKey)s.forecast=null;
-  if(this.game&&!this.game.cueIds.includes(s.selectedId)){this.announce('4구에서는 흰 수구 또는 노란 수구를 선택하세요.');return false;}
+  if(this.game&&!this.game.cueIds.includes(s.selectedId)){this.announce('흰 수구 또는 노란 수구를 선택하세요.');return false;}
   const before=this.captureHistory();const gameBefore=this.game?.snapshot();const result=this.lab.strike(s.selectedId,{...s.settings});if(!result.ok){this.announce(result.reason);return false;}
   this.commitHistory(before,'shot');
   if(this.game){this.gameUndo=gameBefore;this.game.begin(s.selectedId,{threeCushion:!!s.routeOptions.fourBallThreeCushion});}
@@ -79,7 +79,7 @@ class LabController{
  }
  setGameMode(mode){if(!['free','four'].includes(mode)||mode===this.state.gameMode)return;this.state.gameMode=mode;this.reset();}
  setupGame(){
-  this.game=null;this.gameUndo=null;this.state.routeOptions={...this.state.routeOptions,mode:'three',methods:['any'],order:'either',allowKiss:true,workers:0,elevationMode:'search',minElevation:0,maxElevation:85,fourBallThreeCushion:false,targetId:2,secondId:3};if(this.state.gameMode!=='four')return;
+  this.game=null;this.gameUndo=null;this.state.routeOptions={...this.state.routeOptions,mode:'three',methods:['any'],order:'either',allowKiss:true,workers:0,elevationMode:'search',minElevation:0,maxElevation:85,fourBallThreeCushion:false,targetId:2,secondId:3};if(this.state.gameMode!=='four'){this.game=new G.ThreeBallGame([this.lab.objects[0].id,this.lab.objects[1].id],this.lab.objects.map(o=>o.id));this.lab.onEvent=e=>this.game?.contact(e);return;}
   const lab=this.lab;lab.objects[0].label='흰 수구';lab.objects[1].label='노란 수구';lab.objects[2].label='적구 1';
   const red=lab.addSphere(V(.64,D.radius+.00005,.30),'적구 2','#ed7770');
   this.game=new G.FourBallGame([lab.objects[0].id,lab.objects[1].id],[lab.objects[2].id,red.id],{threeCushion:!!this.state.routeOptions.fourBallThreeCushion});lab.onEvent=e=>this.game?.contact(e);
@@ -92,7 +92,7 @@ class LabController{
  restoreHistory(saved){
   this.inputPending=false;this.invalidate();this.lab.restore(saved.world);this.lab.lastSnapshot=null;this.cooldownUntil=0;this.windup=null;this.accumulator=0;
   Object.assign(this.state,{selectedId:saved.selectedId,settings:{...saved.settings},paused:saved.paused,gameMode:saved.gameMode,cuePull:0,gesture:''});
-  if(saved.game){this.game=new G.FourBallGame();this.game.restore(saved.game);}else this.game=null;
+  if(saved.game){this.game=saved.game.kind==='three'?new G.ThreeBallGame():new G.FourBallGame();this.game.restore(saved.game);}else this.game=null;
   this.lab.onEvent=e=>this.game?.contact(e);this.repairRouteTargets();this.queuePrediction();this.notify();
  }
  undo(){
@@ -112,8 +112,8 @@ class LabController{
  move(id,p,{interactive=false}={}){if(this.game?.pending){this.announce('타격 판정이 끝난 뒤 배치하세요. 초기화 또는 되돌리기로 취소할 수 있습니다.');return false;}this.cancelSearch('공 배치가 바뀌었습니다.',true);if(this.lab.cue){this.announce('스트로크가 끝난 뒤 배치할 수 있습니다.');return false;}const before=interactive?null:this.captureHistory();this.state.paused=true;const okay=this.lab.move(id,p);if(okay){if(interactive){this.inputPending=true;this.dirty=true;}else{this.commitHistory(before);this.queuePrediction();this.notify()}}return okay;}
  setPosition(p){const o=this.lab?.get(this.state.selectedId);if(!o)return;const pos={...o.body.translation(),...p};if(!this.move(o.id,pos))this.announce('다른 물체와 겹치는 위치에는 놓을 수 없습니다.');}
  setHeight(cm){const o=this.lab?.get(this.state.selectedId);if(o&&Number.isFinite(cm))this.setPosition({y:(o.radius||o.half.y)+cm/100+.00005});}
- add(shape){this.cancelSearch('물체가 추가되었습니다.',true);if(this.game)return this.announce('공 추가는 자유 실험 모드에서 가능합니다.');if(!this.lab||this.lab.cue)return;if(this.lab.objects.length>=12)return this.announce('최대 12개 물체까지 추가할 수 있습니다.');let pos;for(let z=-.4;z<.5&&!pos;z+=.16)for(let x=-1.1;x<1.1;x+=.16)if(this.lab.objects.every(o=>len(sub(o.body.translation(),V(x,.05,z)))>.13)){pos=V(x,shape==='sphere'?D.radius+.0001:.0451,z);break;}if(!pos)return;const before=this.captureHistory();this.pause(true);const o=shape==='sphere'?this.lab.addSphere(pos,'공 '+this.lab.nextId,'#7dd3fc'):this.lab.addBox(pos,'블록 '+this.lab.nextId);this.commitHistory(before);this.select(o.id);}
- remove(){if(this.game)return this.announce('4구의 공은 삭제할 수 없습니다. 자유 실험 모드를 사용하세요.');this.cancelSearch('물체가 삭제되었습니다.',true);if(!this.lab||this.lab.cue||this.lab.objects.length<2)return;const before=this.captureHistory();this.lab.removeObject(this.state.selectedId);this.commitHistory(before);this.select(this.lab.objects[0].id);}
+ add(shape){this.cancelSearch('물체가 추가되었습니다.',true);if(this.state.gameMode==='four'||this.game?.pending)return this.announce('현재 게임에서는 공을 추가할 수 없습니다.');if(!this.lab||this.lab.cue)return;if(this.lab.objects.length>=12)return this.announce('최대 12개 물체까지 추가할 수 있습니다.');let pos;for(let z=-.4;z<.5&&!pos;z+=.16)for(let x=-1.1;x<1.1;x+=.16)if(this.lab.objects.every(o=>len(sub(o.body.translation(),V(x,.05,z)))>.13)){pos=V(x,shape==='sphere'?D.radius+.0001:.0451,z);break;}if(!pos)return;const before=this.captureHistory();this.pause(true);const o=shape==='sphere'?this.lab.addSphere(pos,'공 '+this.lab.nextId,'#7dd3fc'):this.lab.addBox(pos,'블록 '+this.lab.nextId);this.commitHistory(before);this.select(o.id);}
+ remove(){if(this.state.gameMode==='four'||this.game?.pending||this.game?.objectIds?.includes(this.state.selectedId))return this.announce('게임의 기본 공은 삭제할 수 없습니다.');this.cancelSearch('물체가 삭제되었습니다.',true);if(!this.lab||this.lab.cue||this.lab.objects.length<2)return;const before=this.captureHistory();this.lab.removeObject(this.state.selectedId);this.commitHistory(before);this.select(this.lab.objects[0].id);}
  params(p){this.cancelSearch('물리 재질이 바뀌었습니다.',true);try{const before=this.captureHistory();this.lab.setParams(p);this.commitHistory(before);this.queuePrediction();this.notify()}catch(error){this.announce(error.message)}}
  clearTrails(){this.lab?.clearTrails();this.notify();}
  point(e){const r=this.canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
@@ -296,7 +296,7 @@ class LabController{
  repairRouteTargets(){
   if(!this.lab)return;const o=this.state.routeOptions;
   // Inspecting or moving a red ball must never replace the game's two red targets.
-  const ids=this.game?this.game.redIds.filter(id=>this.lab.get(id)):this.lab.objects.filter(o=>o.shape==='sphere'&&o.id!==this.state.selectedId).map(o=>o.id);
+  const ids=this.state.gameMode==='four'&&this.game?this.game.redIds.filter(id=>this.lab.get(id)):this.game?.objectIds?this.game.objectIds.filter(id=>id!==this.state.selectedId&&this.lab.get(id)):this.lab.objects.filter(o=>o.shape==='sphere'&&o.id!==this.state.selectedId).map(o=>o.id);
   const targetId=ids.includes(o.targetId)?o.targetId:(ids[0]??0),secondId=ids.includes(o.secondId)&&o.secondId!==targetId?o.secondId:(ids.find(id=>id!==targetId)??0);
   this.state.routeOptions={...o,targetId,secondId};
  }
@@ -306,8 +306,8 @@ class LabController{
  }
  startSearch(){
   if(!this.lab||this.lab.cue||this.windup||this.game?.pending||this.lab.anyMotion())return this.announce('모든 물체가 멈춘 뒤 경로를 검색하세요.');
-  if(this.game&&!this.game.cueIds.includes(this.state.selectedId)){this.state.routeStatus='error';this.state.routeError='4구에서는 흰 수구 또는 노란 수구를 선택하세요.';this.notify();return;}
-  const gameRules=this.game?{gameMode:'four',opponentId:this.game.cueIds.find(id=>id!==this.state.selectedId)}:{gameMode:'free',opponentId:null};
+  if(this.game&&!this.game.cueIds.includes(this.state.selectedId)){this.state.routeStatus='error';this.state.routeError='흰 수구 또는 노란 수구를 선택하세요.';this.notify();return;}
+  const gameRules=this.state.gameMode==='four'&&this.game?{gameMode:'four',opponentId:this.game.cueIds.find(id=>id!==this.state.selectedId)}:{gameMode:'free',opponentId:null};
   const req={snapshot:this.lab.snapshot({trails:false}),selectedId:this.state.selectedId,settings:{...this.state.settings},options:{...this.state.routeOptions,...gameRules}};
   try{G.LabInversePlanner.validate(req)}catch(e){this.state.routeError=e.message;this.state.routeStatus='error';this.notify();return;}
   this.state.paused=true;this.invalidate();this.routeStamp=this.worldStamp();this.routeRequestStamp=JSON.stringify([this.state.routeOptions,this.state.settings]);this.state.routeStatus='searching';this.state.routeResult=null;this.state.routeError='';this.state.routeApplied=null;this.state.routeProgress={tested:0,evaluated:0,rejected:0,total:null,topologiesResolved:0,rootIterations:0,found:0};
