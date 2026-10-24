@@ -1,0 +1,40 @@
+name: Software WebGL proof (test only)
+on:
+  push:
+    branches: ['test/software-webgl-20261024']
+    paths:
+      - '.github/workflows/software-webgl.yml'
+      - 'tests/software-webgl/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: software-webgl-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  software-webgl:
+    if: github.ref == 'refs/heads/test/software-webgl-20261024'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run prepare:engine && npm run build
+      - name: Independent frame-cap unit regression
+        run: node --test tests/frame-cap.cjs tests/controller-render-cap.cjs
+      - name: Actual sandboxed software WebGL and application proof
+        env:
+          BROWSER_EXECUTABLE: /opt/google/chrome/chrome
+        run: node tests/software-webgl/proof.cjs
+      - name: Preserve renderer, shader, pixel, application and cadence evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: software-webgl-evidence
+          path: software-webgl-evidence/
+          if-no-files-found: warn
+          retention-days: 14
