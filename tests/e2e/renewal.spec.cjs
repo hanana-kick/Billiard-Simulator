@@ -64,12 +64,39 @@ async function chromeBounds(page,width,height,sidebarOpen){
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
  if(!sidebarOpen)expect((await page.locator('#scene').boundingBox()).height).toBeGreaterThanOrEqual(60);
 }
+async function horizontalGutters(page,panel){
+ // Verify content geometry, not merely absence of document-level overflow.
+ for(const selector of ['.toolbox-heading','.toolbox-nav','#'+panel,'.panel-utility','#forecastStatus']){
+  const measure=await page.locator(selector).evaluate(el=>{
+   const r=el.getBoundingClientRect(),style=getComputedStyle(el);
+   const rects=el.id==='forecastStatus'?(()=>{const range=document.createRange();range.selectNodeContents(el);return Array.from(range.getClientRects());})():Array.from(el.children).filter(child=>child.getClientRects().length&&getComputedStyle(child).visibility!=='hidden').map(child=>child.getBoundingClientRect());
+   return {paddingLeft:parseFloat(style.paddingLeft),paddingRight:parseFloat(style.paddingRight),content:rects.filter(box=>box.width>0).map(box=>({left:box.left-r.left,right:r.right-box.right}))};
+  });
+  expect(measure.paddingLeft,selector+' left padding').toBeGreaterThanOrEqual(16);
+  expect(measure.paddingRight,selector+' right padding').toBeGreaterThanOrEqual(16);
+  expect(measure.content.length,selector+' has measurable content').toBeGreaterThan(0);
+  for(const inset of measure.content){expect(inset.left,selector+' content left gutter').toBeGreaterThanOrEqual(15);expect(inset.right,selector+' content right gutter').toBeGreaterThanOrEqual(15);}
+ }
+}
+async function inlineDetails(page,dialogCount){
+ await expect(page.locator('#routeDetails')).toHaveAttribute('aria-expanded','true');
+ await expect(page.locator('#routeDetailsBody')).toBeVisible();
+ await page.locator('#panelScroll').evaluate(async el=>{await Promise.all(el.getAnimations({subtree:true}).map(a=>a.finished.catch(()=>{})))});
+ await expect(page.getByRole('dialog')).toHaveCount(dialogCount);
+ await expect(page.getByRole('dialog',{name:'경로 상세 설정',exact:true})).toHaveCount(0);
+ const layout=await page.locator('#routeDetailsBody').evaluate(body=>{
+  const trigger=document.getElementById('routeDetails'),scroll=document.getElementById('panelScroll'),bounds=body.getBoundingClientRect(),button=trigger.getBoundingClientRect(),nestedScrollers=[];
+  for(let node=body;node&&node!==scroll;node=node.parentElement)if(['auto','scroll'].includes(getComputedStyle(node).overflowY))nestedScrollers.push(node.id||node.getAttribute('data-slot')||node.tagName);
+  return {inRoutes:!!body.closest('#routesPanel'),inScroll:body.closest('#panelScroll')===scroll,belowTrigger:bounds.top>=button.bottom-1,nestedScrollers,overflow:scroll.scrollWidth>scroll.clientWidth+1};
+ });
+ expect(layout).toEqual({inRoutes:true,inScroll:true,belowTrigger:true,nestedScrollers:[],overflow:false});
+}
 async function reachable(page,selector){
  // Base UI Checkbox assigns the supplied id to its hidden form input.
  // Inspect and hit-test the visible semantic control, never that hidden input.
  let el=page.locator(selector);
  if(await el.evaluate(e=>e.matches('input[type=checkbox][aria-hidden=true]')))el=el.locator('..').getByRole('checkbox');
- const scrollSelector=await el.evaluate(e=>e.closest('#routeDetailsScroll')?'#routeDetailsScroll':'#panelScroll');
+ const scrollSelector='#panelScroll';
  await page.locator(scrollSelector).evaluate(async e=>{await Promise.all(e.getAnimations({subtree:true}).map(a=>a.finished.catch(()=>{})))});await el.scrollIntoViewIfNeeded();await expect(el).toBeVisible();
  const box=await el.boundingBox(),scroll=await page.locator(scrollSelector).boundingBox();
  contained(box,scroll,selector+' inside inspector scrollport');
@@ -104,13 +131,14 @@ for(const [width,height]of viewports)test(`coarse-pointer ${width}x${height}: ev
   await page.setViewportSize({width,height});await closeSidebar(page);
   await chromeBounds(page,width,height,false);await directSceneWithinTable(page);await openSidebar(page);
   for(const [tab,panel,controls]of [
-   ['수동','shotPanel',['#pause','#step','#tipDisc','#elevationNumber','#cueSpeed','#angle','#placementObject','#height']],
+   ['수동','shotPanel',['#tipDisc','#elevationNumber','#cueSpeed','#angle','#placementObject','#height']],
    ['경로 탐색','routesPanel',['#gameMode','#findRoute','#routeDetails']],
    ['설정','settingsPanel',['#horizon','#speed','#p-spinLength']]
   ]){
    await page.getByRole('tab',{name:tab,exact:true}).click();
    await expect(page.locator('[role=tabpanel]:visible')).toHaveCount(1);await expect(page.locator('#'+panel)).toBeVisible();
-   await chromeBounds(page,width,height,true);
+   await chromeBounds(page,width,height,true);await horizontalGutters(page,panel);
+   await expect(page.locator('#pause,#step')).toHaveCount(0);
    for(const selector of controls)await reachable(page,selector);
    for(const group of await page.locator(`#${panel} .angle-nudges, #${panel} .action-row, #${panel} .option-group, #${panel} .coordinates, #${panel} .tip-section`).all()){
     // Compare only meaningful sibling fields/buttons/data, not unrelated card wrappers.
@@ -119,7 +147,8 @@ for(const [width,height]of viewports)test(`coarse-pointer ${width}x${height}: ev
     await disjointControls(page,id,tab+' sibling controls');await group.evaluate(el=>delete el.dataset.overlapProbe);
    }
    if(panel==='routesPanel'){
-    await page.locator('#routeDetails').click();
+    const dialogCount=await page.getByRole('dialog').count();
+    await page.locator('#routeDetails').click();await inlineDetails(page,dialogCount);await horizontalGutters(page,panel);
     for(const selector of ['#routeTarget','#routeOrder','#routeInputStrategy','#routemaxSpeed'])await reachable(page,selector);
     await expect(page.locator('#routeWorkers,#routeObjective')).toHaveCount(0);await page.locator('#closeRouteDetails').click();await expect(page.locator('#routeDetails')).toBeFocused();
    }
@@ -224,9 +253,9 @@ for(const viewport of [{width:390,height:844},{width:844,height:650}])test(`rese
   await page.getByRole('tab',{name:'수동',exact:true}).click();
   await page.evaluate(()=>cueLab.changeSettings({tipX:.12,tipY:.08}));
   await clickHitRegion(page,page.locator('#centerTip'));expect(await page.evaluate(()=>[cueLab.state.settings.tipX,cueLab.state.settings.tipY])).toEqual([0,0]);
-  const paused=await page.evaluate(()=>cueLab.state.paused);
-  await clickHitRegion(page,page.locator('#pause'));expect(await page.evaluate(()=>cueLab.state.paused)).toBe(!paused);
-  await clickHitRegion(page,page.locator('#pause'),{padding:false});expect(await page.evaluate(()=>cueLab.state.paused)).toBe(paused);
+  await expect(page.locator('#pause,#step')).toHaveCount(0);
+  await page.evaluate(()=>cueLab.changeSettings({tipX:-.1,tipY:.1}));
+  await clickHitRegion(page,page.locator('#centerTip'),{padding:false});expect(await page.evaluate(()=>[cueLab.state.settings.tipX,cueLab.state.settings.tipY])).toEqual([0,0]);
   await closeSidebar(page);
   const zoom=await page.evaluate(()=>cueLab.renderer.camera.zoom);
   await clickHitRegion(page,page.getByRole('button',{name:'축소',exact:true}));
@@ -255,17 +284,26 @@ for(const width of [320,390])test(`kiss explanation supports tap, keyboard and f
  }finally{await context.close();}
 });
 
-for(const viewport of [{width:320,height:568},{width:844,height:390}])test(`preset details drawer preserves values and nested focus at ${viewport.width}x${viewport.height}`,async({browser})=>{
+for(const viewport of [{width:320,height:568},{width:390,height:844},{width:844,height:390},{width:1440,height:900}])test(`preset details expand inline with shared scrolling and preserved focus at ${viewport.width}x${viewport.height}`,async({browser})=>{
  const context=await browser.newContext({viewport,hasTouch:true,reducedMotion:'reduce'});
  try{
   const page=await context.newPage();await page.goto('./');await page.waitForFunction(()=>globalThis.__LAB_READY__);await openSidebar(page);
   await expect(page.locator('#strike')).toHaveCount(1);expect(await page.locator('#strike').evaluate(e=>!!e.closest('#stagePreview'))).toBe(true);await expect(page.locator('#aimPad,#sideView,#interactionMode')).toHaveCount(0);
   expect(await page.evaluate(()=>({mode:cueLab.state.routeOptions.mode,methods:cueLab.state.routeOptions.methods,kiss:cueLab.state.routeOptions.allowKiss,order:cueLab.state.routeOptions.order,elevation:cueLab.state.routeOptions.elevationMode,min:cueLab.state.routeOptions.minElevation,max:cueLab.state.routeOptions.maxElevation}))).toEqual({mode:'three',methods:['any'],kiss:true,order:'either',elevation:'search',min:0,max:85});
-  await page.getByRole('tab',{name:'경로 탐색',exact:true}).click();await expect(page.locator('#routeTarget')).toHaveCount(0);await expect(page.locator('#routeMode,#routeWorkers,#routeObjective')).toHaveCount(0);
-  await page.locator('#routeDetails').click();await expect(page.getByRole('dialog',{name:'경로 상세 설정',exact:true})).toBeVisible();
+  await page.getByRole('tab',{name:'경로 탐색',exact:true}).click();await expect(page.locator('#routeDetails')).toHaveAttribute('aria-expanded','false');await expect(page.locator('#routeTarget')).toHaveCount(0);await expect(page.locator('#routeMode,#routeWorkers,#routeObjective')).toHaveCount(0);
+  const dialogCount=await page.getByRole('dialog').count(),collapsedHeight=await page.locator('#panelScroll').evaluate(el=>el.scrollHeight);
+  await page.evaluate(()=>{globalThis.inlineDetailsBaseline={panel:document.getElementById('panelScroll'),world:cueLab.lab,canvas:document.getElementById('scene')};});
+  await page.locator('#routeDetails').click();await inlineDetails(page,dialogCount);await horizontalGutters(page,'routesPanel');
+  expect(await page.locator('#panelScroll').evaluate(el=>el.scrollHeight)).toBeGreaterThan(collapsedHeight);
   for(const selector of ['#routeTarget','#routeOrder','#routeHorizon','#routeInputStrategy','#routemaxSpeed'])await reachable(page,selector);
   await page.locator('#routeHorizon').click();await page.getByRole('option',{name:'30초',exact:true}).click();await page.locator('#closeRouteDetails').click();await expect(page.locator('#routeDetails')).toBeFocused();await expect(page.locator('#tab-routes')).toBeInViewport();
-  await page.locator('#routeDetails').click();await expect(page.locator('#routeHorizon')).toContainText('30초');await page.keyboard.press('Escape');await expect(page.locator('#routeDetails')).toBeFocused();expect(await page.evaluate(()=>cueLab.state.routeOptions.horizon)).toBe(30);
+  await expect(page.locator('#routeDetails')).toHaveAttribute('aria-expanded','false');await expect(page.locator('#routeDetailsBody')).not.toBeVisible();
+  await page.locator('#routeDetails').click();await expect(page.locator('#routeHorizon')).toContainText('30초');await inlineDetails(page,dialogCount);
+  const info=page.getByRole('button',{name:'입력 계산 방식 설명',exact:true});await info.scrollIntoViewIfNeeded();await info.click();await expect(page.locator('[data-slot=popover-content]')).toBeVisible();
+  await page.keyboard.press('Escape');await expect(page.locator('[data-slot=popover-content]')).not.toBeVisible();await expect(info).toBeFocused();await expect(page.locator('#routeDetails')).toHaveAttribute('aria-expanded','true');await expect(page.locator('#sidebarTrigger')).toHaveAttribute('aria-expanded','true');
+  // Inline disclosure follows its trigger's keyboard interaction, not modal Escape semantics.
+  await page.locator('#routeDetails').scrollIntoViewIfNeeded();await page.locator('#routeDetails').focus();await page.locator('#routeDetails').press('Enter');await expect(page.locator('#routeDetails')).toHaveAttribute('aria-expanded','false');await expect(page.locator('#routeDetails')).toBeFocused();await expect(page.locator('#routeDetailsBody')).not.toBeVisible();
+  expect(await page.evaluate(()=>({horizon:cueLab.state.routeOptions.horizon,samePanel:document.getElementById('panelScroll')===inlineDetailsBaseline.panel,sameWorld:cueLab.lab===inlineDetailsBaseline.world,sameCanvas:document.getElementById('scene')===inlineDetailsBaseline.canvas}))).toEqual({horizon:30,samePanel:true,sameWorld:true,sameCanvas:true});
   await closeSidebar(page);await expect(page.locator('#scene')).toBeInViewport();
  }finally{await context.close();}
 });

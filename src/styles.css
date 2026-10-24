@@ -96,7 +96,7 @@
 .toolbox-tabs [role=tabpanel][hidden] { display: none !important; }
 .panel-scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scroll-padding-block: 16px; -webkit-overflow-scrolling: touch; }
 .tool-panel { display: flex; flex-direction: column; gap: 24px; min-width: 0; padding: 16px; }
-.forecast-status { font-size: 14px; overflow-wrap: anywhere; }
+.forecast-status { padding-inline: 16px; font-size: 14px; overflow-wrap: anywhere; }
 .toast-position { position: fixed; bottom: max(16px,env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 60; width: min(360px,calc(100vw - 32px)); pointer-events: none; }
 .viewport { position: relative; flex: 1; min-width: 0; min-height: 80px; overflow: hidden; isolation: isolate; background: #0b1421; }
 .viewport canvas { display: block; position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; user-select: none; }
@@ -193,7 +193,7 @@
 /* SidebarProvider owns the outer flex context; preserve mobile portal layout. */
 .app-shell { display: flex; flex-direction: row; min-height: 0; }
 .scene-inset { flex: 1; }
-.toolbox-nav { padding: 8px; }
+.toolbox-nav { padding: 8px 16px; }
 .notice-wrap { position: fixed; bottom: max(16px,env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 60; width: min(360px,calc(100vw - 32px)); pointer-events: none; }
 .sidebar-opener, .zoom-tools { display: flex; align-items: center; gap: 8px; }
 .sidebar-opener { font-size: 14px; }
@@ -202,7 +202,7 @@
 .workspace-header { padding-top: max(12px,env(safe-area-inset-top)); padding-left: max(16px,env(safe-area-inset-left)); padding-right: max(16px,env(safe-area-inset-right)); }
 .stage-region { padding-bottom: max(16px,env(safe-area-inset-bottom)); padding-left: max(16px,env(safe-area-inset-left)); padding-right: max(16px,env(safe-area-inset-right)); }
 [data-slot=sidebar][data-mobile=true] { width: min(22rem,calc(100vw - 16px)); }
-.toolbox-heading { padding-top: max(8px,env(safe-area-inset-top)); }
+.toolbox-heading { padding-inline: 16px; padding-top: max(8px,env(safe-area-inset-top)); }
 .panel-utility { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
 @media (max-width:639px) { .workspace-header .desktop-label { display: none; } }
 
@@ -211,12 +211,12 @@
 
 .route-option-help { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
 
-/* Detail drawer uses the official Sheet; only its inner content owns scrolling. */
-.route-details-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 16px 16px; display: flex; flex-direction: column; gap: 24px; }
+/* Inline details share the sidebar scrollport and the CardContent gutter. */
+.route-details-body { min-width: 0; display: flex; flex-direction: column; gap: 24px; }
 .route-details-body .route-settings { display: flex; flex-direction: column; gap: 16px; }
 .route-details-body h3 { font-size: 14px; font-weight: 600; }
 .route-details-body [data-slot=select-trigger] { width: 100%; min-width: 0; }
-.route-details-sheet { max-height: 100dvh; }
+.route-details-heading { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
 
 .gesture-cancel { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 3; }
 

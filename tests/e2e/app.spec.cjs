@@ -58,7 +58,8 @@ test('all settings work through actual Base UI controls',async({page})=>{
   const before=await page.evaluate(key=>cueLab.state[key],key);await page.getByRole('checkbox',{name:id,exact:true}).click();expect(await page.evaluate(key=>cueLab.state[key],key)).toBe(!before);await page.getByRole('checkbox',{name:id,exact:true}).click();
  }
  await tab(page,'수동').click();
- for(const id of ['pause','step','placement','posX','posZ','posY','height','addBall','addBox','remove']){await page.locator('#'+id).scrollIntoViewIfNeeded();await expect(page.locator('#'+id)).toBeVisible();}
+ await expect(page.locator('#pause,#step')).toHaveCount(0);
+ for(const id of ['placement','posX','posZ','posY','height','addBall','addBox','remove']){await page.locator('#'+id).scrollIntoViewIfNeeded();await expect(page.locator('#'+id)).toBeVisible();}
  await settleInput(page,'posX','-60');expect(await page.evaluate(()=>cueLab.lab.get(cueLab.state.selectedId).body.translation().x)).toBeCloseTo(-.6,4);
  await settleInput(page,'posY','10');expect(await page.evaluate(()=>cueLab.lab.get(cueLab.state.selectedId).body.translation().y)).toBeGreaterThan(.12);await page.locator('#putOnTable').click();
  const count=await page.evaluate(()=>cueLab.lab.objects.length);await page.locator('#addBall').click();expect(await page.evaluate(()=>cueLab.lab.objects.length)).toBe(count+1);await page.locator('#remove').click();await page.locator('#addBox').click();expect(await page.evaluate(()=>cueLab.lab.get(cueLab.state.selectedId).shape)).toBe('box');await page.locator('#remove').click();
@@ -67,6 +68,24 @@ test('all settings work through actual Base UI controls',async({page})=>{
   const before=await page.evaluate(key=>cueLab.lab.params[key],key);const group=page.locator('#p-'+key);await group.scrollIntoViewIfNeeded();await expect(group.locator('[data-slot=slider-thumb]')).toBeVisible();const track=await group.locator('[data-slot=slider-track]').boundingBox();expect(track.height).toBeGreaterThan(0);const slider=group.getByRole('slider');await slider.focus();await slider.press('ArrowRight');expect(await page.evaluate(key=>cueLab.lab.params[key],key)).not.toBe(before);
  }
  expect(errors).toEqual([]);
+});
+
+
+for(const viewport of [{width:320,height:568},{width:390,height:844},{width:1440,height:900}])test(`actual trails default off without disabling prediction at ${viewport.width}px`,async({page})=>{
+ await page.setViewportSize(viewport);
+ if(process.env.LOCAL_HTML)await page.setContent(fs.readFileSync(process.env.LOCAL_HTML,'utf8'));else await page.goto('./');
+ await page.waitForFunction(()=>globalThis.__LAB_READY__&&cueLab.state.ready);
+ // Do not use boot(): it deliberately turns prediction off for unrelated interaction tests.
+ expect(await page.evaluate(()=>({paths:cueLab.state.paths,predict:cueLab.state.predict,allPaths:cueLab.state.allPaths}))).toEqual({paths:false,predict:true,allPaths:false});
+ await openSidebar(page);await tab(page,'설정').click();
+ const trails=page.getByRole('checkbox',{name:'실제 이동 궤적',exact:true}),prediction=page.getByRole('checkbox',{name:'예상 궤적',exact:true});
+ await expect(trails).not.toBeChecked();await expect(prediction).toBeChecked();
+ await trails.check();expect(await page.evaluate(()=>({paths:cueLab.state.paths,predict:cueLab.state.predict}))).toEqual({paths:true,predict:true});
+ await tab(page,'수동').click();await expect(page.locator('#pause,#step')).toHaveCount(0);await tab(page,'경로 탐색').click();await tab(page,'설정').click();
+ await expect(trails).toBeChecked();await expect(prediction).toBeChecked();
+ await trails.uncheck();await tab(page,'경로 탐색').click();await tab(page,'설정').click();
+ await expect(trails).not.toBeChecked();await expect(prediction).toBeChecked();
+ expect(await page.evaluate(()=>({paths:cueLab.state.paths,predict:cueLab.state.predict,allPaths:cueLab.state.allPaths}))).toEqual({paths:false,predict:true,allPaths:false});
 });
 
 test('desktop and small-screen layout keeps table and one scrollable panel usable',async({page})=>{
