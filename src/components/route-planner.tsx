@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter, SheetClose } from '@/components/ui/sheet'
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion'
 import { SelectField, SwitchField } from '@/components/controls'
 import { Icon } from '@/icons'
 import { Popover, PopoverTrigger, PopoverContent, PopoverHeader, PopoverTitle, PopoverDescription } from '@/components/ui/popover'
@@ -16,6 +16,8 @@ const fmt=(v:number,n=2)=>Number(v||0).toFixed(n)
 type Method={id:string;label:string;short:string;description:string;rule:string}
 export function RoutePlanner({state:s,controller:c}:{state:any;controller:any}){
  const o=s.routeOptions,busy=s.routeStatus==='searching',result=s.routeResult,p=s.routeProgress
+ const [detailsOpen,setDetailsOpen]=React.useState(false)
+ const detailsTrigger=React.useRef<HTMLButtonElement>(null)
  const [shown,setShown]=React.useState(()=>result?resultPages.get(result)||6:6)
  React.useEffect(()=>{if(result)resultPages.set(result,shown)},[result,shown])
  React.useEffect(()=>{if(busy)setShown(6)},[busy])
@@ -41,9 +43,11 @@ export function RoutePlanner({state:s,controller:c}:{state:any;controller:any}){
     {busy?<Button id="cancelRoute" variant="outline" onClick={()=>c.stopSearch()}>중단 · 찾은 경로 유지</Button>:<Button id="findRoute" disabled={!canSearch} onClick={()=>c.startSearch()}><Icon name="crosshair" data-icon="inline-start"/>{result?'다시 계산':'경로 계산'}</Button>}
     <span className="helper">{invalidRange?'최소값은 최대값보다 클 수 없습니다.':invalid?'서로 다른 목적구와 방법을 선택하세요.':!s.canAim&&!busy?'공이 멈춘 뒤 계산합니다.':o.mode==='direct'?'쿠션 없이 두 공 맞히기':o.mode==='carom'?(o.fourBallThreeCushion?'두 적구와 3쿠션 조건으로 탐색':'쿠션 수 제한 없이 두 공 맞히기'):o.methods.length===1&&o.methods[0]==='any'?'모든 3쿠션 경로를 계산 예산 안에서 탐색':`${ids.length}가지 방법 탐색`}</span>
    </div>
-   <Sheet><SheetTrigger render={<Button id="routeDetails" variant="outline"/>}>상세보기</SheetTrigger><SheetContent side="right" className="route-details-sheet" showCloseButton={false}>
-    <SheetHeader><SheetTitle>경로 상세 설정</SheetTitle><SheetDescription>기본 프리셋의 조건을 세부 조정합니다. 변경값은 닫아도 유지됩니다.</SheetDescription></SheetHeader>
-    <div className="route-details-body" id="routeDetailsScroll">
+   <Accordion value={detailsOpen?["details"]:[]} onValueChange={value=>setDetailsOpen(value.includes("details"))}><AccordionItem value="details">
+    <AccordionTrigger id="routeDetails" ref={detailsTrigger}>상세보기</AccordionTrigger>
+    <AccordionContent>
+    <div className="route-details-heading"><h3>경로 상세 설정</h3><p className="helper">기본 프리셋의 조건을 세부 조정합니다. 변경값은 접어도 유지됩니다.</p></div>
+    <div className="route-details-body" id="routeDetailsBody">
    {s.gameMode==='four'?<div><SwitchField id="fourBallThreeCushion" checked={!!o.fourBallThreeCushion} onChange={v=>c.routeOption('fourBallThreeCushion',v)} label="3쿠션 조건 추가"/><p className="helper">서로 다른 두 번째 적구를 처음 맞히기 전에 수구가 쿠션에 3회 이상 닿아야 합니다. 두 적구 명중 후의 쿠션은 소급 인정하지 않습니다.</p></div>:null}
    <FieldGroup>
     <div className="route-form">
@@ -76,8 +80,8 @@ export function RoutePlanner({state:s,controller:c}:{state:any;controller:any}){
    {result?.firstSuccessCost?<p className="helper">첫 성공: {result.firstSuccessCost.tested}번째 후보 · {fmt(result.firstSuccessCost.elapsedMs/1000,1)}초{result.firstSuccessCost.scope==='worker-local'?' (가장 먼저 찾은 워커 내부 기준)':''}</p>:null}
 
 <p className="helper">접점과 쿠션 반사 수식으로 후보를 만들고 같은 물리엔진으로 검증합니다. 3쿠션 자유 경로는 첫 공 전·후의 쿠션 조합을 제한하지 않고, 계산 예산 안에서 경로 깊이를 점진적으로 늘립니다. 비선형 운동은 반복 수치보정과 실제 물리 검증을 사용하므로 단일식의 정확한 해가 아닙니다. 계산 예산 안의 유한 탐색이며 모든 해를 빠짐없이 찾는 것은 아닙니다. 찾은 후보 중 최선이며, 전역 최적해·실물 명중 보장은 아닙니다.</p>
-    </div><SheetFooter><SheetClose render={<Button id="closeRouteDetails" variant="outline"/>}>닫기</SheetClose></SheetFooter>
-   </SheetContent></Sheet>
+    <Button id="closeRouteDetails" variant="outline" onClick={()=>{setDetailsOpen(false);detailsTrigger.current?.focus()}}>상세 설정 접기</Button></div>
+    </AccordionContent></AccordionItem></Accordion>
    {s.obstruction&&o.elevationMode!=='search'?<Alert><AlertTitle>현재 큐 자세가 장애물과 겹칩니다.</AlertTitle><AlertDescription>큐 들림을 고정하면 이 각도만 계산합니다. 들림도 함께 탐색하면 설정한 범위에서 큐가 겹치지 않는 자세를 찾고 실제 스트로크까지 검사합니다.</AlertDescription><Button variant="outline" onClick={()=>c.routeOption('elevationMode','search')}>큐 들림도 함께 탐색</Button></Alert>:null}
    {busy&&p?<div className="route-progress" role="status">
     <div className="progress-heading"><strong>{p.found?`물리 검증 통과 ${p.found}회 · 중복 포함`:'물리 월드에서 계산 중'}</strong><span>{fmt(value,0)}%</span></div>
