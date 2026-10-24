@@ -138,8 +138,17 @@ test('touch navigation, fine aim and pinch cancellation work without firing',asy
 test('three-cushion search yields a real candidate, applies and preserves it across tabs',async({page})=>{
  const errors=await boot(page);await tab(page,'경로 탐색').click();expect(await page.evaluate(()=>cueLab.state.routeOptions.mode)).toBe('three');
  await page.locator('#findRoute').click();
- await page.waitForFunction(()=>cueLab.state.routeResult?.results.length>0||cueLab.state.routeStatus==='error',{},{timeout:150000});
- expect(await page.evaluate(()=>cueLab.state.routeStatus)).not.toBe('error');
+ const deadline=Date.now()+150000;
+ for(;;){
+  const remaining=deadline-Date.now();expect(remaining,'Real three-cushion route must verify within the total observation window').toBeGreaterThan(0);
+  await page.waitForFunction(()=>cueLab.state.routeResult?.results.length>0||['done','error'].includes(cueLab.state.routeStatus),null,{timeout:remaining});
+  const state=await page.evaluate(()=>({status:cueLab.state.routeStatus,count:cueLab.state.routeResult?.results.length||0,continuable:cueLab.state.routeResult?.continuable}));
+  expect(state.status).not.toBe('error');if(state.count)break;
+  expect(state.continuable).toBe(true);await page.locator('#resumeSearch').click();
+  await expect.poll(()=>page.evaluate(()=>cueLab.state.routeStatus)).toBe('searching');
+ }
+ if(await page.evaluate(()=>cueLab.state.routeStatus==='searching'))await page.locator('#cancelRoute').click();
+ await expect.poll(()=>page.evaluate(()=>cueLab.state.routeStatus)).toBe('done');
  await page.locator('.route-result button').first().click();
  expect(await page.evaluate(()=>cueLab.lab.shots)).toBe(0);const setting=await page.evaluate(()=>({...cueLab.state.settings}));
  await tab(page,'설정').click();await tab(page,'수동').click();expect(await page.evaluate(()=>({...cueLab.state.settings}))).toEqual(setting);

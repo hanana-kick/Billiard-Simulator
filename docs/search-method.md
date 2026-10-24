@@ -1,6 +1,10 @@
-# Shot search model and limits
+# Historical sampled search model and limits
 
-The default hybrid solver preserves geometric/adaptive proposal allocation, bounded physical validation, and numerical correction. An explicitly selected analytical-input mode additionally combines restricted ideal closed-form input estimates with labelled fallback. It is not one exact closed-form solution of the full physical model or a global optimum proof.
+This document describes the historical comparison implementation, not the current
+application default. See [contact-constrained inverse solver](inverse-constraint-solver.md)
+for the replacement planner. No automatic fallback to this sampler is used.
+
+The historical hybrid solver preserves geometric/adaptive proposal allocation, bounded physical validation, and numerical correction. An explicitly selected analytical-input mode additionally combines restricted ideal closed-form input estimates with labelled fallback. It is not one exact closed-form solution of the full physical model or a global optimum proof.
 
 1. Reflect goal positions across cushion lines to propose possible rail sequences.
 2. Solve ideal contact-circle geometry directly, then calculate eligible ideal cue speed and backspin inputs. Restitution-root and tangent iterations remain approximate fallback.

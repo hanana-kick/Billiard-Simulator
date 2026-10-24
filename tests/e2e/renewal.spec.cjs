@@ -149,7 +149,7 @@ for(const [width,height]of viewports)test(`coarse-pointer ${width}x${height}: ev
    if(panel==='routesPanel'){
     const dialogCount=await page.getByRole('dialog').count();
     await page.locator('#routeDetails').click();await inlineDetails(page,dialogCount);await horizontalGutters(page,panel);
-    for(const selector of ['#routeTarget','#routeOrder','#routeInputStrategy','#routemaxSpeed'])await reachable(page,selector);
+    for(const selector of ['#routeTarget','#routeOrder','#routeDepth','#routemaxSpeed'])await reachable(page,selector);
     await expect(page.locator('#routeWorkers,#routeObjective')).toHaveCount(0);await page.locator('#closeRouteDetails').click();await expect(page.locator('#routeDetails')).toBeFocused();
    }
    if(panel==='settingsPanel'){
@@ -295,11 +295,11 @@ for(const viewport of [{width:320,height:568},{width:390,height:844},{width:844,
   await page.evaluate(()=>{globalThis.inlineDetailsBaseline={panel:document.getElementById('panelScroll'),world:cueLab.lab,canvas:document.getElementById('scene')};});
   await page.locator('#routeDetails').click();await inlineDetails(page,dialogCount);await horizontalGutters(page,'routesPanel');
   expect(await page.locator('#panelScroll').evaluate(el=>el.scrollHeight)).toBeGreaterThan(collapsedHeight);
-  for(const selector of ['#routeTarget','#routeOrder','#routeHorizon','#routeInputStrategy','#routemaxSpeed'])await reachable(page,selector);
+  for(const selector of ['#routeTarget','#routeOrder','#routeHorizon','#routeDepth','#routemaxSpeed'])await reachable(page,selector);
   await page.locator('#routeHorizon').click();await page.getByRole('option',{name:'30초',exact:true}).click();await page.locator('#closeRouteDetails').click();await expect(page.locator('#routeDetails')).toBeFocused();await expect(page.locator('#tab-routes')).toBeInViewport();
   await expect(page.locator('#routeDetails')).toHaveAttribute('aria-expanded','false');await expect(page.locator('#routeDetailsBody')).not.toBeVisible();
   await page.locator('#routeDetails').click();await expect(page.locator('#routeHorizon')).toContainText('30초');await inlineDetails(page,dialogCount);
-  const info=page.getByRole('button',{name:'입력 계산 방식 설명',exact:true});await info.scrollIntoViewIfNeeded();await info.click();await expect(page.locator('[data-slot=popover-content]')).toBeVisible();
+  const info=page.getByRole('button',{name:'키스 허용 설명',exact:true});await info.scrollIntoViewIfNeeded();await info.click();await expect(page.locator('[data-slot=popover-content]')).toBeVisible();
   await page.keyboard.press('Escape');await expect(page.locator('[data-slot=popover-content]')).not.toBeVisible();await expect(info).toBeFocused();await expect(page.locator('#routeDetails')).toHaveAttribute('aria-expanded','true');await expect(page.locator('#sidebarTrigger')).toHaveAttribute('aria-expanded','true');
   // Inline disclosure follows its trigger's keyboard interaction, not modal Escape semantics.
   await page.locator('#routeDetails').scrollIntoViewIfNeeded();await page.locator('#routeDetails').focus();await page.locator('#routeDetails').press('Enter');await expect(page.locator('#routeDetails')).toHaveAttribute('aria-expanded','false');await expect(page.locator('#routeDetails')).toBeFocused();await expect(page.locator('#routeDetailsBody')).not.toBeVisible();
