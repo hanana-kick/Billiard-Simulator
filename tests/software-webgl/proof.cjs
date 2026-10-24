@@ -24,7 +24,32 @@ const evidence = {commit: process.env.GITHUB_SHA || null, timestamp: new Date().
   launch: {executablePath, chromiumSandbox: true, ignoreDefaultArgs: true, args},
   contexts: [], application: [], passed: false};
 const save = () => fs.writeFileSync(path.join(out, 'proof.json'), JSON.stringify(evidence, null, 2) + '\n');
-let browser, server;
+let browser, launcher, server, serverLog;
+async function bounded(promise, milliseconds, label) {
+  let timer;
+  try { return await Promise.race([promise, new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(`${label} exceeded ${milliseconds} ms`)),milliseconds);})]); }
+  finally { clearTimeout(timer); }
+}
+async function cleanup() {
+  evidence.cleanup={startedAt:new Date().toISOString(),resourcesBefore:process.getActiveResourcesInfo(),serverPid:server?.pid,browserPid:launcher?.process().pid,forced:[]};save();
+  console.log('SOFTWARE_WEBGL_CLEANUP_START '+JSON.stringify(evidence.cleanup));
+  // All page contexts have already been closed. Close the client connection,
+  // then the specifically owned Playwright browser server, never any shared browser.
+  try { if(browser) await bounded(browser.close(),10000,'browser connection close'); }
+  catch(error){evidence.cleanup.clientCloseError=error.message;}
+  if(launcher){
+    try { await bounded(launcher.close(),10000,'owned Chrome close'); }
+    catch(error){evidence.cleanup.forced.push('owned Chrome process');await bounded(launcher.kill(),5000,'owned Chrome kill');}
+  }
+  if(server&&server.exitCode===null&&server.signalCode===null){
+    const stopped=new Promise(resolve=>server.once('exit',resolve));server.kill('SIGTERM');
+    try { await bounded(stopped,5000,'owned HTTP server close'); }
+    catch(error){evidence.cleanup.forced.push('owned HTTP server process');server.kill('SIGKILL');await bounded(stopped,3000,'owned HTTP server kill');}
+  }
+  if(serverLog!==undefined)fs.closeSync(serverLog);
+  evidence.cleanup.finishedAt=new Date().toISOString();evidence.cleanup.resourcesAfter=process.getActiveResourcesInfo();save();
+  console.log('SOFTWARE_WEBGL_CLEANUP_DONE '+JSON.stringify(evidence.cleanup));
+}
 
 function probeContext({api, offscreen}) {
   const canvas = offscreen ? new OffscreenCanvas(64, 64) : document.createElement('canvas');
@@ -148,11 +173,12 @@ async function appCase(viewport){
 (async()=>{
   try{
     evidence.chromeVersion=execFileSync(executablePath,['--version'],{encoding:'utf8'}).trim();save();
-    const serverLog=fs.openSync(path.join(out,'server.log'),'w');
+    serverLog=fs.openSync(path.join(out,'server.log'),'w');
     server=spawn(process.execPath,['server.cjs'],{cwd:root,env:{...process.env,HOST:'127.0.0.1',PORT:'8787'},stdio:['ignore',serverLog,serverLog]});
     const deadline=Date.now()+15000;
     while(true){try{const response=await fetch('http://127.0.0.1:8787/');if(response.ok)break;}catch{}if(Date.now()>deadline)throw Error('App server did not become ready');await new Promise(r=>setTimeout(r,100));}
-    browser=await chromium.launch({executablePath,headless:true,chromiumSandbox:true,ignoreDefaultArgs:true,args});
+    launcher=await chromium.launchServer({host:'127.0.0.1',executablePath,headless:true,chromiumSandbox:true,ignoreDefaultArgs:true,args});
+    browser=await chromium.connect(launcher.wsEndpoint());
     evidence.processCommandLines=execFileSync('ps',['-eo','args'],{encoding:'utf8'}).split('\n').filter(line=>line.includes(profile));save();
     assert(evidence.processCommandLines.length>0,'Record actual Chrome process command line');
     assert(!evidence.processCommandLines.some(line=>/--no-sandbox|--disable-gpu-sandbox|--enable-unsafe-swiftshader|--disable-web-security/.test(line)),'No security-relaxing switches in launched browser');
@@ -164,5 +190,5 @@ async function appCase(viewport){
     for(const viewport of [{width:1280,height:800},{width:390,height:844}])await appCase(viewport);
     evidence.passed=true;console.log('SOFTWARE_WEBGL_PROOF_PASSED');
   }catch(error){evidence.error={message:error.message,stack:error.stack};console.error(error);process.exitCode=1;}
-  finally{save();await browser?.close();server?.kill('SIGTERM');}
+  finally{save();try{await cleanup();}catch(error){evidence.cleanupError=error.message;evidence.passed=false;save();console.error(error);process.exitCode=1;}}
 })();

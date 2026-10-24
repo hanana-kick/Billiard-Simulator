@@ -10,7 +10,7 @@ permissions:
   contents: read
 concurrency:
   group: software-webgl-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   software-webgl:
     if: github.ref == 'refs/heads/test/software-webgl-20261024'
@@ -27,6 +27,7 @@ jobs:
       - name: Independent frame-cap unit regression
         run: node --test tests/frame-cap.cjs tests/controller-render-cap.cjs
       - name: Actual sandboxed software WebGL and application proof
+        timeout-minutes: 4
         env:
           BROWSER_EXECUTABLE: /opt/google/chrome/chrome
         run: node tests/software-webgl/proof.cjs
