@@ -8,7 +8,7 @@ class LabController{
   this.state={settings:{angle:0,elevation:8,tipX:0,tipY:0,speed:2},selectedId:1,paused:true,rate:1,paths:true,allPaths:false,showCue:true,debug:false,vectors:false,mode:'cue',view:'3d',activePanel:'routes',fineAim:false,predict:true,horizon:8,forecast:null,forecastStatus:'물리엔진 준비 중',predictionBusy:false,obstruction:null,cuePull:0,gesture:'',notice:'',ready:false,engineError:null,previewCueVisible:false,canAim:false};
   this.state.gameMode='free';this.state.game=null;
   this.state.routeOptions={inputStrategy:'hybrid',mode:'three',targetId:2,secondId:3,budget:48,horizon:16,spin:true,objective:'shortest',order:'either',methods:['any'],allowKiss:true,elevationMode:'search',minElevation:0,maxElevation:85,fourBallThreeCushion:false,minSpeed:.5,maxSpeed:4.5,workers:0};this.state.routeStatus='idle';this.state.routeProgress=null;this.state.routeResult=null;this.state.routeError='';this.state.routeApplied=null;
-  this.undoStack=[];this.redoStack=[];this.inputMetrics={events:0,lastHandlerMs:0,maxHandlerMs:0,lastInputToFrameMs:0,maxInputToFrameMs:0};this.renderCadence=new G.RenderCadence();this.renderMetrics={frames:0,cap:60};this.raf=null;this.disposed=false;this.listeners=new Set();this.lastSnapshot={...this.state,objects:[],events:[],time:0,shots:0,undo:false,params:{...G.LabDefaults}};this.dirty=true;this.accumulator=0;this.requestKey=null;this.token=0;this.gestures=new Map();this.cameraDrags=0;
+  this.undoStack=[];this.redoStack=[];this.inputMetrics={events:0,presented:0,lastBoundary:null,lastHandlerMs:0,maxHandlerMs:0,lastDispatchMs:0,maxDispatchMs:0,lastInputToFrameMs:0,maxInputToFrameMs:0,lastInputToCanvasMs:0,maxInputToCanvasMs:0,samples:[]};this.inputSequence=0;this.measuredInputSequence=0;this.pendingInput=null;this.renderCadence=new G.RenderCadence();this.renderMetrics={frames:0,presentations:0,cap:60};this.raf=null;this.disposed=false;this.listeners=new Set();this.lastSnapshot={...this.state,objects:[],events:[],time:0,shots:0,undo:false,params:{...G.LabDefaults}};this.dirty=true;this.accumulator=0;this.requestKey=null;this.token=0;this.gestures=new Map();this.cameraDrags=0;
  }
  subscribe=(fn)=>{this.listeners.add(fn);return()=>this.listeners.delete(fn)};
  snapshot=()=>this.lastSnapshot;
@@ -28,7 +28,7 @@ class LabController{
    try{try{this.renderer=await G.WorkerRenderer.create(canvas);}catch{this.renderer=new G.LabRenderer(canvas);}}catch(error){const fresh=canvas.cloneNode(false);canvas.replaceWith(fresh);this.canvas=canvas=fresh;this.renderer=new G.SoftwareRenderer(canvas);this.renderer.fallbackReason=String(error.message||error);}
    this.predictor=new G.PredictionService((result,meta)=>{if(!this.state.paused||!this.state.predict||this.windup)return;this.state.forecast=G.LabMath.forecastGeometry(result);this.state.predictionBusy=false;this.state.forecastStatus=`${result.seconds.toFixed(1)}초 · ${result.events.length}회 접촉${result.rested?' · 정지까지':''}`;this.forecastMeta=meta;this.notify()},error=>{this.state.predictionBusy=false;this.state.forecastStatus='예측 실패: '+error;this.notify()});
    this.optimizer=new G.OptimizerService(progress=>{this.state.routeProgress=progress;if(progress.partialResult)this.state.routeResult=progress.partialResult;this.notify(false)},result=>{this.state.routeStatus='done';this.state.routeResult=result;this.state.routeProgress=result;this.notify();this.queuePrediction()},error=>{this.state.routeStatus='error';this.state.routeError=error;this.notify();this.queuePrediction()});
-   this.bindPointers();this.resizeObserver=new ResizeObserver(()=>{this.dirty=true;this.updateHandles()});this.resizeObserver.observe(canvas.parentElement);
+   this.bindPointers();this.resizeViewport();this.resizeObserver=new ResizeObserver(()=>this.resizeViewport());this.resizeObserver.observe(canvas.parentElement);
    if(typeof matchMedia==='function'&&matchMedia('(max-width: 900px)').matches){this.renderer.setView('top');this.state.view='top';}
    if(this.renderer.workerMode)this.renderer.onInvalidate=()=>{this.dirty=true;};this.state.ready=true;this.notify();this.queuePrediction();this.last=0;this.scheduleFrame();
    G.cueLab=this;G.__LAB_READY__=true;
@@ -124,25 +124,55 @@ class LabController{
   return{pose,aim:at(1.04),grip:at(.39),rear:at(D.cueLength),front:at(.12)};
  }
  updateHandles(){this.renderer?.size();}
+ resizeViewport(){
+  const rect=this.canvas.getBoundingClientRect(),previous=this.viewportBounds;
+  this.viewportBounds={width:rect.width,height:rect.height};
+  // Folding, rotation and sidebar transitions change the pointer projection.
+  // Cancel the live gesture, not the world, settings, camera or history.
+  if(previous&&(previous.width!==rect.width||previous.height!==rect.height))this.interruptPointers();
+  this.dirty=true;this.updateHandles();
+ }
+ interruptPointers(){this.gestures.clear();this.pinch=null;this.suppressTouch=false;this.cancelGesture();this.discardPendingInput();}
+ beginInput(e){
+  const now=performance.now();let timestamp=Number(e?.timeStamp);
+  if(timestamp>now&&Number.isFinite(performance.timeOrigin))timestamp-=performance.timeOrigin;
+  if(!Number.isFinite(timestamp)||timestamp<0||timestamp>now)timestamp=now;
+  const input={id:++this.inputSequence,at:timestamp,handlerAt:now,kind:e?.type||'pointer',gateSkips:0};this.pendingInput=input;
+  const m=this.inputMetrics;m.events++;m.lastDispatchMs=now-timestamp;m.maxDispatchMs=Math.max(m.maxDispatchMs,m.lastDispatchMs);return input;
+ }
+ finishInput(input){const m=this.inputMetrics;input.handlerEndedAt=performance.now();m.lastHandlerMs=input.handlerEndedAt-input.handlerAt;m.maxHandlerMs=Math.max(m.maxHandlerMs,m.lastHandlerMs);}
+ discardPendingInput(){this.measuredInputSequence=this.inputSequence;this.pendingInput=null;}
+ recordInputPresentation(input,boundary,trace={}){
+  if(!input||input.id<=this.measuredInputSequence)return;
+  this.measuredInputSequence=input.id;if(this.pendingInput?.id===input.id)this.pendingInput=null;
+  const m=this.inputMetrics,canvasCompletedAt=trace.bitmapDrawCompletedAt??trace.renderCompletedAt??performance.now(),latency=Math.max(0,canvasCompletedAt-input.at);m.presented++;m.lastBoundary=boundary;m.lastInputToCanvasMs=latency;m.maxInputToCanvasMs=Math.max(m.maxInputToCanvasMs,latency);
+  // Legacy aliases now end at the matching canvas rendering call, not a
+  // worker request. Main-thread WebGL still excludes asynchronous GPU work;
+  // no mode measures compositor/display scanout or physical device latency.
+  m.lastInputToFrameMs=latency;m.maxInputToFrameMs=m.maxInputToCanvasMs;
+  const sample={id:input.id,kind:input.kind,boundary,eventAt:input.at,handlerStartedAt:input.handlerAt,handlerEndedAt:input.handlerEndedAt??input.handlerAt,gateSkips:input.gateSkips,...trace,canvasCompletedAt};
+  sample.dispatchMs=sample.handlerStartedAt-sample.eventAt;sample.handlerMs=sample.handlerEndedAt-sample.handlerStartedAt;sample.handlerToRenderMs=sample.renderStartedAt-sample.handlerEndedAt;sample.inputToCanvasMs=sample.canvasCompletedAt-sample.eventAt;
+  m.samples.push(sample);if(m.samples.length>60)m.samples.shift();
+ }
  hitCue(pt){const points=this.cuePoints();if(!points)return null;const a=this.renderer.project(points.front),b=this.renderer.project(points.rear),dx=b.x-a.x,dy=b.y-a.y,den=dx*dx+dy*dy,t=clamp(((pt.x-a.x)*dx+(pt.y-a.y)*dy)/(den||1),0,1),distance=Math.hypot(pt.x-(a.x+t*dx),pt.y-(a.y+t*dy));if(distance>=15)return null;
   return 'aim';}
  beginCue(type,e){
   if(!this.lab||this.lab.cue||this.windup||this.lab.anyMotion()||this.pinch||this.suppressTouch)return;e.preventDefault();e.stopPropagation();this.pause(true);
   const pt=this.point(e),points=this.cuePoints();if(!points)return;const center=this.lab.get(this.state.selectedId).body.translation();
   const hit=this.renderer.planePoint(pt.x,pt.y,center.y),baseAngle=hit?Math.atan2(center.z-hit.z,center.x-hit.x)*180/Math.PI:this.state.settings.angle;
-  this.drag={type:e.shiftKey?'elevation':'aim',pointer:e.pointerId,x:e.clientX,y:e.clientY,initialAngle:this.state.settings.angle,angleOffset:normalizeAngle(this.state.settings.angle-baseAngle),elevation:this.state.settings.elevation,speed:this.state.settings.speed,moved:false};
+  this.drag={type:e.shiftKey?'elevation':'aim',pointer:e.pointerId,x:e.clientX,y:e.clientY,initialAngle:this.state.settings.angle,settingsBefore:{...this.state.settings},redoBefore:this.redoStack.slice(),angleOffset:normalizeAngle(this.state.settings.angle-baseAngle),elevation:this.state.settings.elevation,speed:this.state.settings.speed,moved:false};
   this.invalidate();this.state.gesture=this.drag.type==='elevation'?'큐 뒤쪽을 들어 올리는 중':'큐를 잡고 조준 중';
   e.currentTarget.setPointerCapture?.(e.pointerId);this.canvas.style.cursor='grabbing';this.notify();
  }
  pointerMove(e){
   if(e.pointerType==='touch'&&this.gestures.has(e.pointerId))this.gestures.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(this.pinch){
-   e.preventDefault();const points=[...this.gestures.values()];
-   if(points.length>=2){const distance=Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y);this.renderer.camera.zoom=clamp(this.pinch.zoom*this.pinch.distance/Math.max(20,distance),.6,2.5);this.dirty=true;this.updateHandles();}return;
+   e.preventDefault();const input=this.beginInput(e),points=[...this.gestures.values()];
+   if(points.length>=2){const distance=Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y);this.renderer.camera.zoom=clamp(this.pinch.zoom*this.pinch.distance/Math.max(20,distance),.6,2.5);this.dirty=true;this.updateHandles();}this.finishInput(input);return;
   }
   if(this.suppressTouch&&e.pointerType==='touch')return;
-  const d=this.drag;if(!d||e.pointerId!==d.pointer)return;e.preventDefault();const started=performance.now();this.lastInputAt=started;this.inputMetrics.events++;const dx=e.clientX-d.x,dy=e.clientY-d.y;if(Math.hypot(dx,dy)>3)d.moved=true;
-  if(d.type==='orbit'){this.renderer.camera.yaw-=dx*.006;this.renderer.camera.pitch=clamp(this.renderer.camera.pitch+dy*.006,.14,Math.PI/2-.001);d.x=e.clientX;d.y=e.clientY;this.state.view='';this.dirty=true;this.updateHandles();this.inputMetrics.lastHandlerMs=performance.now()-started;this.inputMetrics.maxHandlerMs=Math.max(this.inputMetrics.maxHandlerMs,this.inputMetrics.lastHandlerMs);return;}
+  const d=this.drag;if(!d||e.pointerId!==d.pointer)return;e.preventDefault();const input=this.beginInput(e);const dx=e.clientX-d.x,dy=e.clientY-d.y;if(Math.hypot(dx,dy)>3)d.moved=true;
+  if(d.type==='orbit'){this.renderer.camera.yaw-=dx*.006;this.renderer.camera.pitch=clamp(this.renderer.camera.pitch+dy*.006,.14,Math.PI/2-.001);d.x=e.clientX;d.y=e.clientY;this.state.view='';this.dirty=true;this.updateHandles();this.finishInput(input);return;}
   if(d.type==='fine-aim'){this.changeSettings({angle:normalizeAngle(d.initialAngle+dx*(this.state.fineAim?.01:.15))},{interactive:true});}
   else if(d.type==='forward-aim'){
    const pt=this.point(e),o=this.lab.get(this.state.selectedId),p=o.body.translation(),q=this.renderer.planePoint(pt.x,pt.y,p.y);
@@ -152,15 +182,15 @@ class LabController{
    const pt=this.point(e),o=this.lab.get(this.state.selectedId),c=o.body.translation(),q=this.renderer.planePoint(pt.x,pt.y,c.y);if(q&&Math.hypot(q.x-c.x,q.z-c.z)>.04)this.changeSettings({angle:normalizeAngle(d.initialAngle+normalizeAngle(Math.atan2(c.z-q.z,c.x-q.x)*180/Math.PI+d.angleOffset-d.initialAngle)*((e.altKey||this.state.fineAim)?.05:1))},{interactive:true});
   }else if(d.type==='elevation')this.changeSettings({elevation:clamp(d.elevation-dy*.36*((e.altKey||this.state.fineAim)?.05:1),0,85)},{interactive:true});
   else if(d.type==='ball'){
-   if(!d.moved)return;const pt=this.point(e),q=this.renderer.planePoint(pt.x,pt.y,d.height);if(q&&this.move(d.id,add(q,d.offset),{interactive:true}))d.changed=true;
+   if(!d.moved){this.finishInput(input);return;}const pt=this.point(e),q=this.renderer.planePoint(pt.x,pt.y,d.height);if(q&&this.move(d.id,add(q,d.offset),{interactive:true}))d.changed=true;
   }
-  this.inputMetrics.lastHandlerMs=performance.now()-started;this.inputMetrics.maxHandlerMs=Math.max(this.inputMetrics.maxHandlerMs,this.inputMetrics.lastHandlerMs);
+  this.finishInput(input);
  }
  endGesture(e,canceled=false){
   const d=this.drag;if(!d||e&&e.pointerId!==undefined&&e.pointerId!==d.pointer)return;
   this.drag=null;this.canvas.style.cursor='default';this.state.gesture='';
-  if(d.type==='table-tap'&&!d.moved&&!canceled){this.lastInputAt=performance.now();this.changeSettings({angle:d.angle},{interactive:true});}
-  if(d.type==='forward-aim'&&canceled)this.changeSettings({angle:d.initialAngle},{interactive:true});
+  if(d.type==='table-tap'&&!d.moved&&!canceled){const input=this.beginInput(e);this.changeSettings({angle:d.angle},{interactive:true});this.finishInput(input);}
+  if(canceled){this.discardPendingInput();if(d.settingsBefore){Object.assign(this.state.settings,d.settingsBefore);this.redoStack=d.redoBefore;this.inputPending=false;}else if(d.type==='forward-aim')this.state.settings.angle=d.initialAngle;}
   if(d.type==='ball'&&d.changed){if(canceled)this.restoreHistory(d.before);else this.commitHistory(d.before);}
   this.queuePrediction();
   this.notify();
@@ -168,7 +198,7 @@ class LabController{
  cancelGesture(){this.endGesture(null,true);if(this.windup){this.windup=null;this.state.cuePull=0;this.state.gesture='';this.notify();}}
  beginAimPad(e){
   if(!this.state.canAim||this.state.routeStatus==='searching')return;e.preventDefault();this.pause(true);
-  this.drag={type:'fine-aim',pointer:e.pointerId,x:e.clientX,y:e.clientY,initialAngle:this.state.settings.angle,moved:false};
+  this.drag={type:'fine-aim',pointer:e.pointerId,x:e.clientX,y:e.clientY,initialAngle:this.state.settings.angle,settingsBefore:{...this.state.settings},redoBefore:this.redoStack.slice(),moved:false};
   this.state.gesture=this.state.fineAim?'미세 조준: 1px = 0.01°':'좌우로 밀어서 조준';e.currentTarget.setPointerCapture?.(e.pointerId);this.notify();
  }
  touchStart(e){
@@ -200,7 +230,7 @@ class LabController{
    }
    if(this.state.canAim&&this.state.routeStatus!=='searching'&&this.hitAimLine(pt,e.pointerType)){
     const p=this.lab.get(this.state.selectedId).body.translation(),q=this.renderer.planePoint(pt.x,pt.y,p.y);if(!q)return;
-    this.drag={type:'forward-aim',pointer:e.pointerId,x:e.clientX,y:e.clientY,initialAngle:this.state.settings.angle,anchorAngle:Math.atan2(q.z-p.z,q.x-p.x)*180/Math.PI,moved:false};
+    this.drag={type:'forward-aim',pointer:e.pointerId,x:e.clientX,y:e.clientY,initialAngle:this.state.settings.angle,settingsBefore:{...this.state.settings},redoBefore:this.redoStack.slice(),anchorAngle:Math.atan2(q.z-p.z,q.x-p.x)*180/Math.PI,moved:false};
     this.invalidate();this.state.gesture='조준선을 드래그해 방향 조절';this.canvas.style.cursor='grabbing';this.notify(false);return;
    }
    const type=this.hitCue(pt);if(type){this.beginCue(type,e);return;}
@@ -224,7 +254,7 @@ class LabController{
   this.keyListener=e=>{if(e.key==='Escape'){this.cancelGesture();return;}if(/INPUT|SELECT|TEXTAREA|BUTTON/.test(e.target.tagName)||e.target.closest('dialog,[role=dialog],[role=menu],[role=slider],[role=combobox],[role=listbox],[role=tablist]'))return;if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?this.redo():this.undo();return;}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y'){e.preventDefault();this.redo();return;}if(e.code==='Space'){e.preventDefault();this.fire()}else if(e.key.toLowerCase()==='p')this.pause(!this.state.paused)};
   window.addEventListener('keydown',this.keyListener);
   this.lostCaptureListener=e=>this.touchEnd(e,true);window.addEventListener('lostpointercapture',this.lostCaptureListener);
-  this.blurListener=()=>{this.gestures.clear();this.pinch=null;this.suppressTouch=false;this.cancelGesture();};window.addEventListener('blur',this.blurListener);this.visibilityListener=()=>{if(document.hidden){this.blurListener();this.renderCadence.suspend();this.renderer?.setHidden?.(true);if(this.raf!==null)cancelAnimationFrame(this.raf);this.raf=null;}else{this.renderCadence.resume();this.renderer?.setHidden?.(false);this.last=0;this.accumulator=0;this.dirty=true;this.scheduleFrame();}};document.addEventListener('visibilitychange',this.visibilityListener);
+  this.blurListener=()=>this.interruptPointers();window.addEventListener('blur',this.blurListener);this.visibilityListener=()=>{if(document.hidden){this.blurListener();this.renderCadence.suspend();this.renderer?.setHidden?.(true);if(this.raf!==null)cancelAnimationFrame(this.raf);this.raf=null;}else{this.renderCadence.resume();this.renderer?.setHidden?.(false);this.last=0;this.accumulator=0;this.dirty=true;this.scheduleFrame();}};document.addEventListener('visibilitychange',this.visibilityListener);
  }
  sideDrag(e){
   if(this.lab?.cue||this.windup)return;e.preventDefault();this.pause(true);const r=e.currentTarget.getBoundingClientRect();
@@ -245,14 +275,14 @@ class LabController{
  renderedFrames(){return this.renderer?.fallback?(this.renderer.metrics.frames||0)+(this.renderer.fallback.completedFrames||0):this.renderer?.workerMode?this.renderer.metrics.frames:(this.renderer?.completedFrames||0);}
  scheduleFrame(){if(this.disposed||this.raf!==null||document.hidden)return;this.raf=requestAnimationFrame(t=>{this.raf=null;this.frame(t);});}
  frame(t){
-  if(!this.lab||this.disposed||document.hidden)return;const elapsed=this.last?Math.min(.06,(t-this.last)/1000):0;this.last=t;
+  if(!this.lab||this.disposed||document.hidden)return;const rafEnteredAt=performance.now(),elapsed=this.last?Math.min(.06,(t-this.last)/1000):0;this.last=t;
   if(!this.state.paused&&!this.drag){this.accumulator+=elapsed*this.state.rate;let n=0;while(this.accumulator>=this.lab.dt&&n<384){this.lab.step();this.accumulator-=this.lab.dt;n++;}if(n===384)this.accumulator=0;this.dirty=true;if(!this.lab.cue&&this.lab.objects.every(o=>o.body.isSleeping())){this.state.paused=true;this.queuePrediction(true);}}
   if(this.inputPending){this.inputPending=false;this.notify();}
   this.finishGameShot();
   const visible=!this.game?.pending&&this.state.showCue&&this.state.paused&&!this.lab.cue&&!this.lab.anyMotion()&&t>=(this.cooldownUntil||0);if(visible!==this.state.previewCueVisible)this.notify();
   if(t-(this.lastUI||0)>120&&(!this.state.paused||this.state.gesture||this.windup)){this.notify();this.lastUI=t;}
   this.renderMetrics.cap=this.renderer.isFallback?30:60;
-  if((this.dirty||this.renderer.needsFrame)&&this.renderCadence.allow(t,this.renderMetrics.cap)){this.renderer.render(this.lab,this.state,{update:this.dirty});this.renderSide();this.updateHandles();this.dirty=false;this.lastDraw=t;this.renderMetrics.frames++;if(this.lastInputAt!==undefined){this.inputMetrics.lastInputToFrameMs=performance.now()-this.lastInputAt;this.inputMetrics.maxInputToFrameMs=Math.max(this.inputMetrics.maxInputToFrameMs,this.inputMetrics.lastInputToFrameMs);this.lastInputAt=undefined;}}
+  if(this.dirty||this.renderer.needsFrame){if(this.renderCadence.allow(t,this.renderMetrics.cap)){const before=this.renderedFrames(),input=this.pendingInput,renderStartedAt=performance.now(),presentation=this.renderer.render(this.lab,this.state,{update:this.dirty,input}),renderCompletedAt=performance.now();if(this.renderedFrames()>before){this.renderMetrics.presentations++;this.recordInputPresentation(this.renderer.tracksPresentation?presentation?.input:input,this.renderer.isFallback?'cpu-render':this.renderer.workerMode?'worker-bitmap-draw':'webgl-command-submit',{rafTimestamp:t,rafEnteredAt,renderStartedAt,renderCompletedAt,renderer:this.renderer.isFallback?{...(this.renderer.fallback||this.renderer).frameTiming}:null,...presentation?.trace});}this.renderSide();this.updateHandles();this.dirty=false;this.lastDraw=t;this.renderMetrics.frames++;}else if(this.pendingInput)this.pendingInput.gateSkips++;}
   this.scheduleFrame();
  }
  dispose(){this.disposed=true;cancelAnimationFrame(this.raf);this.raf=null;this.renderCadence.suspend();clearTimeout(this.predictionTimer);clearTimeout(this.noticeTimer);this.predictor?.dispose();this.optimizer?.dispose();this.renderer?.dispose?.();this.resizeObserver?.disconnect();this.lab?.dispose();window.removeEventListener('pointermove',this.moveListener);window.removeEventListener('pointerup',this.endListener);window.removeEventListener('pointercancel',this.cancelListener);window.removeEventListener('keydown',this.keyListener);this.canvas?.parentElement.removeEventListener('pointerdown',this.touchStartListener,true);window.removeEventListener('lostpointercapture',this.lostCaptureListener);window.removeEventListener('blur',this.blurListener);document.removeEventListener('visibilitychange',this.visibilityListener);this.lab=null;}
