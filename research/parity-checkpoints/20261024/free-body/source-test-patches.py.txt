@@ -1,0 +1,29 @@
+
+# Source patch 1, original successful command:
+p='src/experimental-free-body.js'
+s=open(p).read().replace('neg=a=>sub(z,a)','neg=a=>mul(a,c(-1))').replace('worldCom=va(origin,rotate(rotation,v(13)))','worldCom=va(rotate(rotation,v(13)),origin)')
+# Source finite-value unary negation via exact multiply-by-minus-one preserves signed zero.
+s=s.replace('const norm=a=>', '// Multiplication by -1 implements finite f32 unary negation, including signed zero.\n const norm=a=>')
+s=s.replace("return{body:{linear:get(0)","return{phase:'post-body-writeback',effects:{colliderPosesNeedUpdate:true,broadPhaseAabbsNeedUpdate:true},body:{linear:get(0)")
+open(p,'w').write(s)
+
+# Source patch 2, original successful command:
+p='src/experimental-free-body.js';s=open(p).read().replace("linear=vm(linear,op('cap',norm(linear),maxLinear));", "linear=vm(linear,choose(op('lt',53,c(MAX)),op('cap',norm(linear),maxLinear),one));")
+s=s.replace("if(!Number.isFinite(f(p.dt/p.substeps))", "if(p.normalizedMaxLinearVelocity!==MAX&&!Number.isFinite(f(p.normalizedMaxLinearVelocity*p.lengthUnit)))throw RangeError('Scaled linear cap overflows f32');\n if(!Number.isFinite(f(p.dt/p.substeps))")
+open(p,'w').write(s)
+
+# Test patch 1, original successful command:
+p='tests/experimental-free-body.cjs';s=open(p).read();s=s.replace("...[-1,0,1].map(n=>({id:'strict-linear-cap-'", "...[-1,0,1].map(n=>({id:'strict-angular-cap-'+n,linear:z(),angular:[0,f(f(Math.PI/4)*64+n*2**-18),0],substeps:4,steps:2})),\n...[-1,0,1].map(n=>({id:'strict-linear-cap-'")
+open(p,'w').write(s)
+
+# Test patch 2, original successful command after the first test run:
+p='tests/experimental-free-body.cjs';s=open(p).read();s=s.replace("const m=b.effectiveWorldInvInertia();return{", "const m=b.effectiveWorldInvInertia(),tensor=[m.m11,m.m12,m.m13,m.m21,m.m22,m.m23,m.m31,m.m32,m.m33];return{")
+s=s.replace("invInertia:[m.m11,m.m12,m.m13,m.m21,m.m22,m.m23,m.m31,m.m32,m.m33]", "invInertia:tensor")
+# Preserve rationale: public getters expose reusable WASM scratch arrays.
+s=s.replace("function bodyState(b)","// Copy the returned matrix BEFORE any other native getter reuses its scratch buffer.\nfunction bodyState(b)")
+open(p,'w').write(s)
+
+# Test patch 3, original successful command:
+p='tests/experimental-free-body.cjs';s=open(p).read();s=s.replace("return{body:bodyState(body),force:V(F(forces,'force')),rb,parameters,decoded:d};", "const state=bodyState(body),ii=V(F(F(rb,'mprops'),'effective_world_inv_inertia'));assert.equal(ii.length,6);assert.deepEqual(state.invInertia,[ii[0],ii[1],ii[2],ii[1],ii[3],ii[4],ii[2],ii[4],ii[5]],'Immediately copied public tensor must equal decoded native tensor');return{body:state,force:V(F(forces,'force')),rb,parameters,decoded:d};")
+open(p,'w').write(s)
+

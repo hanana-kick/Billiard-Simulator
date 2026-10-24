@@ -1,0 +1,5 @@
+from pathlib import Path
+p=Path('src/experimental-cue-obstacle-manifold.js')
+s=p.read_text().replace(' * Voronoi/simplex/EPA helpers reused by source from the verified sibling\n * experimental-convex-contact.js; its pure hull validation is reused unchanged.',' * GJK/EPA core copied by source from frozen experimental-cue-obstacle-contact.js.\n * Its pure input packing is reused; no CPU contacts are uploaded to the GPU.')
+s=s.replace("return Query.packQuery(pair);", "for(const s of[pair.shape1,pair.shape2])for(const k of['borderRadius','normalConstraints'])if(Object.hasOwn(s,k))throw new RangeError('Unsupported shape feature: '+k);\n return Query.packQuery(pair);")
+p.write_text(s)

@@ -1,0 +1,13 @@
+function packManifold(pair){
+ if(pair?.fresh!==true)throw new RangeError('Explicit fresh:true provenance is required; empty points do not establish freshness');
+ for(const k of['previousManifold','cachedNormal','local_n1','local_n2','points','warmstart','normalConstraints','borderRadius'])if(Object.hasOwn(pair,k))throw new RangeError('Persistent state, normal constraints and rounded shapes are unsupported: '+k);
+ if(!((pair.shape1?.type==='cylinder'&&pair.shape2?.type==='box')||(pair.shape1?.type==='box'&&pair.shape2?.type==='cylinder')))throw new RangeError('Fresh manifold supports exactly one analytic cylinder and one cuboid; convex hull topology is not implemented');
+ return Query.packQuery(pair);
+}
+function decode(raw,offset=0){
+ const status=raw[offset];if(status<0)throw new RangeError('Cue-obstacle fresh manifold failed closed: '+({[-1]:'GJK iteration/dispatch bound',[-2]:'EPA workspace/iteration bound',[-3]:'invalid simplex state',[-4]:'clipping point capacity'}[status]??'invalid state'));
+ if(status!==0&&status!==1)throw new RangeError('Invalid fresh manifold status');const count=raw[offset+1];if(!Number.isInteger(count)||count<0||count>25||(status===1&&count===0))throw new RangeError('Invalid fresh manifold point count');
+ const v=i=>Array.from(raw.slice(offset+i,offset+i+3),x=>x===0?0:x),fid=(t,c)=>{if(!Number.isInteger(t)||t<0||t>3||!Number.isInteger(c)||c<0||c>=2**30)throw new RangeError('Invalid exact feature ID');return t*2**30+c;};
+ return{localNormal1:v(2),localNormal2:v(5),normal1:v(8),normal2:v(11),points:Array.from({length:count},(_,i)=>{const b=16+i*20;return{distance:raw[offset+b],localPoint1:v(b+1),localPoint2:v(b+4),point1:v(b+7),point2:v(b+10),fid1:fid(raw[offset+b+13],raw[offset+b+14]),fid2:fid(raw[offset+b+15],raw[offset+b+16])};})};
+}
+function manifoldReference(pair){const{input,hulls}=packManifold(pair),state=new Float32Array(STATE_FLOATS),output=new Float32Array(OUTPUT_FLOATS),core=interpreter(state,input,output,hulls);core.init();for(let i=0;i<GJK_DISPATCHES;i++)core.gjk_step();core.epa();core.manifold_finish();if(output.some(x=>!Number.isFinite(x))||state.some(x=>!Number.isFinite(x)))throw new RangeError('Fresh manifold numeric overflow');return decode(output);}

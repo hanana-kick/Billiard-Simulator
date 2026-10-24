@@ -1,0 +1,87 @@
+// PolygonalFeatureMap and PolygonalFeature::contacts_face_face, Parry 0.31.1.
+// The source cylinder cap patch is an oriented square; analytic GJK/EPA above
+// remains a continuous cylinder. No cached manifold enters this fresh-only API.
+const MANIFOLD_CORE=String.raw`
+fn fi(which:i32)->i32{return 13632+which*40;}
+fn fv(which:i32,i:i32)->V{return getv(fi(which)+i*3);}
+fn fp(which:i32,i:i32)->V{return v3(sget(fi(which)+12+i*2),sget(fi(which)+13+i*2),0.0);}
+fn v2(x:f32,y:f32)->V{return v3(x,y,0.0);}
+fn dot2(a:V,b:V)->f32{return addf(mulf(a.x,b.x),mulf(a.y,b.y));}
+fn perp(a:V,b:V)->f32{return subf(mulf(a.x,b.y),mulf(a.y,b.x));}
+fn azimuth(dir:V,hint:V)->V{
+ let h:V=v2(hint.x,hint.z);let len:f32=sqrtf(dot2(h,h));
+ if(len>0.0){return vm(h,divf(1.0,len));}
+ let d:V=v2(dir.x,dir.z);let dl:f32=sqrtf(dot2(d,d));
+ if(dl>0.0){return vm(d,divf(1.0,dl));}return v2(1.0,0.0);
+}
+fn support_feature(which:i32,dir:V,hint:V){
+ let base:i32=fi(which);for(var i:i32=0;i<40;i=i+1){sset(base+i,0.0);}
+ let dim:V=iv(which*10+7);
+ if(iget(20+which)==0.0){
+  let d:V=azimuth(dir,hint);let r:f32=dim.y;let h:f32=dim.x;
+  if(absf(dir.y)<0.5){
+   setv(base,v3(mulf(d.x,r),-h,mulf(d.y,r)));setv(base+3,v3(mulf(d.x,r),h,mulf(d.y,r)));
+   sset(base+20,1.0);sset(base+21,11.0);sset(base+22,11.0);sset(base+23,11.0);sset(base+28,0.0);sset(base+29,2.0);
+  }else{
+   let y:f32=signcopy(dir.y,h);setv(base,v3(mulf(d.x,r),y,mulf(d.y,r)));setv(base+3,v3(mulf(-d.y,r),y,mulf(d.x,r)));setv(base+6,v3(mulf(-d.x,r),y,mulf(-d.y,r)));setv(base+9,v3(mulf(d.y,r),y,mulf(-d.x,r)));
+   var offset:i32=0;if(dir.y>=0.0){offset=10;}
+   for(var i:i32=0;i<4;i=i+1){sset(base+20+i,f32(offset+1+2*i));sset(base+24+i,f32(offset+2+2*i));}sset(base+28,f32(offset+9));sset(base+29,4.0);
+  }
+ }else{
+  var axis:i32=0;var maxval:f32=absf(dir.x);if(absf(dir.y)>maxval){axis=1;maxval=absf(dir.y);}if(absf(dir.z)>maxval){axis=2;}
+  var direction:f32=dir.x;if(axis==1){direction=dir.y;}else if(axis==2){direction=dir.z;}let sign:f32=signcopy(direction,1.0);let si:i32=i32(divf(addf(sign,1.0),2.0));
+  if(axis==0){
+   let x:f32=mulf(dim.x,sign);setv(base,v3(x,dim.y,dim.z));setv(base+3,v3(x,-dim.y,dim.z));setv(base+6,v3(x,-dim.y,-dim.z));setv(base+9,v3(x,dim.y,-dim.z));
+   sset(base+20,f32(2*(0+si*4)));sset(base+21,f32(2*(2+si*4)));sset(base+22,f32(2*(3+si*4)));sset(base+23,f32(2*(1+si*4)));
+   let sb:i32=si*36;sset(base+24,f32(208+sb));sset(base+25,f32(218+sb));sset(base+26,f32(217+sb));sset(base+27,f32(200+sb));
+  }else if(axis==1){
+   let y:f32=mulf(dim.y,sign);setv(base,v3(dim.x,y,dim.z));setv(base+3,v3(-dim.x,y,dim.z));setv(base+6,v3(-dim.x,y,-dim.z));setv(base+9,v3(dim.x,y,-dim.z));
+   sset(base+20,f32(2*(0+si*2)));sset(base+21,f32(2*(4+si*2)));sset(base+22,f32(2*(5+si*2)));sset(base+23,f32(2*(1+si*2)));
+   let sb:i32=si*18;sset(base+24,f32(224+sb));sset(base+25,f32(236+sb));sset(base+26,f32(233+sb));sset(base+27,f32(200+sb));
+  }else{
+   let z:f32=mulf(dim.z,sign);setv(base,v3(dim.x,dim.y,z));setv(base+3,v3(dim.x,-dim.y,z));setv(base+6,v3(-dim.x,-dim.y,z));setv(base+9,v3(-dim.x,dim.y,z));
+   sset(base+20,f32(2*(0+si)));sset(base+21,f32(2*(2+si)));sset(base+22,f32(2*(6+si)));sset(base+23,f32(2*(4+si)));
+   let sb:i32=si*9;sset(base+24,f32(208+sb));sset(base+25,f32(242+sb));sset(base+26,f32(244+sb));sset(base+27,f32(224+sb));
+  }sset(base+28,f32(axis+si*3+10));sset(base+29,4.0);
+ }
+}
+fn pos12(p:V)->V{return va(rotate(p,getv(68),sget(71)),getv(17));}
+fn inv12(p:V)->V{return rotate(vs(p,getv(17)),vn(getv(68)),sget(71));}
+fn transformed2(i:i32)->V{return getv(13712+i*3);}
+fn append_point(p1:V,p2:V,dist:f32,t1:i32,c1:f32,t2:i32,c2:f32){
+ let n:i32=i32(sget(13730));if(n>=25){oset(0,-4.0);sset(13731,-4.0);return;}
+ let base:i32=16+n*20;oset(base,dist);ov(base+1,p1);ov(base+4,p2);ov(base+7,va(rotate(p1,iv(3),iget(6)),iv(0)));ov(base+10,va(rotate(p2,iv(13),iget(16)),iv(10)));oset(base+13,f32(t1));oset(base+14,c1);oset(base+15,f32(t2));oset(base+16,c2);sset(13730,f32(n+1));
+}
+fn inside(which:i32,n:i32,p:V)->bool{
+ let last:i32=n-1;var sign:f32=perp(vs(fp(which,0),fp(which,last)),vs(p,fp(which,last)));
+ for(var j:i32=0;j<last;j=j+1){let next:f32=perp(vs(fp(which,j+1),fp(which,j)),vs(p,fp(which,j)));if(sign==0.0){sign=next;}else if(mulf(sign,next)<0.0){return false;}}return true;
+}
+// Return (s,t,has_intersection), preserving the source epsilon and four-ULP test.
+fn line2d(a1:V,b1:V,a2:V,b2:V)->V{
+ let d1:V=vs(b1,a1);let d2:V=vs(b2,a2);let r:V=vs(a1,a2);let a:f32=dot2(d1,d1);let e:f32=dot2(d2,d2);let f:f32=dot2(d2,r);let eps:f32=0.00000011920928955078125;
+ if(a<=eps&&e<=eps){return v3(0.0,0.0,1.0);}if(a<=eps){return v3(0.0,divf(f,e),1.0);}
+ let c:f32=dot2(d1,r);if(e<=eps){return v3(divf(-c,a),0.0,1.0);}let b:f32=dot2(d1,d2);let ae:f32=mulf(a,e);let bb:f32=mulf(b,b);let denom:f32=subf(ae,bb);
+ if(denom<=eps||ulpsnear(ae,bb)){return zero();}let s:f32=divf(subf(mulf(b,f),mulf(c,e)),denom);return v3(s,divf(addf(mulf(b,s),f),e),1.0);
+}
+fn clip_faces(n1:V){
+ let sign:f32=signcopy(n1.z,1.0);let a:f32=divf(-1.0,addf(sign,n1.z));let b:f32=mulf(mulf(n1.x,n1.y),a);
+ let b0:V=v3(addf(1.0,mulf(mulf(mulf(sign,n1.x),n1.x),a)),mulf(sign,b),mulf(-sign,n1.x));let b1:V=v3(b,addf(sign,mulf(mulf(n1.y,n1.y),a)),-n1.y);
+ for(var i:i32=0;i<4;i=i+1){let p1:V=fv(0,i);let p2:V=pos12(fv(1,i));setv(13712+i*3,p2);sset(fi(0)+12+i*2,vd(p1,b0));sset(fi(0)+13+i*2,vd(p1,b1));sset(fi(1)+12+i*2,vd(p2,b0));sset(fi(1)+13+i*2,vd(p2,b1));}
+ let count1:i32=i32(sget(fi(0)+29));let count2:i32=i32(sget(fi(1)+29));let eps:f32=0.00000011920928955078125;
+ if(count2>2){let normal2:V=vc(vs(transformed2(2),transformed2(1)),vs(transformed2(0),transformed2(1)));let denom:f32=vd(normal2,n1);
+  if(absf(denom)>eps){for(var i:i32=0;i<count1;i=i+1){if(inside(1,count2,fp(0,i))){let p1:V=fv(0,i);let dist:f32=divf(vd(vs(transformed2(0),p1),normal2),denom);append_point(p1,inv12(va(p1,vm(n1,dist))),dist,1,sget(fi(0)+20+i),3,sget(fi(1)+28));}}}
+ }
+ if(count1>2){let normal1:V=vc(vs(fv(0,2),fv(0,1)),vs(fv(0,0),fv(0,1)));let denom:f32=-vd(normal1,n1);
+  if(absf(denom)>eps){for(var i:i32=0;i<count2;i=i+1){if(inside(0,count1,fp(1,i))){let p2:V=transformed2(i);let dist:f32=divf(vd(vs(fv(0,0),p2),normal1),denom);append_point(vs(p2,vm(n1,dist)),inv12(p2),dist,3,sget(fi(0)+28),1,sget(fi(1)+20+i));}}}
+ }
+ for(var j:i32=0;j<count2;j=j+1){let next2:i32=(j+1)%count2;for(var i:i32=0;i<count1;i=i+1){let next1:i32=(i+1)%count1;let bc:V=line2d(fp(0,i),fp(0,next1),fp(1,j),fp(1,next2));
+  if(bc.z!=0.0&&bc.x>0.0&&bc.x<1.0&&bc.y>0.0&&bc.y<1.0){let p1:V=va(vm(fv(0,i),subf(1.0,bc.x)),vm(fv(0,next1),bc.x));let p2:V=va(vm(transformed2(j),subf(1.0,bc.y)),vm(transformed2(next2),bc.y));append_point(p1,inv12(p2),vd(vs(p2,p1),n1),2,sget(fi(0)+24+i),2,sget(fi(1)+24+j));}
+ }}
+}
+fn manifold_finish(){
+ sset(13730,0.0);sset(13731,0.0);if(sget(0)==0.0||sget(0)==2.0){sset(0,-1.0);}if(sget(0)<0.0){oset(0,sget(0));return;}if(sget(0)==4.0){oset(0,0.0);oset(1,0.0);ov(2,getv(88));return;}
+ let n1:V=getv(88);let n2:V=rotate(vn(n1),vn(getv(68)),sget(71));let p1:V=getv(14);let p2:V=inv12(getv(84));support_feature(0,n1,p1);support_feature(1,n2,p2);clip_faces(n1);
+ append_point(p1,p2,vd(vs(getv(84),p1),n1),0,0.0,0,0.0);if(sget(13731)<0.0){return;}oset(0,1.0);oset(1,sget(13730));ov(2,n1);ov(5,n2);ov(8,rotate(n1,iv(3),iget(6)));ov(11,rotate(n2,iv(13),iget(16)));
+}
+`;
+const CORE=QUERY_CORE+MANIFOLD_CORE;

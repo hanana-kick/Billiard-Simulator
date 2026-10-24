@@ -1,0 +1,58 @@
+/* SPDX-License-Identifier: Apache-2.0
+ * Copyright 2020 Sébastien Crozet. Modified 2026: bounded free-body graph.
+ * Rapier b716d375efc0201003f0cd9ef7168eee0b62c177; vendor/RAPIER-LICENSE.txt.
+ * Quaternion arithmetic follows glam's MIT/Apache-2.0 dual-licensed source.
+ * No contact surrogate, oracle import, or production-engine replacement.
+ */
+(function(G){'use strict';
+const Graph=typeof module!=='undefined'&&module.exports?require('./experimental-contact-island.js'):G.LabContactIslandExperimental;
+const Runtime=typeof module!=='undefined'&&module.exports?require('./experimental-stage-runtime.js'):G.LabStageRuntimeExperimental;
+const f=Math.fround,copy=x=>structuredClone(x),MAX=f(3.4028234663852886e38),INPUT_FLOATS=68;
+const CAPABILITY=Object.freeze({wholeWorld:false,contacts:false,islandManagement:false,ccd:false,awakeDynamicOnly:true,gyroscopic:true,localCom:true,principalFrame:true,maxSubsteps:16,maxSteps:512});
+function validate(x){const s=copy(x);if(s.kind!=='isolated-dynamic-sphere'||s.phase!=='post-activation-pre-solve'||s.bodyCount!==1||s.contactCount!==0||s.jointCount!==0||s.ccdEnabled!==false||s.sleeping!==false||s.canSleep!==false||s.lockedAxes!==0)throw RangeError('Expected explicitly awake, unlocked, CCD-disabled, contact-free singleton');
+ const p=s.parameters,b=s.body;if(!p||!b||!Number.isInteger(p.substeps)||p.substeps<1||p.substeps>16)throw RangeError('Bounded substep count required');
+ const array=(v,n,name)=>{if(!Array.isArray(v)||v.length!==n||v.some(x=>typeof x!=='number'||!Number.isFinite(f(x))))throw TypeError('Invalid '+name);return v.map(f);};
+ for(const [k,n]of Object.entries({linear:3,angular:3,translation:3,rotation:4,localCom:3,invMass:3,invInertia:9,principalFrame:4,principalInertia:3,invPrincipalInertia:3}))b[k]=array(b[k],n,k);
+ for(const k of ['gravity','userForce','userTorque'])p[k]=array(p[k],3,k);
+ for(const k of ['dt','lengthUnit','gravityScale','linearDamping','angularDamping','normalizedMaxLinearVelocity']){if(typeof p[k]!=='number'||!Number.isFinite(f(p[k])))throw TypeError('Explicit finite '+k+' required');p[k]=f(p[k]);}
+ if(p.dt<=0||p.lengthUnit<=0||p.linearDamping<0||p.angularDamping<0||p.normalizedMaxLinearVelocity<0||typeof p.allowFastRotation!=='boolean'||typeof p.gyroscopic!=='boolean')throw RangeError('Invalid integration parameters');
+ if(b.invMass.some(v=>v<=0)||b.invMass.some(v=>v!==b.invMass[0])||b.principalInertia.some(v=>v<=0)||b.invPrincipalInertia.some(v=>v<=0))throw RangeError('Finite positive unlocked mass properties required');
+ for(const k of ['rotation','principalFrame'])if(Math.abs(b[k].reduce((a,v)=>a+v*v,0)-1)>2e-5)throw RangeError('Unit quaternion required');
+ if(!Number.isFinite(f(p.dt/p.substeps))||f(p.dt/p.substeps)<=0)throw RangeError('Substep duration underflow');return s;
+}
+function buildPlan(substeps=1){if(!Number.isInteger(substeps)||substeps<1||substeps>16)throw RangeError('Bounded substeps required');
+ const nodes=[],op=(kind,...args)=>{nodes.push({kind,args});return INPUT_FLOATS+nodes.length-1;},c=x=>op('const',f(x)),z=c(0),one=c(1),two=c(2),half=c(.5),add=(a,b)=>op('add',a,b),sub=(a,b)=>op('sub',a,b),mul=(a,b)=>op('mul',a,b),div=(a,b)=>op('div',a,b),neg=a=>sub(z,a),choose=(p,a,b)=>op('choose',p,a,b),v=(i,n=3)=>Array.from({length:n},(_,j)=>i+j),va=(a,b)=>a.map((x,i)=>add(x,b[i])),vm=(a,s)=>a.map(x=>mul(x,s)),vc=(a,b)=>a.map((x,i)=>mul(x,b[i])),dot=(a,b)=>add(add(mul(a[0],b[0]),mul(a[1],b[1])),mul(a[2],b[2])),cross=(a,b)=>[sub(mul(a[1],b[2]),mul(a[2],b[1])),sub(mul(a[2],b[0]),mul(a[0],b[2])),sub(mul(a[0],b[1]),mul(a[1],b[0]))];
+ const qm=(a,b)=>[sub(add(add(mul(a[3],b[0]),mul(a[0],b[3])),mul(a[1],b[2])),mul(a[2],b[1])),add(add(sub(mul(a[3],b[1]),mul(a[0],b[2])),mul(a[1],b[3])),mul(a[2],b[0])),add(sub(add(mul(a[3],b[2]),mul(a[0],b[1])),mul(a[1],b[0])),mul(a[2],b[3])),sub(sub(sub(mul(a[3],b[3]),mul(a[0],b[0])),mul(a[1],b[1])),mul(a[2],b[2]))];
+ // Scalar glam Quat::mul_vec3, not the SIMD contact transform.
+ const rotate=(q,a)=>{const b=q.slice(0,3);return va(va(vm(a,sub(mul(q[3],q[3]),dot(b,b))),vm(b,mul(dot(a,b),two))),vm(cross(b,a),mul(q[3],two)));};
+ const norm=a=>op('sqrt',dot(a,a)),inverse=x=>choose(op('gt',x,c(1e-20)),div(one,x),z);
+ const dt=51,subDt=div(dt,c(substeps)),mass=v(16).map(inverse),force=va(v(39),vm(vc(v(45),mass),48)),torque=v(42),dl=vm(vc(force,v(16)),subDt),da=vm([dot(v(19),torque),dot(v(22),torque),dot(v(25),torque)],subDt);
+ let linear=v(0),angular=v(3),position=va(v(6),rotate(v(9,4),v(13))),rotation=v(9,4);
+ const traces=[],record=stage=>traces.push({stage,indices:[...linear,...angular,...position,...rotation]}),maxLinear=choose(op('lt',53,c(MAX)),mul(53,52),c(MAX)),maxAngular=mul(c(Math.PI/4),div(one,dt));
+ for(let step=0;step<substeps;step++){
+  linear=va(linear,dl);angular=va(angular,da);
+  const axes=qm(rotation,v(28,4)),w=rotate([...axes.slice(0,3).map(neg),axes[3]],angular),momentum=vc(v(32),w),total=va(momentum,vm(cross(w,momentum).map(neg),subDt)),sq=dot(total,total),scale=op('sqrt',div(dot(momentum,momentum),choose(sq,sq,one))),corrected=rotate(axes,vc(v(35),vm(total,scale)));
+  angular=angular.map((a,i)=>choose(55,choose(sq,corrected[i],a),a));record('increments-and-gyro:'+step);
+  linear=vm(linear,op('cap',norm(linear),maxLinear));angular=vm(angular,choose(54,one,op('cap',norm(angular),maxAngular)));record('capped:'+step);
+  const q=qm([...vm(angular,mul(subDt,half)),one],rotation),ql=op('sqrt',add(add(add(mul(q[0],q[0]),mul(q[1],q[1])),mul(q[2],q[2])),mul(q[3],q[3])));rotation=vm(q,div(one,ql));position=va(position,vm(linear,subDt));record('integrated:'+step);
+ }
+ linear=vm(linear,div(one,add(one,mul(dt,49))));angular=vm(angular,div(one,add(one,mul(dt,50))));
+ const origin=va(position,rotate(rotation,v(13).map(neg))),worldCom=va(origin,rotate(rotation,v(13)));
+ // Parry world_inv_inertia: column-scaled R, multiply by R transpose, upper triangle.
+ const q=qm(rotation,v(28,4)),x2=add(q[0],q[0]),y2=add(q[1],q[1]),z2=add(q[2],q[2]),xx=mul(q[0],x2),xy=mul(q[0],y2),xz=mul(q[0],z2),yy=mul(q[1],y2),yz=mul(q[1],z2),zz=mul(q[2],z2),wx=mul(q[3],x2),wy=mul(q[3],y2),wz=mul(q[3],z2),columns=[[sub(one,add(yy,zz)),add(xy,wz),sub(xz,wy)],[sub(xy,wz),sub(one,add(xx,zz)),add(yz,wx)],[add(xz,wy),sub(yz,wx),sub(one,add(xx,yy))]];
+ const term=(i,j)=>add(add(mul(mul(columns[0][i],35),columns[0][j]),mul(mul(columns[1][i],36),columns[1][j])),mul(mul(columns[2][i],37),columns[2][j]));
+ const m11=term(0,0),m12=term(0,1),m13=term(0,2),m22=term(1,1),m23=term(1,2),m33=term(2,2),ii=[m11,m12,m13,m12,m22,m23,m13,m23,m33];
+ const outputs=[...linear,...angular,...origin,...rotation,...ii,...worldCom,...force,...dl,...da];const traceLayout=traces.map(({stage,indices})=>{const offset=outputs.length;outputs.push(...indices);return{stage,offset,length:indices.length};});
+ return Object.freeze({inputFloats:INPUT_FLOATS,substeps,nodes:Object.freeze(nodes.map(n=>Object.freeze({kind:n.kind,args:Object.freeze(n.args)}))),outputs:Object.freeze(outputs),traceLayout:Object.freeze(traceLayout)});
+}
+function pack(s){const a=new Float32Array(INPUT_FLOATS),b=s.body,p=s.parameters;for(const[k,i]of Object.entries({linear:0,angular:3,translation:6,rotation:9,localCom:13,invMass:16,invInertia:19,principalFrame:28,principalInertia:32,invPrincipalInertia:35}))a.set(b[k],i);a.set(p.userForce,39);a.set(p.userTorque,42);a.set(p.gravity,45);['gravityScale','linearDamping','angularDamping','dt','lengthUnit','normalizedMaxLinearVelocity','allowFastRotation','gyroscopic'].forEach((k,i)=>a[48+i]=Number(p[k]));return a;}
+function decode(raw,plan){const get=(i,n=3)=>Array.from(raw.slice(i,i+n),x=>x===0?0:x);return{body:{linear:get(0),angular:get(3),translation:get(6),rotation:get(9,4),invInertia:get(13,9),worldCom:get(22)},force:get(25),deltaLinear:get(28),deltaAngular:get(31),stages:plan.traceLayout.map(t=>({stage:t.stage,values:get(t.offset,t.length)}))};}
+function stepReference(input){const s=validate(input),plan=buildPlan(s.parameters.substeps);return{backend:'cpu-reference',...decode(Graph.execute(pack(s),plan),plan)};}
+async function createGpuSolver(device,substeps=1){if(!device?.createShaderModule)throw TypeError('Actual GPUDevice required');const plan=buildPlan(substeps),code=Runtime.WGSL.replaceAll('136u',INPUT_FLOATS+'u'),shader=device.createShaderModule({code}),info=await shader.getCompilationInfo();if(info.messages.some(x=>x.type==='error'))throw Error(info.messages.map(x=>x.message).join('\n'));const pipeline=await device.createComputePipelineAsync({layout:'auto',compute:{module:shader,entryPoint:'main'}}),program=Graph.encode(plan),indices=Uint32Array.from(plan.outputs),owned=[],make=(n,u)=>{const b=device.createBuffer({size:n,usage:u});owned.push(b);return b;},pb=make(program.byteLength,136),ib=make(indices.byteLength,136);device.queue.writeBuffer(pb,0,program);device.queue.writeBuffer(ib,0,indices);let busy=false,disposed=false;
+ return{plan,code,async step(input){if(busy||disposed)throw Error('Free-body GPU stage busy or disposed');const s=validate(input);if(s.parameters.substeps!==substeps)throw RangeError('Substep plan mismatch');busy=true;const temp=[],buf=(n,u)=>{const b=device.createBuffer({size:n,usage:u});temp.push(b);return b;};let scoped=false;try{device.pushErrorScope('validation');scoped=true;const packed=pack(s),source=buf(packed.byteLength,136),scratch=buf((INPUT_FLOATS+plan.nodes.length)*4,128),size=(plan.outputs.length+1)*4,output=buf(size,132),read=buf(size,9);device.queue.writeBuffer(source,0,packed);const group=device.createBindGroup({layout:pipeline.getBindGroupLayout(0),entries:[source,pb,scratch,ib,output].map((buffer,binding)=>({binding,resource:{buffer}}))}),e=device.createCommandEncoder(),pass=e.beginComputePass();pass.setPipeline(pipeline);pass.setBindGroup(0,group);pass.dispatchWorkgroups(1);pass.end();e.copyBufferToBuffer(output,0,read,0,size);device.queue.submit([e.finish()]);await read.mapAsync(1);const raw=new Float32Array(read.getMappedRange().slice(0));read.unmap();const error=await device.popErrorScope();scoped=false;if(error)throw Error(error.message);if(raw.at(-1)!==1||raw.some(x=>!Number.isFinite(x)))throw Error('GPU free-body computation incomplete');return{backend:'webgpu',...decode(raw,plan)};}finally{temp.forEach(b=>b.destroy());if(scoped)await device.popErrorScope();busy=false;}},dispose(){if(busy)throw Error('Stage busy');disposed=true;owned.forEach(b=>b.destroy());}};
+}
+function controller(initial,stage){let state=validate(initial),frame=0,busy=false,disposed=false;return Object.freeze({capability:CAPABILITY,snapshot:()=>({...copy(state),frame}),async step(...args){if(args.length)throw RangeError('No external per-frame state injection');if(busy||disposed)throw Error('Free-body tracker busy or disposed');if(frame>=CAPABILITY.maxSteps)throw RangeError('Bounded trajectory limit');busy=true;try{const result=await stage.step(state);Object.assign(state.body,result.body);frame++;return{...result,frame};}finally{busy=false;}},dispose(){if(busy)throw Error('Tracker busy');disposed=true;stage.dispose();}});}
+function createReferenceStepper(initial){return controller(initial,{step:stepReference,dispose(){}});}
+async function createGpuStepper(device,initial){const s=validate(initial);return controller(s,await createGpuSolver(device,s.parameters.substeps));}
+const api=Object.freeze({CAPABILITY,INPUT_FLOATS,validate,buildPlan,pack,decode,stepReference,createGpuSolver,createReferenceStepper,createGpuStepper});G.LabFreeBodyExperimental=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
+})(globalThis);

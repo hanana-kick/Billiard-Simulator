@@ -1,0 +1,8 @@
+from pathlib import Path
+p=Path('src/experimental-cue-obstacle-contact.js').read_text()
+a=p[p.index('function eraseTypes'):p.index('function finite')].replace('return {init,gjk_step,epa,finish}', 'return {init,gjk_step,epa,manifold_finish}')
+b=p[p.index('function functionsByName'):p.index('async function createGpuQueries')]
+b=b.replace('13632','13760').replace('query_id*16+i','query_id*516+i')
+b=b.replace("finish:'finish'", "finish:'manifold_finish'")
+b=b.replace('fn signcopy(sign:', 'fn ulpsnear(a:f32,b:f32)->bool {let x=bitcast<u32>(a);let y=bitcast<u32>(b);return max(x,y)-min(x,y)<=4u;}\nfn signcopy(sign:')
+with Path('src/experimental-cue-obstacle-manifold.js').open('a') as f:f.write(a+b)

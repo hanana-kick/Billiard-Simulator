@@ -1,0 +1,13 @@
+from pathlib import Path
+p=Path('src/experimental-cue-obstacle-contact.js').read_text()
+head=p[:p.index('const CORE=')]
+head=head.replace('Fresh source-derived bounded Parry3d 0.31.1 two-support-map contact query.','Fresh source-derived bounded Parry3d 0.31.1 cylinder/cuboid manifold.').replace('original-indexed-convex static queries only. No manifold, CCD or world claim.','original-indexed-convex queries are the source basis. This separate module implements\n * fresh cylinder/cuboid clipping only. No persistence, CCD, or world claim.')
+head=head.replace("const PARITY_SCOPE='experimental-cylinder-cuboid-convex-static-query-only';", "const PARITY_SCOPE='experimental-cylinder-cuboid-fresh-manifold-only';\nconst Query=typeof module!=='undefined'&&module.exports?require('./experimental-cue-obstacle-contact.js'):G.LabCueObstacleContactExperimental;")
+head=head.replace('OUTPUT_FLOATS=16,HULL_FLOATS=200,STATE_FLOATS=13632','OUTPUT_FLOATS=516,HULL_FLOATS=200,STATE_FLOATS=13760')
+head=head.replace('const JS_PRIMITIVES=', 'const bitFloat=new Float32Array(1),bitUint=new Uint32Array(bitFloat.buffer);\nfunction bits(x){bitFloat[0]=x;return bitUint[0];}\nconst JS_PRIMITIVES=')
+head=head.replace('Cso:(orig1,orig2,point)=>({orig1,orig2,point})','Cso:(orig1,orig2,point)=>({orig1,orig2,point}),ulpsnear:(a,b)=>Math.abs(bits(a)-bits(b))<=4')
+core=p[p.index('const CORE='):p.index('function eraseTypes')]
+core=core.replace('const CORE=', 'const QUERY_CORE=')
+core=core.replace('if(min_bound>iget(22)){sset(0,4.0);return;}', 'if(min_bound>iget(22)){setv(88,dir);sset(0,4.0);return;}')
+core=core.replace('fn epa_none() {sset(0,4.0);}', 'fn epa_none() {setv(88,v3(1.0,0.0,0.0));sset(0,4.0);}')
+Path('src/experimental-cue-obstacle-manifold.js').write_text(head+core)

@@ -1,0 +1,5 @@
+from pathlib import Path
+p=Path('src/experimental-cue-obstacle-contact.js').read_text()
+s=p[p.index('async function createGpuQueries'):p.index('const api=')]
+s=s.replace('createGpuQueries','createGpuManifolds').replace('queryBatch','manifoldBatch').replace('packQuery(p)','packManifold(p)').replace('cue-obstacle','cue-obstacle fresh manifold').replace('Cue-obstacle','Cue-obstacle fresh manifold')
+with Path('src/experimental-cue-obstacle-manifold.js').open('a') as f:f.write(s+"const api=Object.freeze({PARITY_SCOPE,PROVENANCE,MAX_BATCH,INPUT_FLOATS,OUTPUT_FLOATS,HULL_FLOATS,STATE_FLOATS,GJK_DISPATCHES,packManifold,manifoldReference,generateWGSL,createGpuManifolds});G.LabCueObstacleManifoldExperimental=api;if(typeof module!=='undefined')module.exports=api;\n})(globalThis);\n")
