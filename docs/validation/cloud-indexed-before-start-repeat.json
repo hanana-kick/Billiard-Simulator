@@ -1,0 +1,99 @@
+{
+  "environment": "Cloud browser; CSS iframe viewport only",
+  "viewport": [
+    1100,
+    620
+  ],
+  "renderer": "CPU 3D",
+  "fontLoaded": true,
+  "canvas": {
+    "width": 1068,
+    "height": 424
+  },
+  "overflow": false,
+  "removedOverlays": 0,
+  "sameWorld": true,
+  "sameCanvas": true,
+  "sameCommittedState": true,
+  "state": {
+    "settings": {
+      "angle": 0,
+      "elevation": 8,
+      "tipX": 0,
+      "tipY": 0,
+      "speed": 2
+    },
+    "positions": [
+      {
+        "x": -0.6600000262260437,
+        "y": 0.030721673741936684,
+        "z": 0.10000000149011612
+      },
+      {
+        "x": 0.17000000178813934,
+        "y": 0.030721673741936684,
+        "z": 0.054999999701976776
+      },
+      {
+        "x": 0.8399999737739563,
+        "y": 0.030721673741936684,
+        "z": -0.28999999165534973
+      }
+    ],
+    "shots": 0,
+    "time": 0,
+    "undo": 0,
+    "redo": 0,
+    "activePanel": "routes",
+    "camera": {
+      "yaw": 0,
+      "pitch": 1.5706963267948966,
+      "zoom": 1,
+      "size": 1.2,
+      "projection": "orthographic",
+      "target": {
+        "x": -0.12,
+        "y": -0.035,
+        "z": 0
+      }
+    }
+  },
+  "activeGesture": null,
+  "input": {
+    "events": 0,
+    "presented": 0,
+    "lastBoundary": null,
+    "lastHandlerMs": 0,
+    "maxHandlerMs": 0,
+    "lastDispatchMs": 0,
+    "maxDispatchMs": 0,
+    "lastInputToFrameMs": 0,
+    "maxInputToFrameMs": 0,
+    "lastInputToCanvasMs": 0,
+    "maxInputToCanvasMs": 0,
+    "samples": []
+  },
+  "render": {
+    "frames": 4,
+    "presentations": 4,
+    "cap": 30
+  },
+  "fingerprint": {
+    "algorithm": "FNV-1a-32 (non-cryptographic regression fingerprint)",
+    "color": "750ba468",
+    "depth": "70ba2490",
+    "canvas": "166985d6",
+    "raster": [
+      1600,
+      635
+    ],
+    "canvasSize": [
+      1068,
+      424
+    ],
+    "predict": true,
+    "forecastStatus": "6.1초 · 6회 접촉 · 정지까지",
+    "predictionBusy": false
+  },
+  "measurement": "Input Event.timeStamp to matching canvas rendering call; main-thread WebGL excludes GPU completion; all modes exclude compositor and physical display"
+}

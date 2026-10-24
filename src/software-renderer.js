@@ -8,7 +8,13 @@ const {V,add,sub,mul,dot,cross,len,norm,rotate,qident,qfromY,matrix,clamp}=G.Lab
 const hex=s=>[parseInt(s.slice(1,3),16),parseInt(s.slice(3,5),16),parseInt(s.slice(5,7),16)];
 class SoftwareRenderer{
  constructor(canvas){this.canvas=canvas;this.ctx=canvas.getContext('2d',{alpha:false});if(!this.ctx)throw new Error('Canvas 렌더러를 시작할 수 없습니다.');this.camera={yaw:.12,pitch:.86,zoom:1,size:1.20,projection:"perspective",target:V(-.12,-.035,0)};this.staticCache=new WeakMap();this.isFallback=true;this.sphere=this.makeSphere(26,16);this.box=this.makeBox();this.cylinder=this.makeCylinder(1,1,24);this.bufferCanvas=document.createElement('canvas');this.bufferContext=this.bufferCanvas.getContext('2d',{alpha:false});this.light=norm(V(3,6,4));this.lastDraw=0;}
- mesh(vertices){return{vertices:new Float32Array(vertices),count:vertices.length/6};}
+ mesh(vertices){
+  const data=new Float32Array(vertices),bits=new Uint32Array(data.buffer),seen=new Map(),unique=[],indices=new Uint32Array(data.length/6);
+  // Reuse only bit-identical position + normal tuples. Hard-face normals,
+  // Float32 rounding, triangle order and raster resolution stay unchanged.
+  for(let i=0;i<data.length;i+=6){const key=bits.subarray(i,i+6).join(',');let index=seen.get(key);if(index===undefined){index=unique.length/6;seen.set(key,index);unique.push(...data.subarray(i,i+6));}indices[i/6]=index;}
+  return{vertices:data,unique:new Float32Array(unique),indices,count:data.length/6};
+ }
  command(mesh,pos,rot,scale,color,material=0,selected=0){return{mesh,pos,rot,model:matrix(pos,rot,scale),scale,color:typeof color==='string'?hex(color):color.map(x=>x*255),material,selected};}
  prepare(){
   this.size();const ratio=Math.min(1.5,1600/this.width);const w=Math.round(this.width*ratio),h=Math.round(this.height*ratio);
@@ -35,28 +41,38 @@ class SoftwareRenderer{
    }
   }
  }
- drawCommand(c){const p=c.mesh.vertices;for(let i=0;i<p.length;i+=18){const a=this.vertex(...p.subarray(i,i+6),c),b=this.vertex(...p.subarray(i+6,i+12),c),d=this.vertex(...p.subarray(i+12,i+18),c);if(a.z<=.03||b.z<=.03||d.z<=.03)continue;const view=norm(sub(a.world,this.eye));if(dot(add(add(a.n,b.n),d.n),view)>.001)continue;this.trianglePixels(a,b,d,c);}}
+ drawCommand(c){const p=c.mesh.unique||c.mesh.vertices,indices=c.mesh.indices,projected=new Array(p.length/6);for(let i=0;i<p.length;i+=6)projected[i/6]=this.vertex(...p.subarray(i,i+6),c);
+  this.projectedVertices=(this.projectedVertices||0)+projected.length;this.sourceVertices=(this.sourceVertices||0)+c.mesh.count;
+  for(let i=0;i<c.mesh.count;i+=3){const a=projected[indices?indices[i]:i],b=projected[indices?indices[i+1]:i+1],d=projected[indices?indices[i+2]:i+2];if(a.z<=.03||b.z<=.03||d.z<=.03)continue;const view=norm(sub(a.world,this.eye));if(dot(add(add(a.n,b.n),d.n),view)>.001)continue;this.trianglePixels(a,b,d,c);}
+ }
  worldLine(points,color,strip=false,alpha=1){const ctx=this.ctx;ctx.strokeStyle=color;ctx.globalAlpha=alpha;ctx.lineWidth=1.3;ctx.beginPath();for(let i=0;i<points.length;i+=3){const p=this.project(V(points[i],points[i+1],points[i+2]));if(i===0||(!strip&&(i/3)%2===0))ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);}ctx.stroke();ctx.globalAlpha=1;}
  render(lab,state){
-  this.prepare();const cmds=[];
+  const start=performance.now();this.projectedVertices=0;this.sourceVertices=0;this.prepare();const prepared=performance.now(),cmds=[];
   for(const o of lab.statics)cmds.push(this.command(o.shape==='convex'?this.convexMesh(o):o.shape==='cushion'?this.cushionMesh(o):this.box,o.body.translation(),o.body.rotation(),o.half||V(1,1,1),o.color,o.kind==='cloth'?1:o.kind==='floor'?3:0));
+  const staticEnd=cmds.length;
   for(const o of lab.objects)cmds.push(this.command(o.shape==='sphere'?this.sphere:this.box,o.body.translation(),o.body.rotation(),o.shape==='sphere'?V(o.radius,o.radius,o.radius):o.half,o.color,o.shape==='sphere'?2:0));
+  const objectsEnd=cmds.length;
   for(let i=1;i<8;i++)for(const z of [-D.depth/2-.11,D.depth/2+.11])cmds.push(this.command(this.sphere,V(-D.width/2+D.width*i/8,.071,z),qident(),V(.006,.001,.006),'#e4d4a5'));
   for(let i=1;i<4;i++)for(const x of [-D.width/2-.11,D.width/2+.11])cmds.push(this.command(this.sphere,V(x,.071,-D.depth/2+D.depth*i/4),qident(),V(.006,.001,.006),'#e4d4a5'));
-  const o=lab.get(state.selectedId);let preview;
+  const inlaysEnd=cmds.length,o=lab.get(state.selectedId);let preview;
   if(lab.cue&&state.showCue)cmds.push(...this.cueCommands(lab.cue.body.translation(),lab.cue.body.rotation(),'#bb9969',lab.cue.head.translation(),lab.cue.head.rotation()));
   else if(o&&o.shape==='sphere'&&state.previewCueVisible){preview=lab.pose(o,state.settings,.012+(state.cuePull||0));cmds.push(...this.cueCommands(preview.tip,preview.rotation,state.obstruction?'#b96353':'#c3a170'));cmds.push(this.command(this.sphere,preview.contact,qident(),V(.0024,.0024,.0024),'#a7f3d0'));}
-  for(const c of cmds)this.drawCommand(c);
+  const built=performance.now();let staticRasterMs=0,dynamicRasterMs=0;
+  for(let i=0;i<cmds.length;i++){const at=performance.now();this.drawCommand(cmds[i]);const elapsed=performance.now()-at;if(i<staticEnd||i>=objectsEnd&&i<inlaysEnd)staticRasterMs+=elapsed;else dynamicRasterMs+=elapsed;}
+  const rastered=performance.now();
   // Finite planar shadows; depth-tested against the actual 3D geometry.
   for(const ball of lab.objects){const pos=ball.body.translation(),inTable=Math.abs(pos.x)<D.width/2&&Math.abs(pos.z)<D.depth/2,y=inTable?.001:-.779,r=ball.radius||.045,h=Math.max(0,pos.y-y-r);for(const mult of [1.6,1.25,1]){const center=V(pos.x-h*.23,y,pos.z-h*.16),points=[];for(let i=0;i<24;i++){const a=i/24*2*Math.PI,b=(i+1)/24*2*Math.PI;for(const p of [center,add(center,V(Math.cos(a)*r*mult,0,Math.sin(a)*r*mult)),add(center,V(Math.cos(b)*r*mult,0,Math.sin(b)*r*mult))])points.push(p.x,p.y,p.z,0,1,0);}const c=this.command(this.mesh(points),V(),qident(),V(1,1,1),'#061b1c',4);c.alpha=.13/(1+h*3);this.drawCommand(c);}}
+  const shadowed=performance.now();
   this.bufferContext.putImageData(this.image,0,0);const dpi=this.canvas.width/this.width;this.ctx.setTransform(dpi,0,0,dpi,0,0);this.ctx.drawImage(this.bufferCanvas,0,0,this.width,this.height);
+  const blitted=performance.now();
   if(state.predict&&state.forecast)for(const track of state.forecast.tracks){this.worldLine(track.segments,track.color,false,.90);this.worldLine(track.endRing,track.color,true,.70);}
   if(state.paths)for(const body of lab.objects)this.worldLine(G.LabMath.visibleTrail(body,lab,state).flatMap(p=>[p.x,p.y,p.z]),body.color,true,.64);
   if(o){const p=o.body.translation(),r=(o.radius||.045)+.012,arr=[];for(let i=0;i<=64;i++){const t=i/64*Math.PI*2;arr.push(p.x+r*Math.cos(t),p.y-(o.radius||o.half.y)+.002,p.z+r*Math.sin(t));}this.worldLine(arr,'#a7f3d0',true,.85);}
   if(preview){const guide=G.LabMath.aimGuide(o.body.translation(),state.settings.angle,o.radius),a=guide.start,b=guide.end;this.worldLine([a.x,a.y,a.z,b.x,b.y,b.z],'#e7f9d3',true,.95);}
   if(state.debug){const d=lab.world.debugRender();this.worldLine(Array.from(d.vertices),'#8ccbe0',false,.65);}
-  this.completedFrames=(this.completedFrames||0)+1;
+
   if(state.vectors)for(const body of lab.objects){const p=body.body.translation(),q=add(p,mul(body.body.linvel(),.14));this.worldLine([p.x,p.y,p.z,q.x,q.y,q.z],'#a7f3d0',false,1);}
+  const ended=performance.now();this.frameTiming={prepareMs:prepared-start,commandsMs:built-prepared,staticRasterMs,dynamicRasterMs,shadowsMs:shadowed-rastered,blitMs:blitted-shadowed,overlayMs:ended-blitted,totalMs:ended-start,pixelWidth:this.pw,pixelHeight:this.ph,projectedVertices:this.projectedVertices,sourceVertices:this.sourceVertices};this.completedFrames=(this.completedFrames||0)+1;
  }
 }
 for(const m of ['triangle','makeSphere','makeBox','makeCylinder','cushionMesh','convexMesh','size','project','ray','planePoint','pick','setView','cueCommands'])SoftwareRenderer.prototype[m]=G.LabRenderer.prototype[m];
