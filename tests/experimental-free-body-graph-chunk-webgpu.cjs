@@ -13,7 +13,7 @@ test('chunk matches sequential original CPU component and original GPU component
  try{for(const substeps of [1,3,12]){
   const a=fixture();a.parameters.substeps=substeps;a.body.linear=[.125,-.25,.5];a.body.angular=[.25,.5,-.125];a.parameters.gravity=[0,-9.81,0];a.parameters.linearDamping=.125;a.parameters.angularDamping=.25;
   const b=structuredClone(a);b.body.localCom=[.125,-.0625,.03125];b.body.invInertia=[1,0,0,0,2,0,0,0,4];b.body.principalInertia=[1,.5,.25];b.body.invPrincipalInertia=[1,2,4];b.parameters.userTorque=[.01,-.02,.03];
-  const inputs=[a,b],steps=8,chunk=await C.create(device,substeps),cpu=inputs.map(F.createReferenceStepper),sequential=await Promise.all(inputs.map(x=>F.createGpuStepper(device,x)));
+  const inputs=[a,b],steps=8,batched=await require('./free-body-batched-step-baseline.cjs').create(device,inputs),chunk=await C.create(device,substeps),cpu=inputs.map(F.createReferenceStepper),sequential=await Promise.all(inputs.map(x=>F.createGpuStepper(device,x)));
   try{const before={...counters},start=performance.now(),result=await chunk.run(inputs,steps),chunkMs=performance.now()-start,afterChunk={...counters},seqStart=performance.now();
    for(let step=0;step<steps;step++)for(let row=0;row<inputs.length;row++){
     const c=await cpu[row].step(),g=await sequential[row].step();const {backend:cb,frame:cf,...expectedCpu}=c,{backend:gb,frame:gf,...expectedGpu}=g;
@@ -22,7 +22,10 @@ test('chunk matches sequential original CPU component and original GPU component
    }
    assert.equal(result.transport.submits,1);assert.equal(result.transport.maps,1);
    assert.equal(afterChunk.submits-before.submits,1);assert.equal(afterChunk.maps-before.maps,1);assert.equal(counters.submits-afterChunk.submits,16);assert.equal(counters.maps-afterChunk.maps,16);
-   t.diagnostic(JSON.stringify({substeps,rows:2,steps,chunkSubmits:afterChunk.submits-before.submits,chunkMaps:afterChunk.maps-before.maps,sequentialOriginalGpuSubmits:counters.submits-afterChunk.submits,sequentialOriginalGpuMaps:counters.maps-afterChunk.maps,chunkMs,sequentialCpuAndGpuMs:performance.now()-seqStart,chunkAllocatedBytes:afterChunk.bytesCreated-before.bytesCreated,peakLiveBytes:counters.peakLiveBytes,processMemory:process.memoryUsage(),claim:'transport reduction only; no hardware speedup claim'}));
-  }finally{chunk.dispose();cpu.forEach(s=>s.dispose());sequential.forEach(s=>s.dispose());}
+   const individualMs=performance.now()-seqStart,afterIndividual={...counters},batchedStart=performance.now(),batchResult=await batched.run(steps),batchedMs=performance.now()-batchedStart;
+   assert.deepEqual(batchResult.frames,result.frames,'exact per-step batched-row recurrence');
+   const batchedSubmits=counters.submits-afterIndividual.submits,batchedMaps=counters.maps-afterIndividual.maps;assert.equal(batchedSubmits,steps);assert.equal(batchedMaps,steps);
+   t.diagnostic(JSON.stringify({substeps,rows:2,steps,chunkSubmits:afterChunk.submits-before.submits,chunkMaps:afterChunk.maps-before.maps,sequentialOriginalGpuSubmits:afterIndividual.submits-afterChunk.submits,sequentialOriginalGpuMaps:afterIndividual.maps-afterChunk.maps,batchedPerStepSubmits:batchedSubmits,batchedPerStepMaps:batchedMaps,batchedMs,batchedRunAllocatedBytes:counters.bytesCreated-afterIndividual.bytesCreated,chunkMs,sequentialCpuAndGpuMs:individualMs,chunkAllocatedBytes:afterChunk.bytesCreated-before.bytesCreated,peakLiveBytes:counters.peakLiveBytes,processMemory:process.memoryUsage(),claim:'transport reduction only; no hardware speedup claim'}));
+  }finally{batched.dispose();chunk.dispose();cpu.forEach(s=>s.dispose());sequential.forEach(s=>s.dispose());}
  }}finally{release();}
 });

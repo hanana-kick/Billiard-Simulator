@@ -148,3 +148,33 @@ test('three-cushion geometric root solves then reproduces ordered contacts in an
   if(process.env.INVERSE_PHYSICAL_EVIDENCE){const path=process.env.INVERSE_PHYSICAL_EVIDENCE,previous=fs.existsSync(path)?JSON.parse(fs.readFileSync(path,'utf8')):{};fs.writeFileSync(path,JSON.stringify({...previous,threeBall:evidence},null,2)+'\n');}
  }finally{restore();source.dispose();}
 });
+
+test('default all-angle planner continuation reaches a certified four-ball shot without selecting a branch',()=>{
+ const source=new PhysicsLab(R),restore=forbidLegacy();let search;
+ try{
+  const req=publicRequest(source);req.options={...req.options,searchAlgorithm:'inverse-constraints',maxKisses:1,solveTimeMs:20000};
+  search=LabInversePlanner.createStagedSearch(R,req);
+  const deadline=performance.now()+150000;let result,resumes=0;
+  do{
+   const jobs=LabInversePlanner.planWave(search),outcomes=jobs.map(job=>{
+    const evaluator=LabInverseEvents.begin(R,job.req,job.topology,job.settings,{purpose:job.purpose});
+    try{while(!LabInverseEvents.advance(evaluator,240));return{id:job.id,outcome:LabInverseEvents.finish(evaluator)};}
+    finally{LabInverseEvents.dispose(evaluator);}
+   });
+   LabInversePlanner.commitWave(search,outcomes);result=LabInversePlanner.stagedResult(search);
+   if(result.results.length)break;
+   assert.ok(performance.now()<deadline,JSON.stringify({tested:result.tested,resumes,active:search.active.map(e=>e.branch.id),suspended:search.waiting.length}));
+   if(search.finished){assert.equal(LabInversePlanner.resume(search),true);resumes++;}
+  }while(true);
+  assert.equal(result.options.elevationMode,'search');assert.equal(result.options.maxElevation,85);assert.equal(result.options.horizon,16);
+  assert.ok(result.firstSuccessCost);assert.ok(result.results.every(row=>row.success));
+  const replay=PhysicsLab.fromSnapshot(R,req.snapshot),game=new FourBallGame([1,2],[3,4]);
+  try{
+   replay.onEvent=event=>game.contact(event);assert.equal(game.begin(1),true);
+   assert.equal(replay.strike(1,result.results[0].settings).ok,true);
+   while((replay.cue||replay.objects.some(o=>!o.body.isSleeping()))&&replay.time<16)replay.step();
+   assert.equal(replay.cue,null);assert.ok(replay.objects.every(o=>o.body.isSleeping()));
+   assert.deepEqual(game.finish(),{cueId:1,delta:1,nextCue:1});
+  }finally{replay.dispose();}
+ }finally{if(search)LabInversePlanner.disposeSearch(search);restore();source.dispose();}
+});

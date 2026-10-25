@@ -48,7 +48,12 @@ test('visible game modes reset the world once and show the actual turn even whil
  await page.evaluate(()=>cueLab.select(cueLab.game.redIds[0]));await expect(page.getByLabel('4구 점수')).toContainText('현재 차례 흰 수구');
  await page.locator('#ballChoices').getByRole('button',{name:'노란 수구',exact:true}).click();expect(await page.evaluate(()=>cueLab.state.selectedId)).toBe(await page.evaluate(()=>cueLab.game.cueIds[1]));
  await page.getByRole('tab',{name:'경로 탐색',exact:true}).click();expect(await page.evaluate(()=>[cueLab.state.routeOptions.targetId,cueLab.state.routeOptions.secondId].every(id=>cueLab.game.redIds.includes(id)))).toBe(true);
- await page.getByRole('tab',{name:'경로 탐색',exact:true}).click();await modes.getByRole('button',{name:'3구',exact:true}).click();expect(await page.evaluate(()=>({balls:cueLab.lab.objects.length,game:cueLab.game,shots:cueLab.lab.shots}))).toEqual({balls:3,game:null,shots:0});
+ await page.getByRole('tab',{name:'경로 탐색',exact:true}).click();await modes.getByRole('button',{name:'3구',exact:true}).click();
+ // Three-ball now owns turn/scoring rules too; switching modes must not remove them.
+ expect(await page.evaluate(()=>({balls:cueLab.lab.objects.length,game:cueLab.game.snapshot(),shots:cueLab.lab.shots,selectedId:cueLab.state.selectedId}))).toMatchObject({balls:3,game:{kind:'three',cueIds:[1,2],objectIds:[1,2,3],activeCue:1,scores:{1:0,2:0},pending:null},shots:0,selectedId:1});
+ await page.getByRole('tab',{name:'수동',exact:true}).click();
+ await expect(page.getByLabel('3구 점수')).toContainText('현재 차례 수구');
+ await page.evaluate(()=>cueLab.select(3));await expect(page.getByLabel('3구 점수')).toContainText('현재 차례 수구');
  await four(page);expect(await page.evaluate(()=>Object.values(cueLab.game.scores))).toEqual([0,0]);expect(await page.evaluate(()=>cueLab.game.activeCue)).toBe(1);
 });
 

@@ -1,5 +1,5 @@
 {
-  "source_commit": "4ef104eb58b070c370ffc082b811e8e6527cf71c",
+  "source_commit": "e0a8275bcaf21c9284ecdf0733fe12698a8855c6",
   "excluded": [
     "artifacts/inverse-wave-cold-a713b92-bootstrap-failure.log",
     "artifacts/inverse-wave-cold-a713b92.json",
@@ -10,6 +10,7 @@
     "docs/evidence/bounded-four-ball-gpu-shot-full-9373cf5.log",
     "docs/evidence/bounded-four-ball-gpu-shot-smoke-9373cf5.log",
     "docs/evidence/bounded-four-ball-worker-focused-tests.log",
+    "docs/evidence/free-body-graph-chunk-batched-comparison.txt",
     "docs/evidence/free-body-graph-chunk-gpu-comparison.txt",
     "docs/validation/responsive-indexed-targeted-test.txt",
     "docs/validation/responsive-performance-full-test.txt",
@@ -185,6 +186,22 @@
       "bytes": 8117
     },
     {
+      "path": "docs/browser-mode-turn-regression.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a56f2636ce29d225192829392da961558d899251",
+      "sha256": "e5d22ac314f92e72923f7d988c7135b6f4266f70d477b18a80ad13db42124aab",
+      "bytes": 2330
+    },
+    {
+      "path": "docs/browser-search-continuation-regression.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4cf0b48628f59da085c3750747ceafbda9026603",
+      "sha256": "5636310c1ac1f7d27baf9766d8360095684dda49f16597666f4d7dbae2d82019",
+      "bytes": 2401
+    },
+    {
       "path": "docs/commit-only-inverse-world-observation.md",
       "mode": "100644",
       "type": "blob",
@@ -207,6 +224,14 @@
       "sha": "fe0b042c05c9a7d852292420509d5ca5f84f5f85",
       "sha256": "82adbcb96d00948e17f8fb603c7f2154e76ce5dee64395e853f4c20c8dd43510",
       "bytes": 5787
+    },
+    {
+      "path": "docs/continuous-cloth-chain-contract.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ca2a70acf5ebeb6510b925868e0426a5e8135576",
+      "sha256": "84586daaed73f545e7ef5970c5130f9c2fb37891220a580b4664c2e551db4e23",
+      "bytes": 13303
     },
     {
       "path": "docs/cue-convex-topology-export.md",
@@ -532,9 +557,9 @@
       "path": "docs/free-body-graph-chunk-prototype.md",
       "mode": "100644",
       "type": "blob",
-      "sha": "9b7fb6cf88e211d8486126360d181f435d0cdb22",
-      "sha256": "629a4234e6e163d5f1e40b442681ea2c7c3a4b948cda2b3d151463db3e39529a",
-      "bytes": 6091
+      "sha": "345ab3dbd9a15507964977f65a3c3574b4cb02ba",
+      "sha256": "f1350249611ffd0999cfd52e60f0e71ebf7223b2fca261cd7755043660bb9129",
+      "bytes": 7792
     },
     {
       "path": "docs/gpu-angular-patch.md",
@@ -1103,6 +1128,14 @@
       "sha": "a02e41d919c641304a4871c98ca7fe1b976c2ab5",
       "sha256": "6c936bb6fd873c762d2d9264c336a56a96154edbd7c9eb1050b691e9cf76bdc4",
       "bytes": 5484
+    },
+    {
+      "path": "docs/live-three-ball-withdrawal.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "988b7e1e9ad13da625db5e7294e326a71dd5bfff",
+      "sha256": "9410fc68b53004f525294a6dd95b64c8334ad10357722a61ea8df4beaf6bbe38",
+      "bytes": 7535
     },
     {
       "path": "docs/multishot-gpu-batch-validation.md",
@@ -1924,9 +1957,9 @@
       "path": "src/browser-initial-import/live-three-ball-first-step.mjs",
       "mode": "100644",
       "type": "blob",
-      "sha": "52468928e055697ee49c88cc465bef68e152463f",
-      "sha256": "3ab22b42b3a885be0a266c8f5fcf745689d7429dc19b687f171ec6bb4ac77027",
-      "bytes": 19136
+      "sha": "0844286c21e4b379a6284b5ffd8b8df59aaea04b",
+      "sha256": "8998a04058a743a3163d9877dc757b24894e8504ef640c5ea9415230b269ec57",
+      "bytes": 22574
     },
     {
       "path": "src/browser-initial-import/live-three-ball-initialization.mjs",
@@ -2828,9 +2861,9 @@
       "path": "src/inverse-planner.js",
       "mode": "100644",
       "type": "blob",
-      "sha": "b883fcbaf2be01125cc2f841bd35eb1967f5cf80",
-      "sha256": "eeb888d6f3fb626ff90a76082b5d6d999de430ecd7f68cf5cd498a5a6b8e1950",
-      "bytes": 8924
+      "sha": "1d1dafff8afc18721031509593677a72aef7cd59",
+      "sha256": "1049a8b22585a83d120a8e466b88ed2963d982beb022548cf57566351f06c1cd",
+      "bytes": 9734
     },
     {
       "path": "src/inverse-solver.js",
@@ -3377,6 +3410,22 @@
       "bytes": 10662
     },
     {
+      "path": "tests/cloth-chain-wire-contract-host.cjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7ffd22314cb41e0107750d67aff7084e93522b04",
+      "sha256": "ba215e0497a1ce6ddfeaa308942b009887ef530138dc045cebb512405d1d818b",
+      "bytes": 2108
+    },
+    {
+      "path": "tests/cloth-chain-wire-contract.cjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b301b83974db3efacf63c9e77fbfdf636cc87bf1",
+      "sha256": "4f1b5c1e35dc74477d2983591d28e799057ebd580090347d6006db567d2c076e",
+      "bytes": 2649
+    },
+    {
       "path": "tests/compare-live-performance.mjs",
       "mode": "100644",
       "type": "blob",
@@ -3820,9 +3869,9 @@
       "path": "tests/e2e/four-ball.spec.cjs",
       "mode": "100644",
       "type": "blob",
-      "sha": "0dff86c08e06cc39747e4fe95ab13610ce11fe3b",
-      "sha256": "047d95a8ffb06078366117ea3a3fe84ef168cdab07143a195ded73f7a419cec0",
-      "bytes": 7557
+      "sha": "3db28dced6ecb187f386f23231d3b220a73cfe3c",
+      "sha256": "da2690c1ea2425422f59298e28e0a7217203eadbd6ee4ae2f32a297a1a60fc71",
+      "bytes": 8070
     },
     {
       "path": "tests/e2e/input-strategy.spec.cjs",
@@ -4580,9 +4629,9 @@
       "path": "tests/experimental-free-body-graph-chunk-webgpu.cjs",
       "mode": "100644",
       "type": "blob",
-      "sha": "576d675b6ee492908b6d6c1eddf3889cbc85863f",
-      "sha256": "b3b4ab8cda526a737f2084ba6d15837df299415ab1b72178b480ac86e6e0e216",
-      "bytes": 3892
+      "sha": "fa4080c7730d5948deb542ac03aa95db950171ab",
+      "sha256": "b1efde066dbfd24415286c8e5c3f6cbc24e30037e19860c95a7c14c46307fa4f",
+      "bytes": 4613
     },
     {
       "path": "tests/experimental-free-body.cjs",
@@ -5220,9 +5269,9 @@
       "path": "tests/four-ball-integration.cjs",
       "mode": "100644",
       "type": "blob",
-      "sha": "e6d3ad6cbfb0d97d86550f65b21fdc61f3437d82",
-      "sha256": "984b2823f6c46cb09ce7eb9c13562068f0964d19a4afd4792c98d065172d529c",
-      "bytes": 2956
+      "sha": "79d9e5a633a1f0f075249d5bec8a82f3e402d0c8",
+      "sha256": "7228b64fb4e7856209fb1040b281a3fd0aabc43d43b531925647b5c5afb1ec8b",
+      "bytes": 4285
     },
     {
       "path": "tests/four-ball-physical-scoring-contract.mjs",
@@ -5367,6 +5416,22 @@
       "sha": "a398572415751b59fe5ee3eb709d21bc3802a79f",
       "sha256": "7bd733d1e078b532a3595567704933150baa2fbdc2b8aeb715858fa44303ab1d",
       "bytes": 2567
+    },
+    {
+      "path": "tests/free-body-batched-step-baseline-host.cjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "af3d6ed759fa551456f9309633e97455141f8c46",
+      "sha256": "cc0cc140b14115b81ddf0b1229923f03372525493e142c968db45e3260a45f4e",
+      "bytes": 1051
+    },
+    {
+      "path": "tests/free-body-batched-step-baseline.cjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7247709fc7e5130b5ccdbbea01e281e753a04df2",
+      "sha256": "334a8b1663c0a1e167952b36b782007518a6a457a5c008d080ccb9fe7d74f07b",
+      "bytes": 1793
     },
     {
       "path": "tests/free-body-graph-chunk-fixture.cjs",
@@ -5740,17 +5805,17 @@
       "path": "tests/inverse-physical-pipeline.cjs",
       "mode": "100644",
       "type": "blob",
-      "sha": "13d39c3d0acfd5699701ce73cf2dee45d28431f5",
-      "sha256": "637fc33cd4eeb8f9cf0f59ce7c541dfa19660587475b9cfc7af109130e72efd4",
-      "bytes": 14459
+      "sha": "952ce32f7df730217a4fb4417acb612d907aef2c",
+      "sha256": "e139ab99bf76ad437446167b649a334c14a8d51927e0a5c232a48f4aa85c728f",
+      "bytes": 16503
     },
     {
       "path": "tests/inverse-planner.cjs",
       "mode": "100644",
       "type": "blob",
-      "sha": "14e4e0e71fbc22c911e043e5449e8bbd120cdcf3",
-      "sha256": "314177698e52e24a5034841ead114e4970fdc500318e25d35024f388b58035b5",
-      "bytes": 4026
+      "sha": "0006ee9c33acc15b4d09e7e8c12b52b62da89e49",
+      "sha256": "7472a57c52944a928fb0beb87e462633df9eddad5720d396fbc5f3935eceef9c",
+      "bytes": 6124
     },
     {
       "path": "tests/inverse-positive-planner-trace.cjs",
@@ -5996,9 +6061,9 @@
       "path": "tests/live-three-ball-native-assertions.mjs",
       "mode": "100644",
       "type": "blob",
-      "sha": "e41440f92bb200b6bb17ab754a09344734527642",
-      "sha256": "e95328ded023f293d630a9106364b961ce431817a3609e4ffb5c3499c3469863",
-      "bytes": 7738
+      "sha": "9fb6cdda40b27e76eba3c78cd93350b08b294186",
+      "sha256": "2ce929e8dc8b3bdab035fb3e0db584b64638ff3ad819b0289c29ff520b657ce1",
+      "bytes": 8458
     },
     {
       "path": "tests/live-three-ball-tip-contact.mjs",
@@ -6007,6 +6072,14 @@
       "sha": "5535035a038e044039127444eff9478f3fd11417",
       "sha256": "3bd36e9648f348574ddaa72edcd26c07f0c2214b4f525ffdfe0e933fd0f9e693",
       "bytes": 11404
+    },
+    {
+      "path": "tests/live-three-ball-withdrawal.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1f20f0e60ad04a19848c1f018ca59c698310ac8c",
+      "sha256": "638ab7d2073f425525d312f80c9bd9f6c165439816096d7bd11848e37562190d",
+      "bytes": 12741
     },
     {
       "path": "tests/manual/frame-cap.html",
@@ -7668,9 +7741,9 @@
       "path": "backup/checkpoints/live-three-withdrawal-wip.md",
       "mode": "100644",
       "type": "blob",
-      "sha": "7734a306a55ea4d508e671abe78dc56a0af72896",
-      "sha256": "f9b57eacd264ad76bbd4ed0172d8cc51ae0daf34fd99a2ccd75af009cf5aad1f",
-      "bytes": 412
+      "sha": "618bc0299add9155dae04c82e6860051f008aa62",
+      "sha256": "ff82985d7c6d328254583779251ef0bfdacc06d2772387a7f0a2c235248397d2",
+      "bytes": 730
     }
   ]
 }

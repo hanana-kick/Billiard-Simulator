@@ -5,3 +5,25 @@ test('4-ball actual Rapier shot scores opponent contact, changes cue, undo resto
 test('three/four presets restore any-path both-order kiss defaults on every mode switch',()=>{const c=new LabController();c.lab=new PhysicsLab(R);try{assert.equal(c.state.activePanel,'routes');assert.equal(c.state.routeOptions.mode,'three');c.state.routeOptions={...c.state.routeOptions,mode:'direct',methods:['bank1'],order:'fixed',allowKiss:false,workers:1};c.setGameMode('four');assert.equal(c.state.routeOptions.mode,'carom');assert.deepEqual([c.state.routeOptions.targetId,c.state.routeOptions.secondId],c.game.redIds);c.setGameMode('free');assert.equal(c.state.routeOptions.mode,'three');assert.deepEqual(c.state.routeOptions.methods,['any']);assert.equal(c.state.routeOptions.order,'either');assert.equal(c.state.routeOptions.allowKiss,true);assert.equal(c.state.routeOptions.workers,0);}finally{c.lab.dispose();clearTimeout(c.noticeTimer);clearTimeout(c.predictionTimer);}});
 
 test('four-ball red inspection and either cue selection preserve red-only search targets',()=>{const c=new LabController();c.lab=new PhysicsLab(R);c.state.gameMode='four';c.setupGame();try{const reds=[...c.game.redIds];for(const id of [...reds,...c.game.cueIds]){c.select(id);assert.deepEqual([c.state.routeOptions.targetId,c.state.routeOptions.secondId],reds);assert.equal(c.state.routeOptions.mode,'carom');}c.routeOption('targetId',reds[1]);assert.deepEqual([c.state.routeOptions.targetId,c.state.routeOptions.secondId],[reds[1],reds[0]]);c.select(c.game.cueIds[0]);assert.deepEqual([c.state.routeOptions.targetId,c.state.routeOptions.secondId],[reds[1],reds[0]]);}finally{c.lab.dispose();clearTimeout(c.noticeTimer);clearTimeout(c.predictionTimer);}});
+
+
+test('mode round trip resets once per change and preserves turn rules independently of inspected ball',()=>{
+ const c=new LabController();c.lab=new PhysicsLab(R);c.setupGame();
+ const reset=c.reset.bind(c);let resets=0;c.reset=()=>{resets++;return reset();};
+ try{
+  for(const [mode,Game,count] of [['four',FourBallGame,4],['free',ThreeBallGame,3],['four',FourBallGame,4]]){
+   const previousWorld=c.lab,previousResets=resets;
+   c.setGameMode(mode);
+   assert.equal(resets,previousResets+1);assert.notEqual(c.lab,previousWorld);
+   assert.ok(c.game instanceof Game);assert.equal(c.lab.objects.length,count);
+   assert.equal(c.lab.shots,0);assert.equal(c.state.selectedId,1);assert.equal(c.game.activeCue,1);
+   assert.deepEqual(c.game.scores,{1:0,2:0});assert.equal(c.game.pending,null);
+   c.select(3);assert.equal(c.snapshot().game.activeCue,1);
+   c.select(2);assert.equal(c.state.selectedId,2);assert.equal(c.snapshot().game.activeCue,1);
+   const world=c.lab,game=c.game;c.setGameMode(mode);
+   assert.equal(resets,previousResets+1);assert.equal(c.lab,world);assert.equal(c.game,game);
+   // Seed a completed turn and nonzero score so the next mode really resets rules.
+   c.game.begin(2);c.game.finish();c.game.scores[2]=7;
+  }
+ }finally{c.lab.dispose();clearTimeout(c.noticeTimer);clearTimeout(c.predictionTimer);}
+});

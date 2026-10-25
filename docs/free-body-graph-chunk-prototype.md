@@ -109,3 +109,33 @@ column deliberately includes CPU work and assertions, so it is **not** a fair
 speedup ratio. SwiftShader is a software GPU, not hardware acceleration.
 
 Raw output: `docs/evidence/free-body-graph-chunk-gpu-comparison.txt`.
+
+### Baseline clarification (follow-on host checkpoint)
+
+The measured 16-map baseline above is **individually stepped rows**. Temporal
+chaining should primarily be compared with the existing per-step row batching:
+2 rows × 8 steps requires 8 maps, not 16. The gated comparison now includes
+`free-body-batched-step-baseline.cjs`, retaining the existing resident shader,
+per-step decode/validation/repack, and exact every-frame comparison. Actual
+8-map measurements have not yet run; this change is host/syntax checked only.
+
+### Granted-slot fair-baseline result (2026-10-25)
+
+The pending baseline above subsequently passed the explicitly granted short
+slot: exact every-frame/stage equality to original CPU, sequential singleton
+GPU, and per-step batched GPU. Actual instrumented submits/maps were **1/8/16**
+for chunk / per-step two-row batch / individual singleton calls at every
+substep setting. Full process duration 0.627 s; slot released immediately.
+
+| Substeps | Chunk ms | Per-step batch ms | Chunk buffer allocation | Batched run buffer allocation |
+|---|---|---|---|---|
+| 1 | 4.786 | 3.803 | 19,716 bytes | 6,608 bytes |
+| 3 | 5.283 | 3.778 | 37,164 bytes | 11,696 bytes |
+| 12 | 7.388 | 7.585 | 115,680 bytes | 34,592 bytes |
+
+These single SwiftShader samples show **no consistent speedup** against the fair
+batched baseline despite fewer maps. Pipeline setup is outside both timings;
+allocation columns count run-time transport allocations (resident baseline
+program/index allocations precede its run). This is not a rigorous benchmark
+or a hardware/world acceleration result. All original acceptance is unchanged.
+Raw log: `docs/evidence/free-body-graph-chunk-batched-comparison.txt`.

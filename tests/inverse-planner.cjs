@@ -16,3 +16,27 @@ test('geometry classification checkpoints yield without inventing unsupported br
 test('resume excludes user pause time without resetting active elapsed cost',()=>{const h=harness();let now=10;h.ctx.performance.now=()=>now;h.api.pause(h.state);assert.equal(h.api.stagedResult(h.state).elapsedMs,10);now=1010;assert.equal(h.api.stagedResult(h.state).elapsedMs,10);h.api.resume(h.state);now=1025;assert.equal(h.api.stagedResult(h.state).elapsedMs,25);});
 
 test('finished finite domain freezes active cost while dormant roots await resume',()=>{const h=harness();let now=0;h.ctx.performance.now=()=>now;const jobs=h.api.planWave(h.state);now=10;h.api.commitWave(h.state,jobs.map(j=>({id:j.id,outcome:{steps:1}})));assert.equal(h.state.finished,true);now=1010;assert.equal(h.api.stagedResult(h.state).elapsedMs,10);h.api.resume(h.state);now=1030;assert.equal(h.api.stagedResult(h.state).elapsedMs,30);});
+
+test('slice resume fairly admits new roots then resumes the oldest exact solver states',()=>{
+ const h=harness({status:'running'});let index=0;
+ h.state.iterator={next(){return{done:false,value:{id:'branch-'+index++,method:'carom',settings:{angle:5,elevation:0,speed:2,tipX:0,tipY:0}}}}};
+ const first=h.api.planWave(h.state);h.api.commitWave(h.state,first.map(j=>({id:j.id,outcome:{steps:1}})));
+ const original=h.state.active.slice(),iterations=h.api.stagedResult(h.state).rootIterations;
+ h.api.pause(h.state);h.api.resume(h.state);
+ assert.equal(h.state.waiting.length,4);assert.equal(h.api.stagedResult(h.state).rootIterations,iterations);
+ const second=h.api.planWave(h.state);assert.ok(second.every(j=>!first.some(old=>old.branchId===j.branchId)));
+ h.api.commitWave(h.state,second.map(j=>({id:j.id,outcome:{steps:1}})));h.api.pause(h.state);h.api.resume(h.state);
+ assert.deepEqual(h.state.active,original);assert.ok(h.state.active.every((entry,i)=>entry.state===original[i].state));
+ assert.equal(h.state.waiting.length,4);assert.equal(h.state.dormant.length,0);
+});
+test('mid-wave cancellation preserves active ownership until pending probes commit',()=>{
+ const h=harness({status:'running'}),jobs=h.api.planWave(h.state),original=h.state.active[0];
+ h.api.pause(h.state);h.api.resume(h.state);assert.equal(h.state.active[0],original);assert.equal(h.state.waiting.length,0);
+ h.api.commitWave(h.state,jobs.map(j=>({id:j.id,outcome:{steps:1}})));assert.equal(original.state.iterations,1);
+});
+test('exhausted geometry drains suspended live roots before reporting completion',()=>{
+ const h=harness({status:'running'}),jobs=h.api.planWave(h.state);h.api.commitWave(h.state,jobs.map(j=>({id:j.id,outcome:{steps:1}})));
+ const original=h.state.active[0];h.state.exhausted=false;h.api.pause(h.state);h.api.resume(h.state);assert.equal(h.state.waiting[0],original);
+ const continued=h.api.planWave(h.state);assert.equal(h.state.active[0],original);assert.equal(continued.length,1);assert.equal(h.state.finished,false);
+ h.api.disposeSearch(h.state);assert.equal(h.state.waiting.length,0);
+});

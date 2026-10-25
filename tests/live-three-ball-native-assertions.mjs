@@ -53,6 +53,8 @@ function comparePrepared(out,expected,projection){
  assert.equal(out.scene.bodies.length,row.bodies.length);
  for(const b of row.bodies){const a=out.scene.bodies.find(x=>same(x.handle,b.handle));assert.ok(a);assert.deepEqual(a.ids,b.ids);assert.equal(a.changes,b.changes);if(b.body_type==='Dynamic'){for(const k of ['normalized_linear_threshold','angular_threshold','time_until_sleep','time_since_can_sleep','sleeping'])assert.equal(a.activation[k],b.activation[k],b.handle.index+'.activation.'+k);for(const k of ['translation','rotation'])near(a.activation.sleep_prev_pose[k],b.activation.sleep_prev_pose[k],2e-6,'sleep history');}}
  compareBalls(out.balls,row,registry,'postpatch ball');if(out.prePatchBalls)compareBalls(out.prePatchBalls.map((state,i)=>({id:registry.objects[i].id,state})),expected.pre,registry,'prepatch ball');
+ const nativeCuePresent=row.bodies.some(b=>same(b.handle,roles?.head??projection.application.cue.head));
+ if(nativeCuePresent){
  for(const role of ['shaft','head']){
   const handle=roles?.[role]??projection.application.cue[role],b=row.bodies.find(x=>same(x.handle,handle));assert.ok(b);const a=out.cue[role];
   for(const [field,want]of Object.entries({translation:b.pos.position.translation,rotation:b.pos.position.rotation,linear:b.vels.linvel,angular:b.vels.angvel}))near(a[field],want,3e-6,'cue.'+role+'.'+field);
@@ -60,6 +62,11 @@ function comparePrepared(out,expected,projection){
  }
  const joints=row.state.impulse_joints.joint_graph.graph.edges.map(e=>e.weight);
  near(out.cue.impulses,[...joints[0].impulses.slice(3,6),joints[0].impulses[0],...joints[1].impulses.slice(3,6),joints[1].impulses[1],joints[1].impulses[2],joints[1].data.limits[0].impulse],2e-6,'cue joint impulses');
+ }else{
+  assert.equal(out.cue,null,'Source-retired cue must not retain numerical bodies');assert.equal(out.cueMetadata.cuePresent,false);
+  for(const role of ['head','shaft','guide']){const handle=roles?.[role]??projection.application.cue[role];assert.ok(handle);assert.equal(row.bodies.some(b=>same(b.handle,handle)),false);assert.equal(out.scene.bodies.some(b=>same(b.handle,handle)),false);}
+  assert.equal(row.state.impulse_joints.joint_graph.graph.edges.length,0,'All original cue joints retired');assert.deepEqual(out.emptyCuePairs,[]);assert.deepEqual(out.emptyCueConvexPairs,[]);
+ }
  const graph=Graph.graphView(row);assert.deepEqual(out.contactGraph.edges,graph.edges);assert.deepEqual(out.contactGraph.adjacency,graph.adjacency);assert.deepEqual(out.contactGraph.liveColliders,row.colliders.map(c=>c.handle));assert.equal(out.contactGraph.sequence,expected.h);
  const floor=registry.statics.find(s=>s.kind==='cloth');
  for(let i=0;i<3;i++){
