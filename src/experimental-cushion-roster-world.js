@@ -82,5 +82,6 @@ async function createGpuMathStages(device,s){
   return{...owned,project:async input=>(await owned.query.queryBatch([input])).contacts[0]};
  }catch(error){for(const x of Object.values(owned)){if(x instanceof Map){for(const stage of x.values())stage.dispose();}else x.dispose();}throw error;}
 }
-const api=Object.freeze({CAPABILITY,validate,createReferenceStepper,createGpuStepper,createReferenceMathStages,createGpuMathStages});G.LabCushionRosterWorldExperimental=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
+// Expose unchanged source numerical plans to the resident device owner only.
+const api=Object.freeze({CAPABILITY,validate,recyclePlan,geometryPlan,pack,createReferenceStepper,createGpuStepper,createReferenceMathStages,createGpuMathStages});G.LabCushionRosterWorldExperimental=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(globalThis);

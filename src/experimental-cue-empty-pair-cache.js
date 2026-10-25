@@ -100,5 +100,5 @@ const mapping=Promise.resolve(read.mapAsync(1));mapping.catch(()=>{});scoped=fal
   }finally{temp.forEach(b=>b.destroy());if(scoped)await device.popErrorScope();busy=false;}
  },dispose(){if(busy)throw Error('Empty-cache stage busy');disposed=true;owned.forEach(b=>b.destroy());brands.delete(stage);}};brands.set(stage,'webgpu');return stage;
 }
-const api=Object.freeze({CAPABILITY,validate,isStage:(stage,backend)=>brands.get(stage)===backend,createReferenceStage,createGpuStage});G.LabCueEmptyPairCacheExperimental=api;if(common)module.exports=api;
+const api=Object.freeze({CAPABILITY,INPUT_FLOATS,buildPlan,pack,validate,isStage:(stage,backend)=>brands.get(stage)===backend,createReferenceStage,createGpuStage});G.LabCueEmptyPairCacheExperimental=api;if(common)module.exports=api;
 })(globalThis);

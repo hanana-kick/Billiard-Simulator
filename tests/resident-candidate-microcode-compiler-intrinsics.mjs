@@ -1,0 +1,31 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync,existsSync} from 'node:fs';
+import {compileMicrocodeWGSL} from '../src/resident-candidate/microcode-compiler.mjs';
+import {createMicrocodeVmReferenceForTest} from '../src/resident-candidate/microcode-vm.mjs';
+import {sourceIntrinsicNativeWGSL} from '../src/resident-candidate/microcode-source-intrinsics.mjs';
+import {microcodeIntrinsicReference} from './resident-candidate-microcode-intrinsic-reference.mjs';
+import {numberWords} from '../src/resident-candidate/source-number.mjs';
+import {compileGraph} from '../src/resident-candidate/numeric-program.mjs';
+const f64=sourceIntrinsicNativeWGSL('source-f64-v1'),prefix='@group(0) @binding(1) var<storage,read> rc_program:array<u32>;@group(0) @binding(3) var<storage,read_write> rc_scratch:array<u32>;',numeric=prefix+sourceIntrinsicNativeWGSL('source-numeric-v1');
+function run(p,args,bindings=Array.from({length:5},()=>new Uint32Array(1))){const root=p.functions.find(f=>f.name===p.entryFunction),vm=createMicrocodeVmReferenceForTest({testOnly:true,code:p.instructions,localWords:p.localWords,stackCapacity:p.callDepth,entryPc:p.entryPc,intrinsics:p.intrinsicProfile,bindings,initialSlots:args.flatMap((a,i)=>Array.from(a,(value,j)=>({slot:root.params[i].slot+j,value}))),intrinsicHandler:microcodeIntrinsicReference});vm.begin();let n=0;while(vm.advance(0,65536)===1)assert.ok(++n<1000);assert.equal(vm.state[2],2);return{out:Uint32Array.from({length:root.returnWords},(_,i)=>vm.local(0,root.returnSlot+i)),bindings,steps:vm.state[6]};}
+test('intrinsics are explicit, source-bound, and leave default scalar bytecode unchanged',()=>{
+ const a=compileMicrocodeWGSL(f64,{entry:'rc_f64_add'}),b=compileMicrocodeWGSL(f64,{entry:'rc_f64_add',intrinsics:'none'}),fast=compileMicrocodeWGSL(f64,{entry:'rc_f64_add',intrinsics:'source-f64-v1'});assert.deepEqual(a.instructions,b.instructions);assert.equal(a.intrinsicProfile,'none');assert.equal(fast.functions.length,1);assert.equal(fast.instructions.length/8,4);assert.equal(fast.functions[0].intrinsic,'F64_ADD');assert.ok(fast.intrinsicApproval.entries.every(x=>Object.keys(x.dependencies).length&&/^[0-9a-f]{64}$/.test(x.closureSha256)));assert.throws(()=>compileMicrocodeWGSL(f64,{entry:'rc_f64_add',intrinsics:'fastish'}),/profile/);
+});
+test('compiler rejects altered root, nested dependency, struct, profile and storage rather than matching function names',()=>{
+ for(const code of[f64.replace('x.exponent-55','x.exponent-54'),f64.replace('let s=a[i]+b[i];','let s=a[i]-b[i];'),f64.replace('exponent: i32','exponent: u32')]){assert.notEqual(code,f64);assert.throws(()=>compileMicrocodeWGSL(code,{entry:'rc_f64_add',intrinsics:'source-f64-v1'}),/mismatch/);}
+ for(const code of[numeric.replace('RC_NUMERIC_IMPLEMENTATION_PROFILE:u32=2u','RC_NUMERIC_IMPLEMENTATION_PROFILE:u32=1u'),numeric.replace('opcode>15u','opcode>16u'),numeric.replace('var<storage,read_write> rc_scratch','var<storage,read> rc_scratch')]){assert.notEqual(code,numeric);assert.throws(()=>compileMicrocodeWGSL(code,{entry:'rc_num_eval',intrinsics:'source-numeric-v1'}));}
+ assert.throws(()=>compileMicrocodeWGSL(numeric,{entry:'rc_num_eval',intrinsics:'source-numeric-v1',storageBindings:{rc_program:2,rc_scratch:3}}),/address-space/);
+});
+test('all admitted f64 signatures produce the same exact words as full scalar source lowering',()=>{
+ const cases={rc_f64_add:[[1,2],[-0,-0],[Number.MIN_VALUE,Number.MIN_VALUE],[Number.MAX_VALUE,Number.MAX_VALUE]],rc_f64_sub:[[1,1],[0,-0]],rc_f64_mul:[[Math.PI,Math.E],[Number.MIN_VALUE,.5]],rc_f64_div:[[Math.PI,Math.E],[1,0]],rc_f64_sqrt:[[2],[-0],[-1]],rc_f64_eq:[[0,-0],[NaN,NaN]],rc_f64_lt:[[-1,0],[NaN,1]],rc_f64_le:[[1,1],[NaN,1]],rc_f64_finite:[[1],[Infinity]],rc_f64_to_f32_bits:[[Number.MIN_VALUE],[1+2**-24]],rc_f64_from_u32:[[0xffffffff],[0]],rc_f64_from_f32_bits:[[1],[0x80000000],[0x7fc00000]]};
+ for(const[entry,rows]of Object.entries(cases)){const scalar=compileMicrocodeWGSL(f64,{entry}),fast=compileMicrocodeWGSL(f64,{entry,intrinsics:'source-f64-v1'});for(const row of rows){const args=row.map(x=>entry==='rc_f64_from_u32'||entry==='rc_f64_from_f32_bits'?Uint32Array.of(x):numberWords(x));assert.deepEqual(run(fast,args).out,run(scalar,args).out,entry+' '+row);}}
+});
+test('numeric intrinsic lowering preserves every dirty scratch word, eager error and source return status',()=>{
+ const scalar=compileMicrocodeWGSL(numeric,{entry:'rc_num_eval'}),fast=compileMicrocodeWGSL(numeric,{entry:'rc_num_eval',intrinsics:'source-numeric-v1'});
+ const plans=[{inputFloats:2,nodes:[{kind:'add',args:[0,1]},{kind:'mul',args:[2,1]}],outputs:[3,0,3]},{inputFloats:2,nodes:[{kind:'div',args:[0,1]}],outputs:[0]}];
+ for(const plan of plans)for(const input of[Uint32Array.of(0x3f800000,0x40000000),Uint32Array.of(1,0),Uint32Array.of(0x7f800000,0),Uint32Array.of(0x80000000,0)]){const graph=compileGraph(plan),program=new Uint32Array(graph.program.length+3);program.set(graph.program,3);const scratch=new Uint32Array(graph.scratchWords+9).fill(0x12345678);scratch.set(input,4);const arrays=[new Uint32Array(1),program,new Uint32Array(1),scratch,new Uint32Array(1)],args=[Uint32Array.of(3),Uint32Array.of(4)],a=run(scalar,args,arrays.map(x=>x.slice())),b=run(fast,args,arrays.map(x=>x.slice()));assert.deepEqual(b.out,a.out);assert.deepEqual(b.bindings,a.bindings);assert.ok(b.steps<a.steps);}
+});
+test('actual dynamic owner source can select exact intrinsics without changing source identity or admission',t=>{
+ const path='/tmp/resident-microcode-dynamic-world.wgsl';if(!existsSync(path))return t.skip('Coordinator source artifact unavailable');const source=readFileSync(path,'utf8'),baseline=compileMicrocodeWGSL(source,{entry:'rc_micro_world_run'});for(const intrinsics of['source-f64-v1','source-numeric-v1']){const p=compileMicrocodeWGSL(source,{entry:'rc_micro_world_run',intrinsics});assert.equal(p.sourceSha256,baseline.sourceSha256);assert.ok(p.instructions.length<baseline.instructions.length);assert.equal(p.capability.nativeQualified,false);t.diagnostic(JSON.stringify({intrinsics,instructions:p.instructions.length/8,localWords:p.localWords,functions:p.functions.length,sourceCompileOnly:true}));}
+});

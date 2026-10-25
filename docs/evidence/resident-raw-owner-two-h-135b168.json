@@ -1,0 +1,396 @@
+{
+  "kind": "resident-raw-owner-two-h-acceptance-v1",
+  "scope": "Six actual raw rows; four accepted distinct parameter variants; independent source reference h2, not NativePhysicsLab full-rest or hardware performance",
+  "stage": "strict-gate-passed",
+  "generationIdentity": "19e6ca04effd9070c7dd60c7943d77dec8f8547a966868ca4d90f66bb44f2b2e",
+  "runtimeSha256": "4f2db833f116034d5ffe979b0d748418b4022f26c8906e0ed5cb13cf15b878dc",
+  "expectedSha256": "f68c428e2bd41c4c75733829f1a68457d86afe2bdeee631dff10b27bb529db67",
+  "actualSha256": "19a56138982cdab5d4986f88b296d3545bbe327334fec37da35660492a3233bc",
+  "sourceHead": "135b1687f1ac0cfd58a3bc7208740757bf7b6114",
+  "preStrikeIdentity": "2d5a2cbf1b7dc481cb90a19de8fa5cee7ea389c7dbbede645324afbcb87279c8",
+  "sourceIdentity": "a93473fceb1da27bb580a2981d3e536057eb30856e49d64405ad2b96f8b51e0f",
+  "rows": 6,
+  "runs": [
+    {
+      "run": 1,
+      "dispatches": 101082,
+      "submissions": 100,
+      "initialWrites": 7,
+      "copies": 1,
+      "mappings": 1,
+      "encodeWallMs": 1164.078251994506,
+      "queueDrainWallMs": 70440.07608100015,
+      "cache": {
+        "requests": 36,
+        "coldCompiles": 36,
+        "warmHits": 0,
+        "inflightHits": 0,
+        "failures": 0,
+        "compileWallMs": 325566.19568400003,
+        "validationRequests": 36,
+        "validationCold": 36,
+        "validationWarm": 0,
+        "validationFailures": 0,
+        "entries": 36
+      },
+      "compilationGroups": {
+        "owners": {
+          "requests": 17,
+          "coldCompiles": 17,
+          "warmHits": 0,
+          "inflightHits": 0,
+          "failures": 0,
+          "compileWallMs": 292288.370328,
+          "validationRequests": 0,
+          "validationCold": 0,
+          "validationWarm": 0,
+          "validationFailures": 0,
+          "entries": 17
+        },
+        "initializer": {
+          "requests": 19,
+          "coldCompiles": 19,
+          "warmHits": 0,
+          "inflightHits": 0,
+          "failures": 0,
+          "compileWallMs": 33277.825356000045,
+          "validationRequests": 0,
+          "validationCold": 0,
+          "validationWarm": 0,
+          "validationFailures": 0,
+          "entries": 19
+        }
+      },
+      "executionGroups": [
+        {
+          "name": "initialize",
+          "wallMs": 7615.811033000005,
+          "dispatches": 68314,
+          "submissions": 67,
+          "initialWrites": 0,
+          "copies": 0,
+          "mappings": 0,
+          "encodeWallMs": 511.98415999114513,
+          "queueDrainWallMs": 7047.915759000112
+        },
+        {
+          "name": "pump",
+          "wallMs": 64106.60644999996,
+          "dispatches": 32768,
+          "submissions": 32,
+          "initialWrites": 0,
+          "copies": 0,
+          "mappings": 0,
+          "encodeWallMs": 652.0940920033609,
+          "queueDrainWallMs": 63391.72214200004
+        }
+      ],
+      "sourceMode": "owners",
+      "lastNeededSweeps": [
+        818,
+        818,
+        818,
+        822,
+        0,
+        0
+      ]
+    },
+    {
+      "run": 2,
+      "dispatches": 101082,
+      "submissions": 100,
+      "initialWrites": 7,
+      "copies": 1,
+      "mappings": 1,
+      "encodeWallMs": 1099.866219997697,
+      "queueDrainWallMs": 72237.99600300001,
+      "cache": {
+        "requests": 36,
+        "coldCompiles": 0,
+        "warmHits": 36,
+        "inflightHits": 0,
+        "failures": 0,
+        "compileWallMs": 0,
+        "validationRequests": 36,
+        "validationCold": 0,
+        "validationWarm": 36,
+        "validationFailures": 0,
+        "entries": 0
+      },
+      "compilationGroups": {
+        "owners": {
+          "requests": 17,
+          "coldCompiles": 0,
+          "warmHits": 17,
+          "inflightHits": 0,
+          "failures": 0,
+          "compileWallMs": 0,
+          "validationRequests": 0,
+          "validationCold": 0,
+          "validationWarm": 0,
+          "validationFailures": 0,
+          "entries": 0
+        },
+        "initializer": {
+          "requests": 19,
+          "coldCompiles": 0,
+          "warmHits": 19,
+          "inflightHits": 0,
+          "failures": 0,
+          "compileWallMs": 0,
+          "validationRequests": 0,
+          "validationCold": 0,
+          "validationWarm": 0,
+          "validationFailures": 0,
+          "entries": 0
+        }
+      },
+      "executionGroups": [
+        {
+          "name": "initialize",
+          "wallMs": 7578.706966999976,
+          "dispatches": 68314,
+          "submissions": 67,
+          "initialWrites": 0,
+          "copies": 0,
+          "mappings": 0,
+          "encodeWallMs": 472.5636539970874,
+          "queueDrainWallMs": 7064.779911999998
+        },
+        {
+          "name": "pump",
+          "wallMs": 65869.687791,
+          "dispatches": 32768,
+          "submissions": 32,
+          "initialWrites": 0,
+          "copies": 0,
+          "mappings": 0,
+          "encodeWallMs": 627.3025660006097,
+          "queueDrainWallMs": 65173.07416700001
+        }
+      ],
+      "sourceMode": "owners",
+      "lastNeededSweeps": [
+        818,
+        818,
+        818,
+        822,
+        0,
+        0
+      ]
+    }
+  ],
+  "frames": 2,
+  "strictFullBankComparisons": 8,
+  "expectedSnapshotsUploaded": false,
+  "fullRest": false,
+  "native1024": false,
+  "hardwarePerformance": false,
+  "adapter": {
+    "vendor": "google",
+    "architecture": "swiftshader",
+    "device": "swiftshader-device-subzero-",
+    "description": "SwiftShader driver 5.0.0",
+    "isFallbackAdapter": true
+  },
+  "rawRows": [
+    {
+      "id": 17,
+      "settings": {
+        "angle": 0,
+        "elevation": 8,
+        "speed": 2,
+        "tipX": 0,
+        "tipY": 0
+      }
+    },
+    {
+      "id": 118,
+      "settings": {
+        "angle": 23,
+        "elevation": 37,
+        "speed": 1.7,
+        "tipX": 0.2,
+        "tipY": -0.1
+      }
+    },
+    {
+      "id": 219,
+      "settings": {
+        "angle": 310,
+        "elevation": 85,
+        "speed": 4.5,
+        "tipX": 0.2,
+        "tipY": -0.1
+      }
+    },
+    {
+      "id": 320,
+      "settings": {
+        "angle": 180,
+        "elevation": 37,
+        "speed": 0.5,
+        "tipX": -0.3,
+        "tipY": 0.15
+      }
+    },
+    {
+      "id": 421,
+      "settings": {
+        "angle": 180,
+        "elevation": 8,
+        "speed": 2,
+        "tipX": 0,
+        "tipY": 0
+      }
+    },
+    {
+      "id": 522,
+      "settings": {
+        "angle": 9,
+        "elevation": 8,
+        "speed": 0,
+        "tipX": 0,
+        "tipY": 0
+      }
+    }
+  ],
+  "sourceCaps": {
+    "cueJobs": 640,
+    "energyJobs": 25,
+    "broadRows": 27,
+    "coupledJobs": 2130,
+    "inactiveCcdJobs": 16,
+    "activeCcdJobs": 4096,
+    "ccdPasses": 4
+  },
+  "pipelineIdentity": {
+    "initializer": {
+      "raw-init": "416a99e2cedecacbec21fa253cc146b3288e363a7148f465c941169d84d376a3",
+      "raw-step": "0155d0338ef9544f886d63bad37f316f4675c0e3f70ae3bc2258de1654971bcc",
+      "raw-finish": "130c012adb4ed5946843b3565fcc3b6a9a6ee1be5e48d4f0b7f12804ebc1849c",
+      "contact-init": "b44186841cea87116a8e8f737aea577b1fc074a2bd6dd4a15d4269ea99c3096e",
+      "contact-gjk": "cc620d8c5c157d55299152448808e9b82c58a4c54911d899f59c56da10b91c46",
+      "contact-epa": "17f5acfe42ab9dd39cf532dc51750e585292ae15d5d3e8e5ec2f9164070ab86e",
+      "contact-finish": "e021ca95bcaa54f4b85364ce27a7c3863ffec6da43a25e2df033d5521e6e4fce",
+      "cast-init": "83ad898dd098a5ad5fcf6964decb723036231515b43db860c787a53336701dec",
+      "cast-cast": "8c24b3b449b7158e28e71b6d646915fa12c141d9fed14db9497b3c58dd3246f0",
+      "cast-contact-init": "928a22d535a6702cbef1c6f44b4de6138e6bf30a31ff03f35611f54d95fbb675",
+      "cast-contact-gjk": "f873d0259c2c4dce9659b1c427bff6ebb458f416c269156940181c78fe3392f3",
+      "cast-contact-epa": "20ed52a29d1e1be659067d114627231b87030bdabbd13229509e8b2cf679f17b",
+      "cast-finish": "0cb4f75bc9b0664abc4b5079e5344d6324fd976fa3537e416f982fa4744276ba",
+      "world-transfer": "660f60dfefcbfe9c73829846013f0d1f4d26f901e20bb634d25559cf8c34eaee",
+      "creation-begin": "8aa3a9b1779a8bda9a77afe09c94b8657f91e9246deb30625fba7b364f395fd8",
+      "creation-gather": "4004fd382a8a19030a58941125d68b1beacfa60a5e094225688affdc9c724383",
+      "creation-evaluate": "700a9ff33f1c56e589bf0bc876f91c085eb5139ad0939630819997103e0f725c",
+      "creation-scatter": "2947afa130524603b79c38645b8ca12de58541855a338d196f283dcb4666a1e6",
+      "creation-finish": "5bb805c80ac390673958cfd3e9299b6b24443ed7d9451b6630b3c864d0dec2e7"
+    },
+    "begin": "4280416e8e4758b08d1ff3762a6f5c68bc114b9d593374d14335e9aabc744be7",
+    "owners": [
+      {
+        "name": "device-owner-control-bvh-collision",
+        "sha256": "d164e666a9b166048cfba565cc47fadbf15d8fe97ef8df14ca2a09ccd5bd1e34"
+      },
+      {
+        "name": "device-owner-control-bvh-post",
+        "sha256": "1db74ba7c5df4c38ec5ca38e2dc1ee4d34232f62c20a37ba9e823abcca62c59e"
+      },
+      {
+        "name": "device-owner-control-scene-entry",
+        "sha256": "48897ba09b64e542b219b7b493d58cb9a8b2afca917088603905b64762d8320c"
+      },
+      {
+        "name": "device-owner-control-scene-collision",
+        "sha256": "b3152b55353a67fe808ffc1084d43386652e72267c479047c55d0934ad66186b"
+      },
+      {
+        "name": "device-owner-control-scene-energy",
+        "sha256": "dada0dbf0f1dac368d8a38808293f1f5edf383e595ea6e799576e7f072a237b9"
+      },
+      {
+        "name": "device-owner-control-application-ccd-begin",
+        "sha256": "9bb6e43255b4361a2ed20baf63be001a142c2304dbe92bd5fc45ffbdf5a27f7f"
+      },
+      {
+        "name": "device-owner-control-small-control",
+        "sha256": "3971d5d61daa59c952fef09edc0d4ba27fe94a7fac1f62f5a8c8cb9a9271bfdf"
+      },
+      {
+        "name": "device-owner-shared-graph",
+        "sha256": "ddb68e41f4cc8d975105e117a1164b847edc6102967dff7d588729f33d1e0130"
+      },
+      {
+        "name": "device-owner-point",
+        "sha256": "16ed5e7a83089a6be824f5fb8404cd8d23cc29b9c06bcc11b66db277ad18dd8a"
+      },
+      {
+        "name": "device-owner-contact",
+        "sha256": "c35252ab1819b97e5f3388aa68185a566864c353a561c986b5ace05175d3d26e"
+      },
+      {
+        "name": "device-owner-normal",
+        "sha256": "d13729a712829cf88e30328d9e28363470acd83addaccfd9a7c4d5f4e4986588"
+      },
+      {
+        "name": "device-owner-cue",
+        "sha256": "6effdaa717cae5f8e6b4da719d286b80d352a83bb271515904357be8e7e86896"
+      },
+      {
+        "name": "device-owner-coupled",
+        "sha256": "5b0958bf93a95386bbebdd53cf6df3a168f51a5633c1ddf40ca50cc3b21b77ac"
+      },
+      {
+        "name": "device-owner-application",
+        "sha256": "4bb382cfddfe344f3e8110ae52bc2c0aa4699a47bcb714a1ecb882b077f28083"
+      },
+      {
+        "name": "device-owner-ccd-pre",
+        "sha256": "2b6bb1f89373265890cdc64c271148bce2b0408be06e48d4efcff9e7d5447bb9"
+      },
+      {
+        "name": "device-owner-ccd-post",
+        "sha256": "cc5bf57a418deef9ac5152ff369f579bc4fcd807a2cd3d701722b67d078f0b62"
+      }
+    ],
+    "bytecodeSha256": "10217e7926ff546ee7364a2550cc589335161fbad00574405490e06575379fb2",
+    "originalPhasePipelines": 85,
+    "sourceInstructions": 124,
+    "sweep": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ]
+  },
+  "resources": {
+    "exitCode": 0,
+    "wallSeconds": 481.08789086100296,
+    "maxChildRssKiB": 2703140
+  },
+  "oracleFutureInputs": false,
+  "numericalPublicationMask": 0,
+  "remaining": [
+    "first physical cue strike",
+    "actual NativePhysicsLab full rest and late opponent foul",
+    "1024 physical candidates",
+    "strict numerical admission over supported paths",
+    "real hardware/software matched calibration"
+  ],
+  "localArtifacts": {
+    "directory": "/tmp/resident-raw-pc-isolated-native-v2",
+    "log": "/tmp/resident-raw-pc-isolated-native-v2.log"
+  }
+}

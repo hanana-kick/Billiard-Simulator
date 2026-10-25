@@ -1,0 +1,14 @@
+{
+  "kind": "resident-calibration-unmeasured-template-v1",
+  "status": "Blocked pending authorized hardware target and matched measurements",
+  "isMeasuredReport": false,
+  "workload": {"candidateCount": 6, "acceptedRows": 4, "rejectedRows": 2, "physicsH": 2, "dispatchesPerRun": 101082},
+  "hardware": {"adapter": null, "browserVersion": null, "backendVersion": null, "sourceParityPassed": null, "coldCompileMs": null, "warmEndToEndMs": null, "encodeMs": null, "submitMs": null, "queueDrainWallMs": null, "readbackMs": null, "gpuTimestampMs": null},
+  "software": {"adapter": null, "browserVersion": null, "backendVersion": null, "sourceParityPassed": null, "coldCompileMs": null, "warmEndToEndMs": null, "encodeMs": null, "submitMs": null, "queueDrainWallMs": null, "readbackMs": null, "gpuTimestampMs": null},
+  "softwareOverHardwareRatio": null,
+  "samePhysicalCpuHostEstablished": false,
+  "universalGpuSpeedup": false,
+  "fullShotPrediction": false,
+  "native1024": false,
+  "notes": ["This template is deliberately rejected by the measured-report comparator.", "Use the runner-generated reports; do not fill missing timing values with zero.", "Browser WebGPU may not expose backend/driver versions; record unavailable rather than infer.", "Queue-drain wall time is not a GPU timestamp. Different CPU hosts invalidate fixed-host-overhead assumptions."]
+}

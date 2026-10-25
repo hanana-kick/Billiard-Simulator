@@ -27,5 +27,5 @@ function result(raw,phase,backend){const supported=!!raw.supported,active=!!raw.
 function preReference(input){return result(unpack(A.execute(pack(validate(input)),PRE),PRE),'pre-force-prediction','cpu-reference');}
 function postReference(input){return result(unpack(A.execute(pack(validate(input,true)),POST),POST),'post-solved-pose','cpu-reference');}
 async function createGpuChecker(device){const pre=await gpuStage(device,PRE),post=await gpuStage(device,POST);let busy=false,disposed=false;async function run(input,isPost){if(busy||disposed)throw Error('CCD checker unavailable');const s=validate(input,isPost);busy=true;try{return result(await(isPost?post:pre).step(s),isPost?'post-solved-pose':'pre-force-prediction','webgpu');}finally{busy=false;}}return{pre:s=>run(s,false),post:s=>run(s,true),dispose(){if(busy)throw Error('CCD checker busy');disposed=true;pre.dispose();post.dispose();}};}
-const api=Object.freeze({CAPABILITY,validate,preReference,postReference,createGpuChecker});G.LabCcdInactiveExperimental=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
+const api=Object.freeze({CAPABILITY,validate,preReference,postReference,createGpuChecker,sourcePlans:()=>copy({pre:PRE,post:POST}),pack});G.LabCcdInactiveExperimental=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(globalThis);

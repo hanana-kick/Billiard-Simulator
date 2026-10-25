@@ -45,5 +45,5 @@ async function createGpuStage(device){
   },dispose(){if(busy)throw Error('CCD substep busy');if(disposed)return;disposed=true;owned.forEach(b=>b.destroy());owned.length=0;}});
  }catch(e){owned.forEach(b=>b.destroy());throw e;}
 }
-const api=Object.freeze({CAPABILITY,validate,reference,createGpuStage});G.LabCcdSubstepExperimental=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
+const api=Object.freeze({CAPABILITY,validate,reference,createGpuStage,sourcePlan:()=>structuredClone(PLAN),pack});G.LabCcdSubstepExperimental=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(globalThis);

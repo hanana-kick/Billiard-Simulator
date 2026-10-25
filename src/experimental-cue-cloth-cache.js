@@ -119,6 +119,6 @@ async function create(registry,options,device){const config=resolveRegistry(regi
   dispose(){need(!busy&&!lease,'Release cache owner before disposal');owner.pending=null;owner.disposed=true;math.dispose();brands.delete(api);}
  };brands.set(api,owner);return Object.freeze(api);
 }
-const api=Object.freeze({CAPABILITY,REVISION,resolveRegistry,emptyCache,validateCache,numericalContact,isStage:(stage,backend)=>brands.get(stage)?.backend===backend&&!brands.get(stage)?.disposed,readReceipt:receiptView,assertReceipt,createReferenceStage:(registry,options)=>create(registry,options,null),createGpuStage:(device,registry,options)=>create(registry,options,device)});
+const api=Object.freeze({CAPABILITY,REVISION,buildPlan,pack,decode,transition,resolveRegistry,emptyCache,validateCache,numericalContact,isStage:(stage,backend)=>brands.get(stage)?.backend===backend&&!brands.get(stage)?.disposed,readReceipt:receiptView,assertReceipt,createReferenceStage:(registry,options)=>create(registry,options,null),createGpuStage:(device,registry,options)=>create(registry,options,device)});
 G.LabCueClothCacheExperimental=api;if(common)module.exports=api;
 })(globalThis);

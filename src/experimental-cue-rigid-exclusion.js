@@ -114,5 +114,5 @@ async function createGpuGuard(device,initial){
  try{return controller(initial,items=>g.stepBatch(items),async pairs=>{precise??=await Query.createGpuQueries(device);const out=await precise.queryBatch(pairs);if(out.backend!=='webgpu')throw Error('Matching actual WGSL query proof required');return out;},'webgpu',()=>{g.dispose();precise?.dispose();});}
  catch(error){g.dispose();precise?.dispose();throw error;}
 }
-const api=Object.freeze({CAPABILITY,createReferenceGuard,createGpuGuard,isGuard:(x,backend)=>!!brands[backend]?.has(x)});G.LabCueRigidExclusionExperimental=api;if(common)module.exports=api;
+const api=Object.freeze({CAPABILITY,INPUT_FLOATS,buildPlan,pack,validateInitial,createReferenceGuard,createGpuGuard,isGuard:(x,backend)=>!!brands[backend]?.has(x)});G.LabCueRigidExclusionExperimental=api;if(common)module.exports=api;
 })(globalThis);
