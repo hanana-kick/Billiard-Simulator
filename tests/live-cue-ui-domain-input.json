@@ -1,0 +1,16 @@
+{
+  "schema": "live-cue-ui-domain-fixed-original-input-v1",
+  "classification": "one-preregistered-discovery-input-not-a-domain-proof",
+  "sourceCommit": "20b94dddaf87088e45f229ecf90449b79835f386",
+  "layout": "unchanged-three-ball-constructor",
+  "selectedId": 1,
+  "settings": {"angle": 0, "elevation": 35, "speed": 5, "tipX": 0.92, "tipY": 0},
+  "materials": "unchanged-defaults-including-tipFriction-0.7",
+  "placements": [],
+  "extraSettlingSteps": 0,
+  "dt": 0.0010416666666666667,
+  "strokeSubsteps": 64,
+  "maxCcdSubsteps": 4,
+  "stop": "original-cue-removal-or-original-0.22-second-timeout",
+  "noAutomaticAlternativeInputs": true
+}

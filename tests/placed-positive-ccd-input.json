@@ -1,0 +1,31 @@
+{
+  "schema": "legal-placement-derived-positive-ccd-input-v1",
+  "id": "placed-three-ball-e35-tipx025-late-right-cushion-v1",
+  "classification": "source-derived-discovery-fixture-not-independent-holdout",
+  "layout": "original-three-ball-constructor-plus-one-legal-move",
+  "selectedId": 1,
+  "settings": {"angle": 0, "elevation": 35, "tipX": 0.25, "tipY": 0, "speed": 10},
+  "parameters": "unchanged-PhysicsLab-defaults",
+  "dt": 0.0010416666666666667,
+  "strokeSubsteps": 64,
+  "maxCcdSubsteps": 4,
+  "constructorSettlingSteps": 72,
+  "additionalSettlingSteps": 0,
+  "placements": [{"id": 1, "api": "PhysicsLab.move", "deltaX": -0.005093665, "retainSettledYAndZ": true, "allowOverlap": false}],
+  "targetOriginalWorldStep": 389,
+  "captureFirstWorldStep": 385,
+  "captureLastWorldStep": 393,
+  "scanOrder": [389, 388, 390, 387, 391, 386, 392, 385, 393],
+  "stop": "first-positive-clamp-or-nine-fixed-boundaries-exhausted",
+  "derivation": {
+    "reference": "unchanged-e35-h389-source-observation",
+    "originalFirstImpact": 0.0004171431646682322,
+    "originalFullDt": 0.0010416667209938169,
+    "originalVx": 9.787644386291504,
+    "originalEffectivePointSpeed": 20.36513223035453,
+    "minCcdDt": 0.00016666667943354696,
+    "targetImpactFraction": 0.9,
+    "method": "move initial cue ball left by vx*(targetTOI-originalTOI), retaining real shot and all physics"
+  },
+  "require": ["legal-move-accepted", "real-strike-accepted-with-clearance", "no-ball-setters-after-created-snapshot", "no-source-physics-change", "cue-removed-before-scan", "paired-before-after-clamp-changed-next-pose"]
+}

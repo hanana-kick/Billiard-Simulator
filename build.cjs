@@ -2,6 +2,12 @@
 const fs=require('node:fs'),path=require('node:path'),{spawnSync}=require('node:child_process');
 const root=__dirname,online=process.argv.includes('--online'),dist=path.join(root,'dist');fs.mkdirSync(dist,{recursive:true});fs.mkdirSync(path.join(root,'docs'),{recursive:true});
 for(const args of [['tools/install-official-ui.cjs','--check'],['tools/build-ui.cjs',...(online?['--online']:[])]]){const r=spawnSync(process.execPath,args,{cwd:root,stdio:'inherit'});if(r.status!==0)process.exit(r.status||1);}
+// Optional transport assets only: the public application remains CPU-default.
+const gpuAssets=path.join(dist,'gpu-worker-assets');
+if(process.argv.includes('--gpu-worker-assets')){
+ const r=spawnSync(process.execPath,['tools/build-gpu-worker-assets.cjs',gpuAssets],{cwd:root,stdio:'inherit'});
+ if(r.status!==0)process.exit(r.status||1);
+}else fs.rmSync(gpuAssets,{recursive:true,force:true});
 const engine=fs.readFileSync(path.join(root,'vendor/rapier.cjs'),'utf8').replace(/\/\/# sourceMappingURL=.*$/mg,'');
 const script=(name,source,type='text/javascript')=>`<script id="source-${name}" type="${type}">\n${source.replace(/<\/script/gi,'<\\/script')}\n</script>`;
 const modules=['math','render-cadence','physics','game-rules','forecast','route-rules','route-sampler','optimizer-core','optimizer','inverse-geometry','inverse-solver','inverse-events','inverse-planner','optimizer-service','renderer','software-renderer','render-service','prediction-service'];

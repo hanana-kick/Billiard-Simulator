@@ -1,0 +1,22 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Standard browser WebGPU availability</title>
+<h1>Standard browser WebGPU availability</h1>
+<p>Capability query only. No device request, shader dispatch, original engine, or source import.</p>
+<button id="check">Check standard WebGPU adapter</button>
+<pre id="result">Not run.</pre>
+<script>
+const button=document.querySelector('#check'),result=document.querySelector('#result');
+button.addEventListener('click',async()=>{
+  button.disabled=true;const forceFallbackAdapter=new URL(location.href).searchParams.get('fallback')==='1';const out={schema:'standard-cloud-browser-webgpu-availability-v1',
+    userAgent:navigator.userAgent,secureContext:isSecureContext,gpuExposed:!!navigator.gpu,
+    standardRequestAdapterOnly:true,requestAdapterOptions:forceFallbackAdapter?{forceFallbackAdapter:true}:null,deviceRequested:false,physicsSteps:0,shaderDispatches:0};
+  try{if(!navigator.gpu){out.status='webgpu-not-exposed';}
+    else{const adapter=await (forceFallbackAdapter?navigator.gpu.requestAdapter({forceFallbackAdapter:true}):navigator.gpu.requestAdapter());out.adapterAvailable=!!adapter;
+      out.status=adapter?'adapter-available':'adapter-null';
+      if(adapter)out.adapter={vendor:adapter.info?.vendor??null,architecture:adapter.info?.architecture??null,
+        device:adapter.info?.device??null,description:adapter.info?.description??null};}
+  }catch(error){out.status='adapter-query-failed';out.error=String(error?.message??error);}
+  result.textContent=JSON.stringify(out,null,2);
+});
+</script>

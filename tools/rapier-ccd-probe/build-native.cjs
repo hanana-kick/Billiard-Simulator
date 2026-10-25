@@ -1,0 +1,9 @@
+'use strict';
+// SPDX-License-Identifier: Apache-2.0
+// Build a distinct read-only source-method oracle; never select the decoder bin.
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),{execFileSync}=require('node:child_process'),root=path.resolve(__dirname,'../..');
+const required=k=>{const v=process.env[k];if(!v)throw Error('Explicit '+k+' required');return path.resolve(v);};
+const source=JSON.parse(execFileSync(process.execPath,[path.join(root,'tools/rapier-snapshot-decoder/build-native.cjs'),'--check-source'],{encoding:'utf8',env:process.env}));
+const cargoHome=required('CARGO_HOME'),rustupHome=required('RUSTUP_HOME'),target=required('CARGO_TARGET_DIR'),rapier=required('RAPIER_SOURCE_ROOT'),parry=required('PARRY_SOURCE_ROOT'),cargo=process.env.RAPIER_CARGO??path.join(cargoHome,'bin/cargo'),decoder=path.join(target,'debug/rapier-snapshot-decoder'),hash=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex'),before=fs.existsSync(decoder)?hash(decoder):null,env={...process.env,CARGO_HOME:cargoHome,RUSTUP_HOME:rustupHome,CARGO_TARGET_DIR:target,CARGO_BUILD_JOBS:'1',PATH:path.join(cargoHome,'bin')+path.delimiter+process.env.PATH};
+execFileSync(cargo,['build','--locked','--bin','rapier-ccd-probe','--manifest-path',path.join(root,'tools/rapier-snapshot-exporter/Cargo.toml'),'--config','patch.crates-io.rapier3d.path='+JSON.stringify(path.join(rapier,'crates/rapier3d')),'--config','patch.crates-io.parry3d.path='+JSON.stringify(parry)],{cwd:root,env,stdio:'inherit'});
+if(before!==null&&hash(decoder)!==before)throw Error('Original snapshot decoder unexpectedly changed');const binary=path.join(target,'debug/rapier-ccd-probe');console.log(JSON.stringify({source,binary,sha256:hash(binary),originalDecoderUnchanged:before===null?null:true},null,2));

@@ -1,0 +1,40 @@
+{
+  "observedDateUTC": "2026-10-24",
+  "environment": "agent cloud Chromium; no user computer accessed",
+  "observationMethod": "supported CUA click and visible accessibility result on authored localhost page",
+  "defaultQuery": {
+    "schema": "standard-cloud-browser-webgpu-availability-v1",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+    "secureContext": true,
+    "gpuExposed": true,
+    "standardRequestAdapterOnly": true,
+    "deviceRequested": false,
+    "physicsSteps": 0,
+    "shaderDispatches": 0,
+    "adapterAvailable": false,
+    "status": "adapter-null"
+  },
+  "defaultQueryPageSha256": "e7bd275ec3a7e92cb3aca90c4000268ee9f41960c2bfe0821b50bab37cacefad",
+  "forcedFallbackQuery": {
+    "schema": "standard-cloud-browser-webgpu-availability-v1",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+    "secureContext": true,
+    "gpuExposed": true,
+    "standardRequestAdapterOnly": true,
+    "deviceRequested": false,
+    "physicsSteps": 0,
+    "shaderDispatches": 0,
+    "adapterAvailable": false,
+    "status": "adapter-null",
+    "requestAdapterOptions": {
+      "forceFallbackAdapter": true
+    }
+  },
+  "forcedFallbackQueryPageSha256": "e00e882f13b372db1dcded9e7ddd7d4b1c8a95b41ed3a01c6f60e95c93e45b7e",
+  "securityFlagsChanged": false,
+  "permissionsExpanded": false,
+  "browserDeviceRequested": false,
+  "ownedProbeTabServerTerminalCleaned": true,
+  "existingAppWindowPreserved": true,
+  "conclusion": "No standard adapter was available for either request; no browser GPU compute pass is claimed."
+}

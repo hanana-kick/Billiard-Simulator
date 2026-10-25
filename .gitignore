@@ -1,4 +1,4 @@
-node_modules/
+node_modules
 dist/
 online.html
 standalone.html
@@ -9,3 +9,6 @@ vendor/rapier.cjs
 playwright-report/
 test-results/
 *.log
+
+.browser-decoder-build/
+.browser-decoder-evidence/

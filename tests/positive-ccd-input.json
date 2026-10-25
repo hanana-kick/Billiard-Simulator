@@ -1,0 +1,20 @@
+{
+  "schema": "unchanged-physicslab-positive-ccd-search-input-v1",
+  "id": "original-three-ball-speed10-elevation60-tipx025",
+  "classification": "fixed-input-preregistered-before-positive-clamp-discovery-not-independent-holdout",
+  "layout": "original-three-ball-constructor-layout",
+  "selectedId": 1,
+  "settings": {"angle": 0, "elevation": 60, "tipX": 0.25, "tipY": 0, "speed": 10},
+  "parameters": "unchanged-PhysicsLab-defaults",
+  "dt": 0.0010416666666666667,
+  "strokeSubsteps": 64,
+  "maxCcdSubsteps": 4,
+  "constructorSettlingSteps": 72,
+  "additionalSettlingSteps": 0,
+  "placements": [],
+  "ordinaryWorldSteps": 768,
+  "maxOuterSteps": 1024,
+  "scanOrder": "source-contact-event-step-and-two-neighbors-first-then-all-ordinary-steps-chronologically",
+  "stop": "first-observed-positive-clamp-or-exhausted-fixed-original-horizon",
+  "require": ["original-strike-accepted-with-clearance", "no-ball-pose-or-velocity-injection", "cue-removed-before-scan", "unchanged-max4-CCD-and-source-physics", "paired-before-clamp-and-after-clamp-with-changed-next-pose"]
+}

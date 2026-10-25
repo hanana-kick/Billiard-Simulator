@@ -1,0 +1,15 @@
+'use strict';
+// SPDX-License-Identifier: Apache-2.0
+// Independent unchanged-source before/at/after boundary observation only.
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),v8=require('node:v8'),crypto=require('node:crypto');
+const Inputs=require('./cue-source-input-fixture.cjs'),F=Inputs.F,hash=x=>crypto.createHash('sha256').update(x).digest('hex');
+const BIRTHS=Object.freeze({'yaw-minus37-side-draw':247,'yaw61-25-elevated-holdout':308});
+function inspect(raw){const d=F.D.decodeSnapshot(raw.snapshot,{binary:process.env.RAPIER_SNAPSHOT_DECODER,engineVersion:'0.21.0'}),field=F.D.field,plain=F.plain,graph=plain(field(field(field(d.state,'narrow_phase'),'contact_graph'),'graph')),broad=plain(field(d.state,'broad_phase'));
+ const pairs=F.D.findStructs(d.state,'ContactPair').map(p=>({collider1:plain(field(p,'collider1')),collider2:plain(field(p,'collider2')),manifolds:F.D.findStructs(p,'ContactManifold').map(m=>({points:field(m,'points').items.length,solverContacts:field(field(m,'data'),'solver_contacts').items.length})),rigid:plain(F.D.findStructs(p,'RigidPairContacts')[0])}));
+ return{graph,broad,pairs};}
+async function captureArtifact(file,prefixPath){assert.ok(file&&path.isAbsolute(file));assert.ok(!fs.existsSync(file)&&!fs.existsSync(file+'.json'),'Never overwrite frozen observation');const p=Inputs.loadArtifact(prefixPath),boundary=BIRTHS[p.spec.id];assert.ok(boundary,'Explicit observed source boundary required');const targets=[boundary-1,boundary,boundary+1],identity={schema:'original-cue-single-birth-boundary-v1',case:p.spec,targets,prefixSha256:hash(fs.readFileSync(prefixPath)),native:Inputs.sourceIdentity(p.spec.id),sourceFileSha256:hash(fs.readFileSync(__filename))};await F.R.init();const lab=new PhysicsLab(F.R),observations=[],done=Symbol('observed-boundary');let h=0;
+ try{assert.equal(lab.strike(1,{...p.spec.settings},{saveSnapshot:false}).ok,true);assert.equal(hash(lab.world.takeSnapshot()),p.record.created.snapshotSha256);const original=lab.angularPatchResistance.bind(lab);lab.angularPatchResistance=dt=>{original(dt);h++;if(targets.includes(h)){const raw=F.capture(lab.world,p.record.roles);observations.push({h,time:lab.time,dt,raw,...inspect(raw)});}if(h===targets.at(-1))throw done;};try{while(h<targets.at(-1))lab.step();}catch(e){if(e!==done)throw e;}}finally{lab.dispose();}
+ assert.equal(observations.length,3);const bytes=v8.serialize({identity,observations}),manifest={identity,sha256:hash(bytes),bytes:bytes.length,summary:observations.map(o=>({h:o.h,graphEdges:o.graph.edges.map(e=>({collider1:e.weight.collider1,collider2:e.weight.collider2})),targetPair:o.pairs.find(p=>p.collider1.index===16&&p.collider2.index===24)??null}))};fs.writeFileSync(file,bytes,{flag:'wx'});fs.writeFileSync(file+'.json',JSON.stringify(manifest,null,2)+'\n',{flag:'wx'});return manifest;
+}
+module.exports={BIRTHS,inspect,captureArtifact};
+if(require.main===module)captureArtifact(process.argv[2],process.argv[3]).then(m=>console.log(JSON.stringify(m,null,2))).catch(e=>{console.error(e.stack);process.exitCode=1;});

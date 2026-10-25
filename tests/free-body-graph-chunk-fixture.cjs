@@ -1,0 +1,3 @@
+'use strict';
+function fixture(){return {kind:'isolated-dynamic-sphere',phase:'post-activation-pre-solve',bodyCount:1,contactCount:0,jointCount:0,ccdEnabled:false,sleeping:false,canSleep:false,lockedAxes:0,body:{linear:[0,0,0],angular:[0,0,0],translation:[0,0,0],rotation:[0,0,0,1],localCom:[0,0,0],invMass:[1,1,1],invInertia:[1,0,0,0,1,0,0,0,1],principalFrame:[0,0,0,1],principalInertia:[1,1,1],invPrincipalInertia:[1,1,1]},parameters:{substeps:1,dt:1/64,lengthUnit:1,gravityScale:1,linearDamping:0,angularDamping:0,normalizedMaxLinearVelocity:1,allowFastRotation:false,gyroscopic:false,gravity:[0,0,0],userForce:[0,0,0],userTorque:[0,0,0]}};}
+module.exports=fixture;

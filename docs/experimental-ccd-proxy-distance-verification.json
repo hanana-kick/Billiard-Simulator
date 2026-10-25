@@ -1,0 +1,61 @@
+{
+  "schema": "experimental-parry-proxy-distance-verification-v1",
+  "dateUtc": "2026-10-24",
+  "frozenBaseCommit": "fdba7d4",
+  "sourceRevision": "b716d375efc0201003f0cd9ef7168eee0b62c177",
+  "parryVersion": "0.31.1",
+  "proxyDistanceSourceSha256": "0a70a90c80d0e71ccbc0d3a32820401b34ed0405ff0812c578385cda248aeb3a",
+  "toiProxySourceSha256": "6275314acc6d1a24c677dca0f0932517c43bdfc13ed84d48e0590d82d440672b",
+  "nativeProbeSha256": "d688f62ebcf7a9cc836a1d1026a85c1e0d0bfa2c8276f50a1ae45da0b8fe1d3c",
+  "nativeProtocol": "pinned-parry-active-ccd-proxy-distance-v1",
+  "tests": {
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0,
+    "independentReducerHoldouts": 1800,
+    "sourceQueryCases": {
+      "cold": 244,
+      "warm": 244,
+      "total": 488,
+      "maximumObservedColdIterations": 4,
+      "actualSourceTransformSamples": 7
+    },
+    "nativeVsCpu": {
+      "floatComparison": "exact f32 bits including signed zero",
+      "maxAbsoluteError": 0,
+      "iterationsAndAllCacheIndices": "exact"
+    },
+    "actualWgslVsCpu": {
+      "floatComparison": "exact f32 bits including signed zero",
+      "maxAbsoluteError": 0,
+      "iterationsAllCacheIndicesAndDiagnosticFlags": "exact"
+    }
+  },
+  "gpu": {
+    "implementation": "webgpu npm 0.6.2 / Dawn",
+    "backend": "Vulkan",
+    "icd": "/usr/lib/chromium/vk_swiftshader_icd.json",
+    "adapter": "Chromium SwiftShader software Vulkan",
+    "shaderBytes": 11772,
+    "reducerGraphNodes": [
+      77,
+      308,
+      932
+    ],
+    "scalarScratchFloats": 948,
+    "pipeline": "cached per GPUDevice; no CPU fallback",
+    "priorCompilerDiagnosis": "WGSL module validation succeeded; direct aggregate reducers and pointer/private variants were killed at pipeline compilation with exit 137 after observed RSS up to 2291040 KiB. Scalar graph reducers compile in less than two seconds."
+  },
+  "scope": {
+    "fixedTargetA": "source-ordered arbitrary convex point cloud",
+    "movingProxyB": "Ball local ZERO, index 0",
+    "useRadii": false,
+    "physicsIntegration": false,
+    "productDefaultActivation": false,
+    "originalWasmWorldParity": false,
+    "completeActiveCcd": false,
+    "universalBitwiseDeviceGuarantee": false,
+    "iterationCapAndEveryTerminalBranchDynamicallyCovered": false
+  },
+  "command": "VK_ICD_FILENAMES=/usr/lib/chromium/vk_swiftshader_icd.json GPU_NATIVE_MODULE=/tmp/billiard-gpu-tools-v3/node_modules/webgpu/index.js PARRY_PROXY_DISTANCE_PROBE=/tmp/billiard-v3-native-target/debug/rapier-active-ccd-probe REQUIRE_WEBGPU=1 node --test tests/experimental-ccd-proxy-distance.cjs"
+}

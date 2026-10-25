@@ -121,10 +121,11 @@ test('three-cushion geometric root solves then reproduces ordered contacts in an
    });LabInverseSolver.accept(state,outcomes);
   }
   const solved=LabInverseSolver.result(state);assert.equal(solved.status,'verified',JSON.stringify({reason:solved.reason,residualNorm:solved.residualNorm,iterations:solved.iterations}));assert.equal(verificationCount,1);assert.ok(solved.iterations>0&&solved.iterations<=40);assert.notDeepEqual(solved.settings,seed);
-  const replay=PhysicsLab.fromSnapshot(R,req.snapshot);let evidence;
+  const replay=PhysicsLab.fromSnapshot(R,req.snapshot),game=new ThreeBallGame([1,2],[1,2,3]);let evidence;
   try{
    const originalWorldStep=replay.world.step,settings={...solved.settings},contacts=[];let cueObstruction=false,offTable=false;
    replay.onEvent=event=>{
+    game.contact(event);
     if(event.kind==='cue-obstruction')cueObstruction=true;
     if(event.kind!=='contact'||!event.a||!event.b)return;
     const other=event.a.id===1?event.b:event.b.id===1?event.a:null;if(!other)return;
@@ -132,7 +133,7 @@ test('three-cushion geometric root solves then reproduces ordered contacts in an
     if(other.kind==='cushion')contacts.push({kind:'cushion',rail:LabRouteRules.railId(other),time:event.time});
     else if(other.id!=null)contacts.push({kind:'object',id:other.id,time:event.time});
    };
-   assert.equal(replay.strike(1,settings).ok,true);assert.deepEqual(settings,solved.settings);
+   assert.equal(game.begin(1),true);assert.equal(replay.strike(1,settings).ok,true);assert.deepEqual(settings,solved.settings);
    while((replay.cue||replay.objects.some(o=>!o.body.isSleeping()))&&replay.time<16)replay.step();
    assert.equal(replay.world.step,originalWorldStep);assert.equal(replay.cue,null);assert.ok(replay.objects.every(o=>o.body.isSleeping()));assert.equal(cueObstruction,false);assert.equal(offTable,false);
    const secondIndex=contacts.findIndex(c=>c.kind==='object'&&c.id===2);assert.ok(secondIndex>=0);
@@ -140,6 +141,7 @@ test('three-cushion geometric root solves then reproduces ordered contacts in an
    assert.deepEqual(order,expected,'Public ordinary contact events must reproduce the entire intended chronology');
    assert.deepEqual([...new Set(throughGoal.filter(c=>c.kind==='object').map(c=>c.id))],[3,2]);assert.equal(throughGoal.filter(c=>c.kind==='cushion').length,3);
    const score=LabRouteRules.evaluate(throughGoal,{method:'any',firstId:3,secondId:2,minCushions:3});assert.equal(score.success,true);
+   assert.deepEqual(game.finish(),{cueId:1,delta:1,nextCue:1});assert.equal(game.scores[1],1,'Actual three-cushion replay retains the scoring turn');
    evidence={branchId:branch.id,seed,settings:solved.settings,rootIterations:solved.iterations,evaluations:solved.evaluations,physicsSteps,verificationCount,contacts:throughGoal,threeCushionSuccess:score.success,replaySeconds:replay.time,replaySteps:replay.steps,cueObstruction,offTable,independentUninstrumentedReplay:true,legacySamplingDisabled:true,globalOptimal:false,exhaustive:false,trace};
   }finally{replay.dispose();}
   assert.equal(JSON.stringify(req),requestBefore);assert.deepEqual(Buffer.from(source.world.takeSnapshot()),sourceBefore);assert.equal(source.shots,0);

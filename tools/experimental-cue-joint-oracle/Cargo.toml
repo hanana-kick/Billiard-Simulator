@@ -1,0 +1,15 @@
+[package]
+name = "experimental-cue-joint-oracle"
+version = "0.1.0"
+edition = "2024"
+license = "Apache-2.0"
+publish = false
+
+# build-native.cjs verifies official archives, copies Rapier, and adds only the
+# diagnostic module and its re-exports. A registry build is not an oracle.
+[dependencies]
+rapier3d = { version = "=0.36.0", features = ["serde-serialize", "enhanced-determinism", "debug-render", "profiler", "fem"] }
+serde_json = "1"
+
+[profile.dev]
+debug = 0

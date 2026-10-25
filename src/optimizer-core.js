@@ -94,18 +94,29 @@ function constrainSettings(search,settings){
 }
 // Read solver impulses independently of the UI contact log, whose 120 ms
 // debounce would otherwise hide fast double kisses. No body state is changed.
-function sampleKisses(trial,selectedId){
- const cue=trial.lab.get(selectedId),p=cue.body.translation();
- for(const other of trial.lab.objects){
-  if(other.id===selectedId||other.shape!=='sphere')continue;
-  let impact=false;
-  trial.lab.world.contactPair(cue.pairCollider||cue.collider,other.pairCollider||other.collider,m=>{
-   for(let j=0;j<m.numContacts();j++)if(m.contactImpulse(j)>0)impact=true;
-  });
-  const separation=len(sub(p,other.body.translation()))-cue.radius-other.radius;
-  G.LabRouteRules.observeKiss(trial.kisses,other.id,{impact,separated:separation>.00005,time:trial.lab.time-trial.start});
+// Lazy read-only adapter: constructing it performs no geometry/contact query.
+// GPU producers implement the same reads at an OUTER PhysicsLab.step boundary.
+function physicalInputs(lab){
+ return {get time(){return lab.time;},get dt(){return lab.dt;},
+  cuePresent:()=>!!lab.cue,allSleeping:()=>lab.objects.every(o=>o.body.isSleeping()),
+  position:id=>lab.get(id).body.translation(),radius:id=>lab.get(id)?.radius,
+  sphereIds:function*(){for(const o of lab.objects)if(o.shape==='sphere')yield o.id;},
+  positiveImpulse:(a,b)=>{const cue=lab.get(a),other=lab.get(b);let impact=false;
+   lab.world.contactPair(cue.pairCollider||cue.collider,other.pairCollider||other.collider,m=>{
+    for(let j=0;j<m.numContacts();j++)if(m.contactImpulse(j)>0)impact=true;
+   });return impact;}
+ };
+}
+function samplePhysicalKisses(trial,selectedId,input){
+ const p=input.position(selectedId);
+ for(const id of input.sphereIds()){
+  if(id===selectedId)continue;
+  const impact=input.positiveImpulse(selectedId,id);
+  const separation=len(sub(p,input.position(id)))-input.radius(selectedId)-input.radius(id);
+  G.LabRouteRules.observeKiss(trial.kisses,id,{impact,separated:separation>.00005,time:input.time-trial.start});
  }
 }
+function sampleKisses(trial,selectedId){samplePhysicalKisses(trial,selectedId,physicalInputs(trial.lab));}
 // Bounded damped least-squares in CUE INPUT space, never ball velocity.
 // Every finite-difference probe is an ordinary counted PhysicsLab candidate.
 function solveLinear(A,b){
@@ -183,26 +194,12 @@ function restoreClearance(search){
  if(!search.req.options.spin){s.tipX=0;s.tipY=0;}
  return s;
 }
-function beginTrial(search,settings){
- const {req,R}=search,lab=G.PhysicsLab.fromSnapshot(R,req.snapshot);
- let clearance=lab.cueClearance(lab.get(req.selectedId),settings);
- const fs=search.feasibilityStats||(search.feasibilityStats={checked:0,blocked:0,restored:0});fs.checked++;
- if(!clearance.clear&&req.options.elevationMode==='search'){
-  const restored=lab.findCueFeasible(lab.get(req.selectedId),settings,{minElevation:req.options.minElevation??0,maxElevation:req.options.maxElevation??85});
-  fs.checked+=restored.queries;
-  if(restored.found){if(search.pendingModel)search.pendingModel={...search.pendingModel,modified:true,modification:'geometric-cue-elevation-restoration'};settings=normalize(restored.settings);clearance=lab.cueClearance(lab.get(req.selectedId),settings);fs.checked++;fs.restored++;search.candidateResetDls=true;search.dlsPending=null;search.dls=null;}
- }
- if(!clearance.clear){
-  fs.blocked++;
-  if(!search.feasibility||clearance.distance>search.feasibility.distance)search.feasibility={settings:{...settings},distance:clearance.distance,probes:search.feasibility?.probes||0};
-  lab.dispose();search.rejected++;search.candidateResetDls=true;search.dlsPending=null;search.dls=null;return null;
- }
- search.clearancePassed=true;
- if(search.feasibility){fs.restored++;search.feasibility=null;}
-
- const trial={lab,settings,searchModel:search.pendingModel,start:lab.time,steps:0,rails:0,firstHit:false,success:false,invalid:false,contacts:[],closest:Infinity,afterFirstClosest:Infinity,firstClosest:Infinity,residual:null,residualDistance:Infinity,length:0,previous:{...lab.get(req.selectedId).body.translation()},maxHeight:0,pending:[],ambiguous:false,kisses:G.LabRouteRules.createKissTracker()};
+// Accumulator owns scoring state only; never simulation state or expected outcomes.
+function createPhysicalAccumulator(settings,searchModel,start,position){
+ return {settings,searchModel,start,steps:0,rails:0,firstHit:false,success:false,invalid:false,contacts:[],closest:Infinity,afterFirstClosest:Infinity,firstClosest:Infinity,residual:null,residualDistance:Infinity,length:0,previous:{...position},maxHeight:0,pending:[],ambiguous:false,kisses:G.LabRouteRules.createKissTracker()};
+}
+function observePhysicalEvent(req,trial,e){
  const first=req.options.targetId,second=req.options.secondId,needed=requiredCushions(req.options);
- lab.onEvent=e=>{
   if(e.kind==='cue-obstruction'){trial.cueObstructed=true;trial.invalid=true;return;}
   if(fullShot(req.options)&&e.kind==='contact'){const other=e.a?.id===req.selectedId?e.b:e.b?.id===req.selectedId?e.a:null;if(other&&(other.id===req.options.opponentId||other.kind==='floor')){trial.fourBallFoul=true;trial.invalid=true;}}
   if(trial.goalLatched)return;
@@ -225,20 +222,38 @@ function beginTrial(search,settings){
    if(trial.rails>=needed){trial.success=true;trial.hitTime=e.time-trial.start;trial.hitRails=trial.rails;}
    else trial.invalid=true;
   }else if(other.id!==first)trial.invalid=true;
- };
+}
+function beginTrial(search,settings){
+ const {req,R}=search,lab=G.PhysicsLab.fromSnapshot(R,req.snapshot);
+ let clearance=lab.cueClearance(lab.get(req.selectedId),settings);
+ const fs=search.feasibilityStats||(search.feasibilityStats={checked:0,blocked:0,restored:0});fs.checked++;
+ if(!clearance.clear&&req.options.elevationMode==='search'){
+  const restored=lab.findCueFeasible(lab.get(req.selectedId),settings,{minElevation:req.options.minElevation??0,maxElevation:req.options.maxElevation??85});
+  fs.checked+=restored.queries;
+  if(restored.found){if(search.pendingModel)search.pendingModel={...search.pendingModel,modified:true,modification:'geometric-cue-elevation-restoration'};settings=normalize(restored.settings);clearance=lab.cueClearance(lab.get(req.selectedId),settings);fs.checked++;fs.restored++;search.candidateResetDls=true;search.dlsPending=null;search.dls=null;}
+ }
+ if(!clearance.clear){
+  fs.blocked++;
+  if(!search.feasibility||clearance.distance>search.feasibility.distance)search.feasibility={settings:{...settings},distance:clearance.distance,probes:search.feasibility?.probes||0};
+  lab.dispose();search.rejected++;search.candidateResetDls=true;search.dlsPending=null;search.dls=null;return null;
+ }
+ search.clearancePassed=true;
+ if(search.feasibility){fs.restored++;search.feasibility=null;}
+
+ const trial=createPhysicalAccumulator(settings,search.pendingModel,lab.time,lab.get(req.selectedId).body.translation());
+ trial.lab=lab;trial.input=physicalInputs(lab);
+ lab.onEvent=e=>observePhysicalEvent(req,trial,e);
  const r=lab.strike(req.selectedId,settings,{saveSnapshot:false});
  if(!r.ok){lab.dispose();search.rejected++;return null;}
  return trial;
 }
-function stepTrial(search,t,budget=240){
- if(t.invalid)return true;
- if(t.success&&!t.lab?.cue&&!fullShot(search.req.options))return true;
- const {req}=search,max=Math.round(req.options.horizon/t.lab.dt),needed=requiredCushions(req.options);
- for(let i=0;i<budget&&t.steps<max;i++){
-  t.lab.step();t.steps++;
-  if(fullShot(req.options)){const cue=t.lab.get(req.selectedId),other=t.lab.get(req.options.opponentId);t.lab.world.contactPair(cue.pairCollider||cue.collider,other.pairCollider||other.collider,m=>{for(let j=0;j<m.numContacts();j++)if(m.contactImpulse(j)>0)t.fourBallFoul=true;});const p=cue.body.translation();if(!Number.isFinite(p.x+p.y+p.z))throw new Error('물리 계산에 유효하지 않은 값이 발생했습니다.');if(p.y<-0.05||Math.abs(p.x)>D.width/2+.07||Math.abs(p.z)>D.depth/2+.07)t.fourBallFoul=true;if(t.fourBallFoul)t.invalid=true;}
-  if(t.goalLatched){if(t.cueObstructed||t.fourBallFoul)t.invalid=true;if(t.invalid||(!t.lab.cue&&(!fullShot(req.options)||t.lab.objects.every(o=>o.body.isSleeping()))))return true;continue;}
-  sampleKisses(t,req.selectedId);
+// Called once after all solver substeps, presentation callbacks and outer bookkeeping.
+// Returns a stop decision; mutates only t, never input or the world.
+function observePhysicalStep(req,t,input){
+ const needed=requiredCushions(req.options);t.steps++;
+  if(fullShot(req.options)){if(input.positiveImpulse(req.selectedId,req.options.opponentId))t.fourBallFoul=true;const p=input.position(req.selectedId);if(!Number.isFinite(p.x+p.y+p.z))throw new Error('물리 계산에 유효하지 않은 값이 발생했습니다.');if(p.y<-0.05||Math.abs(p.x)>D.width/2+.07||Math.abs(p.z)>D.depth/2+.07)t.fourBallFoul=true;if(t.fourBallFoul)t.invalid=true;}
+  if(t.goalLatched){if(t.cueObstructed||t.fourBallFoul)t.invalid=true;if(t.invalid||(!input.cuePresent()&&(!fullShot(req.options)||input.allSleeping())))return true;return false;}
+  samplePhysicalKisses(t,req.selectedId,input);
   if(req.options.methodId&&t.pending.length){
    const pending=t.pending.splice(0).sort((a,b)=>a.time-b.time);
    for(let k=0;k<pending.length;){let j=k+1;while(j<pending.length&&Math.abs(pending[j].time-pending[k].time)<1e-9)j++;
@@ -253,31 +268,48 @@ function stepTrial(search,t,budget=240){
   }
   if(t.cueObstructed||t.fourBallFoul)t.invalid=true;
   if(!G.LabRouteRules.kissAllowed(req.options)&&t.kisses.contacts.some(e=>!t.success||e.time<=(t.hitTime??Infinity)+1e-9))t.invalid=true;
-  const cue=t.lab.get(req.selectedId),pos=cue.body.translation();t.length+=len(sub(pos,t.previous));t.previous={...pos};t.maxHeight=Math.max(t.maxHeight,pos.y-cue.radius);
-  const a=t.lab.get(req.options.targetId),b=t.lab.get(req.options.secondId),gap=o=>Math.max(0,len(sub(pos,o.body.translation()))-cue.radius-o.radius);
+  const pos=input.position(req.selectedId),cueRadius=input.radius(req.selectedId);t.length+=len(sub(pos,t.previous));t.previous={...pos};t.maxHeight=Math.max(t.maxHeight,pos.y-cueRadius);
+  const a=req.options.targetId,b=input.radius(req.options.secondId)===undefined?null:req.options.secondId,gap=id=>Math.max(0,len(sub(pos,input.position(id)))-cueRadius-input.radius(id));
   const residualTarget=req.options.mode==='target'||!t.firstHit?a:b;
-  if(residualTarget){const diff=sub(pos,residualTarget.body.translation()),distance=len(diff),surface=Math.max(0,distance-cue.radius-residualTarget.radius);if((t.residualFirstHit!==t.firstHit)||surface<t.residualDistance){t.residualFirstHit=t.firstHit;t.residualDistance=surface;t.residualTopology=JSON.stringify([t.firstHit,t.contacts.map(e=>[e.kind,e.id??null,e.rail??e.label])]);t.residual=distance>1e-12?[diff.x*surface/distance,diff.y*surface/distance,diff.z*surface/distance]:[0,0,0];}}
+  if(residualTarget!=null){const diff=sub(pos,input.position(residualTarget)),distance=len(diff),surface=Math.max(0,distance-cueRadius-input.radius(residualTarget));if((t.residualFirstHit!==t.firstHit)||surface<t.residualDistance){t.residualFirstHit=t.firstHit;t.residualDistance=surface;t.residualTopology=JSON.stringify([t.firstHit,t.contacts.map(e=>[e.kind,e.id??null,e.rail??e.label])]);t.residual=distance>1e-12?[diff.x*surface/distance,diff.y*surface/distance,diff.z*surface/distance]:[0,0,0];}}
   if(!t.firstHit)t.firstClosest=Math.min(t.firstClosest,gap(a));
-  if(t.firstHit&&b)t.afterFirstClosest=Math.min(t.afterFirstClosest,gap(b));
+  if(t.firstHit&&b!=null)t.afterFirstClosest=Math.min(t.afterFirstClosest,gap(b));
   if(req.options.mode==='target')t.closest=Math.min(t.closest,gap(a));
   else if(t.firstHit&&t.rails>=needed)t.closest=Math.min(t.closest,gap(b));
   if(!Number.isFinite(pos.x+pos.y+pos.z))throw new Error('물리 계산에 유효하지 않은 값이 발생했습니다.');
   // Leaving the cloth invalidates a table shot, even if it lands on a target later.
   if(pos.y<-0.05||Math.abs(pos.x)>D.width/2+.07||Math.abs(pos.z)>D.depth/2+.07)t.invalid=true;
-  if(t.success&&!t.invalid){t.goalLatched=true;if(!t.lab.cue&&!fullShot(req.options))return true;}
-  if(t.invalid||(!t.lab.cue&&t.lab.objects.every(o=>o.body.isSleeping())))return true;
- }
- if(t.steps>=max&&t.goalLatched&&(t.lab.cue||(fullShot(req.options)&&!t.lab.objects.every(o=>o.body.isSleeping())))){t.invalid=true;t.verificationIncomplete=true;}
+  if(t.success&&!t.invalid){t.goalLatched=true;if(!input.cuePresent()&&!fullShot(req.options))return true;}
+  if(t.invalid||(!input.cuePresent()&&input.allSleeping()))return true;
+ return false;
+}
+function finishPhysicalHorizon(req,t,input){
+ const max=Math.round(req.options.horizon/input.dt);
+ if(t.steps>=max&&t.goalLatched&&(input.cuePresent()||(fullShot(req.options)&&!input.allSleeping()))){t.invalid=true;t.verificationIncomplete=true;}
  return t.steps>=max;
 }
-function finishTrial(search,t){
- const o=search.req.options,success=t.success&&!t.invalid;
+function stepTrial(search,t,budget=240){
+ if(t.invalid)return true;
+ if(t.success&&!t.lab?.cue&&!fullShot(search.req.options))return true;
+ const {req}=search,input=t.input||physicalInputs(t.lab),max=Math.round(req.options.horizon/input.dt);
+ for(let i=0;i<budget&&t.steps<max;i++){
+  t.lab.step();
+  if(observePhysicalStep(req,t,input))return true;
+ }
+ return finishPhysicalHorizon(req,t,input);
+}
+function physicalResult(o,t,time){
+ const success=t.success&&!t.invalid;
  const clearance=Number.isFinite(t.closest)?t.closest:t.firstHit&&Number.isFinite(t.afterFirstClosest)?t.afterFirstClosest:Number.isFinite(t.firstClosest)?t.firstClosest:5;
  const cost=o.objective==='gentle'?t.settings.speed:t.length;
  const missing=Math.max(0,requiredCushions(o)-t.rails);
  const penalty=success?0:t.invalid?600:t.firstHit?(missing?220+20*missing:100)+25*clearance:450+20*clearance;
  const failureReason=success?null:t.cueObstructed?'cue-obstruction':t.fourBallFoul?'four-ball-opponent-or-off-table':t.verificationIncomplete?(fullShot(o)?'four-ball-shot-incomplete':'cue-tail-incomplete'):t.invalid?(t.rule?.reason||'invalid-contact-or-table-state'):!t.firstHit?'first-target-not-hit':missing?'insufficient-cushions':'final-target-not-hit';
- const result={gameMode:o.gameMode,opponentId:o.opponentId,fourBallThreeCushion:o.fourBallThreeCushion,settings:t.settings,searchModel:t.searchModel,success,failureReason,residual:t.residual,topology:t.residualTopology,score:penalty+cost/100,clearance,firstHit:t.firstHit,cushions:t.hitRails??t.rails,distance:t.length,seconds:t.hitTime??(t.lab.time-t.start),contacts:t.contacts.slice(),maxHeight:t.maxHeight,kissContacts:t.kisses.contacts.slice(),method:o.methodId||null,firstId:o.targetId,secondId:o.secondId,ambiguous:t.ambiguous||false,matchedMethods:success&&o.methodId&&o.mode==='three'?G.LabRouteRules.classify(t.contacts,o.targetId,o.secondId):[]};
+ const result={gameMode:o.gameMode,opponentId:o.opponentId,fourBallThreeCushion:o.fourBallThreeCushion,settings:t.settings,searchModel:t.searchModel,success,failureReason,residual:t.residual,topology:t.residualTopology,score:penalty+cost/100,clearance,firstHit:t.firstHit,cushions:t.hitRails??t.rails,distance:t.length,seconds:t.hitTime??(time-t.start),contacts:t.contacts.slice(),maxHeight:t.maxHeight,kissContacts:t.kisses.contacts.slice(),method:o.methodId||null,firstId:o.targetId,secondId:o.secondId,ambiguous:t.ambiguous||false,matchedMethods:success&&o.methodId&&o.mode==='three'?G.LabRouteRules.classify(t.contacts,o.targetId,o.secondId):[]};
+ return result;
+}
+function finishTrial(search,t){
+ const result=physicalResult(search.req.options,t,t.lab.time);
  t.lab.dispose();acceptCandidate(search,result,t.steps);return result;
 }
 function acceptCandidate(search,result,steps){
@@ -333,5 +365,5 @@ function finishSearch(search){
  return{...progress(search),failureReasons:{...search.failureReasons},results:unique,resultCount:unique.length,resultLimit:null,nearest:unique.length?null:search.bestMiss,options:{...search.req.options},hz:Math.round(1/search.req.snapshot.dt),solverStats:search.solverStats||{probes:0,steps:0,accepted:0,rejected:0},globalOptimal:false,exhaustive:false,seedCushionRange:search.req.options.methodId==='carom'?[requiredCushions(search.req.options),search.seedMaxOrder??requiredCushions(search.req.options)]:search.req.options.methodId==='any'?[3,search.seedMaxOrder??3]:null,seedMaxOrder:search.seedMaxOrder??null,searchModel:search.req.options.inputStrategy==='analytic'?'closed-form-inputs-with-physical-fallback':'hybrid-physical-search',inputStrategy:search.req.options.inputStrategy||'hybrid',physicsSteps:search.physicsSteps||0,firstSuccessCost:search.firstSuccessCost??null,analyticDiagnostics:search.analyticDiagnostics||[],analyticStats:{proposed:search.analyticSeeds?.length||0,feasible:search.analyticSeeds?.filter(x=>x.ok).length||0,evaluated:search.analyticCursor||0,rejectedReasons:[...new Set((search.analyticSeeds||[]).filter(x=>!x.ok).map(x=>x.reason))]},feasibilityStats:search.feasibilityStats,feasibilityStatus:search.successes.length?'verified-feasible-shot':'not-found-within-budget',terminationReason:search.finished?'candidate-budget-exhausted':'partial'};
 }
 function disposeSearch(search){if(search.active){search.active.lab.dispose();search.active=null;}}
-G.ShotSearchCore={proposeCandidate,beginCandidate,finishCandidate,commitCandidate,acceptCandidate,validate,constrainSettings,sampleKisses,solveLinear,dampedStep,projectInputs,nextDls,createSearch,advanceSearch,finishSearch,disposeSearch,progress,beginTrial,stepTrial,finishTrial};
+G.ShotSearchCore={createPhysicalAccumulator,observePhysicalEvent,observePhysicalStep,finishPhysicalHorizon,physicalResult,physicalInputs,proposeCandidate,beginCandidate,finishCandidate,commitCandidate,acceptCandidate,validate,constrainSettings,sampleKisses,solveLinear,dampedStep,projectInputs,nextDls,createSearch,advanceSearch,finishSearch,disposeSearch,progress,beginTrial,stepTrial,finishTrial};
 })(globalThis);

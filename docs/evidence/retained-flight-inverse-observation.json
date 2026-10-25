@@ -1,0 +1,126 @@
+{
+  "schema": "retained-flight-inverse-observer-acceptance-v1",
+  "runtimeBase": "948507c8c44c5d7a78d36b49a9b3d93b529ae76e",
+  "testCommit": "5dba995779654bf9cf7af4af9dbd40d911e23b58",
+  "scope": "genuine settled speed4.5 inverse observations through first contact, cloth departure, retained-empty pair, deletion and second contact; not full-rest inverse scoring",
+  "nativeGpu": "Vulkan SwiftShader; not hardware speed",
+  "cpu": {
+    "backend": "cpu-reference",
+    "settings": {
+      "angle": 0,
+      "elevation": 8,
+      "speed": 4.5,
+      "tipX": 0,
+      "tipY": 0
+    },
+    "receipts": 374,
+    "events": [
+      {
+        "kind": "object",
+        "id": 3,
+        "time": 0.059375000054326055,
+        "stepDt": 0.0010416667209938169,
+        "stepIndex": 309
+      },
+      {
+        "kind": "object",
+        "id": 3,
+        "time": 0.12708333338766276,
+        "stepDt": 0.0010416667209938169,
+        "stepIndex": 374
+      }
+    ],
+    "maxAbsoluteErrors": {
+      "other": 0,
+      "position": 0,
+      "projection": 0,
+      "residual": 0
+    },
+    "postCueOriginalOuter": 119,
+    "twiceRetriedFailureBoundaries": [
+      311,
+      312,
+      374
+    ],
+    "sourceHashes": {
+      "vendor/rapier.cjs": "fca22b2f33d4e88d2992215f42df6312093476db7fea4197816fb8e4ce17cba4",
+      "src/physics.js": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d",
+      "src/controller.js": "93bc522f06df65a9373ecadc47836e14d4cb0141822412afc917b511f8663ab4",
+      "src/route-rules.js": "94c29aa2108e1946fb16ba66f29f3923811035df7e900408c07c9df24ea06b76"
+    }
+  },
+  "gpu": {
+    "backend": "webgpu",
+    "settings": {
+      "angle": 0,
+      "elevation": 8,
+      "speed": 4.5,
+      "tipX": 0,
+      "tipY": 0
+    },
+    "receipts": 374,
+    "events": [
+      {
+        "kind": "object",
+        "id": 3,
+        "time": 0.059375000054326055,
+        "stepDt": 0.0010416667209938169,
+        "stepIndex": 309
+      },
+      {
+        "kind": "object",
+        "id": 3,
+        "time": 0.12708333338766276,
+        "stepDt": 0.0010416667209938169,
+        "stepIndex": 374
+      }
+    ],
+    "maxAbsoluteErrors": {
+      "other": 0,
+      "position": 0,
+      "projection": 0,
+      "residual": 0
+    },
+    "postCueOriginalOuter": 119,
+    "twiceRetriedFailureBoundaries": [
+      311,
+      312,
+      374
+    ],
+    "sourceHashes": {
+      "vendor/rapier.cjs": "fca22b2f33d4e88d2992215f42df6312093476db7fea4197816fb8e4ce17cba4",
+      "src/physics.js": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d",
+      "src/controller.js": "93bc522f06df65a9373ecadc47836e14d4cb0141822412afc917b511f8663ab4",
+      "src/route-rules.js": "94c29aa2108e1946fb16ba66f29f3923811035df7e900408c07c9df24ea06b76"
+    }
+  },
+  "exactResultsExceptBackend": true,
+  "injectedFailuresPerBackend": 8,
+  "readerCommitInteractionFailure": false,
+  "files": {
+    "artifacts/retained-inverse-acceptance/cpu.log": {
+      "bytes": 1186,
+      "sha256": "aecafb7e6b6d2a8f571a7df0bdf33b2b7462f1a3d7d7ba3fb3a5059c043a3118"
+    },
+    "artifacts/retained-inverse-acceptance/gpu.log": {
+      "bytes": 1513,
+      "sha256": "44fef1f99f292e88593c7a124870f2529dc0566748e5665e8b061b601ae53c07"
+    },
+    "artifacts/retained-inverse-acceptance/speed4.5-cpu-reference.json": {
+      "bytes": 1070,
+      "sha256": "b19492de65c86ad7f7821fef483d2bf91a0b6639e2c9eee1f621d12956813cc3"
+    },
+    "artifacts/retained-inverse-acceptance/speed4.5-webgpu.json": {
+      "bytes": 1063,
+      "sha256": "2db367eb7a8798d0dea51a7856a6c45479b9b20b6dd4b55448926e1100ebc428"
+    },
+    "artifacts/inverse-world-observation/speed45.native.v8": {
+      "bytes": 407714,
+      "sha256": "03501126e8409e5769fb49b13ad6939f95c48a08e01a74a82c94206a225b2445"
+    },
+    "tests/inverse-world-observation.mjs": {
+      "bytes": 10786,
+      "sha256": "82814bac9c724a29620c2dc93db7b0352bd908647cd6aae839fbb02e86a16ef7"
+    }
+  }
+}

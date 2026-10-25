@@ -1,0 +1,100 @@
+{
+  "schema": "bounded-original-e60-negative-clamp-evidence-v1",
+  "status": "no-clamp-in-fixed-horizon",
+  "positiveClampCoverage": false,
+  "sourceOnly": true,
+  "paritySuccess": false,
+  "input": {
+    "settings": {
+      "angle": 0,
+      "elevation": 60,
+      "tipX": 0.25,
+      "tipY": 0,
+      "speed": 10
+    },
+    "layout": "original-three-ball-constructor-layout",
+    "dt": 0.0010416666666666667,
+    "strokeSubsteps": 64,
+    "maxCcdSubsteps": 4,
+    "ordinaryWorldSteps": 768,
+    "inputSha256": "be24fd13b0baf899223dba4c3af161c359412a6d3d5afed62dee5613a7d02c75"
+  },
+  "originalArtifact": {
+    "sha256": "2fd069427c7b81be503f602220459e0c8c7046b7b40773e4f607464d7fb869f7",
+    "bytes": 60387634,
+    "firstOrdinaryH": 193,
+    "lastOrdinaryH": 960
+  },
+  "sourceCapture": {
+    "sha256": "c026fb8e99891537229bd08b4dc9e6d7c9192f9673aba782d61a172c82194be9",
+    "bytes": 665772,
+    "checkpointSha256": "91b4d2cf59850e5e6afd2cb9c34886c1257a39b185fdbfa2bd0b5c704b733ef5",
+    "sealedSteps": 768
+  },
+  "sourceProvenance": {
+    "engineRevision": "b716d375efc0201003f0cd9ef7168eee0b62c177",
+    "engineSha256": "fca22b2f33d4e88d2992215f42df6312093476db7fea4197816fb8e4ce17cba4",
+    "physicsSha256": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d",
+    "sourceProbeSha256": "2a7c8703e97e9d2167050465a06d0bdae0f77ad2b05cb6f5255732b76eeb7116",
+    "directProbeSha256": "d688f62ebcf7a9cc836a1d1026a85c1e0d0bfa2c8276f50a1ae45da0b8fe1d3c",
+    "decoderSha256": "0bbebced302953113abd7c428d7b66a7a8a9b7d293fe4108c8d67dc06a824d82",
+    "sourceManifestSha256": "237af3a83f8b70278df390caafcd0e6eb956ba4a48df3e8bbd44fb1695b4e15b",
+    "rapierArchiveSha256": "67825e5487ff84582777132f1ede42e8b865984246825ba9de6ff07ed2a8fdb1",
+    "parryArchiveSha256": "7b626edc0b497dba4bdf6e1e0797895294ed9f61dac2bd28cb5d34d37ad2ca7e"
+  },
+  "reportedCcdPassCountHistogram": {
+    "0": 529,
+    "1": 237,
+    "2": 2
+  },
+  "totalBeforeAfterClampPairs": 0,
+  "totalPositiveNextPoseClamps": 0,
+  "multiPassBoundaries": [
+    {
+      "h": 384,
+      "originalPreSha256": "552f898cda425353abced1b0375649252dd3e4e321b3c583251c7b6bae98230f",
+      "originalPostSha256": "e6ffd1a05f99b4520908b6b8aa3a27c4cfef138ef72a9577c673d0ca0a14affc",
+      "nativePostSha256": "7a27a4fdc6f9330ad5dd400f8255ab5a14cb8343d6141640039099b520b7cc7f",
+      "passes": 2,
+      "clamps": 0,
+      "split": [
+        {
+          "remaining_time": 0.0010416667209938169,
+          "remaining_substeps": 4,
+          "first_impact": 0.000322216481436044,
+          "active": true
+        },
+        {
+          "remaining_time": 0.0005395876942202449,
+          "remaining_substeps": 3,
+          "first_impact": null,
+          "active": false
+        }
+      ]
+    },
+    {
+      "h": 430,
+      "originalPreSha256": "71358ca714582676254628c11bc2f575e3d1a3de393ff3127997bd2e3ce03f36",
+      "originalPostSha256": "07456c07501076c34a34788c13a07305b421cd5483113da2fc20aa9169db47ab",
+      "nativePostSha256": "52d72462ce8100ff48fd37f76a0fd7a306aff74432ad1dfa9e5550dc87cdaf30",
+      "passes": 2,
+      "clamps": 0,
+      "split": [
+        {
+          "remaining_time": 0.0010416667209938169,
+          "remaining_substeps": 4,
+          "first_impact": 0.00017080368706956506,
+          "active": true
+        },
+        {
+          "remaining_time": 0.0007812500698491931,
+          "remaining_substeps": 3,
+          "first_impact": null,
+          "active": true
+        }
+      ]
+    }
+  ],
+  "nativeVersusWasmPositiveBoundaryComparison": "not-run-no-positive-boundary-selected",
+  "scope": "Only this fixed original shot and h193-h960; no positive clamp or general active-CCD parity claim."
+}

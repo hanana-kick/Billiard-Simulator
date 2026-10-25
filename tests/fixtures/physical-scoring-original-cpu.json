@@ -1,0 +1,427 @@
+{
+  "source": "2ed077e",
+  "settings": {
+    "angle": 0,
+    "elevation": 8,
+    "speed": 2,
+    "tipX": 0,
+    "tipY": 0
+  },
+  "options": {
+    "mode": "target",
+    "targetId": 2,
+    "secondId": 3,
+    "budget": 1,
+    "horizon": 8,
+    "spin": false,
+    "objective": "shortest",
+    "allowKiss": true
+  },
+  "cases": [
+    {
+      "name": "target",
+      "options": {},
+      "steps": 383,
+      "result": {
+        "settings": {
+          "angle": 0,
+          "elevation": 8,
+          "speed": 2,
+          "tipX": 0,
+          "tipY": 0
+        },
+        "success": true,
+        "failureReason": null,
+        "residual": [
+          -0.000006830710148394482,
+          2.7000905384767765e-10,
+          0.000007640742896331733
+        ],
+        "topology": "[true,[[\"object\",2,\"노랑\"]]]",
+        "score": 0.007894932443194107,
+        "clearance": 0.0000010945726641661824,
+        "firstHit": true,
+        "cushions": 0,
+        "distance": 0.7894932443194106,
+        "seconds": 0.39895833333333225,
+        "contacts": [
+          {
+            "label": "노랑",
+            "id": 2,
+            "kind": "object",
+            "time": 0.39895833333333225
+          }
+        ],
+        "maxHeight": 0,
+        "kissContacts": [],
+        "method": null,
+        "firstId": 2,
+        "secondId": 3,
+        "ambiguous": false,
+        "matchedMethods": []
+      }
+    },
+    {
+      "name": "wrong-first",
+      "options": {
+        "targetId": 3
+      },
+      "steps": 383,
+      "result": {
+        "settings": {
+          "angle": 0,
+          "elevation": 8,
+          "speed": 2,
+          "tipX": 0,
+          "tipY": 0
+        },
+        "success": false,
+        "failureReason": "invalid-contact-or-table-state",
+        "residual": [
+          -0.6566741724716937,
+          7.367406697011608e-7,
+          0.3608145773029176
+        ],
+        "topology": "[false,[[\"object\",2,\"노랑\"]]]",
+        "score": 600.0078949324432,
+        "clearance": 0.7492717317410351,
+        "firstHit": false,
+        "cushions": 0,
+        "distance": 0.7894932443194106,
+        "seconds": 0.39895833333333225,
+        "contacts": [
+          {
+            "label": "노랑",
+            "id": 2,
+            "kind": "object",
+            "time": 0.39895833333333225
+          }
+        ],
+        "maxHeight": 0,
+        "kissContacts": [],
+        "method": null,
+        "firstId": 3,
+        "secondId": 3,
+        "ambiguous": false,
+        "matchedMethods": []
+      }
+    },
+    {
+      "name": "method-carom",
+      "options": {
+        "mode": "carom",
+        "methodId": "carom"
+      },
+      "steps": 4079,
+      "result": {
+        "settings": {
+          "angle": 0,
+          "elevation": 8,
+          "speed": 2,
+          "tipX": 0,
+          "tipY": 0
+        },
+        "success": false,
+        "failureReason": "접촉 순서·쿠션 조건 불충족",
+        "residual": [
+          -0.6039399502111116,
+          3.3340432649237435e-7,
+          0.6899987357964342
+        ],
+        "topology": "[false,[[\"object\",2,\"노랑\"],[\"cushion\",null,\"z+\"],[\"cushion\",null,\"x+\"],[\"object\",4,\"적구 2\"]]]",
+        "score": 600.0296961569967,
+        "clearance": 0.5870645777078256,
+        "firstHit": false,
+        "cushions": 2,
+        "distance": 2.9696156996715,
+        "seconds": 4.248958333333173,
+        "contacts": [
+          {
+            "label": "노랑",
+            "id": 2,
+            "rail": null,
+            "kind": "object",
+            "time": 0.39895833333333225
+          },
+          {
+            "label": "앞쪽 쿠션",
+            "id": null,
+            "rail": "z+",
+            "kind": "cushion",
+            "time": 1.3947916666666675
+          },
+          {
+            "label": "오른쪽 쿠션",
+            "id": null,
+            "rail": "x+",
+            "kind": "cushion",
+            "time": 1.592708333333323
+          },
+          {
+            "label": "적구 2",
+            "id": 4,
+            "rail": null,
+            "kind": "object",
+            "time": 4.248958333333173
+          }
+        ],
+        "maxHeight": 0,
+        "kissContacts": [],
+        "method": "carom",
+        "firstId": 2,
+        "secondId": 3,
+        "ambiguous": false,
+        "matchedMethods": []
+      }
+    },
+    {
+      "name": "three-cushion",
+      "options": {
+        "mode": "three",
+        "methodId": "any",
+        "horizon": 16
+      },
+      "settings": {
+        "angle": -1.09069,
+        "speed": 4.5,
+        "tipY": 0.15
+      },
+      "steps": 4739,
+      "result": {
+        "settings": {
+          "angle": -1.09069,
+          "elevation": 8,
+          "speed": 4.5,
+          "tipX": 0,
+          "tipY": 0.15
+        },
+        "success": true,
+        "failureReason": null,
+        "residual": [
+          0,
+          0,
+          0
+        ],
+        "topology": "[true,[[\"object\",2,\"노랑\"],[\"cushion\",null,\"z+\"],[\"cushion\",null,\"x+\"],[\"cushion\",null,\"z-\"]]]",
+        "score": 0.04418175002040847,
+        "clearance": 0,
+        "firstHit": true,
+        "cushions": 3,
+        "distance": 4.418175002040847,
+        "seconds": 4.9364583333331336,
+        "contacts": [
+          {
+            "label": "노랑",
+            "id": 2,
+            "rail": null,
+            "kind": "object",
+            "time": 0.1604166666666664
+          },
+          {
+            "label": "앞쪽 쿠션",
+            "id": null,
+            "rail": "z+",
+            "kind": "cushion",
+            "time": 0.5249999999999998
+          },
+          {
+            "label": "오른쪽 쿠션",
+            "id": null,
+            "rail": "x+",
+            "kind": "cushion",
+            "time": 1.011458333333356
+          },
+          {
+            "label": "뒤쪽 쿠션",
+            "id": null,
+            "rail": "z-",
+            "kind": "cushion",
+            "time": 4.333333333333168
+          },
+          {
+            "label": "빨강",
+            "id": 3,
+            "rail": null,
+            "kind": "object",
+            "time": 4.9364583333331336
+          }
+        ],
+        "maxHeight": 0.00005105967819690749,
+        "kissContacts": [],
+        "method": "any",
+        "firstId": 2,
+        "secondId": 3,
+        "ambiguous": false,
+        "matchedMethods": [
+          "turn",
+          "any"
+        ]
+      }
+    },
+    {
+      "name": "four-ball",
+      "options": {
+        "mode": "carom",
+        "methodId": "carom",
+        "targetId": 3,
+        "secondId": 4,
+        "gameMode": "four",
+        "opponentId": 2,
+        "fourBallThreeCushion": false
+      },
+      "steps": 383,
+      "result": {
+        "gameMode": "four",
+        "opponentId": 2,
+        "fourBallThreeCushion": false,
+        "settings": {
+          "angle": 0,
+          "elevation": 8,
+          "speed": 2,
+          "tipX": 0,
+          "tipY": 0
+        },
+        "success": false,
+        "failureReason": "four-ball-opponent-or-off-table",
+        "residual": [
+          -0.6566741724716937,
+          7.367406697011608e-7,
+          0.3608145773029176
+        ],
+        "topology": "[false,[[\"object\",2,\"노랑\"]]]",
+        "score": 600.0078949324432,
+        "clearance": 0.7492717317410351,
+        "firstHit": false,
+        "cushions": 0,
+        "distance": 0.7894932443194106,
+        "seconds": 0.39895833333333225,
+        "contacts": [
+          {
+            "label": "노랑",
+            "id": 2,
+            "rail": null,
+            "kind": "object",
+            "time": 0.39895833333333225
+          }
+        ],
+        "maxHeight": 0,
+        "kissContacts": [],
+        "method": "carom",
+        "firstId": 3,
+        "secondId": 4,
+        "ambiguous": false,
+        "matchedMethods": []
+      }
+    },
+    {
+      "name": "gentle",
+      "options": {
+        "objective": "gentle"
+      },
+      "steps": 383,
+      "result": {
+        "settings": {
+          "angle": 0,
+          "elevation": 8,
+          "speed": 2,
+          "tipX": 0,
+          "tipY": 0
+        },
+        "success": true,
+        "failureReason": null,
+        "residual": [
+          -0.000006830710148394482,
+          2.7000905384767765e-10,
+          0.000007640742896331733
+        ],
+        "topology": "[true,[[\"object\",2,\"노랑\"]]]",
+        "score": 0.02,
+        "clearance": 0.0000010945726641661824,
+        "firstHit": true,
+        "cushions": 0,
+        "distance": 0.7894932443194106,
+        "seconds": 0.39895833333333225,
+        "contacts": [
+          {
+            "label": "노랑",
+            "id": 2,
+            "kind": "object",
+            "time": 0.39895833333333225
+          }
+        ],
+        "maxHeight": 0,
+        "kissContacts": [],
+        "method": null,
+        "firstId": 2,
+        "secondId": 3,
+        "ambiguous": false,
+        "matchedMethods": []
+      }
+    },
+    {
+      "name": "no-kiss",
+      "options": {
+        "mode": "carom",
+        "allowKiss": false
+      },
+      "steps": 4079,
+      "result": {
+        "settings": {
+          "angle": 0,
+          "elevation": 8,
+          "speed": 2,
+          "tipX": 0,
+          "tipY": 0
+        },
+        "success": false,
+        "failureReason": "invalid-contact-or-table-state",
+        "residual": [
+          -0.1389157104588014,
+          -0.000002561064704721791,
+          0.5703921841859643
+        ],
+        "topology": "[true,[[\"object\",2,\"노랑\"],[\"cushion\",null,\"앞쪽 쿠션\"],[\"cushion\",null,\"오른쪽 쿠션\"]]]",
+        "score": 600.0296961569967,
+        "clearance": 0.5870645777078256,
+        "firstHit": true,
+        "cushions": 2,
+        "distance": 2.9696156996715,
+        "seconds": 4.248958333333173,
+        "contacts": [
+          {
+            "label": "노랑",
+            "id": 2,
+            "kind": "object",
+            "time": 0.39895833333333225
+          },
+          {
+            "label": "앞쪽 쿠션",
+            "id": null,
+            "kind": "cushion",
+            "time": 1.3947916666666675
+          },
+          {
+            "label": "오른쪽 쿠션",
+            "id": null,
+            "kind": "cushion",
+            "time": 1.592708333333323
+          },
+          {
+            "label": "적구 2",
+            "id": 4,
+            "kind": "object",
+            "time": 4.248958333333173
+          }
+        ],
+        "maxHeight": 0,
+        "kissContacts": [],
+        "method": null,
+        "firstId": 2,
+        "secondId": 3,
+        "ambiguous": false,
+        "matchedMethods": []
+      }
+    }
+  ],
+  "setup": "default PhysicsLab plus sphere at (.64, radius + .00005, .30), label 적구 2"
+}

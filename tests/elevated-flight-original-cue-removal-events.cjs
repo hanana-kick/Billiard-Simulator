@@ -1,0 +1,29 @@
+'use strict';
+// SPDX-License-Identifier: Apache-2.0
+// Read-only observation of original EventQueue callbacks. Physics, callback
+// arguments, callback receiver, callback order and return value are unchanged.
+// The JS API exposes handles and started only, not native REMOVED event flags.
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),v8=require('node:v8');
+const C=require('./elevated-flight-original-fixture.cjs'),G=require('./elevated-flight-original-controller.cjs'),F=require('./four-ball-created-fixture.cjs');
+const copy=x=>structuredClone(x),HS=Object.freeze([463,464]);
+function observeOriginal({observeEvents=true}={}){const restore=[],rows=[],events=[],drains=[];let lab,controller,h=0,drainOrder=0;
+ const save=phase=>{if(HS.includes(h))rows.push({boundary:'expected-only-removal-events-h'+h+'-'+phase,candidateInput:false,hCount:h,nativeSteps:null,snapshot:lab.world.takeSnapshot(),application:G.application(controller)});};
+ restore.push(F.observeMethod(LabController.prototype,'fire',{after(c,args,accepted){if(!accepted)return;controller=c;lab=c.lab;const queue=lab.queue,own=Object.getOwnPropertyDescriptor(queue,'drainCollisionEvents'),original=queue.drainCollisionEvents;
+  Object.defineProperty(queue,'drainCollisionEvents',{configurable:true,writable:true,enumerable:false,value:function(...args){assert.equal(this,queue);assert.equal(args.length,1);assert.equal(typeof args[0],'function');const callback=args[0],drain={h,order:drainOrder++,events:[]};
+   const inspected=function(...callbackArgs){assert.equal(callbackArgs.length,3);assert.equal(typeof callbackArgs[2],'boolean');const row={h,order:events.length,drainOrder:drain.order,orderWithinDrain:drain.events.length,collider1:F.parts(callbackArgs[0]),collider2:F.parts(callbackArgs[1]),started:callbackArgs[2]};events.push(row);drain.events.push(row);return Reflect.apply(callback,this,callbackArgs);};
+   const result=Reflect.apply(original,this,observeEvents?[inspected]:args);if(observeEvents&&(drain.events.length||HS.includes(h)))drains.push(drain);save('postDrain');return result;
+  }});restore.push(()=>{if(own)Object.defineProperty(queue,'drainCollisionEvents',own);else delete queue.drainCollisionEvents;});
+ }}));
+ restore.push(F.observeMethod(F.R.World.prototype,'step',{before(world){if(lab&&world===lab.world){h++;save('preWorld');}},after(world){if(lab&&world===lab.world)save('postWorld');}}));
+ restore.push(F.observeMethod(PhysicsLab.prototype,'angularPatchResistance',{after(receiver){if(lab&&receiver===lab)save('postApplication');}}));
+ try{const record=G.captureOriginal(C.INPUT,{recordFrames:false,journal:false});for(const row of rows)row.nativeSteps=record.nativeStepsAtCreation+row.hCount;return{record,rows,events,drains};}finally{while(restore.length)restore.pop()();}
+}
+async function capture(file){assert.equal(process.env.ELEVATED_FLIGHT_SERIAL_SLOT,'1','Explicit coordinator serial slot required');assert.ok(path.isAbsolute(file)&&!fs.existsSync(file)&&!fs.existsSync(file+'.json'));const identity=C.identity();await F.R.init();const on=observeOriginal(),off=observeOriginal({observeEvents:false}),plain=G.captureOriginal(C.INPUT,{recordFrames:false,journal:false});
+ assert.equal(on.record.status,'native-rest-complete');assert.equal(on.record.hCount,5346);assert.deepEqual(on.record.settings,G.SETTINGS);assert.deepEqual(on.rows,off.rows,'Inspecting drain callback leaves all selected native/application snapshots unchanged');
+ for(const name of Object.keys(on.record.boundaries)){assert.deepEqual(on.record.boundaries[name].snapshot,off.record.boundaries[name].snapshot);assert.deepEqual(on.record.boundaries[name].snapshot,plain.boundaries[name].snapshot);assert.deepEqual(on.record.boundaries[name].application,off.record.boundaries[name].application);assert.deepEqual(on.record.boundaries[name].application,plain.boundaries[name].application);}
+ assert.deepEqual(on.record.events,off.record.events);assert.deepEqual(on.record.events,plain.events);assert.deepEqual(on.record.score,plain.score);assert.deepEqual(C.identity(),identity);
+ const rows=on.rows.map(F.decodeBoundary);for(const row of rows){assert.equal(F.hash(row.snapshot),row.snapshotSha256);assert.deepEqual(F.D.encodeLosslessTree(row.typedState),Buffer.from(row.snapshot));}
+ const result={schema:'original-obstructed-cue-withdrawal-drain-event-order-v1',classification:'reachable-ui-accepted-actually-obstructed-stroke',identity,observerSha256:F.hash(fs.readFileSync(__filename)),sourceApi:'EventQueue.drainCollisionEvents(callback(collider1Handle,collider2Handle,started))',nativeRemovedFlagExposed:false,candidateInput:false,events:on.events,drains:on.drains,rows,observerAgreement:{threeOriginalRecreations:true,queueInspectionOnOffSnapshotsByteIdentical:true,unobservedOriginalBoundariesByteIdentical:true,applicationEventsAndGameExact:true},summary:{hCount:on.record.hCount,firstRestOuter:on.record.firstRestOuter,score:on.record.score,initialSnapshotSha256:F.hash(on.record.boundaries.goalStrikeCreated.snapshot),targetDrains:on.drains.filter(d=>HS.includes(d.h))}};
+ const bytes=v8.serialize(result),manifest={schema:result.schema,classification:result.classification,sha256:F.hash(bytes),bytes:bytes.length,identity,observerSha256:result.observerSha256,nativeRemovedFlagExposed:false,observerAgreement:result.observerAgreement,...result.summary,capturedBoundaries:rows.map(r=>({boundary:r.boundary,snapshotSha256:r.snapshotSha256}))};fs.writeFileSync(file,bytes,{flag:'wx'});fs.writeFileSync(file+'.json',JSON.stringify(manifest,null,2)+'\n',{flag:'wx'});return manifest;
+}
+module.exports={HS,observeOriginal,capture};if(require.main===module)capture(process.argv[2]).then(m=>console.log(JSON.stringify(m,null,2))).catch(e=>{console.error(e.stack);process.exitCode=1;});

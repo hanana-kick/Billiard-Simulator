@@ -1,0 +1,442 @@
+{
+  "schema": "source-cue-input-evidence-checkpoint-v1",
+  "capturedAt": "2026-10-24T19:38:39Z",
+  "preregistration": "docs/parity/cue-input-family-v1.json",
+  "controlInputsUnchanged": true,
+  "prefixRuntime": "2a4b309",
+  "fullRestRuntime": "060a0ac",
+  "laterDescriptorGuards": [
+    "zero original dynamic dominance",
+    "original all/all solver groups",
+    "N4 cache-owner binding disabled"
+  ],
+  "gpuAdapter": "Dawn Vulkan SwiftShader software; actual WGSL, not hardware/browser GPU",
+  "physicalSourceHashes": {
+    "src/experimental-angular-patch.js": "c1b010128cf068f353bfd0cb17f7b9ac1ebf3af6af078e3872461d7051f45cb7",
+    "src/experimental-arithmetic-graph.js": "72f19e4e240521d13bdb3ac2da23e3c2fff43fff88ded7ef0319434b4a5ccb27",
+    "src/experimental-awake-activation.js": "77b4e12cd29c8114bee85ce44bcb9ffa56c59191a625a78902666bd103ad4da8",
+    "src/experimental-ccd-inactive.js": "77ba85e13a012ce11f2b33673517ed8f3a911a1ddd966b62c74448c539b5ecdb",
+    "src/experimental-cloth-island-patch-world.js": "59fbea9d9137b5e8910e0fdde2b05dbc01c1f20c06d38f2cfab2ed86e4a49395",
+    "src/experimental-cloth-island-world.js": "77b0eb32ecf7f409dffd431a847c338c5d9bcd6d8adbaab0e04a49cf51a1c559",
+    "src/experimental-cloth-world.js": "d0404527b329751a594557e9b7022296953ee4010c7dd5e992a12e980e0f0846",
+    "src/experimental-contact-graph-journal.js": "3556db2aca9c0cb670d62be52fd4ce782345a81d8926e6294f09b55685d8cea7",
+    "src/experimental-convex-point.js": "3c2d27208bb137988e71ed8b567925d1c0605509e080c66dda621aba4ab6e578",
+    "src/experimental-cue-broad-phase.js": "ed060349466d9a0f599441027c38725f5a42952e949b042d2d40d5eca9dfef00",
+    "src/experimental-cue-bvh-insertion.js": "670188f386c1ab760d3cafe67f5b0a1dc6b5c2cfda3b0c98bb55517e27a0d706",
+    "src/experimental-cue-convex-topology.js": "d9aabf9ece800d9e83799a8f0cfed8033dd677666d1b9210ca1e857edf3f2d22",
+    "src/experimental-cue-created-stroke-stage.js": "3c5d9856117e6372e5ae9e960433cddccfa239e3acbaed49fa2825fdcccbfa01",
+    "src/experimental-cue-created-variant.js": "145c4ce0eca3247c388af903e0edd5791033696e47639deed08103d31c613883",
+    "src/experimental-cue-empty-pair-cache.js": "60c8ec10eaa8315a23eb041add5b7f4afc60c5c325911ab905279a424662f8ef",
+    "src/experimental-cue-epa-core.js": "c3e8c11512e9faf0df0b61d0938854e602bcde5b360c38c96b244f27310a5516",
+    "src/experimental-cue-initialization.js": "908faf1539421e05a655dbebdd6360f69206b7b5d416ab73ac74c82419efa905",
+    "src/experimental-cue-joint-compliance.js": "c2750bccb21f51edb5e9555ccdbe730e0109f0cb7c937245058365be1156d3b8",
+    "src/experimental-cue-joint-snapshot.js": "90e43c30bb7c99a97e5f74a7e18c284f0f8f9d23fc0619d7e3a5b639c457e92a",
+    "src/experimental-cue-joint-stepper.js": "66840aa686a929c6295c2a4fb92587fba157c00f4feff4337bd25229cdb7e43a",
+    "src/experimental-cue-joint-tip-contact.js": "ebb6777755640b9a757f4c0006af036d840414d81f05db6dfa0d027d2f1865fe",
+    "src/experimental-cue-joint.js": "17677f4bcc94e91fa6c77ce706e644995a93122d53ffa361fff030c9b0e09dcd",
+    "src/experimental-cue-lateral-compensated.js": "f04ce491ec8dbd8c3c3a3fcdf1f963784d5e74ab29ec4a067d5e3a17e0369572",
+    "src/experimental-cue-obstacle-contact.js": "8511705ca5534a5e94fd1cd924decd6381871fd57c4a9272fd6181103b20043d",
+    "src/experimental-cue-obstacle-manifold.js": "d4f383196f13af244a16f699ae8409a8e649c9feb52af25a6fbb4b5b4342b4e5",
+    "src/experimental-cue-rigid-exclusion.js": "c55a45062f3aebe89a5fc5a48484c8f31f1e231d468e3800b97ec4df22b76873",
+    "src/experimental-cue-stroke-stage.js": "18bdf2a7eee089467fa8096c6a01d60a485fb55892be1ff42cdbfb519547de8d",
+    "src/experimental-cushion-contact-stage.js": "259c238a4680e06043ca33975ec428e538759123e03c4415221c66d1b1db5b32",
+    "src/experimental-cushion-roster-world.js": "50606a3f86ea03d71a3fbe481bcfc62c077c46204615272854296a23d6052483",
+    "src/experimental-cushion-world.js": "bffedea2df58801329e940b8887c243b2db88381b1446aaba04f73a341ba222b",
+    "src/experimental-double-single.js": "eb8ef8bf29c7f5419e13140174a773c129b644dfd6df9eaced817333a68fad94",
+    "src/experimental-four-ball-cloth-birth.js": "e794637219f4cfad97778981d9d767a65c4968569bb96191fe91c9edd4b3922f",
+    "src/experimental-four-ball-world.js": "7fa415df0414f6d8b0cb51d4d704725cc4b99a6010d1680eb64cc10e9de49d9c",
+    "src/experimental-free-body.js": "188591b6e4ca4335f1b01647c34e4d875da4ae7b3a36cacb8ded45509d0b29bf",
+    "src/experimental-pair-contact-stage.js": "5f5689d1e7d79d35b5938c91e91059ef8c55665d2045b41a30065987867a4ac2",
+    "src/experimental-scene-activation.js": "b5ccd0dbf6b69d5fcae020b5262b09e602323ec68c7f049b9602b2c1f28bf61c",
+    "src/experimental-sleep-activation.js": "be86e6b8a0243c4e267df1e9f8c535d0dfca315965c816dbb14a15fe56dcc746",
+    "src/experimental-sphere-pair-world.js": "53cd5b340312cf8c23ddd1a5fda044fcdc75a094a3da4efe434da11d9e813c8e",
+    "src/experimental-stage-runtime.js": "2619c5f5ab6c9f6f3d60ffc30b9e67feccd32d256e8bfd4ab1da03467882f8c5",
+    "src/experimental-three-ball-world.js": "8a2ccc1c7fad318e9724f506a671ff2fe424e3cae64769c2fc43d7aedf4db464",
+    "src/experimental-world-lifecycle.js": "ec9addaa43a689ab57f48114f85d67bd405fcd0714e3340845d997309a6e5c08",
+    "src/experimental-world-stepper.js": "4630ee6dc63272d2c8d403e2b2925b3c35993ff44de8c9178c6ca484fb579130",
+    "src/game-rules.js": "33857334242fd280193595cda56b9d433de579c0f017efa7a21c35c470191160",
+    "src/math.js": "ea76455919c3fb22557680c5422902cf631753215492e799b32791993a939046",
+    "src/physics.js": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d"
+  },
+  "cases": [
+    {
+      "input": {
+        "id": "yaw23-side-follow",
+        "role": "representative",
+        "settings": {
+          "angle": 23,
+          "elevation": 8,
+          "speed": 1.5,
+          "tipX": 0.2,
+          "tipY": 0.1
+        }
+      },
+      "nativeFullRest": {
+        "artifact": "yaw23-side-follow-full-rest.v8",
+        "sha256": "27a1bc003060d405b74c56b5295e9eb2258095e67b66de9b038338cfd6fa102c",
+        "bytes": 20539265,
+        "status": "native-rest-complete",
+        "firstRestOuter": 5980,
+        "recordedOuterSteps": 5981,
+        "checkpoints": 83,
+        "score": {
+          "cueId": 1,
+          "delta": 0,
+          "nextCue": 2
+        },
+        "prefixAgreement": {
+          "h": 578,
+          "byteIdenticalSnapshots": 14,
+          "exactObservables": true,
+          "createdSnapshotSha256": "4b1ead5323fa676482e88f62fb52925103b141a961f296197625cafcc675514e"
+        }
+      },
+      "prefix": {
+        "log": "yaw23-side-follow-recurrent-final-prefix.log",
+        "logSha256": "fb87fff11d9167e7ccdc7d84bfe4eecb478828e7617cf4fcd9f075e91f0199c0",
+        "results": [
+          {
+            "status": "prefix-complete",
+            "scope": "source-validated-input-original-full25-through-cue-removal-and-clock-switch",
+            "input": {
+              "id": "yaw23-side-follow",
+              "role": "representative",
+              "settings": {
+                "angle": 23,
+                "elevation": 8,
+                "speed": 1.5,
+                "tipX": 0.2,
+                "tipY": 0.1
+              }
+            },
+            "nativeComparisonPassed": true,
+            "cpuGpuBitExact": null,
+            "cpuGpuNonidenticalSnapshots": null,
+            "cpuGpuMaxAbsolutePhysical": null,
+            "cpuGpuFirstNonidenticalH": null,
+            "paritySuccess": false,
+            "backend": "cpu-reference",
+            "frames": 578,
+            "physicalSeconds": 0.011458333333333388,
+            "contactH": 78,
+            "separationH": 568,
+            "ordinaryH": 2,
+            "maxAbsolute": 8.049334865312119e-9,
+            "cacheCheckpoints": 14,
+            "fullShot": false
+          },
+          {
+            "status": "prefix-complete",
+            "scope": "source-validated-input-original-full25-through-cue-removal-and-clock-switch",
+            "input": {
+              "id": "yaw23-side-follow",
+              "role": "representative",
+              "settings": {
+                "angle": 23,
+                "elevation": 8,
+                "speed": 1.5,
+                "tipX": 0.2,
+                "tipY": 0.1
+              }
+            },
+            "nativeComparisonPassed": true,
+            "cpuGpuBitExact": false,
+            "cpuGpuNonidenticalSnapshots": 578,
+            "cpuGpuMaxAbsolutePhysical": 0,
+            "cpuGpuFirstNonidenticalH": 1,
+            "paritySuccess": true,
+            "backend": "actual-webgpu",
+            "frames": 578,
+            "physicalSeconds": 0.011458333333333388,
+            "contactH": 78,
+            "separationH": 568,
+            "ordinaryH": 2,
+            "maxAbsolute": 8.049334865312119e-9,
+            "cacheCheckpoints": 14,
+            "fullShot": false
+          }
+        ]
+      },
+      "fullRest": {
+        "log": "yaw23-side-follow-full-rest-060a.log",
+        "logSha256": "acd1cf83c9fb5f45f329ec0f7e88df2b201fde577470300041e66d0170312a3d",
+        "results": [
+          {
+            "scope": "source-validated-input-full25-to22-through-physical-rest",
+            "backend": "cpu-reference",
+            "status": "rest-complete",
+            "fullShot": true,
+            "input": {
+              "id": "yaw23-side-follow",
+              "role": "representative",
+              "settings": {
+                "angle": 23,
+                "elevation": 8,
+                "speed": 1.5,
+                "tipX": 0.2,
+                "tipY": 0.1
+              }
+            },
+            "recordedOuterSteps": 5981,
+            "horizonOuterSteps": 9600,
+            "firstRestOuter": 5980,
+            "score": {
+              "cueId": 1,
+              "delta": 0,
+              "nextCue": 2
+            },
+            "maxAbsolute": 8.049334865312119e-9,
+            "outerCompared": 5981,
+            "checkpoints": 82,
+            "eventsCompared": 3
+          }
+        ],
+        "gpu": {
+          "status": "abnormal-process-termination",
+          "testRunnerExitCode": 1,
+          "signal": null,
+          "cause": "not recorded by spec reporter; undetermined",
+          "gpuCompletion": false,
+          "lastGpuCheckpoint": null,
+          "afterHookCompleted": false
+        }
+      }
+    },
+    {
+      "input": {
+        "id": "yaw-minus37-side-draw",
+        "role": "representative",
+        "settings": {
+          "angle": -37,
+          "elevation": 12,
+          "speed": 2.4,
+          "tipX": -0.18,
+          "tipY": -0.12
+        }
+      },
+      "nativeFullRest": {
+        "artifact": "yaw-minus37-side-draw-full-rest.v8",
+        "sha256": "4b6ef0227b369441efeec0f80eda80670942f2ba6c8431b5878e110111fd4801",
+        "bytes": 22243002,
+        "status": "native-rest-complete",
+        "firstRestOuter": 6500,
+        "recordedOuterSteps": 6501,
+        "checkpoints": 90,
+        "score": {
+          "cueId": 1,
+          "delta": 0,
+          "nextCue": 2
+        },
+        "prefixAgreement": {
+          "h": 450,
+          "byteIdenticalSnapshots": 12,
+          "exactObservables": true,
+          "createdSnapshotSha256": "e4557be698dcdf7eccc9487c496d96b120eef04bcf0c2c6516d3e5c58577acbb"
+        }
+      },
+      "prefix": {
+        "log": "yaw-minus37-side-draw-recurrent-final-prefix.log",
+        "logSha256": "ad85af4e47b92972402904c18ac956a970e4f23f1db60e93ed6456524cf26894",
+        "results": [
+          {
+            "status": "prefix-complete",
+            "scope": "source-validated-input-original-full25-through-cue-removal-and-clock-switch",
+            "input": {
+              "id": "yaw-minus37-side-draw",
+              "role": "representative",
+              "settings": {
+                "angle": -37,
+                "elevation": 12,
+                "speed": 2.4,
+                "tipX": -0.18,
+                "tipY": -0.12
+              }
+            },
+            "nativeComparisonPassed": true,
+            "cpuGpuBitExact": null,
+            "cpuGpuNonidenticalSnapshots": null,
+            "cpuGpuMaxAbsolutePhysical": null,
+            "cpuGpuFirstNonidenticalH": null,
+            "paritySuccess": false,
+            "backend": "cpu-reference",
+            "frames": 450,
+            "physicalSeconds": 0.009374999999999979,
+            "contactH": 79,
+            "separationH": 389,
+            "ordinaryH": 2,
+            "maxAbsolute": 2.1263861449405397e-8,
+            "cacheCheckpoints": 15,
+            "fullShot": false
+          },
+          {
+            "status": "prefix-complete",
+            "scope": "source-validated-input-original-full25-through-cue-removal-and-clock-switch",
+            "input": {
+              "id": "yaw-minus37-side-draw",
+              "role": "representative",
+              "settings": {
+                "angle": -37,
+                "elevation": 12,
+                "speed": 2.4,
+                "tipX": -0.18,
+                "tipY": -0.12
+              }
+            },
+            "nativeComparisonPassed": true,
+            "cpuGpuBitExact": false,
+            "cpuGpuNonidenticalSnapshots": 450,
+            "cpuGpuMaxAbsolutePhysical": 0,
+            "cpuGpuFirstNonidenticalH": 1,
+            "paritySuccess": true,
+            "backend": "actual-webgpu",
+            "frames": 450,
+            "physicalSeconds": 0.009374999999999979,
+            "contactH": 79,
+            "separationH": 389,
+            "ordinaryH": 2,
+            "maxAbsolute": 2.1263861449405397e-8,
+            "cacheCheckpoints": 15,
+            "fullShot": false
+          }
+        ]
+      },
+      "fullRest": {
+        "log": "yaw-minus37-side-draw-full-rest-060a.log",
+        "logSha256": "e20a66c0a34665bb1537dcdb6004b9f725199bff9f44172bdeea89163ac92ad0",
+        "results": [
+          {
+            "scope": "source-validated-input-full25-to22-through-physical-rest",
+            "backend": "cpu-reference",
+            "status": "rest-complete",
+            "fullShot": true,
+            "input": {
+              "id": "yaw-minus37-side-draw",
+              "role": "representative",
+              "settings": {
+                "angle": -37,
+                "elevation": 12,
+                "speed": 2.4,
+                "tipX": -0.18,
+                "tipY": -0.12
+              }
+            },
+            "recordedOuterSteps": 6501,
+            "horizonOuterSteps": 9600,
+            "firstRestOuter": 6500,
+            "score": {
+              "cueId": 1,
+              "delta": 0,
+              "nextCue": 2
+            },
+            "maxAbsolute": 2.1263861449405397e-8,
+            "outerCompared": 6501,
+            "checkpoints": 89,
+            "eventsCompared": 3
+          }
+        ],
+        "gpu": {
+          "status": "intentionally-interrupted-unverified",
+          "ownedExecSessionExitCode": 130,
+          "reason": "Return serialized compute slot only after CPU full-rest completion",
+          "gpuCompletion": false,
+          "lastGpuCheckpoint": null,
+          "afterHookCompleted": false
+        }
+      }
+    },
+    {
+      "input": {
+        "id": "yaw61-25-elevated-holdout",
+        "role": "holdout",
+        "settings": {
+          "angle": 61.25,
+          "elevation": 20,
+          "speed": 1.8,
+          "tipX": 0.11,
+          "tipY": -0.16
+        }
+      },
+      "nativeFullRest": {
+        "artifact": "yaw61-25-elevated-holdout-full-rest.v8",
+        "sha256": "277051231ec674ceb9bc9baf248d97acb103a1787cb515ad94b2a671fdc6964f",
+        "bytes": 22852713,
+        "status": "native-rest-complete",
+        "firstRestOuter": 5761,
+        "recordedOuterSteps": 5762,
+        "checkpoints": 104,
+        "score": {
+          "cueId": 1,
+          "delta": 0,
+          "nextCue": 2
+        },
+        "prefixAgreement": {
+          "h": 514,
+          "byteIdenticalSnapshots": 13,
+          "exactObservables": true,
+          "createdSnapshotSha256": "7d2ba82ed30b38b6933164f5ff7bb011e8ae2a833a7ce3c9bcc2e75ec5a61621"
+        }
+      },
+      "prefix": {
+        "log": "yaw61-25-elevated-holdout-recurrent-final-prefix.log",
+        "logSha256": "db2e1d843b3869325e9c41b63f0c9233725ee746aed16581c7cbb629794f5287",
+        "results": [
+          {
+            "input": {
+              "id": "yaw61-25-elevated-holdout",
+              "role": "holdout",
+              "settings": {
+                "angle": 61.25,
+                "elevation": 20,
+                "speed": 1.8,
+                "tipX": 0.11,
+                "tipY": -0.16
+              }
+            },
+            "backend": "cpu-reference",
+            "status": "unsupported-boundary",
+            "paritySuccess": false,
+            "attemptedH": 410,
+            "lastGoodH": 409,
+            "error": "Unsupported new pair requires full source BVTT traversal: only one separated sphere-cylinder cue birth is owned"
+          },
+          {
+            "input": {
+              "id": "yaw61-25-elevated-holdout",
+              "role": "holdout",
+              "settings": {
+                "angle": 61.25,
+                "elevation": 20,
+                "speed": 1.8,
+                "tipX": 0.11,
+                "tipY": -0.16
+              }
+            },
+            "backend": "actual-webgpu",
+            "status": "unsupported-boundary",
+            "paritySuccess": false,
+            "attemptedH": 410,
+            "lastGoodH": 409,
+            "error": "Unsupported new pair requires full source BVTT traversal: only one separated sphere-cylinder cue birth is owned"
+          }
+        ]
+      },
+      "fullRest": {
+        "status": "not-run",
+        "reason": "Fixed holdout remains unsupported at new convex/cylinder h410 prefix boundary"
+      }
+    }
+  ],
+  "acceptance": {
+    "nativeNumericTolerancesUnchanged": true,
+    "eventsClocksHandlesTopologyExact": true,
+    "fullSnapshotCpuGpuBitIdentity": "diagnostic only; not claimed",
+    "unsupportedIsNotParitySuccess": true,
+    "futureNativeStatesUsedAsWorldSeeds": false
+  },
+  "notes": [
+    "No full-shot CPU/GPU success yet: both representatives passed complete CPU/native only.",
+    "Both representative CPU/WGSL cue prefixes passed; elevated holdout failed closed at h410 in both backends.",
+    "New convex GJK/cache conformance tests are a separate stage result, not initial-only world parity.",
+    "Physical source files were separately audited against060a0ac after job termination because abrupt/intentional exits did not execute normal after hooks."
+  ]
+}

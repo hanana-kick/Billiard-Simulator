@@ -1,0 +1,319 @@
+diff --git a/docs/live-three-ball-withdrawal.md b/docs/live-three-ball-withdrawal.md
+new file mode 100644
+index 0000000..7721539
+--- /dev/null
++++ b/docs/live-three-ball-withdrawal.md
+@@ -0,0 +1,76 @@
++# Bounded live three-ball cue withdrawal
++
++Status: both genuine CPU source gates pass; actual WGSL exposed a cross-backend
++subnormal mismatch before withdrawal, so GPU acceptance is not complete.
++The verified first-step, first-outer and first-tip checkpoints remain separate.
++
++`createReferenceWithdrawalOwner` / `createGpuWithdrawalOwner` extend the same
++source-authenticated three-ball owner, without changing family, selected cue,
++original CPU physics, or initial retained caches. The new hard horizon is2048
++substeps; success requires `eventBoundary.complete`, not merely reaching a cap.
++No caller supplies the removal frame or a future source state.
++
++## Lifecycle and schedule
++
++The shared original cue component decides separation and reports the actual
++head→shaft→guide API removal order. Scene user changes occur before collision;
++the existing source broad/contact journal retires colliders and contact edges,
++and the owned BVH removes their leaves. Cue empty manifolds disappear only when
++the authoritative graph removes their pairs. The already-retired cue and broad
++components are never prepared again, recreated, or reset from a snapshot.
++
++Native BVH pair serialization follows pinned Rapier `broad_phase_bvh/update.rs`:
++Coarena removal invalidates generations and clears removed adjacency slots;
++remaining stale pairs are canonically sorted, removed, and each surviving
++endpoint adjacency uses `swap_remove`. Full pair-map identity remains checked.
++After retirement this bounded implementation requires an unchanged noncue pair
++set; new broad pairs fail closed rather than silently losing native caches.
++
++As in `PhysicsLab.step`, subdivisions belong to the **outer call's entry**.
++Withdrawal does not shorten that call or change its remaining substeps' h.
++Only its completed boundary selects one subdivision for the next outer call.
++Ball dt and the existing angular-resistance stage then use1/960 s rather than
++1/61440 s. The stop is after that first completed no-cue outer call. Inactive
++CCD pre/post gates still apply; active CCD is not yet admitted by this owner.
++
++## Planned acceptance
++
++`tests/live-three-ball-withdrawal.mjs` continuously advances the unchanged
++original controller for both genuine sources. It discovers actual removal,
++finishes the original current64 call, then observes the actual next1 call.
++It buffers at most one outer call and streams every native endpoint through
++CPU and, when enabled, actual WGSL candidates. Original snapshots are oracle
++outputs only, never candidate state inputs.
++
++Existing numeric limits remain unchanged. Tests retain complete scene manager,
++queues, ids/activation, body motion, floor/empty caches, dense graph and full
++serialized BVH gates. Before retirement, cue/joint numerical gates still run;
++afterward native body/joint absence and candidate cue/scene/cache retirement
++are asserted, not skipped. Cancel/abort/retry is checked at removal, completion
++of its64 call, and completion of the first1 call. Cadence and event identity/time
++are exact; original event-position and cue-component tolerances are unchanged.
++
++This does not claim full rest, three-ball scoring, a general evaluator, hardware
++GPU performance, or activation in public search/UI. The serialized native body
++arena allocator is not exported as a resumable Rapier snapshot. Parent integrated
++runner validation remains distinct from isolated-tree evidence.
++
++## Evidence so far
++
++Default-source CPU acceptance passed: actual removal at h440 (outer6,
++substep56), current64 outer completed at h448, next1 outer completed at h449.
++All streamed native endpoint gates and boundary rollback/retry checks passed.
++Elapsed131.11s; maximum child RSS598064KiB (Python RUSAGE_CHILDREN, not heap).
++Evidence: `../three-ball-live-reverification/withdrawal-cpu-default.log`.
++After-turn cue2 CPU also passed: actual removal at h448 (outer6, substep64),
++current64 completion h448, next1 completion h449. Elapsed126.78s; maximum
++child RSS444028KiB. Evidence: `withdrawal-cpu-after-turn.log` in the same
++directory. Actual WGSL remains pending its exclusive slot.
++
++Default actual-WGSL attempt stopped before h384: both original-native comparison
++gates passed for the failing endpoint, then the additional exact CPU/WGSL ball
++check failed at selected ball `invInertia[1]`: GPU0 versus CPU
++-1.401298464324817e-45. No output was zeroed or patched, and no tolerance was
++changed. Elapsed154.89s; maximum child RSS660028KiB. The failing log is retained
++at `withdrawal-gpu-default.log`; after-turn GPU was not launched. A diagnostic
++now includes the exact failing frame on any subsequent attempt.
+diff --git a/src/browser-initial-import/live-three-ball-first-step.mjs b/src/browser-initial-import/live-three-ball-first-step.mjs
+index 5246892..0844286 100644
+--- a/src/browser-initial-import/live-three-ball-first-step.mjs
++++ b/src/browser-initial-import/live-three-ball-first-step.mjs
+@@ -20,6 +20,9 @@ const copy=x=>structuredClone(x),same=(a,b)=>a.index===b.index&&a.generation===b
+ export const CAPABILITY=Object.freeze({kind:'live-three-ball-first-substep',wholeShot:false,maximumSteps:1,cpuFallback:false,initialFloorOnly:true,rigidCueContacts:false});
+ export const FIRST_OUTER_CAPABILITY=Object.freeze({...CAPABILITY,kind:'live-three-ball-first-outer-substeps',maximumSteps:64});
+ export const TIP_CONTACT_CAPABILITY=Object.freeze({...CAPABILITY,kind:'live-three-ball-first-tip-contact',maximumSteps:1024,aftermathSubsteps:4,eventBounded:true});
++export const WITHDRAWAL_CAPABILITY=Object.freeze({...CAPABILITY,kind:'live-three-ball-cue-withdrawal-first-free-outer',maximumSteps:2048,eventBounded:true,activeCcd:false});
++export const createReferenceWithdrawalOwner=(decoder,input)=>create(decoder,input,null,WITHDRAWAL_CAPABILITY.maximumSteps,'withdrawal');
++export async function createGpuWithdrawalOwner(device,decoder,input){if(typeof globalThis.GPUDevice!=='function'||!(device instanceof globalThis.GPUDevice))throw TypeError('Actual same-realm GPUDevice required');return create(decoder,input,device,WITHDRAWAL_CAPABILITY.maximumSteps,'withdrawal');}
+ export const createReferenceTipContactOwner=(decoder,input)=>create(decoder,input,null,TIP_CONTACT_CAPABILITY.maximumSteps,true);
+ export async function createGpuTipContactOwner(device,decoder,input){if(typeof globalThis.GPUDevice!=='function'||!(device instanceof globalThis.GPUDevice))throw TypeError('Actual same-realm GPUDevice required');return create(decoder,input,device,TIP_CONTACT_CAPABILITY.maximumSteps,true);}
+ export const createReferenceFirstOuterOwner=(decoder,input)=>create(decoder,input,null,64);
+@@ -31,24 +34,37 @@ export async function createGpuFirstStepOwner(device,decoder,input){if(typeof gl
+ // adjacency order are retained, while the serialized pair map is key-sorted.
+ function ownedPairState(seed,receipt,stage,backend,frame,current){
+  const r=Q.assertReceipt(receipt,stage,backend,'pre');
+- if(r.frame!==(current?.frame??0)||r.initialSnapshotSha256!==seed.initialSnapshotSha256||r.removedColliders.length)throw RangeError('Exact current insertion receipt required for native pair serialization');
++ if(r.frame!==(current?.frame??0)||r.initialSnapshotSha256!==seed.initialSnapshotSha256)throw RangeError('Exact current insertion receipt required for native pair serialization');
+  const pairs=copy(current?.ownedBvh.pairs??seed.initialBroadPhase.pairs),pair_adjacency=copy(current?.ownedBvh.pair_adjacency??seed.initialBroadPhase.pair_adjacency),data=pair_adjacency.data;
+- for(const e of r.events){
+-  if(e.kind==='DeletePair'){const index=pairs.findIndex(([p])=>same(p[0],e.collider1)&&same(p[1],e.collider2));if(index<0)throw RangeError('Deleting absent native pair');pairs.splice(index,1);for(const [a,b]of [[e.collider1,e.collider2],[e.collider2,e.collider1]]){const slot=data[a.index];if(slot?.[0]!==a.generation)throw RangeError('Native pair adjacency generation mismatch');const at=slot[1].findIndex(h=>same(h,b));if(at<0)throw RangeError('Native pair adjacency missing endpoint');const last=slot[1].pop();if(at<slot[1].length)slot[1][at]=last;}continue;}
+-  if(e.kind!=='AddPair'||pairs.some(([p])=>same(p[0],e.collider1)&&same(p[1],e.collider2)))throw RangeError('Initial native pair owner only admits distinct source insertion events');
++ // Source update.rs removes Coarena slots before sorted stale-pair deletion.
++ const retired=r.removedColliders;
++ for(const h of retired)if(data[h.index]?.[0]===h.generation)data[h.index]=[4294967295,[]];
++ const withdrawn=pairs.filter(([p])=>p.some(h=>retired.some(r=>same(h,r)))).map(([p])=>({collider1:p[0],collider2:p[1],withdrawn:true}));
++ // Native inserts first, then removes all stale pairs in one canonical order.
++ for(const e of r.events.filter(e=>e.kind==='AddPair')){
++  if(pairs.some(([p])=>same(p[0],e.collider1)&&same(p[1],e.collider2)))throw RangeError('Duplicate source pair insertion');
+   pairs.push([[copy(e.collider1),copy(e.collider2)],frame]);
+   for(const [a,b] of [[e.collider1,e.collider2],[e.collider2,e.collider1]]){while(data.length<=a.index)data.push([4294967295,[]]);if(data[a.index][0]!==a.generation)data[a.index]=[a.generation,[]];data[a.index][1].push(copy(b));}
+  }
++ if(r.events.some(e=>!['AddPair','DeletePair'].includes(e.kind)))throw RangeError('Unknown native pair event');
++ const stale=[...withdrawn,...r.events.filter(e=>e.kind==='DeletePair')].sort((a,b)=>a.collider1.index-b.collider1.index||a.collider2.index-b.collider2.index);
++ for(const e of stale){const index=pairs.findIndex(([p])=>same(p[0],e.collider1)&&same(p[1],e.collider2));if(index<0)throw RangeError('Deleting absent native pair');pairs.splice(index,1);for(const [a,b] of [[e.collider1,e.collider2],[e.collider2,e.collider1]]){const slot=data[a.index];if(slot?.[0]!==a.generation){if(e.withdrawn&&retired.some(h=>same(h,a)))continue;throw RangeError('Native pair adjacency generation mismatch');}const at=slot[1].findIndex(h=>same(h,b));if(at<0)throw RangeError('Native pair adjacency missing endpoint');const last=slot[1].pop();if(at<slot[1].length)slot[1][at]=last;}}
+  pairs.sort(([a],[b])=>a[0].index-b[0].index||a[0].generation-b[0].generation||a[1].index-b[1].index||a[1].generation-b[1].generation);
+  if(pairs.length!==r.after.pairs.length||pairs.some(([p])=>!r.after.pairs.some(e=>same(e.collider1,p[0])&&same(e.collider2,p[1]))))throw RangeError('Full pair-map receipt mismatch');
+  return{pairs,pair_adjacency};
+ }
++function postCuePairs(current,narrow){
++ if(!current||current.cue!==null||narrow.broadPhaseEvents.length)throw RangeError('Post-withdrawal new broad pair requires a numerical contact owner');
++ const {pairs,pair_adjacency}=current.ownedBvh;
++ if(pairs.length!==narrow.after.edges.length||pairs.some(([p])=>!narrow.after.edges.some(e=>same(e.collider1,p[0])&&same(e.collider2,p[1]))))throw RangeError('Post-withdrawal native pair identity mismatch');
++ return copy({pairs,pair_adjacency});
++}
+ const ccdInput=(s,next)=>({kind:'dynamic-body-ccd-check',bodyType:'dynamic',sleeping:false,softFrame:false,...copy(s.ccdBody),dt:s.dt,linear:s.linear,angular:s.angular,translation:s.translation,rotation:s.rotation,invMass:s.invMass,invInertia:s.invInertia,localCom:[0,0,0],force:s.force,...(next?{nextTranslation:next.translation,nextRotation:next.rotation}:{})});
+ async function create(decoder,input,device,maximumSteps=1,eventBounded=false){
+- const capability=eventBounded?TIP_CONTACT_CAPABILITY:maximumSteps===1?CAPABILITY:FIRST_OUTER_CAPABILITY;
++ const withdrawal=eventBounded==='withdrawal',capability=withdrawal?WITHDRAWAL_CAPABILITY:eventBounded?TIP_CONTACT_CAPABILITY:maximumSteps===1?CAPABILITY:FIRST_OUTER_CAPABILITY;
+  const seed=await importLiveThreeBallStepSeed(decoder,input),{projection,broad}=seed,origin=broad.initialContactOrigin,roles=seed.cueInitial.sourceCreation.roles;
+  if(origin.retainedCushions.length||origin.retainedDynamicPairs.length||origin.edges.length!==3)throw RangeError('First-step owner requires three retained floor contacts');
+- const backend=device?'webgpu':'cpu-reference',token={},owned=[],claimed=[],floors=[],patches=[],emptyConvexStages=[];let cue,q,j,guard,ccd,bvh,emptyCueCache;
++ const backend=device?'webgpu':'cpu-reference',token={},owned=[],claimed=[],floors=[],patches=[],freePatches=[],emptyConvexStages=[];let cue,q,j,guard,ccd,bvh,emptyCueCache;
+  const own=x=>(owned.push(x),x),claim=x=>(x.claim(token),claimed.push(x),x);
+  try{
+   cue=claim(own(device?await Cue.createGpuPreWorldStage(device,seed.cueInitial):Cue.createReferencePreWorldStage(seed.cueInitial)));
+@@ -57,25 +73,29 @@ async function create(decoder,input,device,maximumSteps=1,eventBounded=false){
+   const app=projection.application,created=seed.cueInitial.sourceCreation.created,find=h=>created.colliders.find(c=>same(c.handle,h)),descriptor=h=>{const c=find(h);return{handle:copy(h),groups:copy(c.flags.collision_groups),solverGroups:copy(c.flags.solver_groups),shapeType:c.shape.variant};};
+   const sceneRegistry={kind:'original-physicslab-initial-scene-registry',snapshotSha256:projection.created.snapshotSha256,staticCount:16,objects:app.registry.objects.map(o=>({...copy(o),primaryCollider:descriptor(o.collider),pairCollider:descriptor(o.pairCollider)})),statics:app.registry.statics.map(o=>({...copy(o),collider:descriptor(o.collider)}))};
+   guard=own(device?await Guard.createGpuGuard(device,{created,roles,sceneRegistry}):Guard.createReferenceGuard({created,roles,sceneRegistry}));
+-  for(const b of seed.balls){floors.push(claim(own(device?await Floor.createGpuSettledContactStage(device,b.state):Floor.createReferenceSettledContactStage(b.state))));const p={materialKind:'cloth',mass:b.mass,radius:b.radius,gravity:9.81,h:1/61440,rollingLength:.00045,spinLength:.00035};patches.push(own(device?await Patch.createGpuPostWorldStage(device,p):Patch.createReferencePostWorldStage(p)));}
++  for(const b of seed.balls){floors.push(claim(own(device?await Floor.createGpuSettledContactStage(device,b.state):Floor.createReferenceSettledContactStage(b.state))));const p={materialKind:'cloth',mass:b.mass,radius:b.radius,gravity:9.81,h:1/61440,rollingLength:.00045,spinLength:.00035};patches.push(own(device?await Patch.createGpuPostWorldStage(device,p):Patch.createReferencePostWorldStage(p)));if(withdrawal){const free={...p,h:1/960};freePatches.push(own(device?await Patch.createGpuPostWorldStage(device,free):Patch.createReferencePostWorldStage(free)));}}
+   ccd=own(device?await CCD.createGpuChecker(device):{pre:CCD.preReference,post:CCD.postReference,dispose(){}});
+   bvh=own(await(device?Bvh.createGpuStage(device,broad.broadSeed):Bvh.createReferenceStage(broad.broadSeed)));
+   emptyCueCache=own(device?await Empty.createGpuStage(device):Empty.createReferenceStage());
+   for(const r of seed.cueEmptyConvexHulls)emptyConvexStages.push({hull:r.hull,stage:own(device?await Hull.createGpuStage(device,{hull:r.hull}):Hull.createReferenceStage({hull:r.hull}))});
+   q.bindSeparatedCacheOwner(emptyCueCache,guard,token,emptyConvexStages);
+  }catch(e){for(const c of claimed.reverse())c.release(token);for(const c of owned.reverse())c.dispose();throw e;}
+- let busy=false,disposed=false,pending=null,committed=null,scene=null,floorPrepared=[];
++ let busy=false,disposed=false,pending=null,committed=null,scene=null,floorPrepared=[],cuePrepared=false,broadPrepared=false;
+  const check=()=>{if(busy||disposed||committed?.eventBoundary?.complete||(committed?.frame??0)>=maximumSteps)throw Error('Bounded live-three owner unavailable');},cancel=s=>{if(s?.aborted)throw s.reason??new DOMException('Cancelled','AbortError');};
+  const rollback=()=>{cue.abort(token);floors.forEach(x=>x.abort(token));j.abort(token);q.abort(token);bvh.abort();if(scene){scene.abort(token);if(!committed){scene.release(token);scene.dispose();scene=null;}}pending=null;};
+  const snapshot=()=>copy(committed??{capability,backend,sourceOrigin:projection.sourceOrigin,application:projection.application,initialNative:projection.created.state,phase:projection.boundary});
+- const broadInput=(balls,cueBodies,context)=>({cue:copy(cueBodies),balls:balls.map(b=>({body:copy(b.body),translation:b.state.translation.slice(),rotation:b.state.rotation.slice()})),removedBodies:[],activeBodyOrder:context.manager.awake_island===null?[]:copy(context.manager.islands.v[context.manager.awake_island].bodies)});
++ const broadInput=(balls,cueBodies,context,removedBodies=[])=>({cue:copy(cueBodies),balls:balls.map(b=>({body:copy(b.body),translation:b.state.translation.slice(),rotation:b.state.rotation.slice()})),removedBodies:copy(removedBodies),activeBodyOrder:context.manager.awake_island===null?[]:copy(context.manager.islands.v[context.manager.awake_island].bodies)});
+  return Object.freeze({capability,backend,snapshot,
+  async prepare(options={}){if(!options||Object.getPrototypeOf(options)!==Object.prototype||Object.keys(options).some(k=>k!=='signal'))throw TypeError('Only cancellation metadata is accepted; per-step state injection prohibited');const {signal}=options;check();if(pending)throw Error('Abort pending first step before retry');cancel(signal);busy=true;try{
+-  const frame=committed?.frame??0,balls=copy(committed?.balls??seed.balls),selected=projection.sourceOrigin.selectedIndex,pre=await cue.prepare({selected:balls[selected].state,others:balls.filter((_,i)=>i!==selected).map(b=>b.state)},token);cancel(signal);
+-  balls[selected].state.linear=pre.linear.slice();balls[selected].state.angular=pre.angular.slice();if(!pre.metadata.cuePresent)throw RangeError('First-step cue removal unsupported');
+-  const exclusion=await guard.check({cue:pre.metadata.preSolveBodies,balls:balls.map(b=>({body:b.body,translation:b.state.translation,rotation:b.state.rotation,radius:b.radius}))});
+-  const before=frame===0?pre.metadata.initialization:scene.beginFrame({apiCalls:pre.metadata.mutableBodyCalls.map(c=>({body:roles[c.body],strongWake:c.strongWake})),removedBodies:[]},token),ownPre=broadInput(balls,pre.metadata.preSolveBodies,before);bvh.begin();await bvh.collision(ownPre);await bvh.beforeQueries();
+-  const receipt=await q.prepare(ownPre,token),graph=await j.prepare(ownPre.balls.map(({body,translation})=>({body,translation})),token,receipt),geometry=[];floorPrepared=[];
++  const frame=committed?.frame??0,balls=copy(committed?.balls??seed.balls),selected=projection.sourceOrigin.selectedIndex,subdivisions=committed?.subdivisions??64,h=1/960/subdivisions;
++  for(const b of balls)b.state.dt=f(h);
++  cuePrepared=cue.snapshot().present;broadPrepared=q.snapshot().cuePresent;
++  const pre=cuePrepared?await cue.prepare({selected:balls[selected].state,others:balls.filter((_,i)=>i!==selected).map(b=>b.state)},token):{linear:balls[selected].state.linear.slice(),angular:balls[selected].state.angular.slice(),metadata:{cuePresent:false,mutableBodyCalls:[],removedBodies:[],sourceH:h,birth:false,touching:false,separation:false,jointResult:null}};cancel(signal);
++  balls[selected].state.linear=pre.linear.slice();balls[selected].state.angular=pre.angular.slice();if(!pre.metadata.cuePresent&&!withdrawal)throw RangeError('First-step cue removal unsupported');
++  const removedBodies=pre.metadata.removedBodies.map(r=>roles[r]);
++  const exclusion=pre.metadata.cuePresent?await guard.check({cue:pre.metadata.preSolveBodies,balls:balls.map(b=>({body:b.body,translation:b.state.translation,rotation:b.state.rotation,radius:b.radius}))}):null;
++  const before=frame===0?pre.metadata.initialization:scene.beginFrame({apiCalls:pre.metadata.mutableBodyCalls.map(c=>({body:roles[c.body],strongWake:c.strongWake})),removedBodies},token),ownPre=broadInput(balls,pre.metadata.cuePresent?pre.metadata.preSolveBodies:null,before,removedBodies);bvh.begin();await bvh.collision(ownPre);await bvh.beforeQueries();
++  const receipt=broadPrepared?await q.prepare(ownPre,token):undefined,graph=await j.prepare(ownPre.balls.map(({body,translation})=>({body,translation})),token,receipt),geometry=[];floorPrepared=[];
+   // Original user changes own the wake. Never force activation merely because
+   // a tip is near: adopt only the sleeping→awake result of this Scene frame.
+   const wokenBodies=[];for(const b of balls){const own=before.bodies.find(x=>same(x.handle,b.body));if(!own)throw RangeError('Owned scene body missing before geometry');if(b.state.sleeping&&own.activation.sleeping===false){b.state.sleeping=false;b.state.activation=copy(own.activation);wokenBodies.push(copy(b.body));}}
+@@ -89,20 +109,22 @@ async function create(decoder,input,device,maximumSteps=1,eventBounded=false){
+   }else if(pre.metadata.initialization)throw RangeError('Recurrent step cannot reinitialize original source');
+   const next={frame,balls,globalEdges:copy(narrow.after.edges),emptyCuePairs:copy(committed?.emptyCuePairs??[]),emptyCueConvexPairs:copy(committed?.emptyCueConvexPairs??[])};await World.prepareEmptyCueCaches(seed,{emptyCueCache},next,pre.metadata,narrow,exclusion,backend);await World.prepareEmptyConvexCaches(seed,{emptyConvexStages},next,pre.metadata,narrow,exclusion,backend);cancel(signal);
+   const connectivity={kind:'owned-rigid-contact-connectivity',bodyColliders:broad.broadSeed.bodyColliders.filter(b=>balls.some(x=>same(x.body,b.body))),colliders:broad.graphSeed.colliders.filter(c=>narrow.after.liveColliders.some(h=>same(h,c.handle))).map(c=>({handle:c.handle,body:c.body})),edges:narrow.after.edges,adjacency:narrow.after.adjacency};
+-  const physical=geometry.map((p,i)=>({handle:balls[i].body,...copy(p.state)}));for(const role of ['shaft','head'])physical.push({handle:roles[role],...copy(pre.metadata.preSolveBodies[role]),gravity:[0,f(-9.81),0]});
+-  const observed=await scene.observe(physical,{dt:f(1/61440),lengthUnit:balls[0].state.lengthUnit,connectivity},narrow.operations,token),by=new Map(observed.bodies.map(b=>[key(b.handle),b])),modified=[],prePatchBalls=[];
+-  for(const role of ['shaft','head']){const a=by.get(key(roles[role]));if(!a||a.activation.sleeping||a.force.some(x=>x!==0)||a.torque.some(x=>x!==0))throw RangeError('Disconnected cue requires awake zero force');}
+-  for(let i=0;i<balls.length;i++){const a=by.get(key(balls[i].body)),entry=balls[i].state;if(!a){if(!entry.sleeping)throw RangeError('Missing active body');prePatchBalls.push(copy(entry));continue;}let s;if(a.activation.sleeping)s=floors[i].skipSleeping({activation:a.activation,activationPhase:a.activationPhase,force:a.force},token).state;else{s=(await floors[i].solvePrepared({activation:a.activation,activationPhase:a.activationPhase,ccdPhase:'source-prediction-inactive'},token)).state;if(!(await ccd.post(ccdInput(entry,s))).admitted)throw RangeError('Post-solve CCD not admitted');}s.force=a.force.slice();s.ccdBody.force=a.force.slice();s.ccdBody.torque=a.torque.slice();prePatchBalls.push(copy(s));if(!a.activation.sleeping){const patch=await patches[i].step(s);s.angular=patch.angular.slice();if(patch.metadata.requiresModifiedBodyTracking)modified.push(balls[i].body);}balls[i].state=s;}
+-  const postScene=scene.postApplication(modified,token),solvedCue={shaft:pre.metadata.jointResult.shaft,head:pre.metadata.jointResult.head};
+-  await bvh.moved(broadInput(balls,solvedCue,observed.context));const post=await q.postSolve(broadInput(balls,solvedCue,postScene),token),postGraph=await j.postSolve(balls.map(b=>({body:b.body,translation:b.state.translation})),token,post);
++  const physical=geometry.map((p,i)=>({handle:balls[i].body,...copy(p.state)}));if(pre.metadata.cuePresent)for(const role of ['shaft','head'])physical.push({handle:roles[role],...copy(pre.metadata.preSolveBodies[role]),gravity:[0,f(-9.81),0]});
++  const observed=await scene.observe(physical,{dt:f(h),lengthUnit:balls[0].state.lengthUnit,connectivity},narrow.operations,token),by=new Map(observed.bodies.map(b=>[key(b.handle),b])),modified=[],prePatchBalls=[];
++  if(pre.metadata.cuePresent)for(const role of ['shaft','head']){const a=by.get(key(roles[role]));if(!a||a.activation.sleeping||a.force.some(x=>x!==0)||a.torque.some(x=>x!==0))throw RangeError('Disconnected cue requires awake zero force');}
++  for(let i=0;i<balls.length;i++){const a=by.get(key(balls[i].body)),entry=balls[i].state;if(!a){if(!entry.sleeping)throw RangeError('Missing active body');prePatchBalls.push(copy(entry));continue;}let s;if(a.activation.sleeping)s=floors[i].skipSleeping({activation:a.activation,activationPhase:a.activationPhase,force:a.force},token).state;else{s=(await floors[i].solvePrepared({activation:a.activation,activationPhase:a.activationPhase,ccdPhase:'source-prediction-inactive'},token)).state;if(!(await ccd.post(ccdInput(entry,s))).admitted)throw RangeError('Post-solve CCD not admitted');}s.force=a.force.slice();s.ccdBody.force=a.force.slice();s.ccdBody.torque=a.torque.slice();prePatchBalls.push(copy(s));if(!a.activation.sleeping){const patch=await (subdivisions===64?patches:freePatches)[i].step(s);s.angular=patch.angular.slice();if(patch.metadata.requiresModifiedBodyTracking)modified.push(balls[i].body);}balls[i].state=s;}
++  const postScene=scene.postApplication(modified,token),solvedCue=pre.metadata.cuePresent?{shaft:pre.metadata.jointResult.shaft,head:pre.metadata.jointResult.head}:null;
++  await bvh.moved(broadInput(balls,solvedCue,observed.context));const post=broadPrepared?await q.postSolve(broadInput(balls,solvedCue,postScene),token):undefined,postGraph=await j.postSolve(balls.map(b=>({body:b.body,translation:b.state.translation})),token,post);
+   for(let i=0;i<balls.length;i++){balls[i].state.topology.ballMin=copy(postGraph.proxies[i].min);balls[i].state.topology.ballMax=copy(postGraph.proxies[i].max);}
+-  cancel(signal);cue.assertPrepared(token);j.assertPrepared(token);q.assertPrepared(token);scene.assertPrepared(token);floors.forEach((p,i)=>{if(floorPrepared[i])p.assertPrepared(token);});
++  cancel(signal);if(cuePrepared)cue.assertPrepared(token);j.assertPrepared(token);if(broadPrepared)q.assertPrepared(token);scene.assertPrepared(token);floors.forEach((p,i)=>{if(floorPrepared[i])p.assertPrepared(token);});
+   const tipEvents=copy(committed?.tipEvents??[]),time=committed?.time??projection.application.time;
+   if(pre.metadata.birth){const point=pre.metadata.tip.pointF32;tipEvents.push({kind:'contact',label:balls[selected].label+' ↔ 큐 팁',time,position:{x:point[0],y:point[1],z:point[2]},selectedId:balls[selected].id,selectedIndex:selected,body:copy(balls[selected].body),frame:frame+1});}
+-  const firstTipContact=committed?.firstTipContact??(pre.metadata.birth?{frame:frame+1,time,selectedId:balls[selected].id,selectedIndex:selected,body:copy(balls[selected].body)}:null),eventBoundary=eventBounded?{kind:'first-compliant-tip-contact',firstContactFrame:firstTipContact?.frame??null,aftermathSubsteps:capability.aftermathSubsteps,complete:firstTipContact!==null&&frame+1>=firstTipContact.frame+capability.aftermathSubsteps}:null;
+-  pending={capability,backend,tipEvents,firstTipContact:copy(firstTipContact),eventBoundary,wokenBodies,frame:frame+1,outerSubstep:(frame+1)%64,outerStep:Math.floor((frame+1)/64),time:(committed?.time??projection.application.time)+1/61440,globalEdges:copy(postGraph.edges),phase:'post-world-step-post-application',sourceOrigin:copy(projection.sourceOrigin),balls,prePatchBalls,cue:copy(pre.metadata.jointResult),cueMetadata:copy(pre.metadata),scene:copy(postScene),nativeScene:copy(observed.context),contactGraph:copy(postGraph),ownedBvh:{...bvh.stage.preview(),...ownedPairState(broad.broadSeed,receipt,q,backend,bvh.stage.preview().frame_index,committed)},emptyCuePairs:next.emptyCuePairs??[],emptyCueConvexPairs:next.emptyCueConvexPairs??[],contactEvents:copy(narrow.contactEvents)};return copy(pending);
++  const outerSubstep=((committed?.outerSubstep??0)+1)%subdivisions,outerStep=(committed?.outerStep??0)+(outerSubstep===0?1:0),nextSubdivisions=outerSubstep===0?(pre.metadata.cuePresent?64:1):subdivisions;
++  const withdrawalFrame=committed?.withdrawalFrame??(pre.metadata.separation?frame+1:null);
++  const firstTipContact=committed?.firstTipContact??(pre.metadata.birth?{frame:frame+1,time,selectedId:balls[selected].id,selectedIndex:selected,body:copy(balls[selected].body)}:null),eventBoundary=withdrawal?{kind:'cue-withdrawal-first-free-outer',withdrawalFrame,complete:withdrawalFrame!==null&&subdivisions===1&&outerSubstep===0}:eventBounded?{kind:'first-compliant-tip-contact',firstContactFrame:firstTipContact?.frame??null,aftermathSubsteps:capability.aftermathSubsteps,complete:firstTipContact!==null&&frame+1>=firstTipContact.frame+capability.aftermathSubsteps}:null;
++  pending={capability,backend,tipEvents,firstTipContact:copy(firstTipContact),eventBoundary,wokenBodies,frame:frame+1,outerSubstep,outerStep,subdivisions:nextSubdivisions,stepSubdivisions:subdivisions,withdrawalFrame,time:(committed?.time??projection.application.time)+h,globalEdges:copy(postGraph.edges),phase:'post-world-step-post-application',sourceOrigin:copy(projection.sourceOrigin),balls,prePatchBalls,cue:copy(pre.metadata.jointResult),cueMetadata:copy(pre.metadata),scene:copy(postScene),nativeScene:copy(observed.context),contactGraph:copy(postGraph),ownedBvh:{...bvh.stage.preview(),...(broadPrepared?ownedPairState(broad.broadSeed,receipt,q,backend,bvh.stage.preview().frame_index,committed):postCuePairs(committed,narrow))},emptyCuePairs:next.emptyCuePairs??[],emptyCueConvexPairs:next.emptyCueConvexPairs??[],contactEvents:copy(narrow.contactEvents)};return copy(pending);
+  }catch(e){rollback();throw e;}finally{busy=false;}},
+- abort(){check();rollback();},commit(){check();if(!pending)throw Error('Prepared first step required');cue.assertPrepared(token);q.assertPrepared(token);j.assertPrepared(token);scene.assertPrepared(token);floors.forEach((p,i)=>{if(floorPrepared[i])p.assertPrepared(token);});cue.commit(token);floors.forEach((p,i)=>{if(floorPrepared[i])p.commit(token);});j.commit(token);q.commit(token);scene.commit(token);bvh.commit();committed=pending;pending=null;return snapshot();},
++ abort(){check();rollback();},commit(){check();if(!pending)throw Error('Prepared first step required');if(cuePrepared)cue.assertPrepared(token);if(broadPrepared)q.assertPrepared(token);j.assertPrepared(token);scene.assertPrepared(token);floors.forEach((p,i)=>{if(floorPrepared[i])p.assertPrepared(token);});if(cuePrepared)cue.commit(token);floors.forEach((p,i)=>{if(floorPrepared[i])p.commit(token);});j.commit(token);if(broadPrepared)q.commit(token);scene.commit(token);bvh.commit();committed=pending;pending=null;return snapshot();},
+  dispose(){if(busy)throw Error('Owner busy');if(disposed)return;rollback();if(scene){scene.release(token);scene.dispose();scene=null;}for(const c of claimed.reverse())c.release(token);for(const c of owned.reverse())c.dispose();disposed=true;}
+  });
+ }
+diff --git a/tests/live-three-ball-native-assertions.mjs b/tests/live-three-ball-native-assertions.mjs
+index e41440f..9fb6cdd 100644
+--- a/tests/live-three-ball-native-assertions.mjs
++++ b/tests/live-three-ball-native-assertions.mjs
+@@ -53,6 +53,8 @@ function comparePrepared(out,expected,projection){
+  assert.equal(out.scene.bodies.length,row.bodies.length);
+  for(const b of row.bodies){const a=out.scene.bodies.find(x=>same(x.handle,b.handle));assert.ok(a);assert.deepEqual(a.ids,b.ids);assert.equal(a.changes,b.changes);if(b.body_type==='Dynamic'){for(const k of ['normalized_linear_threshold','angular_threshold','time_until_sleep','time_since_can_sleep','sleeping'])assert.equal(a.activation[k],b.activation[k],b.handle.index+'.activation.'+k);for(const k of ['translation','rotation'])near(a.activation.sleep_prev_pose[k],b.activation.sleep_prev_pose[k],2e-6,'sleep history');}}
+  compareBalls(out.balls,row,registry,'postpatch ball');if(out.prePatchBalls)compareBalls(out.prePatchBalls.map((state,i)=>({id:registry.objects[i].id,state})),expected.pre,registry,'prepatch ball');
++ const nativeCuePresent=row.bodies.some(b=>same(b.handle,roles?.head??projection.application.cue.head));
++ if(nativeCuePresent){
+  for(const role of ['shaft','head']){
+   const handle=roles?.[role]??projection.application.cue[role],b=row.bodies.find(x=>same(x.handle,handle));assert.ok(b);const a=out.cue[role];
+   for(const [field,want]of Object.entries({translation:b.pos.position.translation,rotation:b.pos.position.rotation,linear:b.vels.linvel,angular:b.vels.angvel}))near(a[field],want,3e-6,'cue.'+role+'.'+field);
+@@ -60,6 +62,11 @@ function comparePrepared(out,expected,projection){
+  }
+  const joints=row.state.impulse_joints.joint_graph.graph.edges.map(e=>e.weight);
+  near(out.cue.impulses,[...joints[0].impulses.slice(3,6),joints[0].impulses[0],...joints[1].impulses.slice(3,6),joints[1].impulses[1],joints[1].impulses[2],joints[1].data.limits[0].impulse],2e-6,'cue joint impulses');
++ }else{
++  assert.equal(out.cue,null,'Source-retired cue must not retain numerical bodies');assert.equal(out.cueMetadata.cuePresent,false);
++  for(const role of ['head','shaft','guide']){const handle=roles?.[role]??projection.application.cue[role];assert.ok(handle);assert.equal(row.bodies.some(b=>same(b.handle,handle)),false);assert.equal(out.scene.bodies.some(b=>same(b.handle,handle)),false);}
++  assert.equal(row.state.impulse_joints.joint_graph.graph.edges.length,0,'All original cue joints retired');assert.deepEqual(out.emptyCuePairs,[]);assert.deepEqual(out.emptyCueConvexPairs,[]);
++ }
+  const graph=Graph.graphView(row);assert.deepEqual(out.contactGraph.edges,graph.edges);assert.deepEqual(out.contactGraph.adjacency,graph.adjacency);assert.deepEqual(out.contactGraph.liveColliders,row.colliders.map(c=>c.handle));assert.equal(out.contactGraph.sequence,expected.h);
+  const floor=registry.statics.find(s=>s.kind==='cloth');
+  for(let i=0;i<3;i++){
+diff --git a/tests/live-three-ball-withdrawal.mjs b/tests/live-three-ball-withdrawal.mjs
+new file mode 100644
+index 0000000..06ff31c
+--- /dev/null
++++ b/tests/live-three-ball-withdrawal.mjs
+@@ -0,0 +1,77 @@
++// SPDX-License-Identifier: Apache-2.0
++// Event-bounded original cue withdrawal and 64-to-1 cadence discovery.
++// All native rows are assertion-only; candidate receives initial capture only.
++import {test,before,after} from 'node:test';
++import fs from 'node:fs';import v8 from 'node:v8';import path from 'node:path';import {createRequire} from 'node:module';import {pathToFileURL} from 'node:url';
++import * as D from '../tools/rapier-snapshot-decoder/browser.mjs';
++import {plain} from '../src/browser-initial-import/exact-data.mjs';
++import {assert,near,comparePrepared} from './live-three-ball-native-assertions.mjs';
++import {importLiveThreeBallInitialization} from '../src/browser-initial-import/live-three-ball-initialization.mjs';
++import * as M from '../src/browser-initial-import/live-three-ball-first-step.mjs';
++const require=createRequire(import.meta.url),R=require('../vendor/rapier.cjs');globalThis.RAPIER=R;for(const name of ['math','render-cadence','physics','game-rules','controller'])require('../src/'+name+'.js');
++const root=path.resolve(import.meta.dirname,'..'),copy=x=>structuredClone(x);let decoder,device,gpu;
++before(async()=>{const provenance=JSON.parse(fs.readFileSync(process.env.RAPIER_WASM_PROVENANCE??path.resolve(root,'../billiard-browser-snapshot-decoder/.browser-decoder-build/snapshot-wasm-decoder-provenance.json')));decoder=await D.createSnapshotDecoder({engineVersion:'0.21.0',engineBytes:new Uint8Array(fs.readFileSync(path.join(root,'vendor/rapier.cjs'))),wasmBytes:new Uint8Array(fs.readFileSync(provenance.wasmPath)),provenance,expectedWasmSha256:provenance.wasmSha256});await R.init();if(process.env.REQUIRE_WEBGPU==='1'){assert.ok(process.env.GPU_NATIVE_MODULE);const mod=await import(pathToFileURL(process.env.GPU_NATIVE_MODULE));Object.assign(globalThis,mod.globals);gpu=mod.create(['backend=vulkan']);device=await(await gpu.requestAdapter()).requestDevice();}});
++after(()=>device?.destroy());
++const arena=a=>a.items.flatMap((slot,index)=>slot&&typeof slot==='object'&&Object.hasOwn(slot,'generation')?[{handle:{index,generation:slot.generation},...slot.value}]:[]);
++async function decode(bytes,application,h){const state=plain((await decoder.decodeSnapshot(bytes)).state);return{candidateInput:false,boundary:'expected-only-h'+h+'-postApplication',state,bodies:arena(state.bodies.bodies),colliders:arena(state.colliders.colliders),application,contactPairs:state.narrow_phase.contact_graph.graph.edges.map(e=>e.weight),queues:{modifiedBodies:state.bodies.modified_bodies[0]}};}
++// The original snapshots its subdivisions at outer-loop entry. Removal inside
++// an outer call must not prematurely switch the remaining substeps to dt=1/960.
++// Buffer at most one original outer call (64 snapshots), never a full trace.
++async function* originalWithdrawalBoundary(name,raw,application){
++ const c=new LabController();c.lab=new PhysicsLab(R);c.setupGame();c.repairRouteTargets();
++ try{
++  if(name==='after-turn'){assert.equal(c.fire(),true);let steps=0;while((c.lab.cue||c.lab.objects.some(o=>!o.body.isSleeping()))&&steps<20000){c.lab.step();steps++;}assert.equal(steps,5875);c.finishGameShot();c.pause(true);const delay=Math.ceil(c.cooldownUntil-performance.now());if(delay>=0)await new Promise(r=>setTimeout(r,delay+1));c.changeSettings(raw.capture.preStrikeApplication.controller.settings);}
++  assert.deepEqual(c.lab.world.takeSnapshot(),raw.preStrikeSnapshot);assert.equal(c.fire(),true);assert.deepEqual(c.lab.world.takeSnapshot(),raw.snapshot);
++  const step=c.lab.world.step,patch=c.lab.angularPatchResistance,tip=c.lab.compliantTipContact;
++  let rows=[],pre,phase,h=0,outer=0,substep=0,subdivisions=64,removalFrame=null,removalOuter=null,removalOuterEnd=null,done=false;
++  c.lab.compliantTipContact=function(...args){const wasPresent=!!this.cue;Reflect.apply(tip,this,args);phase={cuePresent:!!this.cue,removed:wasPresent&&!this.cue,events:copy(this.events.filter(e=>e.kind==='contact'&&e.label?.endsWith(' ↔ 큐 팁')))};};
++  c.lab.world.step=function(...args){Reflect.apply(step,this,args);pre=this.takeSnapshot();};
++  c.lab.angularPatchResistance=function(...args){Reflect.apply(patch,this,args);h++;substep++;if(phase.removed){assert.equal(removalFrame,null,'One actual cue removal');removalFrame=h;removalOuter=outer;console.log(JSON.stringify({name,originalCueRemovalFrame:h,outer,substep,subdivisions}));}rows.push({h,pre,post:this.world.takeSnapshot(),time:this.time,phase:copy(phase),outer,substep,subdivisions,dt:args[0],removalFrame,removalOuter,outerEnd:substep===subdivisions});};
++  try{
++   while(!done&&h<M.WITHDRAWAL_CAPABILITY.maximumSteps){
++    rows=[];substep=0;subdivisions=c.lab.cue?c.lab.strokeSubsteps:1;const sourceSteps=c.lab.steps;
++    c.lab.step();assert.equal(c.lab.steps,sourceSteps+1);assert.equal(rows.length,subdivisions,'Original outer call must finish its entry-selected cadence');
++    if(removalOuter===outer){assert.equal(subdivisions,64);removalOuterEnd=h;}
++    if(removalOuter!==null&&outer===removalOuter+1){assert.equal(subdivisions,1);assert.equal(h,removalOuterEnd+1);done=true;}
++    for(const row of rows)yield {...row,removalOuterEnd,complete:done&&row.outerEnd};outer++;
++   }
++   assert.ok(removalFrame!==null,'Actual source must remove cue within bounded horizon');assert.ok(done,'Finish removal outer and first complete no-cue outer');
++  }finally{c.lab.world.step=step;c.lab.angularPatchResistance=patch;c.lab.compliantTipContact=tip;}
++ }finally{clearTimeout(c.noticeTimer);clearTimeout(c.predictionTimer);c.lab.dispose();}
++}
++const normalizeCache=(rows,backend)=>rows.map(r=>{const x=copy(r);assert.equal(x.cache.backend,backend);assert.ok(backend==='webgpu'?x.cache.actualDispatches>0:x.cache.actualDispatches===0);delete x.cache.backend;delete x.cache.actualDispatches;return x;});
++function compareBackends(a,b){
++ try{
++ for(const k of ['balls','scene','contactGraph','ownedBvh'])assert.deepEqual(a[k],b[k],'Exact withdrawal CPU/WGSL '+k);
++ for(const k of ['emptyCuePairs','emptyCueConvexPairs'])assert.deepEqual(normalizeCache(a[k],'webgpu'),normalizeCache(b[k],'cpu-reference'),'Exact owned cache recurrence '+k);
++ if(b.cue===null){assert.equal(a.cue,null);return 0;}
++ let max=0;for(const role of ['shaft','head'])for(const field of ['linear','angular','translation','rotation','invInertia']){const x=a.cue[role][field],y=b.cue[role][field];near(x,y,3e-6*(field==='invInertia'?Math.max(1,...y.map(Math.abs)):1),'Recurrent cue parity');x.forEach((v,i)=>max=Math.max(max,Math.abs(v-y[i])));}near(a.cue.impulses,b.cue.impulses,2e-6,'Recurrent cue impulses');return max;
++ }catch(error){error.message='h'+a.frame+': '+error.message;throw error;}
++}
++function compareCadence(out,row,projection){
++ assert.equal(out.cueMetadata.cuePresent,row.phase.cuePresent,'Native cue presence at actual h');
++ assert.equal(out.cueMetadata.sourceH,row.dt,'Cadence belongs to original outer entry, not current cue presence');
++ assert.equal(out.outerStep,row.outer+(row.outerEnd?1:0),'Completed source outer calls');assert.equal(out.outerSubstep,row.outerEnd?0:row.substep,'Position inside original outer call');
++ assert.equal(out.stepSubdivisions,row.subdivisions);assert.equal(out.subdivisions,row.outerEnd&&!row.phase.cuePresent?1:row.subdivisions);assert.equal(out.withdrawalFrame,row.removalFrame);for(const b of out.balls)assert.equal(b.state.dt,Math.fround(row.dt));
++ assert.equal(out.eventBoundary.complete,row.complete,'No early completion at removal or its remaining64 boundary');
++ const want=row.phase.events.filter(e=>e.time>=projection.application.time);assert.equal(out.tipEvents.length,want.length);
++ for(let i=0;i<want.length;i++){const a=out.tipEvents[i],b=want[i];for(const k of ['kind','label','time'])assert.equal(a[k],b[k]);near(['x','y','z'].map(k=>a.position[k]),['x','y','z'].map(k=>b.position[k]),3e-6,'Native tip event');assert.equal(a.selectedIndex,projection.sourceOrigin.selectedIndex);assert.equal(a.selectedId,projection.sourceOrigin.selectedId);assert.deepEqual(a.body,projection.sourceOrigin.selectedBody);}
++ if(!row.phase.cuePresent){assert.equal(out.cue,null);assert.deepEqual(out.emptyCuePairs,[]);assert.deepEqual(out.emptyCueConvexPairs,[]);for(const field of ['shaft','head','guide']){const h=projection.application.cue[field];assert.equal(out.scene.bodies.some(b=>b.handle.index===h.index&&b.handle.generation===h.generation),false,'Removed cue '+field+' cannot survive in manager roster');}}
++}
++for(const name of ['default','after-turn'])test(name+' actual cue withdrawal retains current64 cadence then completes first no-cue1 outer',async t=>{
++ const raw=v8.deserialize(fs.readFileSync('/tmp/three-ball-live-evidence-20261025/capture.'+name+'.v8')),{projection}=await importLiveThreeBallInitialization(decoder,raw),reference=await M.createReferenceWithdrawalOwner(decoder,raw);let actual,last=null,maximumCueResidual=0,removalFrame=null,removalOuterEnd=null;
++ try{
++  if(device)actual=await M.createGpuWithdrawalOwner(device,decoder,raw);
++  for await(const row of originalWithdrawalBoundary(name,raw,projection.application)){
++   const expected={h:row.h,time:row.time,pre:await decode(row.pre,projection.application,row.h),post:await decode(row.post,projection.application,row.h)},before=reference.snapshot(),boundary=row.phase.removed||row.removalOuter===row.outer&&row.outerEnd||row.complete;
++   if(boundary){const cancel=new AbortController();cancel.abort(new Error('cancel withdrawal boundary'));await assert.rejects(reference.prepare({signal:cancel.signal}),/cancel withdrawal boundary/);assert.deepEqual(reference.snapshot(),before);}
++   const prepared=await reference.prepare();comparePrepared(prepared,expected,projection);compareCadence(prepared,row,projection);assert.deepEqual(reference.snapshot(),before);assert.deepEqual(prepared.sourceOrigin,projection.sourceOrigin);
++   if(boundary){reference.abort();assert.deepEqual(reference.snapshot(),before);assert.deepEqual(await reference.prepare(),prepared,'Removal/cadence rollback must retry identically');}
++   reference.commit();assert.deepEqual(reference.snapshot(),prepared);
++   if(actual){const gpuBefore=actual.snapshot();if(boundary){const cancel=new AbortController(),pending=actual.prepare({signal:cancel.signal});cancel.abort(new Error('cancel submitted withdrawal boundary'));await assert.rejects(pending,/cancel submitted withdrawal boundary/);assert.deepEqual(actual.snapshot(),gpuBefore);}const gpuPrepared=await actual.prepare();comparePrepared(gpuPrepared,expected,projection);compareCadence(gpuPrepared,row,projection);maximumCueResidual=Math.max(maximumCueResidual,compareBackends(gpuPrepared,prepared));if(boundary){actual.abort();assert.deepEqual(actual.snapshot(),gpuBefore);assert.deepEqual(await actual.prepare(),gpuPrepared);}actual.commit();assert.deepEqual(actual.snapshot(),gpuPrepared);}
++   last=prepared;removalFrame=row.removalFrame;removalOuterEnd=row.removalOuterEnd;if(row.outerEnd)console.log(JSON.stringify({name,progressSubsteps:row.h,removalFrame,outer:row.outer,subdivisions:row.subdivisions,actualGpu:!!device}));
++  }
++  assert.ok(last.eventBoundary.complete);assert.equal(last.frame,removalOuterEnd+1);assert.ok(removalFrame<=removalOuterEnd);const final=reference.snapshot();await assert.rejects(reference.prepare(),/Bounded/);assert.deepEqual(reference.snapshot(),final);if(actual)await assert.rejects(actual.prepare(),/Bounded/);
++  t.diagnostic(JSON.stringify({name,selectedIndex:projection.sourceOrigin.selectedIndex,removalFrame,removalOuterEnd,completedSubsteps:last.frame,actualGpu:!!device,maximumCueResidual,wholeShot:false}));
++ }finally{actual?.dispose();reference.dispose();}
++});

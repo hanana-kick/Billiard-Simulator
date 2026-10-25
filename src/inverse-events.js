@@ -51,18 +51,19 @@ function railResidual(cue,rail){
  const v=axes.map(k=>p[k]-projection.point[k]),d=norm(v),gap=Math.max(0,d-cue.radius);
  return d>1e-14?v.map(x=>x*gap/d):zero();
 }
-function sample(e,continuous=false){
- if(e.mismatch||e.eventPrefix>=e.expected.length||!e.trial)return;
- const i=e.eventPrefix,wanted=e.expected[i],lab=e.trial.lab,cue=lab.get(e.req.selectedId);
+function sampleObservation(e,frame,continuous=false){
+ if(e.mismatch||e.eventPrefix>=e.expected.length)return;
+ const i=e.eventPrefix,wanted=e.expected[i],cue=frame.cue;
  let residual,measurement=null;
  if(wanted.kind==='object'){
-  const target=lab.get(wanted.id);if(!target){e.unavailable='missing-target';return;}
-  measurement={stage:i,cue:{...cue.body.translation()},target:{...target.body.translation()},radius:cue.radius+target.radius};
+  const target=frame.objects.find(o=>o.id===wanted.id);if(!target){e.unavailable='missing-target';return;}
+  measurement={stage:i,cue:{...cue.position},target:{...target.position},radius:cue.radius+target.radius};
   residual=surfaceResidual(axes.map(k=>measurement.cue[k]-measurement.target[k]),measurement.radius);
  }else{
-  const rail=lab.statics.find(o=>o.kind==='cushion'&&G.LabRouteRules.railId(o)===wanted.rail);
-  if(!rail?.collider?.projectPoint){e.unavailable='missing-cushion-geometry';return;}
-  residual=railResidual(cue,rail);
+  const rail=frame.rails.find(o=>o.rail===wanted.rail);
+  if(!rail?.projection){e.unavailable='missing-cushion-geometry';return;}
+  const v=axes.map(k=>cue.position[k]-rail.projection.point[k]),d=norm(v),gap=Math.max(0,d-cue.radius);
+  residual=d>1e-14?v.map(x=>x*gap/d):zero();
  }
  if(!residual.every(Number.isFinite))throw new Error('Nonfinite inverse event residual');
  // A consecutive repeat means leave and RETURN, not remain on the previous
@@ -87,21 +88,19 @@ function sample(e,continuous=false){
 }
 // Contact episodes come from solver impulses, not PhysicsLab's presentation
 // log (which intentionally suppresses repeated contacts within 120 ms).
-function observeEpisodes(e,time,stepDt){
- const cue=e.cue,p=cue.body.translation(),world=e.trial.lab.world;
- for(const {other,cushion,rail,key,cueCollider,otherCollider} of e.episodeTargets){
-  const pair=e.pairs.get(key)||{active:false};let impact=false;
-  world.contactPair(cueCollider,otherCollider,m=>{
-   for(let i=0;i<m.numContacts();i++)if(m.contactImpulse(i)>0)impact=true;
-  });
+function observeEpisodes(e,frame){
+ const cue=frame.cue,p=cue.position;
+ for(const other of [...frame.objects,...frame.rails]){
+  const cushion=other.rail!=null,rail=other.rail,key=cushion?'cushion:'+rail:'object:'+other.id;
+  const pair=e.pairs.get(key)||{active:false},impact=other.impact;
   if(!pair.active&&!impact)continue;
   let separation;
-  if(cushion){const projection=other.collider.projectPoint(p,true);separation=projection.isInside?-cue.radius:Math.hypot(...axes.map(k=>p[k]-projection.point[k]))-cue.radius;}
-  else{const q=other.body.translation();separation=Math.hypot(...axes.map(k=>p[k]-q[k]))-cue.radius-other.radius;}
+  if(cushion){const projection=other.projection;separation=projection.isInside?-cue.radius:Math.hypot(...axes.map(k=>p[k]-projection.point[k]))-cue.radius;}
+  else{const q=other.position;separation=Math.hypot(...axes.map(k=>p[k]-q[k]))-cue.radius-other.radius;}
   if(separation>.00005)pair.active=false;
   if(impact&&!pair.active){
-   const event=cushion?{kind:'cushion',rail,time:time-e.trial.start}:{kind:'object',id:other.id,time:time-e.trial.start};
-   event.stepDt=stepDt;event.stepIndex=e.observedSubsteps;
+   const event=cushion?{kind:'cushion',rail,time:frame.time-e.observationStart}:{kind:'object',id:other.id,time:frame.time-e.observationStart};
+   event.stepDt=frame.stepDt;event.stepIndex=e.observedSubsteps;
    e.pending.push(event);
    if(!cushion&&!e.firstImpact)e.firstImpact=event;
    pair.active=true;
@@ -109,6 +108,52 @@ function observeEpisodes(e,time,stepDt){
   e.pairs.set(key,pair);
  }
 }
+// Plain, detached data only. This is an observation boundary, not proof that a
+// producer used GPU physics. GPU transactions must publish only after commit.
+const OBSERVATION_PHASE='after-world-step-before-application';
+function createObservation(topology,start=0){
+ if(!Number.isFinite(start))throw Error('Finite observation start time required');
+ const expected=expectedEvents(topology);
+ return {expected,observationStart:start,eventPrefix:0,stageResiduals:expected.map(()=>null),
+  events:[],pending:[],pairs:new Map(),returnStages:new Map(),mismatch:null,observedSubsteps:0,lastObservationTime:start,initialObserved:false};
+}
+function validateObservation(frame,initial){
+ const vector=v=>v&&axes.every(k=>Number.isFinite(v[k]));
+ if(!frame||frame.phase!==(initial?'initial-before-world-step':OBSERVATION_PHASE)||!Number.isFinite(frame.time)||
+  !(initial?frame.stepDt===0:Number.isFinite(frame.stepDt)&&frame.stepDt>0)||!vector(frame.cue?.position)||!(Number.isFinite(frame.cue?.radius)&&frame.cue.radius>0)||
+  !Array.isArray(frame.objects)||!Array.isArray(frame.rails))throw Error('Exact post-world-step observation required');
+ const ids=new Set(),rails=new Set();
+ for(const o of frame.objects){if(!Number.isInteger(o.id)||ids.has(o.id)||!vector(o.position)||!(Number.isFinite(o.radius)&&o.radius>0)||typeof o.impact!=='boolean')throw Error('Invalid object observation');ids.add(o.id);}
+ for(const r of frame.rails){if(!['x+','x-','z+','z-'].includes(r.rail)||rails.has(r.rail)||typeof r.impact!=='boolean'||
+  r.projection!==null&&(!vector(r.projection?.point)||typeof r.projection.isInside!=='boolean')||r.impact&&!r.projection)throw Error('Invalid cushion observation');rails.add(r.rail);}
+}
+function observeInitial(e,frame){validateObservation(frame,true);if(e.initialObserved||frame.sequence!==0||e.observedSubsteps!==0||frame.time!==e.observationStart)throw Error('Initial observation boundary mismatch');sampleObservation(e,frame);e.lastObservationTime=frame.time;e.initialObserved=true;}
+function observeSubstep(e,frame){
+ validateObservation(frame,false);
+ if(frame.sequence!==e.observedSubsteps+1||frame.time<=e.lastObservationTime)throw Error('Stale or out-of-order observation');
+ for(const r of frame.rails)if(e.pairs.get('cushion:'+r.rail)?.active&&!r.projection)throw Error('Active cushion requires projection');
+ reduceSubstep(e,frame);
+}
+function reduceSubstep(e,frame){
+ e.observedSubsteps++;e.lastObservationTime=frame.time;
+ observeEpisodes(e,frame);
+ // Never interpolate across an impact or event-prefix transition.
+ if(e.pending.length){sampleObservation(e,frame);consume(e);e.previousMeasurement=null;sampleObservation(e,frame);}
+ else sampleObservation(e,frame,true);
+}
+function readNativeObservation(e,time,stepDt,initial=false){
+ const lab=e.trial.lab,cue=e.cue,p={...cue.body.translation()},objects=[],rails=[];
+ for(const {other,cushion,rail,cueCollider,otherCollider} of e.episodeTargets){
+  let impact=false;
+  if(!initial)lab.world.contactPair(cueCollider,otherCollider,m=>{
+   for(let i=0;i<m.numContacts();i++)if(m.contactImpulse(i)>0)impact=true;
+  });
+  if(cushion){let sampled=false,projection;rails.push({rail,impact,get projection(){if(!sampled){const result=other.collider.projectPoint?.(p,true);projection=result?{point:{...result.point},isInside:!!result.isInside}:null;sampled=true;}return projection;}});}
+  else objects.push({id:other.id,radius:other.radius,position:{...other.body.translation()},impact});
+ }
+ return {phase:initial?'initial-before-world-step':OBSERVATION_PHASE,sequence:initial?0:e.observedSubsteps+1,time,stepDt,cue:{radius:cue.radius,position:p},objects,rails};
+}
+
 function consume(e){
  const pending=e.pending.splice(0).sort((a,b)=>a.time-b.time);
  for(let k=0;k<pending.length;){
@@ -127,7 +172,7 @@ function begin(R,req,topology,settings,options={}){
  if(!settings||!['angle','elevation','speed','tipX','tipY'].every(k=>Number.isFinite(settings[k])))throw new Error('Finite cue inputs required');
  const expected=expectedEvents(topology),strictReq={...req,testBudget:true,settings:{...req.settings,elevation:settings.elevation},options:{...req.options,budget:1,elevationMode:'fixed',inputStrategy:'hybrid',targetId:topology.firstId??req.options.targetId,secondId:topology.secondId??req.options.secondId,methodId:topology.method??req.options.methodId,methods:undefined}};
  G.ShotSearchCore.validate(strictReq);
- const e={req,settings:{...settings},expected,topologyId:topology.id||topology.topologyId||JSON.stringify(expected),purpose:options.purpose||'evaluate',eventPrefix:0,stageResiduals:expected.map(()=>null),events:[],pending:[],pairs:new Map(),returnStages:new Map(),mismatch:null,done:false,disposed:false,inequalities:inputInequalities(req,settings)};
+ const e={...createObservation(topology),req,settings:{...settings},expected,topologyId:topology.id||topology.topologyId||JSON.stringify(expected),purpose:options.purpose||'evaluate',done:false,disposed:false,inequalities:inputInequalities(req,settings)};
  // A feasibility query observes geometry only. It never launches a candidate
  // or certifies a shot; an independent normal stroke/replay remains required.
  if(e.purpose==='clearance'){
@@ -156,21 +201,18 @@ function begin(R,req,topology,settings,options={}){
   const cushion=other.kind==='cushion',rail=cushion?G.LabRouteRules.railId(other):null;
   return{other,cushion,rail,key:cushion?'cushion:'+rail:'object:'+other.id,cueCollider:cushion?e.cue.collider:(e.cue.pairCollider||e.cue.collider),otherCollider:cushion?other.collider:(other.pairCollider||other.collider)};
  });
- e.originalWorldStep=lab.world.step;e.observedSubsteps=0;
+ e.originalWorldStep=lab.world.step;e.observedSubsteps=0;e.observationStart=e.trial.start;
  e.observedWorldStep=function(...args){
   const stepDt=lab.world.integrationParameters.dt,time=lab.time+stepDt;
   const result=e.originalWorldStep.apply(this,args);
-  e.observedSubsteps++;
-  observeEpisodes(e,time,stepDt);
-  // An impact ends the old smooth segment. Endpoint geometry may be observed,
-  // but never interpolate across a collision or an event-prefix transition.
-  if(e.pending.length){sample(e);consume(e);e.previousMeasurement=null;sample(e);}
-  else sample(e,true);
+  // Private native frame keeps exact demand-driven convex queries. It never
+  // crosses the public plain-data boundary or escapes into retained state.
+  reduceSubstep(e,readNativeObservation(e,time,stepDt));
   return result;
  };
  try{lab.world.step=e.observedWorldStep;if(lab.world.step!==e.observedWorldStep)throw new Error('World step instrumentation unavailable');}
  catch(error){dispose(e);throw error;}
- sample(e);return e;
+ sampleObservation(e,readNativeObservation(e,lab.time,0,true));e.lastObservationTime=lab.time;e.initialObserved=true;return e;
 }
 function advance(e,stepBatch=240){
  if(e.done)return true;
@@ -190,6 +232,10 @@ function finish(e){
  if(e.disposed)throw new Error('Inverse event evaluation was disposed without completion');
  let physicalResult=null;
  if(e.trial){restoreObserver(e);physicalResult=G.ShotSearchCore.finishTrial(e.search,e.trial);e.disposed=true;}
+ return e.result=projectResult(e,physicalResult,e.trial?.steps||0);
+}
+// Pure final-result projection shared by native trials and committed GPU observations.
+function projectResult(e,physicalResult,steps){
  const topologyMatched=!e.mismatch&&e.eventPrefix===e.expected.length;
  const active=topologyMatched?e.expected.length:e.eventPrefix;
  const residual=topologyMatched?zero():e.stageResiduals[active];
@@ -197,14 +243,13 @@ function finish(e){
  const firstImpactTime=e.firstImpact?.time??null;
  const firstImpactCell=e.firstImpact?JSON.stringify([e.firstImpact.id,e.firstImpact.stepDt,Math.round(e.firstImpact.time/e.firstImpact.stepDt)]):null;
  const status=goalVerified?'goal-verified':e.blockedReason||e.unavailable||(e.mismatch?'topology-mismatch':topologyMatched?(physicalResult?.failureReason||'physical-goal-rejected'):'missing-event');
- e.result={id:e.topologyId,settings:e.settings,residual,residuals:residual||zero(),residualAvailable:!!residual,
+ return {id:e.topologyId,settings:e.settings,residual,residuals:residual||zero(),residualAvailable:!!residual,
   residualStage:e.blockedReason?'clearance':active,eventPrefix:e.eventPrefix,stageResiduals:e.stageResiduals,
   inequalities:e.inequalities,clearance:e.clearance,topologyMatched,goalVerified,verified:e.purpose==='verify'&&goalVerified,
-  purpose:e.purpose,status,firstImpactCell,contactCell:firstImpactCell,firstImpactTime,physicalResult,steps:e.trial?.steps||0,events:e.events,mismatch:e.mismatch,
+  purpose:e.purpose,status,firstImpactCell,contactCell:firstImpactCell,firstImpactTime,physicalResult,steps,events:e.events,mismatch:e.mismatch,
   unsupported:!!e.unavailable,missingEvent:topologyMatched?null:e.expected[active],freshReplay:true,eventResolution:'solver-substep',substepOrderResolved:true,observedSubsteps:e.observedSubsteps||0};
- return e.result;
 }
 function restoreObserver(e){if(e.originalWorldStep&&e.trial?.lab?.world)e.trial.lab.world.step=e.originalWorldStep;}
 function dispose(e){if(e.trial&&!e.disposed){restoreObserver(e);e.trial.lab.dispose();e.disposed=true;}e.done=true;}
-G.LabInverseEvents={begin,advance,finish,dispose,expectedEvents,inputInequalities,sphereResidual,relativeSegmentResidual,railResidual};
+G.LabInverseEvents={observation:Object.freeze({phase:OBSERVATION_PHASE,create:createObservation,initial:observeInitial,step:observeSubstep}),projectResult,begin,advance,finish,dispose,expectedEvents,inputInequalities,sphereResidual,relativeSegmentResidual,railResidual};
 })(globalThis);

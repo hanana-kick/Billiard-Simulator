@@ -1,0 +1,39 @@
+{
+  "status": "prefix-only-not-parity",
+  "backend": "native-dawn-webgpu",
+  "execution": "serial-bounded-evaluation",
+  "adapter": {
+    "vendor": "google",
+    "architecture": "swiftshader",
+    "device": "swiftshader-device-subzero-",
+    "description": "SwiftShader driver 5.0.0"
+  },
+  "testedCommit": "b27da83bef4f67d63103a728299665500f4f997e",
+  "inputArtifactSha256": "0e635afb8638046ddd0c79023de09d59c4c54b877351088288b017d799ba15c0",
+  "snapshotSha256": "c677336fd7d9528bef546f29782bf877d927b16f9bf56b3f873a1eaf6911efd3",
+  "preStrikeSha256": "1fdd8411fa97facdd631c68ff11d018839a0063c2f69efccf0be80aca2b4a220",
+  "sourceBoundary": "liveRegisteredStrikeCreated",
+  "committedH": 1,
+  "sourceValidated": true,
+  "cpuFallback": false,
+  "nativeContinuation": false,
+  "parallelShotBatch": false,
+  "fullRest": false,
+  "borrowedDeviceSurvives": true,
+  "resources": {
+    "buffersCreated": 1048,
+    "buffersDestroyed": 1048,
+    "buffersCollected": 0,
+    "trackedBuffers": 0,
+    "peakTrackedBuffers": 578
+  },
+  "gpuErrors": [],
+  "memory": {
+    "rss": 563499008,
+    "heapTotal": 271646720,
+    "heapUsed": 146409880,
+    "external": 5332088,
+    "arrayBuffers": 967755
+  },
+  "processMaxRSSKiB": 641992
+}

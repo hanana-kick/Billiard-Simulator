@@ -22,7 +22,7 @@ class LabController{
   if(this.lab)return;
   this.canvas=canvas;this.sideCanvas=sideCanvas;this.handles=handles;
   try{
-   await G.RAPIER.init();this.lab=new G.PhysicsLab(G.RAPIER);
+   await G.RAPIER.init();this.lab=new G.PhysicsLab(G.RAPIER);this.setupGame();this.repairRouteTargets();
    // Renderer selection is independent of physics. A failed WebGL context uses
    // a fresh canvas because a canvas cannot switch 2D/WebGL context types.
    try{try{this.renderer=await G.WorkerRenderer.create(canvas);}catch{this.renderer=new G.LabRenderer(canvas);}}catch(error){const fresh=canvas.cloneNode(false);canvas.replaceWith(fresh);this.canvas=canvas=fresh;this.renderer=new G.SoftwareRenderer(canvas);this.renderer.fallbackReason=String(error.message||error);}

@@ -1,0 +1,47 @@
+{
+  "schema": "bounded-current-source-prefix-integrity-correction-v1",
+  "date": "2026-10-25",
+  "testedComputeCommit": "b27da83bef4f67d63103a728299665500f4f997e",
+  "field": "inputArtifactSha256",
+  "cause": "V8 deserialized snapshot views shared the input Buffer; the original test hashed that Buffer after its deliberate caller-mutation ownership check.",
+  "originalRunReportsPreserved": true,
+  "sourceFilesNotRegeneratedOrChanged": true,
+  "snapshotAdmissionAndComputeEvidenceUnchanged": true,
+  "correctionMethod": "Read-only file hashing plus in-memory reproduction; no GPU, native init/restore/step or source-state regeneration.",
+  "gpuRepeatRequiredForHashCorrection": false,
+  "records": [
+    {
+      "name": "placed",
+      "originalReport": "bounded-current-source-placed-prefix-b27da83.json",
+      "inputArtifactSha256": "4aee6c0395cbdf35f876a125c141bbbf02e0319928762ee82b193e43cdf74403",
+      "originalReportedArtifactSha256": "ac3bef5046a581221e97b7dce308f91499b46bc511a15d48935d274fad9c9ba2",
+      "reproducedAfterCallerMutationSha256": "ac3bef5046a581221e97b7dce308f91499b46bc511a15d48935d274fad9c9ba2",
+      "snapshotMatches": true,
+      "preStrikeMatches": true,
+      "reproducesReportedHash": true,
+      "fileUnchanged": true
+    },
+    {
+      "name": "settled",
+      "originalReport": "bounded-current-source-settled-prefix-b27da83.json",
+      "inputArtifactSha256": "11f41cd9c11ff47911f14afc084b27f32a15fc69db1f26d7970eb864f35f2262",
+      "originalReportedArtifactSha256": "e9c01bedf7d15b91f8d65af5c809698790dfd56f5f14082e7b333388aafa6a12",
+      "reproducedAfterCallerMutationSha256": "e9c01bedf7d15b91f8d65af5c809698790dfd56f5f14082e7b333388aafa6a12",
+      "snapshotMatches": true,
+      "preStrikeMatches": true,
+      "reproducesReportedHash": true,
+      "fileUnchanged": true
+    },
+    {
+      "name": "awake",
+      "originalReport": "bounded-current-source-awake-prefix-b27da83.json",
+      "inputArtifactSha256": "1a928852afcc75e0df2a32a27e8a1005f471095a03f960ecaf23ffb13125f564",
+      "originalReportedArtifactSha256": "0e635afb8638046ddd0c79023de09d59c4c54b877351088288b017d799ba15c0",
+      "reproducedAfterCallerMutationSha256": "0e635afb8638046ddd0c79023de09d59c4c54b877351088288b017d799ba15c0",
+      "snapshotMatches": true,
+      "preStrikeMatches": true,
+      "reproducesReportedHash": true,
+      "fileUnchanged": true
+    }
+  ]
+}

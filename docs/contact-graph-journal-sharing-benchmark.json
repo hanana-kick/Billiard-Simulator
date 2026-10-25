@@ -1,0 +1,287 @@
+{
+  "baseline": "b68246c",
+  "node": "v24.22.1",
+  "samples": 5,
+  "frames": 1500,
+  "queries": 20000,
+  "summary": [
+    {
+      "bodyCount": 3,
+      "baseline": {
+        "transactionMs": 1163.788009,
+        "suffixQueryMs": 369.9647090000001,
+        "retainedHeapBytes": 24399648,
+        "graphVersions": 3001,
+        "graphObjects": 382625
+      },
+      "candidate": {
+        "transactionMs": 1084.952017,
+        "suffixQueryMs": 1.8293459999999868,
+        "retainedHeapBytes": 14045832,
+        "graphVersions": 1501,
+        "graphObjects": 191375
+      },
+      "receiptSha256": "b3dd35d1e9411f26f86146e6e9d66067437d6d0e61a807b54699a1bb5bd595d9"
+    },
+    {
+      "bodyCount": 4,
+      "baseline": {
+        "transactionMs": 1274.918284,
+        "suffixQueryMs": 382.20891000000006,
+        "retainedHeapBytes": 26799440,
+        "graphVersions": 3001,
+        "graphObjects": 421638
+      },
+      "candidate": {
+        "transactionMs": 1226.587174,
+        "suffixQueryMs": 1.8989799999999377,
+        "retainedHeapBytes": 15244784,
+        "graphVersions": 1501,
+        "graphObjects": 210888
+      },
+      "receiptSha256": "20c56f810f6208f7e7d8737a6a88a0058cbe7a3f8f9dcf0d25a1d6d001ef02cd"
+    }
+  ],
+  "rows": [
+    {
+      "variant": "baseline",
+      "bodyCount": 3,
+      "frames": 1500,
+      "queries": 20000,
+      "transactionMs": 1166.290549,
+      "suffixQueryMs": 383.08204,
+      "retainedHeapBytes": 24399616,
+      "graphVersions": 3001,
+      "graphObjects": 382625,
+      "receiptSha256": "b3dd35d1e9411f26f86146e6e9d66067437d6d0e61a807b54699a1bb5bd595d9"
+    },
+    {
+      "variant": "candidate",
+      "bodyCount": 3,
+      "frames": 1500,
+      "queries": 20000,
+      "transactionMs": 1000.8130520000001,
+      "suffixQueryMs": 1.5207699999998567,
+      "retainedHeapBytes": 14045808,
+      "graphVersions": 1501,
+      "graphObjects": 191375,
+      "receiptSha256": "b3dd35d1e9411f26f86146e6e9d66067437d6d0e61a807b54699a1bb5bd595d9"
+    },
+    {
+      "variant": "candidate",
+      "bodyCount": 3,
+      "frames": 1500,
+      "queries": 20000,
+      "transactionMs": 1103.972954,
+      "suffixQueryMs": 1.845058999999992,
+      "retainedHeapBytes": 14045880,
+      "graphVersions": 1501,
+      "graphObjects": 191375,
+      "receiptSha256": "b3dd35d1e9411f26f86146e6e9d66067437d6d0e61a807b54699a1bb5bd595d9"
+    },
+    {
+      "variant": "baseline",
+      "bodyCount": 3,
+      "frames": 1500,
+      "queries": 20000,
+      "transactionMs": 1107.6180610000001,
+      "suffixQueryMs": 358.695287,
+      "retainedHeapBytes": 24400008,
+      "graphVersions": 3001,
+      "graphObjects": 382625,
+      "receiptSha256": "b3dd35d1e9411f26f86146e6e9d66067437d6d0e61a807b54699a1bb5bd595d9"
+    },
+    {
+      "variant": "baseline",
+      "bodyCount": 3,
+      "frames": 1500,
+      "queries": 20000,
+      "transactionMs": 1206.379128,
+      "suffixQueryMs": 388.51210000000015,
+      "retainedHeapBytes": 24399648,
+      "graphVersions": 3001,
+      "graphObjects": 382625,
+      "receiptSha256": "b3dd35d1e9411f26f86146e6e9d66067437d6d0e61a807b54699a1bb5bd595d9"
+    },
+    {
+      "variant": "candidate",
+      "bodyCount": 3,
+      "frames": 1500,
+      "queries": 20000,
+      "transactionMs": 1084.952017,
+      "suffixQueryMs": 1.8293459999999868,
+      "retainedHeapBytes": 14045832,
+      "graphVersions": 1501,
+      "graphObjects": 191375,
+      "receiptSha256": "b3dd35d1e9411f26f86146e6e9d66067437d6d0e61a807b54699a1bb5bd595d9"
+    },
+    {
+      "variant": "candidate",
+      "bodyCount": 3,
+      "frames": 1500,
+      "queries": 20000,
+      "transactionMs": 1099.452547,
+      "suffixQueryMs": 2.2242100000000846,
+      "retainedHeapBytes": 14045808,
+      "graphVersions": 1501,
+      "graphObjects": 191375,
+      "receiptSha256": "b3dd35d1e9411f26f86146e6e9d66067437d6d0e61a807b54699a1bb5bd595d9"
+    },
+    {
+      "variant": "baseline",
+      "bodyCount": 3,
+      "frames": 1500,
+      "queries": 20000,
+      "transactionMs": 1120.719159,
+      "suffixQueryMs": 369.9647090000001,
+      "retainedHeapBytes": 24399648,
+      "graphVersions": 3001,
+      "graphObjects": 382625,
+      "receiptSha256": "b3dd35d1e9411f26f86146e6e9d66067437d6d0e61a807b54699a1bb5bd595d9"
+    },
+    {
+      "variant": "baseline",
+      "bodyCount": 3,
+      "frames": 1500,
+      "queries": 20000,
+      "transactionMs": 1163.788009,
+      "suffixQueryMs": 364.88784199999986,
+      "retainedHeapBytes": 24400008,
+      "graphVersions": 3001,
+      "graphObjects": 382625,
+      "receiptSha256": "b3dd35d1e9411f26f86146e6e9d66067437d6d0e61a807b54699a1bb5bd595d9"
+    },
+    {
+      "variant": "candidate",
+      "bodyCount": 3,
+      "frames": 1500,
+      "queries": 20000,
+      "transactionMs": 1004.5218069999999,
+      "suffixQueryMs": 1.4849269999999706,
+      "retainedHeapBytes": 14045880,
+      "graphVersions": 1501,
+      "graphObjects": 191375,
+      "receiptSha256": "b3dd35d1e9411f26f86146e6e9d66067437d6d0e61a807b54699a1bb5bd595d9"
+    },
+    {
+      "variant": "baseline",
+      "bodyCount": 4,
+      "frames": 1500,
+      "queries": 20000,
+      "transactionMs": 1360.089462,
+      "suffixQueryMs": 408.24664500000017,
+      "retainedHeapBytes": 26799440,
+      "graphVersions": 3001,
+      "graphObjects": 421638,
+      "receiptSha256": "20c56f810f6208f7e7d8737a6a88a0058cbe7a3f8f9dcf0d25a1d6d001ef02cd"
+    },
+    {
+      "variant": "candidate",
+      "bodyCount": 4,
+      "frames": 1500,
+      "queries": 20000,
+      "transactionMs": 1267.02278,
+      "suffixQueryMs": 1.8989799999999377,
+      "retainedHeapBytes": 15244848,
+      "graphVersions": 1501,
+      "graphObjects": 210888,
+      "receiptSha256": "20c56f810f6208f7e7d8737a6a88a0058cbe7a3f8f9dcf0d25a1d6d001ef02cd"
+    },
+    {
+      "variant": "candidate",
+      "bodyCount": 4,
+      "frames": 1500,
+      "queries": 20000,
+      "transactionMs": 1226.587174,
+      "suffixQueryMs": 1.5069290000001274,
+      "retainedHeapBytes": 15244784,
+      "graphVersions": 1501,
+      "graphObjects": 210888,
+      "receiptSha256": "20c56f810f6208f7e7d8737a6a88a0058cbe7a3f8f9dcf0d25a1d6d001ef02cd"
+    },
+    {
+      "variant": "baseline",
+      "bodyCount": 4,
+      "frames": 1500,
+      "queries": 20000,
+      "transactionMs": 1216.587808,
+      "suffixQueryMs": 364.476449,
+      "retainedHeapBytes": 26799440,
+      "graphVersions": 3001,
+      "graphObjects": 421638,
+      "receiptSha256": "20c56f810f6208f7e7d8737a6a88a0058cbe7a3f8f9dcf0d25a1d6d001ef02cd"
+    },
+    {
+      "variant": "baseline",
+      "bodyCount": 4,
+      "frames": 1500,
+      "queries": 20000,
+      "transactionMs": 1305.946272,
+      "suffixQueryMs": 390.6247410000001,
+      "retainedHeapBytes": 26799440,
+      "graphVersions": 3001,
+      "graphObjects": 421638,
+      "receiptSha256": "20c56f810f6208f7e7d8737a6a88a0058cbe7a3f8f9dcf0d25a1d6d001ef02cd"
+    },
+    {
+      "variant": "candidate",
+      "bodyCount": 4,
+      "frames": 1500,
+      "queries": 20000,
+      "transactionMs": 1228.3968750000001,
+      "suffixQueryMs": 2.079130999999961,
+      "retainedHeapBytes": 15244784,
+      "graphVersions": 1501,
+      "graphObjects": 210888,
+      "receiptSha256": "20c56f810f6208f7e7d8737a6a88a0058cbe7a3f8f9dcf0d25a1d6d001ef02cd"
+    },
+    {
+      "variant": "candidate",
+      "bodyCount": 4,
+      "frames": 1500,
+      "queries": 20000,
+      "transactionMs": 1226.173212,
+      "suffixQueryMs": 1.965701000000081,
+      "retainedHeapBytes": 15244616,
+      "graphVersions": 1501,
+      "graphObjects": 210888,
+      "receiptSha256": "20c56f810f6208f7e7d8737a6a88a0058cbe7a3f8f9dcf0d25a1d6d001ef02cd"
+    },
+    {
+      "variant": "baseline",
+      "bodyCount": 4,
+      "frames": 1500,
+      "queries": 20000,
+      "transactionMs": 1232.9753620000001,
+      "suffixQueryMs": 360.9102680000001,
+      "retainedHeapBytes": 26799528,
+      "graphVersions": 3001,
+      "graphObjects": 421638,
+      "receiptSha256": "20c56f810f6208f7e7d8737a6a88a0058cbe7a3f8f9dcf0d25a1d6d001ef02cd"
+    },
+    {
+      "variant": "baseline",
+      "bodyCount": 4,
+      "frames": 1500,
+      "queries": 20000,
+      "transactionMs": 1274.918284,
+      "suffixQueryMs": 382.20891000000006,
+      "retainedHeapBytes": 26799272,
+      "graphVersions": 3001,
+      "graphObjects": 421638,
+      "receiptSha256": "20c56f810f6208f7e7d8737a6a88a0058cbe7a3f8f9dcf0d25a1d6d001ef02cd"
+    },
+    {
+      "variant": "candidate",
+      "bodyCount": 4,
+      "frames": 1500,
+      "queries": 20000,
+      "transactionMs": 1201.045112,
+      "suffixQueryMs": 1.5686929999999393,
+      "retainedHeapBytes": 15244784,
+      "graphVersions": 1501,
+      "graphObjects": 210888,
+      "receiptSha256": "20c56f810f6208f7e7d8737a6a88a0058cbe7a3f8f9dcf0d25a1d6d001ef02cd"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+✔ exact fixed CPU values match frozen source before/after the compile-cache-only change (50.348107ms)
+ℹ {"caseCount":5,"recycled":[false,true,false,false,true],"numericSha256":"7cea9d97991e21a56bb4b5d4cb98e70be73d04064a832a1390bca7faffdef5d8"}
+✔ actual fixed WGSL values match frozen WGSL and both CPU stages with two shared-pipeline stage instances (4104.106755ms)
+ℹ {"caseCount":5,"recycled":[false,true,false,false,true],"numericSha256":"7cea9d97991e21a56bb4b5d4cb98e70be73d04064a832a1390bca7faffdef5d8"}
+ℹ {"actualCompileRequests":{"modules":8,"pipelines":8},"instances":3}
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4304.486275

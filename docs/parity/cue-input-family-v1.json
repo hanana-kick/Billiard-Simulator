@@ -1,0 +1,15 @@
+{
+  "schema": "preregistered-original-cue-input-family-v1",
+  "registeredBeforeCapture": "2026-10-24T18:42:07Z",
+  "originalEngine": "unchanged PhysicsLab and pinned Rapier 0.21.0",
+  "layout": "original-three-ball-constructor-layout",
+  "selectedIndex": 0,
+  "parameters": "all original defaults, including CCD enabled",
+  "scope": "created snapshot through cue withdrawal and two ordinary h, or explicit unsupported boundary; not full-shot/general-input parity",
+  "acceptance": "Each case must independently compare CPU/native and WGSL/native. A supported-domain rejection is reported as unsupported, never passed parity. Holdout is fixed before results and is not tuned.",
+  "cases": [
+    {"id": "yaw23-side-follow", "role": "representative", "settings": {"angle": 23, "elevation": 8, "speed": 1.5, "tipX": 0.2, "tipY": 0.1}},
+    {"id": "yaw-minus37-side-draw", "role": "representative", "settings": {"angle": -37, "elevation": 12, "speed": 2.4, "tipX": -0.18, "tipY": -0.12}},
+    {"id": "yaw61-25-elevated-holdout", "role": "holdout", "settings": {"angle": 61.25, "elevation": 20, "speed": 1.8, "tipX": 0.11, "tipY": -0.16}}
+  ]
+}

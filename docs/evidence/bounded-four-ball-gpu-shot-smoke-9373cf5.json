@@ -1,0 +1,50 @@
+{
+  "status": "smoke-prefix-only",
+  "backend": "actual-software-dawn-webgpu",
+  "adapter": {
+    "vendor": "google",
+    "architecture": "swiftshader",
+    "device": "swiftshader-device-subzero-",
+    "description": "SwiftShader driver 5.0.0"
+  },
+  "scope": "fresh-live-browser-original-constructor72-default-first-strike-only",
+  "liveArtifactSha256": "9930ab1776ee78c7890b773aac5a1b636eb3cb2fc6aa4df64902b77571d43ab8",
+  "initialSnapshotSha256": "cffbc79fdccfc6e763dfa6e72c78d84eca4ba1d050408b7e011192c18bf9413a",
+  "expectedOracleSha256": "5b8f3dff1f96cdd105199709c633cd8347aa3915d855a742e6845403ea726c18",
+  "testedCommitSha": "9373cf546a4051e26c3ddfb74ef54fb9a8fa7cf8",
+  "expectedShardsManifestSha256": "7cea9a5502ef3bb319fbca055ec9a877bb4284fd2f36ffdc3c7a571763898ecd",
+  "noNativeContinuation": true,
+  "noCpuFallback": true,
+  "sourceOnlyCandidateInput": true,
+  "borrowedDeviceSurvives": true,
+  "resources": {
+    "buffersCreated": 582,
+    "buffersDestroyed": 582,
+    "buffersCollected": 0,
+    "trackedBuffers": 0,
+    "peakTrackedBuffers": 150
+  },
+  "memory": {
+    "rss": 882262016,
+    "heapTotal": 302448640,
+    "heapUsed": 217834608,
+    "external": 6023911,
+    "arrayBuffers": 1659557
+  },
+  "processMaxRSSKiB": 923588,
+  "firstRestOuter": null,
+  "score": null,
+  "sourceHashes": {
+    "src/bounded-gpu-shot/four-ball.mjs": "62d0d83bdbecf4c690948fe044d9ee5583296471bb19a5a60b753caddebe1549",
+    "src/bounded-gpu-shot/lifecycle.mjs": "9ae9cd4d69e67ea9e219c0367ebcd7640a6d3a8c9fa8017de182dbdb86d6bb10",
+    "src/bounded-gpu-shot/resources.mjs": "847d8629c230831f012c5b14a18b9deca102c0a3f2a72edc527e385a9f7bd7e5",
+    "tests/bounded-gpu-shot-webgpu.mjs": "2eeee286d078d6a5e7cb036782caf34ab635acbe58815b94a7215aa56db4940b",
+    "tests/bounded-gpu-shot-source.mjs": "bbd355e71dcea0e46ac4d768735c2fc29b7a6f06942e28f1db5b254ca28dfa77",
+    "tests/bounded-gpu-shot-shards.mjs": "c3aa22559f45c0bde59f7653a7fb958308ade6035542c7e2f3777f7811f6b933",
+    "tests/prepare-bounded-gpu-shot-oracle.mjs": "cc62ff11bbc2cd9a98c2433f3ff075df8dda04e29e62dc7e83b19e8bcdb0d488"
+  },
+  "maxAbsolute": 1.0579449157400588e-37,
+  "hCompared": 1,
+  "checkpoints": 0,
+  "slices": 1
+}

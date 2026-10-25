@@ -1,0 +1,384 @@
+{
+  "sourceCommit": "2ed077e",
+  "phase": "after-native-world.step-before-time-events-angular-patch",
+  "rows": [
+    {
+      "name": "target",
+      "phaseChecks": 815,
+      "trace": "3a3ad95332c54d6469e77b1f253a7950e53ff8cf64ea8e7341d0a3c902845af0",
+      "outcome": {
+        "id": "target",
+        "settings": {
+          "angle": -3.1033593402788204,
+          "elevation": 8,
+          "speed": 2,
+          "tipX": 0,
+          "tipY": 0
+        },
+        "residual": [
+          0,
+          0,
+          0
+        ],
+        "residuals": [
+          0,
+          0,
+          0
+        ],
+        "residualAvailable": true,
+        "residualStage": 1,
+        "eventPrefix": 1,
+        "stageResiduals": [
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "inequalities": [
+          -0.01199999637901783,
+          -1.5,
+          -2.5,
+          -8,
+          -77,
+          -0.55,
+          -0.45,
+          -0.6,
+          0
+        ],
+        "clearance": 0.01199999637901783,
+        "topologyMatched": true,
+        "goalVerified": true,
+        "verified": true,
+        "purpose": "verify",
+        "status": "goal-verified",
+        "firstImpactCell": "[2,0.0010416667209938169,374]",
+        "contactCell": "[2,0.0010416667209938169,374]",
+        "firstImpactTime": 0.38958333338765944,
+        "physicalResult": {
+          "settings": {
+            "angle": -3.1033593402788204,
+            "elevation": 8,
+            "speed": 2,
+            "tipX": 0,
+            "tipY": 0
+          },
+          "success": true,
+          "failureReason": null,
+          "residual": [
+            0,
+            0,
+            0
+          ],
+          "topology": "[true,[[\"object\",2,\"노랑\"]]]",
+          "score": 0.007713066890449589,
+          "clearance": 0,
+          "firstHit": true,
+          "cushions": 0,
+          "distance": 0.7713066890449589,
+          "seconds": 0.3895833333333323,
+          "contacts": [
+            {
+              "label": "노랑",
+              "id": 2,
+              "kind": "object",
+              "time": 0.3895833333333323
+            }
+          ],
+          "maxHeight": 0,
+          "kissContacts": [],
+          "method": null,
+          "firstId": 2,
+          "secondId": 3,
+          "ambiguous": false,
+          "matchedMethods": []
+        },
+        "steps": 374,
+        "events": [
+          {
+            "kind": "object",
+            "id": 2,
+            "time": 0.38958333338765944,
+            "stepDt": 0.0010416667209938169,
+            "stepIndex": 815
+          }
+        ],
+        "mismatch": null,
+        "unsupported": false,
+        "missingEvent": null,
+        "freshReplay": true,
+        "eventResolution": "solver-substep",
+        "substepOrderResolved": true,
+        "observedSubsteps": 815
+      }
+    },
+    {
+      "name": "wrong-rail",
+      "phaseChecks": 815,
+      "trace": "0d49e18be7acb5fa729a64792658bd87afa47cfdf3d09705ab6994e0742ac676",
+      "outcome": {
+        "id": "wrong-rail",
+        "settings": {
+          "angle": -3.1033593402788204,
+          "elevation": 8,
+          "speed": 2,
+          "tipX": 0,
+          "tipY": 0
+        },
+        "residual": [
+          -5.660032435328506e-8,
+          -0.008715701764868354,
+          -0.5792534572894007
+        ],
+        "residuals": [
+          -5.660032435328506e-8,
+          -0.008715701764868354,
+          -0.5792534572894007
+        ],
+        "residualAvailable": true,
+        "residualStage": 0,
+        "eventPrefix": 0,
+        "stageResiduals": [
+          [
+            -5.660032435328506e-8,
+            -0.008715701764868354,
+            -0.5792534572894007
+          ],
+          null
+        ],
+        "inequalities": [
+          -0.01199999637901783,
+          -1.5,
+          -2.5,
+          -8,
+          -77,
+          -0.55,
+          -0.45,
+          -0.6,
+          0
+        ],
+        "clearance": 0.01199999637901783,
+        "topologyMatched": false,
+        "goalVerified": false,
+        "verified": false,
+        "purpose": "verify",
+        "status": "topology-mismatch",
+        "firstImpactCell": "[2,0.0010416667209938169,374]",
+        "contactCell": "[2,0.0010416667209938169,374]",
+        "firstImpactTime": 0.38958333338765944,
+        "physicalResult": {
+          "settings": {
+            "angle": -3.1033593402788204,
+            "elevation": 8,
+            "speed": 2,
+            "tipX": 0,
+            "tipY": 0
+          },
+          "success": true,
+          "failureReason": null,
+          "residual": [
+            0,
+            0,
+            0
+          ],
+          "topology": "[true,[[\"object\",2,\"노랑\"]]]",
+          "score": 0.007713066890449589,
+          "clearance": 0,
+          "firstHit": true,
+          "cushions": 0,
+          "distance": 0.7713066890449589,
+          "seconds": 0.3895833333333323,
+          "contacts": [
+            {
+              "label": "노랑",
+              "id": 2,
+              "kind": "object",
+              "time": 0.3895833333333323
+            }
+          ],
+          "maxHeight": 0,
+          "kissContacts": [],
+          "method": null,
+          "firstId": 2,
+          "secondId": 3,
+          "ambiguous": false,
+          "matchedMethods": []
+        },
+        "steps": 374,
+        "events": [
+          {
+            "kind": "object",
+            "id": 2,
+            "time": 0.38958333338765944,
+            "stepDt": 0.0010416667209938169,
+            "stepIndex": 815
+          }
+        ],
+        "mismatch": {
+          "stage": 0,
+          "reason": "unexpected-event",
+          "expected": {
+            "kind": "cushion",
+            "rail": "z+"
+          },
+          "actual": {
+            "kind": "object",
+            "id": 2,
+            "time": 0.38958333338765944,
+            "stepDt": 0.0010416667209938169,
+            "stepIndex": 815
+          }
+        },
+        "unsupported": false,
+        "missingEvent": {
+          "kind": "cushion",
+          "rail": "z+"
+        },
+        "freshReplay": true,
+        "eventResolution": "solver-substep",
+        "substepOrderResolved": true,
+        "observedSubsteps": 815
+      }
+    },
+    {
+      "name": "miss",
+      "phaseChecks": 7719,
+      "trace": "8959dbfdc5d10d6762fb3fe24c9cff60a7e51e513d8970396c0c10fe74d1db46",
+      "outcome": {
+        "id": "miss",
+        "settings": {
+          "angle": 11.896640659721179,
+          "elevation": 8,
+          "speed": 2,
+          "tipX": 0,
+          "tipY": 0
+        },
+        "residual": [
+          -0.031668822530243106,
+          -0.000007278546721873807,
+          0.15034475894725918
+        ],
+        "residuals": [
+          -0.031668822530243106,
+          -0.000007278546721873807,
+          0.15034475894725918
+        ],
+        "residualAvailable": true,
+        "residualStage": 0,
+        "eventPrefix": 0,
+        "stageResiduals": [
+          [
+            -0.031668822530243106,
+            -0.000007278546721873807,
+            0.15034475894725918
+          ]
+        ],
+        "inequalities": [
+          -0.011999988928437233,
+          -1.5,
+          -2.5,
+          -8,
+          -77,
+          -0.55,
+          -0.45,
+          -0.6,
+          0
+        ],
+        "clearance": 0.011999988928437233,
+        "topologyMatched": false,
+        "goalVerified": false,
+        "verified": false,
+        "purpose": "verify",
+        "status": "topology-mismatch",
+        "firstImpactCell": null,
+        "contactCell": null,
+        "firstImpactTime": null,
+        "physicalResult": {
+          "settings": {
+            "angle": 11.896640659721179,
+            "elevation": 8,
+            "speed": 2,
+            "tipX": 0,
+            "tipY": 0
+          },
+          "success": false,
+          "failureReason": "first-target-not-hit",
+          "residual": [
+            -0.03157413619997441,
+            -0.0000072801768246678245,
+            0.1503647162683489
+          ],
+          "topology": "[false,[]]",
+          "score": 453.1128662101603,
+          "clearance": 0.15364398467963716,
+          "firstHit": false,
+          "cushions": 2,
+          "distance": 3.998651656750674,
+          "seconds": 7.58124999999965,
+          "contacts": [
+            {
+              "label": "오른쪽 쿠션",
+              "id": null,
+              "kind": "cushion",
+              "time": 1.1875000000000127
+            },
+            {
+              "label": "앞쪽 쿠션",
+              "id": null,
+              "kind": "cushion",
+              "time": 1.7447916666666476
+            }
+          ],
+          "maxHeight": 0,
+          "kissContacts": [],
+          "method": null,
+          "firstId": 2,
+          "secondId": 3,
+          "ambiguous": false,
+          "matchedMethods": []
+        },
+        "steps": 7278,
+        "events": [
+          {
+            "kind": "cushion",
+            "rail": "x+",
+            "time": 1.1875000000543399,
+            "stepDt": 0.0010416667209938169,
+            "stepIndex": 1581
+          },
+          {
+            "kind": "cushion",
+            "rail": "z+",
+            "time": 1.7447916667209749,
+            "stepDt": 0.0010416667209938169,
+            "stepIndex": 2116
+          }
+        ],
+        "mismatch": {
+          "stage": 0,
+          "reason": "unexpected-event",
+          "expected": {
+            "kind": "object",
+            "id": 2
+          },
+          "actual": {
+            "kind": "cushion",
+            "rail": "x+",
+            "time": 1.1875000000543399,
+            "stepDt": 0.0010416667209938169,
+            "stepIndex": 1581
+          }
+        },
+        "unsupported": false,
+        "missingEvent": {
+          "kind": "object",
+          "id": 2
+        },
+        "freshReplay": true,
+        "eventResolution": "solver-substep",
+        "substepOrderResolved": true,
+        "observedSubsteps": 7719
+      }
+    }
+  ]
+}

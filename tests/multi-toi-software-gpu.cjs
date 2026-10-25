@@ -1,0 +1,10 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),W=require('./multi-toi-original-source-witness.json'),T=require('../src/experimental-ccd-sweep-toi'),O=require('../src/experimental-ccd-order-certificate');
+const enabled=!!process.env.GPU_NATIVE_MODULE;if(process.env.REQUIRE_WEBGPU==='1'&&!enabled)throw Error('Actual native software WebGPU module required');
+test('actual WGSL reproduces original current-bound casts and rejects order-sensitive multi-target admission',{skip:!enabled},async()=>{
+ const {create,globals}=await import(require('node:url').pathToFileURL(process.env.GPU_NATIVE_MODULE).href);Object.assign(globalThis,globals);const gpu=create(['backend=vulkan']),adapter=await gpu.requestAdapter();assert.ok(adapter);const device=await adapter.requestDevice();globalThis.__multiToiNativeGpuOwner={gpu,adapter,device};let casts=0;
+ try{for(const group of W.groups){for(const row of group.rows){const stage=await T.createGpuQuery(device,{pointsA:row.query.pointsA});try{for(const [maxFraction,expected] of [[1,row.fullBoundResult],[row.sourceIncomingMaxFraction,row.sourceResult]]){const actual=await stage.query({...row.query,maxFraction});assert.equal(actual.fraction,expected.fraction);assert.equal(actual.status,expected.status);assert.deepEqual(actual.point,expected.point);assert.deepEqual(actual.normal,expected.normal);casts++;}}finally{stage.dispose();}}
+  const c=group.rows.map(({id,query})=>({id,query})),stage=await O.createGpuStage(device,c);try{const result=await stage.step(),cpu=await O.reference(c);assert.deepEqual(result,cpu);assert.equal(result.admitted,false);assert.equal(result.status,'unsupported-order-sensitive-multiple-hits');assert.equal(result.terminalFractions.length,2,'actual source order matters, no arbitrary winner accepted');}finally{stage.dispose();}}
+  assert.equal(casts,12);console.log(JSON.stringify({actualSoftwareWebGpu:true,nativeCastsCompared:casts,orderSensitiveGroups:2,wholeWorld:false,hardwarePerformanceClaim:false}));
+ }finally{device.destroy();delete globalThis.__multiToiNativeGpuOwner;}
+});

@@ -1,0 +1,751 @@
+{
+  "identity": {
+    "schema": "original-controller-cushion-coupled-four-ball-oracle-v1",
+    "original": {
+      "schema": "original-controller-four-ball-cushion-holdout-v1",
+      "node": "v24.22.1",
+      "v8": "13.6.233.17-node.58",
+      "maxOuter": 16000,
+      "maxSettleOuter": 2000,
+      "grid": 256,
+      "engineVersion": "0.21.0",
+      "engineSha256": "fca22b2f33d4e88d2992215f42df6312093476db7fea4197816fb8e4ce17cba4",
+      "sourceRevision": "b716d375efc0201003f0cd9ef7168eee0b62c177",
+      "sources": {
+        "tests/cushion-coupled-original-controller.cjs": "bd2a9999d5ded97e9a9173ed58d8501d339249278515745c1862208307c6b4be",
+        "tests/four-ball-created-fixture.cjs": "d61e122a8f8ee5b7467dcaae187b072d18124b66845c51e9632a351a65dd3991",
+        "src/controller.js": "93bc522f06df65a9373ecadc47836e14d4cb0141822412afc917b511f8663ab4",
+        "src/physics.js": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d",
+        "src/game-rules.js": "33857334242fd280193595cda56b9d433de579c0f017efa7a21c35c470191160",
+        "src/math.js": "ea76455919c3fb22557680c5422902cf631753215492e799b32791993a939046",
+        "src/render-cadence.js": "fe36d3d9c62b4646b18c3eafd4e276aea106122c2a9b22898802438bbda95daf",
+        "vendor/rapier.cjs": "fca22b2f33d4e88d2992215f42df6312093476db7fea4197816fb8e4ce17cba4",
+        "tools/rapier-snapshot-decoder/index.cjs": "c0be6bd93871c14e0c1971d7671c33a26bb16ab5b35ab2d63c7ebaf6d9197ed5"
+      }
+    },
+    "input": {
+      "name": "retained-front-cushion-then-red-coupled-contact",
+      "requiredOutcome": "native-rest",
+      "placements": [
+        {
+          "id": 1,
+          "x": -0.3,
+          "z": 0.68062
+        },
+        {
+          "id": 2,
+          "x": -0.8,
+          "z": -0.4
+        },
+        {
+          "id": 3,
+          "x": 0,
+          "z": 0.67062
+        },
+        {
+          "id": 4,
+          "x": 0.8,
+          "z": -0.4
+        }
+      ]
+    },
+    "geometry": {
+      "radius": 0.03075,
+      "placementY": 0.0308,
+      "diameter": 0.0615,
+      "predictionDistance": 0.0000615,
+      "derivation": "A legal original move next to the genuine rounded front cushion, then an off-center red collision. Native source acceptance and impulses, not this proposed geometry, establish the result."
+    },
+    "sources": {
+      "tests/cushion-coupled-original-fixture.cjs": "fab86d89da7354c5f1b1cf3d7f144bf22fbc516335858cec58ef9b1d23dfb702",
+      "tests/cushion-coupled-original-controller.cjs": "bd2a9999d5ded97e9a9173ed58d8501d339249278515745c1862208307c6b4be",
+      "tests/four-ball-created-fixture.cjs": "d61e122a8f8ee5b7467dcaae187b072d18124b66845c51e9632a351a65dd3991",
+      "src/controller.js": "93bc522f06df65a9373ecadc47836e14d4cb0141822412afc917b511f8663ab4",
+      "src/physics.js": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d",
+      "src/game-rules.js": "33857334242fd280193595cda56b9d433de579c0f017efa7a21c35c470191160",
+      "src/math.js": "ea76455919c3fb22557680c5422902cf631753215492e799b32791993a939046",
+      "src/render-cadence.js": "fe36d3d9c62b4646b18c3eafd4e276aea106122c2a9b22898802438bbda95daf",
+      "vendor/rapier.cjs": "fca22b2f33d4e88d2992215f42df6312093476db7fea4197816fb8e4ce17cba4",
+      "tools/rapier-snapshot-decoder/index.cjs": "c0be6bd93871c14e0c1971d7671c33a26bb16ab5b35ab2d63c7ebaf6d9197ed5"
+    },
+    "decoderSha256": "0bbebced302953113abd7c428d7b66a7a8a9b7d293fe4108c8d67dc06a824d82"
+  },
+  "sha256": "2b522adacad0f1a3b4f7f0ef73ca9ae076f897dc6ecb90e5aef199a96f8328e3",
+  "bytes": 48859744,
+  "probe": false,
+  "apiJournalEncoding": "tagged-sorted-json-f64-bits-v1",
+  "apiJournalSha256": "af790ed7748783fa658917286c94d57ab020bde0b9c96dff39fbdbfa78375f92",
+  "schema": "original-controller-cushion-coupled-four-ball-oracle-v1",
+  "input": {
+    "name": "retained-front-cushion-then-red-coupled-contact",
+    "requiredOutcome": "native-rest",
+    "placements": [
+      {
+        "id": 1,
+        "x": -0.3,
+        "z": 0.68062
+      },
+      {
+        "id": 2,
+        "x": -0.8,
+        "z": -0.4
+      },
+      {
+        "id": 3,
+        "x": 0,
+        "z": 0.67062
+      },
+      {
+        "id": 4,
+        "x": 0.8,
+        "z": -0.4
+      }
+    ]
+  },
+  "initialBoundary": "goalStrikeCreated",
+  "initialSnapshotSha256": "b4498d6c80d1c4bbae65eb264e1eaa1688ef7b61581a5064cac545cb5ec32a14",
+  "sourceOnly": true,
+  "candidateStateUsed": false,
+  "nativeRestoreUsed": false,
+  "postStrikeBallAssignments": 0,
+  "status": "native-rest-complete",
+  "hCount": 7175,
+  "firstRestOuter": 6734,
+  "score": {
+    "cueId": 1,
+    "delta": 0,
+    "nextCue": 2
+  },
+  "outcome": {
+    "positive": false,
+    "lateOpponentFoul": false,
+    "goalEventOrder": null,
+    "goalTime": null,
+    "opponentEventOrder": null,
+    "opponentTime": null,
+    "goalToOpponentSeconds": null
+  },
+  "placements": [
+    {
+      "method": "LabController.move",
+      "id": 1,
+      "position": {
+        "x": -0.3,
+        "y": 0.0308,
+        "z": 0.68062
+      },
+      "accepted": true,
+      "before": {
+        "translation": [
+          -0.6600000262260437,
+          0.030721673741936684,
+          0.10000000149011612
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "linear": [
+          0,
+          0,
+          0
+        ],
+        "angular": [
+          0,
+          0,
+          0
+        ],
+        "invInertia": [
+          12590.1357421875,
+          0,
+          0,
+          0,
+          12590.1357421875,
+          0,
+          0,
+          0,
+          12590.1357421875
+        ],
+        "sleeping": false
+      },
+      "after": {
+        "translation": [
+          -0.30000001192092896,
+          0.030799999833106995,
+          0.680620014667511
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "linear": [
+          0,
+          0,
+          0
+        ],
+        "angular": [
+          0,
+          0,
+          0
+        ],
+        "invInertia": [
+          12590.1357421875,
+          0,
+          0,
+          0,
+          12590.1357421875,
+          0,
+          0,
+          0,
+          12590.1357421875
+        ],
+        "sleeping": false
+      }
+    },
+    {
+      "method": "LabController.move",
+      "id": 2,
+      "position": {
+        "x": -0.8,
+        "y": 0.0308,
+        "z": -0.4
+      },
+      "accepted": true,
+      "before": {
+        "translation": [
+          0.17000000178813934,
+          0.030721673741936684,
+          0.054999999701976776
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "linear": [
+          0,
+          0,
+          0
+        ],
+        "angular": [
+          0,
+          0,
+          0
+        ],
+        "invInertia": [
+          12590.1357421875,
+          0,
+          0,
+          0,
+          12590.1357421875,
+          0,
+          0,
+          0,
+          12590.1357421875
+        ],
+        "sleeping": false
+      },
+      "after": {
+        "translation": [
+          -0.800000011920929,
+          0.030799999833106995,
+          -0.4000000059604645
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "linear": [
+          0,
+          0,
+          0
+        ],
+        "angular": [
+          0,
+          0,
+          0
+        ],
+        "invInertia": [
+          12590.1357421875,
+          0,
+          0,
+          0,
+          12590.1357421875,
+          0,
+          0,
+          0,
+          12590.1357421875
+        ],
+        "sleeping": false
+      }
+    },
+    {
+      "method": "LabController.move",
+      "id": 3,
+      "position": {
+        "x": 0,
+        "y": 0.0308,
+        "z": 0.67062
+      },
+      "accepted": true,
+      "before": {
+        "translation": [
+          0.8399999737739563,
+          0.030721673741936684,
+          -0.28999999165534973
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "linear": [
+          0,
+          0,
+          0
+        ],
+        "angular": [
+          0,
+          0,
+          0
+        ],
+        "invInertia": [
+          12590.1357421875,
+          0,
+          0,
+          0,
+          12590.1357421875,
+          0,
+          0,
+          0,
+          12590.1357421875
+        ],
+        "sleeping": false
+      },
+      "after": {
+        "translation": [
+          0,
+          0.030799999833106995,
+          0.6706200242042542
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "linear": [
+          0,
+          0,
+          0
+        ],
+        "angular": [
+          0,
+          0,
+          0
+        ],
+        "invInertia": [
+          12590.1357421875,
+          0,
+          0,
+          0,
+          12590.1357421875,
+          0,
+          0,
+          0,
+          12590.1357421875
+        ],
+        "sleeping": false
+      }
+    },
+    {
+      "method": "LabController.move",
+      "id": 4,
+      "position": {
+        "x": 0.8,
+        "y": 0.0308,
+        "z": -0.4
+      },
+      "accepted": true,
+      "before": {
+        "translation": [
+          0.6399999856948853,
+          0.030799999833106995,
+          0.30000001192092896
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "linear": [
+          0,
+          0,
+          0
+        ],
+        "angular": [
+          0,
+          0,
+          0
+        ],
+        "invInertia": [
+          12590.1357421875,
+          0,
+          0,
+          0,
+          12590.1357421875,
+          0,
+          0,
+          0,
+          12590.1357421875
+        ],
+        "sleeping": false
+      },
+      "after": {
+        "translation": [
+          0.800000011920929,
+          0.030799999833106995,
+          -0.4000000059604645
+        ],
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "linear": [
+          0,
+          0,
+          0
+        ],
+        "angular": [
+          0,
+          0,
+          0
+        ],
+        "invInertia": [
+          12590.1357421875,
+          0,
+          0,
+          0,
+          12590.1357421875,
+          0,
+          0,
+          0,
+          12590.1357421875
+        ],
+        "sleeping": false
+      }
+    }
+  ],
+  "control": {
+    "settings": {
+      "angle": 0,
+      "elevation": 8,
+      "tipX": 0,
+      "tipY": 0,
+      "speed": 2
+    },
+    "selectedId": 1,
+    "clearance": {
+      "clear": true,
+      "distance": 0.012000003829598427,
+      "obstacle": null,
+      "swept": false,
+      "travel": 0.012
+    },
+    "fireAccepted": true,
+    "reason": null
+  },
+  "initialContacts": [
+    {
+      "kind": "cushion",
+      "ids": [
+        1
+      ],
+      "label": "앞쪽 쿠션",
+      "collider1": {
+        "index": 8,
+        "generation": 0
+      },
+      "collider2": {
+        "index": 16,
+        "generation": 0
+      },
+      "active": true,
+      "positive": false,
+      "manifolds": [
+        {
+          "flipped": false,
+          "normal": [
+            0.0000038758366827096324,
+            -0.29586732387542725,
+            -0.9552289843559265
+          ],
+          "points": 1,
+          "solverContacts": 1,
+          "distances": [
+            0.0000070463865995407104
+          ],
+          "impulses": [
+            0
+          ]
+        }
+      ]
+    }
+  ],
+  "firstRetained": {
+    "h": 546,
+    "contacts": [
+      {
+        "kind": "sphere-pair",
+        "ids": [
+          1,
+          3
+        ],
+        "label": null,
+        "collider1": {
+          "index": 17,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 21,
+          "generation": 0
+        },
+        "active": false,
+        "positive": false,
+        "manifolds": [
+          {
+            "flipped": false,
+            "normal": [
+              0,
+              0,
+              0
+            ],
+            "points": 0,
+            "solverContacts": 0,
+            "distances": [],
+            "impulses": []
+          }
+        ]
+      },
+      {
+        "kind": "cushion",
+        "ids": [
+          1
+        ],
+        "label": "앞쪽 쿠션",
+        "collider1": {
+          "index": 8,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 16,
+          "generation": 0
+        },
+        "active": true,
+        "positive": false,
+        "manifolds": [
+          {
+            "flipped": false,
+            "normal": [
+              -4.839251914745546e-7,
+              -0.2993859648704529,
+              -0.9541321396827698
+            ],
+            "points": 1,
+            "solverContacts": 1,
+            "distances": [
+              0.000042280182242393494
+            ],
+            "impulses": [
+              0
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "firstActive": {
+    "h": 549,
+    "contacts": [
+      {
+        "kind": "sphere-pair",
+        "ids": [
+          1,
+          3
+        ],
+        "label": null,
+        "collider1": {
+          "index": 17,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 21,
+          "generation": 0
+        },
+        "active": true,
+        "positive": true,
+        "manifolds": [
+          {
+            "flipped": false,
+            "normal": [
+              0.9860450625419617,
+              0.00002232193946838379,
+              -0.16647937893867493
+            ],
+            "points": 1,
+            "solverContacts": 1,
+            "distances": [
+              -0.0014325380325317383
+            ],
+            "impulses": [
+              0.43702271580696106
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "cushion",
+        "ids": [
+          1
+        ],
+        "label": "앞쪽 쿠션",
+        "collider1": {
+          "index": 8,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 16,
+          "generation": 0
+        },
+        "active": true,
+        "positive": true,
+        "manifolds": [
+          {
+            "flipped": false,
+            "normal": [
+              0.0000014517721638185321,
+              -0.2993868291378021,
+              -0.9541317820549011
+            ],
+            "points": 1,
+            "solverContacts": 1,
+            "distances": [
+              0.0000423528254032135
+            ],
+            "impulses": [
+              0.034451987594366074
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "firstPositive": {
+    "h": 549,
+    "contacts": [
+      {
+        "kind": "sphere-pair",
+        "ids": [
+          1,
+          3
+        ],
+        "label": null,
+        "collider1": {
+          "index": 17,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 21,
+          "generation": 0
+        },
+        "active": true,
+        "positive": true,
+        "manifolds": [
+          {
+            "flipped": false,
+            "normal": [
+              0.9860450625419617,
+              0.00002232193946838379,
+              -0.16647937893867493
+            ],
+            "points": 1,
+            "solverContacts": 1,
+            "distances": [
+              -0.0014325380325317383
+            ],
+            "impulses": [
+              0.43702271580696106
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "cushion",
+        "ids": [
+          1
+        ],
+        "label": "앞쪽 쿠션",
+        "collider1": {
+          "index": 8,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 16,
+          "generation": 0
+        },
+        "active": true,
+        "positive": true,
+        "manifolds": [
+          {
+            "flipped": false,
+            "normal": [
+              0.0000014517721638185321,
+              -0.2993868291378021,
+              -0.9541317820549011
+            ],
+            "points": 1,
+            "solverContacts": 1,
+            "distances": [
+              0.0000423528254032135
+            ],
+            "impulses": [
+              0.034451987594366074
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "capturedBoundaries": [
+    "expected-only-h545-preWorld",
+    "expected-only-h545-postWorld",
+    "expected-only-h545-postApplication",
+    "expected-only-h546-preWorld",
+    "expected-only-h546-postWorld",
+    "expected-only-h546-postApplication",
+    "expected-only-h547-preWorld",
+    "expected-only-h547-postWorld",
+    "expected-only-h547-postApplication",
+    "expected-only-h548-preWorld",
+    "expected-only-h548-postWorld",
+    "expected-only-h548-postApplication",
+    "expected-only-h549-preWorld",
+    "expected-only-h549-postWorld",
+    "expected-only-h549-postApplication",
+    "expected-only-h550-preWorld",
+    "expected-only-h550-postWorld",
+    "expected-only-h550-postApplication"
+  ],
+  "transitionCount": 215
+}

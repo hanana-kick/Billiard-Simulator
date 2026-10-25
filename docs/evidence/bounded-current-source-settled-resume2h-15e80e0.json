@@ -1,0 +1,74 @@
+{
+  "status": "prefix-only-not-parity",
+  "backend": "native-dawn-webgpu",
+  "execution": "serial-bounded-evaluation",
+  "adapter": {
+    "vendor": "google",
+    "architecture": "swiftshader",
+    "device": "swiftshader-device-subzero-",
+    "description": "SwiftShader driver 5.0.0"
+  },
+  "testedCommit": "15e80e01636ab0810de71d173daeb6621fb8d328",
+  "inputArtifactSha256": "11f41cd9c11ff47911f14afc084b27f32a15fc69db1f26d7970eb864f35f2262",
+  "snapshotSha256": "a93473fceb1da27bb580a2981d3e536057eb30856e49d64405ad2b96f8b51e0f",
+  "preStrikeSha256": "2d5a2cbf1b7dc481cb90a19de8fa5cee7ea389c7dbbede645324afbcb87279c8",
+  "sourceBoundary": "liveRegisteredStrikeCreated",
+  "committedH": 2,
+  "sourceValidated": true,
+  "initialSliceMaxSteps": 1,
+  "resumeCalls": 1,
+  "progressSequence": [
+    {
+      "operationId": 1,
+      "committedH": 1,
+      "sliceCommittedH": 1,
+      "snapshotSha256": "a93473fceb1da27bb580a2981d3e536057eb30856e49d64405ad2b96f8b51e0f",
+      "decoderCalls": 2,
+      "resources": {
+        "buffersCreated": 1026,
+        "buffersDestroyed": 452,
+        "buffersCollected": 0,
+        "trackedBuffers": 574,
+        "peakTrackedBuffers": 578
+      }
+    },
+    {
+      "operationId": 1,
+      "committedH": 2,
+      "sliceCommittedH": 1,
+      "snapshotSha256": "a93473fceb1da27bb580a2981d3e536057eb30856e49d64405ad2b96f8b51e0f",
+      "decoderCalls": 2,
+      "resources": {
+        "buffersCreated": 1342,
+        "buffersDestroyed": 768,
+        "buffersCollected": 0,
+        "trackedBuffers": 574,
+        "peakTrackedBuffers": 578
+      }
+    }
+  ],
+  "decoderCalls": 2,
+  "expectedDecodeCalls": 2,
+  "sourceReinitialized": false,
+  "cpuFallback": false,
+  "nativeContinuation": false,
+  "parallelShotBatch": false,
+  "fullRest": false,
+  "borrowedDeviceSurvives": true,
+  "resources": {
+    "buffersCreated": 1342,
+    "buffersDestroyed": 1342,
+    "buffersCollected": 0,
+    "trackedBuffers": 0,
+    "peakTrackedBuffers": 578
+  },
+  "gpuErrors": [],
+  "memory": {
+    "rss": 558530560,
+    "heapTotal": 272678912,
+    "heapUsed": 101579152,
+    "external": 5434455,
+    "arrayBuffers": 1070111
+  },
+  "processMaxRSSKiB": 637424
+}

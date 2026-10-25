@@ -1,0 +1,54 @@
+{
+  "schema": "constructor-yaw-derived-positive-ccd-input-v1",
+  "id": "original-three-ball-e35-tipx025-yaw2074-late-right-cushion-v1",
+  "classification": "source-derived-discovery-fixture-not-independent-holdout",
+  "layout": "original-three-ball-constructor-layout",
+  "selectedId": 1,
+  "settings": {
+    "angle": 2.0743270562430363,
+    "elevation": 35,
+    "tipX": 0.25,
+    "tipY": 0,
+    "speed": 10
+  },
+  "parameters": "unchanged-PhysicsLab-defaults",
+  "dt": 0.0010416666666666667,
+  "strokeSubsteps": 64,
+  "maxCcdSubsteps": 4,
+  "constructorSettlingSteps": 72,
+  "additionalSettlingSteps": 0,
+  "placements": [],
+  "targetOriginalWorldStep": 389,
+  "captureFirstWorldStep": 385,
+  "captureLastWorldStep": 393,
+  "scanOrder": [
+    389,
+    388,
+    390,
+    387,
+    391,
+    386,
+    392,
+    385,
+    393
+  ],
+  "stop": "first-positive-clamp-or-nine-fixed-boundaries-exhausted",
+  "derivation": {
+    "reference": "unchanged-e35-h389-source-observation",
+    "targetImpactFraction": 0.9,
+    "A": 2.0558250750916556,
+    "B": 0.10348987228406442,
+    "C": 2.050732006954891,
+    "yawRadians": 0.03620383689464258,
+    "yawDegrees": 2.0743270562430363,
+    "method": "acos(C/hypot(A,B))-atan2(B,A), rotating original planar displacement and velocity about unchanged cue-ball center"
+  },
+  "require": [
+    "original-constructor-layout",
+    "real-strike-accepted-with-clearance",
+    "no-original-ball-setters",
+    "no-source-physics-change",
+    "cue-removed-before-scan",
+    "paired-before-after-clamp-changed-next-pose"
+  ]
+}

@@ -1,0 +1,154 @@
+{
+  "schema": 1,
+  "date": "2026-10-24",
+  "testedRevision": "61982dffdecfb60faae75b0c9b95e54766994b6e",
+  "runtimeRevision": "1dbf6424e144844a8d461bdf2aa5b64faeb66845",
+  "nativeProducerRevision": "5112ee2686caddad0cc5b01f0791448676a53b79",
+  "sourceArtifact": {
+    "file": "original-settled-turn-full-5112ee2.v8",
+    "sha256": "270000ebe58d2e51f83484917425cb2999425e39a215c2c11620d56d743d591c",
+    "initialBoundary": "secondStrikeCreated",
+    "initialSnapshotSha256": "a93473fceb1da27bb580a2981d3e536057eb30856e49d64405ad2b96f8b51e0f",
+    "nativeStepsAtCreation": 5917,
+    "absoluteTimeAtCreation": 5.6291666666664275
+  },
+  "candidateInput": [
+    "secondStrikeCreated",
+    "strikeCreationJournal"
+  ],
+  "oracleStatesAreAssertionOnly": true,
+  "runtimeChangesRequired": false,
+  "tolerances": {
+    "pose": 1e-06,
+    "velocity": 3e-06,
+    "cache": 2e-06
+  },
+  "scoreResult": {
+    "cueId": 2,
+    "delta": 0,
+    "nextCue": 1
+  },
+  "checkpoints": {
+    "firstHBoundary": 1,
+    "decodedOuterCheckpoints": 28
+  },
+  "evidenceRoot": "/workspace/scratch/f887f82f638e/billiard-settled-four-input-evidence/",
+  "environment": {
+    "RAPIER_SNAPSHOT_DECODER": "/tmp/billiard-v3-native-target/debug/rapier-snapshot-decoder",
+    "GPU_NATIVE_MODULE": "/tmp/billiard-gpu-tools-v3/node_modules/webgpu/index.js",
+    "VK_ICD_FILENAMES": "/usr/lib/chromium/vk_swiftshader_icd.json"
+  },
+  "cpu": {
+    "log": "full-cpu-61982df.log",
+    "logSha256": "45271f2d849fc1dbf356b1c0a03738ceba6ec4e4c0e51a06ffc25e0ffbfa2195",
+    "result": {
+      "status": "second-rest-complete",
+      "fullShot": true,
+      "backend": "cpu-reference",
+      "h": 7083,
+      "outer": 6642,
+      "seconds": 12.547916666669806,
+      "maxAbsolute": 4.590196911458122e-08,
+      "hCompared": 7083,
+      "checkpoints": 29,
+      "rollbacks": 2
+    }
+  },
+  "gpu": {
+    "log": "full-gpu-61982df.log",
+    "logSha256": "b0c22225608970845a1acc83f9cff98af046653b2ea3022b05315725efb913c9",
+    "result": {
+      "status": "second-rest-complete",
+      "fullShot": true,
+      "backend": "actual-webgpu",
+      "h": 7083,
+      "outer": 6642,
+      "seconds": 12.547916666669806,
+      "maxAbsolute": 4.590196911458122e-08,
+      "hCompared": 7083,
+      "checkpoints": 29,
+      "rollbacks": 2
+    }
+  },
+  "sourceHashes": {
+    "tests/four-ball-settled-turn-fixture.cjs": "13dbea06e0ba861e8e90f0229d556f9d7b254e0a848062699888088499e55a84",
+    "tests/four-ball-created-fixture.cjs": "d61e122a8f8ee5b7467dcaae187b072d18124b66845c51e9632a351a65dd3991",
+    "rapier-snapshot-decoder/index.cjs": "c0be6bd93871c14e0c1971d7671c33a26bb16ab5b35ab2d63c7ebaf6d9197ed5",
+    "src/math.js": "ea76455919c3fb22557680c5422902cf631753215492e799b32791993a939046",
+    "src/physics.js": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d",
+    "src/game-rules.js": "33857334242fd280193595cda56b9d433de579c0f017efa7a21c35c470191160",
+    "tests/four-ball-world-oracle.cjs": "6446dd35e51a4fa2e1ff523039c963d9b0ea24f3510c115d84d6fe602d6ef3ba",
+    "tests/settled-four-world-seed.cjs": "c0620492c9377ccfb32b982e357880117746a2db0c31b306e0e74753f8071bdd",
+    "tests/three-ball-scene-fixture.cjs": "27ac721d1e1750994be030efe8df1fac772394fe8baaefee3f1be54af885bcad",
+    "tests/cue-initialization-fixture.cjs": "ad35d006892fc5d3e891a9a5dae5ec111a3169f05f2a8400e73ed3e9fe3ee75b",
+    "tests/cue-stroke-fixture.cjs": "a3b8da25c22cb2233e89c772e529f6f0992c3e63029ea9d2a6d8e98d16f4486c",
+    "src/experimental-cue-joint-snapshot.js": "90e43c30bb7c99a97e5f74a7e18c284f0f8f9d23fc0619d7e3a5b639c457e92a",
+    "tests/settled-four-initialization-seed.cjs": "c454d8094e33818eb12eeb73878b5b7dc8953e199df20215bad550630c27c286",
+    "src/experimental-cue-initialization.js": "f8c2128713d7af1607d70eeaa69f0516d2f78c8c4d8645dc88c2f281be965ec5",
+    "src/experimental-arithmetic-graph.js": "72f19e4e240521d13bdb3ac2da23e3c2fff43fff88ded7ef0319434b4a5ccb27",
+    "src/experimental-stage-runtime.js": "2619c5f5ab6c9f6f3d60ffc30b9e67feccd32d256e8bfd4ab1da03467882f8c5",
+    "tests/settled-four-broad-graph-seed.cjs": "6755765287a6f16ada0c5358393bb0bb19e8ffc5fea36293b22147bb96a64b69",
+    "src/experimental-cue-convex-topology.js": "d9aabf9ece800d9e83799a8f0cfed8033dd677666d1b9210ca1e857edf3f2d22",
+    "tests/four-ball-broad-graph-seed.cjs": "0e0cfc9d79cb24ed3c10716e646c9019edb71b933e21493af59adb30c80bf34b",
+    "src/experimental-four-ball-world.js": "c9e8d0a08446c745907d46e549b1f8a259b8b1cef69a3003aa1278041a7a54ab",
+    "tests/settled-four-world-observer.cjs": "a359316df17df6a8c74f996a9df2c1f9f70c0c9f23f08b60d3cda4136c959973",
+    "src/experimental-cue-created-stroke-stage.js": "5c93f0fdba3f83effcc2ac8826a2af1438d463bf8f8fdc144af5ea7dcc736b37",
+    "src/experimental-cue-joint-stepper.js": "66840aa686a929c6295c2a4fb92587fba157c00f4feff4337bd25229cdb7e43a",
+    "src/experimental-cue-joint.js": "17677f4bcc94e91fa6c77ce706e644995a93122d53ffa361fff030c9b0e09dcd",
+    "src/experimental-cue-lateral-compensated.js": "f04ce491ec8dbd8c3c3a3fcdf1f963784d5e74ab29ec4a067d5e3a17e0369572",
+    "src/experimental-cue-joint-compliance.js": "c2750bccb21f51edb5e9555ccdbe730e0109f0cb7c937245058365be1156d3b8",
+    "src/experimental-double-single.js": "eb8ef8bf29c7f5419e13140174a773c129b644dfd6df9eaced817333a68fad94",
+    "src/experimental-cue-joint-tip-contact.js": "ebb6777755640b9a757f4c0006af036d840414d81f05db6dfa0d027d2f1865fe",
+    "src/experimental-ccd-inactive.js": "77ba85e13a012ce11f2b33673517ed8f3a911a1ddd966b62c74448c539b5ecdb",
+    "src/experimental-cue-created-variant.js": "e70aafabac22e6d05f3fbd283a39c7645ab3ba10b70e1243ea89da0036ad9318",
+    "src/experimental-scene-activation.js": "b5ccd0dbf6b69d5fcae020b5262b09e602323ec68c7f049b9602b2c1f28bf61c",
+    "src/experimental-sleep-activation.js": "be86e6b8a0243c4e267df1e9f8c535d0dfca315965c816dbb14a15fe56dcc746",
+    "src/experimental-free-body.js": "188591b6e4ca4335f1b01647c34e4d875da4ae7b3a36cacb8ded45509d0b29bf",
+    "src/experimental-world-lifecycle.js": "ec9addaa43a689ab57f48114f85d67bd405fcd0714e3340845d997309a6e5c08",
+    "src/experimental-world-stepper.js": "4630ee6dc63272d2c8d403e2b2925b3c35993ff44de8c9178c6ca484fb579130",
+    "src/experimental-awake-activation.js": "77b4e12cd29c8114bee85ce44bcb9ffa56c59191a625a78902666bd103ad4da8",
+    "src/experimental-cue-stroke-stage.js": "18bdf2a7eee089467fa8096c6a01d60a485fb55892be1ff42cdbfb519547de8d",
+    "src/experimental-angular-patch.js": "c1b010128cf068f353bfd0cb17f7b9ac1ebf3af6af078e3872461d7051f45cb7",
+    "src/experimental-four-ball-cloth-birth.js": "e794637219f4cfad97778981d9d767a65c4968569bb96191fe91c9edd4b3922f",
+    "src/experimental-cue-broad-phase.js": "4a8a4c104e3288b09b427f18925b2beb5a6c1f8c465f1481df56b3c436b954c8",
+    "src/experimental-cue-bvh-insertion.js": "7147107d996b334f0affe14523c840197ba08234c790524540f859baafb4b1d6",
+    "src/experimental-pair-contact-stage.js": "a5d54a2e2a93de31465eaae9f6f8c12bb419a301fc7cf27fed838f342e112362",
+    "src/experimental-cloth-island-world.js": "77b0eb32ecf7f409dffd431a847c338c5d9bcd6d8adbaab0e04a49cf51a1c559",
+    "src/experimental-sphere-pair-world.js": "53cd5b340312cf8c23ddd1a5fda044fcdc75a094a3da4efe434da11d9e813c8e",
+    "src/experimental-contact-graph-journal.js": "b37aff3c6819275a22adbf02582bf0b4697ce5c56870c94c696f8596ce6835af",
+    "src/experimental-cushion-contact-stage.js": "3d2939ddcae7dae030210cff12b5e468e372bb8a2c3434e9faf0c5ec19372a20",
+    "src/experimental-cushion-roster-world.js": "50606a3f86ea03d71a3fbe481bcfc62c077c46204615272854296a23d6052483",
+    "src/experimental-convex-point.js": "3c2d27208bb137988e71ed8b567925d1c0605509e080c66dda621aba4ab6e578",
+    "src/experimental-cue-epa-core.js": "c3e8c11512e9faf0df0b61d0938854e602bcde5b360c38c96b244f27310a5516",
+    "src/experimental-cue-rigid-exclusion.js": "d0134db6c1fc8c7c3ab4edf68d38f2802ad2c795f1b12a1b93662e803d2a19d4",
+    "src/experimental-cue-obstacle-contact.js": "8511705ca5534a5e94fd1cd924decd6381871fd57c4a9272fd6181103b20043d"
+  },
+  "notEstablished": [
+    "sleeping red-ball wake",
+    "positive goal",
+    "arbitrary cue controls",
+    "browser or user hardware",
+    "performance"
+  ],
+  "reproduction": {
+    "cwd": "/workspace/scratch/f887f82f638e/billiard-settled-four-input",
+    "testCommand": [
+      "node",
+      "--test",
+      "tests/experimental-settled-four-world.cjs"
+    ],
+    "commonEnvironment": {
+      "RAPIER_SNAPSHOT_DECODER": "/tmp/billiard-v3-native-target/debug/rapier-snapshot-decoder",
+      "FOUR_BALL_CREATION_V8": "/tmp/billiard-original-four-ball-created-canonical-v1.v8",
+      "FOUR_BALL_FULL_REPLAY": "/workspace/scratch/f887f82f638e/billiard-four-ball-world-evidence/original-four-ball-full-c49bc03.v8",
+      "FOUR_BALL_SETTLED_TURN_REPLAY": "/workspace/scratch/f887f82f638e/billiard-four-ball-settled-turn-evidence/original-settled-turn-full-5112ee2.v8"
+    },
+    "additionalGpuEnvironment": {
+      "SETTLED_BACKEND": "gpu",
+      "REQUIRE_WEBGPU": "1",
+      "GPU_NATIVE_MODULE": "/tmp/billiard-gpu-tools-v3/node_modules/webgpu/index.js",
+      "VK_ICD_FILENAMES": "/usr/lib/chromium/vk_swiftshader_icd.json"
+    },
+    "execution": "CPU and actual WGSL ran sequentially, not concurrently."
+  }
+}

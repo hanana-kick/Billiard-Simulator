@@ -1,0 +1,10 @@
+{
+  "name": "two-red-then-yellow-observed-path-v1",
+  "requiredOutcome": "late-opponent-foul",
+  "placements": [
+    {"id": 1, "x": -0.5, "z": 0},
+    {"id": 2, "x": 0.5, "z": -0.18},
+    {"id": 3, "x": 0.0435, "z": 0.0435},
+    {"id": 4, "x": 0.2615, "z": -0.2}
+  ]
+}

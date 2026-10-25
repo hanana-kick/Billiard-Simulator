@@ -1,0 +1,8 @@
+'use strict';
+const{test}=require('node:test'),assert=require('node:assert/strict'),M=require('../src/experimental-ccd-sweep-math'),f=Math.fround;
+const sweep=(c1=[0,0,0],c2=c1)=>({localCenter:[0,0,0],c1,c2,q1:[0,0,0,1],q2:[0,0,0,1]});
+test('Vertices support uses source subtract-first projection, not absolute-dot tie',()=>{const pointsA=[[1,1,0],[f(1+2**-23),1,0]],a=sweep(),b=sweep([2,2,0]);const r=M.reference('find',{a,b,t:0,pointsA,type:'Vertices',witness1:[f(1e-6),1,0],witness2:[0,0,0]});assert.equal(r.indexA,1);assert.equal(f(f(pointsA[0][0]*f(1e-6))+1),f(f(pointsA[1][0]*f(1e-6))+1),'old absolute dots would tie');});
+test('source constant sweep and shortest quaternion arc preserve unit pose',()=>{const s=sweep([1,2,3]);s.q2=[0,0,0,-1];const x=M.reference('transform',{sweep:s,t:.5});assert.deepEqual(x.translation,[1,2,3]);assert.deepEqual(x.rotation.map(v=>v===0?0:v),[0,0,0,-1]);});
+test('origin shift preserves copied source inputs',()=>{const a=sweep([1,2,3]),b=sweep([4,5,6],[7,8,9]),before=structuredClone({a,b}),x=M.reference('shift',{a,b});assert.deepEqual(x,{origin:[1,2,3],aC1:[0,0,0],aC2:[0,0,0],bC1:[3,3,3],bC2:[6,6,6]});assert.deepEqual({a,b},before);});
+test('FaceA centroid and oriented separation follow source face branch',()=>{const a=sweep(),b=sweep([0,0,2]),face=M.reference('face',{a,b,t:0,points:[[0,0,0],[1,0,0],[0,1,0]]});assert.deepEqual(face.witness1,[0,0,1]);assert.deepEqual(face.witness2,[f(1/3),f(1/3),0]);assert.equal(M.reference('find',{a,b,t:0,type:'FaceA',...face,pointsA:[[0,0,0]]}).separation,2);});
+test('nonfinite or non-f32 input rejects before graph dispatch',()=>{assert.throws(()=>M.reference('difference',{a:NaN,b:0}));assert.throws(()=>M.reference('difference',{a:.1,b:0}));});

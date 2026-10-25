@@ -1,0 +1,525 @@
+{
+  "schema": "preregistered-cue-input-family-full-rest-v1",
+  "runtimeCommit": "4a233ac579d300b7bbadb7541f81e2d94d1715bf",
+  "preregistration": {
+    "path": "docs/parity/cue-input-family-v1.json",
+    "sha256": "0612a8f0a32a2ef3901d8a98e8ce6d54a773cd7e1ccf98d4573d808c86d16d47",
+    "unchangedSinceRegistration": true
+  },
+  "supportedFamilyCases": 3,
+  "independentBackendRuns": 6,
+  "completedBackendRuns": 6,
+  "totalComparedOuterStates": 36488,
+  "totalSourceCacheCheckpoints": 548,
+  "totalApplicationContactComparisons": 20,
+  "maxNativeAbsoluteError": 2.7803868318798663e-8,
+  "backend": "Actual WGSL on Dawn Vulkan SwiftShader software; no physical GPU hardware/performance claim",
+  "sourceHashes": {
+    "tests/experimental-cue-source-input-full-shot.cjs": "19f312c28b99c6560fc7e1ae13b858dd4ebdab09d0428586240d5549b7e93ed0",
+    "src/game-rules.js": "33857334242fd280193595cda56b9d433de579c0f017efa7a21c35c470191160",
+    "tests/cue-source-input-full-shot-oracle.cjs": "e97d6dd5e6da439b16bf8b5def92a16719047320ed01b66ece89bafab0e30043",
+    "tests/cue-source-input-fixture.cjs": "80040f678d44a9ea8a2544a19f088e2c7786ed948cd142ac7054000184f17ce4",
+    "tests/three-ball-scene-fixture.cjs": "27ac721d1e1750994be030efe8df1fac772394fe8baaefee3f1be54af885bcad",
+    "tests/cue-initialization-fixture.cjs": "ad35d006892fc5d3e891a9a5dae5ec111a3169f05f2a8400e73ed3e9fe3ee75b",
+    "tests/cue-stroke-fixture.cjs": "a3b8da25c22cb2233e89c772e529f6f0992c3e63029ea9d2a6d8e98d16f4486c",
+    "vendor/rapier.cjs": "fca22b2f33d4e88d2992215f42df6312093476db7fea4197816fb8e4ce17cba4",
+    "rapier-snapshot-decoder/index.cjs": "c0be6bd93871c14e0c1971d7671c33a26bb16ab5b35ab2d63c7ebaf6d9197ed5",
+    "src/experimental-cue-joint-snapshot.js": "90e43c30bb7c99a97e5f74a7e18c284f0f8f9d23fc0619d7e3a5b639c457e92a",
+    "src/math.js": "ea76455919c3fb22557680c5422902cf631753215492e799b32791993a939046",
+    "src/physics.js": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d",
+    "src/experimental-cue-created-variant.js": "145c4ce0eca3247c388af903e0edd5791033696e47639deed08103d31c613883",
+    "tests/cue-source-input-hull-seed.cjs": "07463cfcab16b097889e4ab405ea795f24d8a83540297e26563fc7fdf8359038",
+    "src/experimental-cue-convex-topology.js": "d9aabf9ece800d9e83799a8f0cfed8033dd677666d1b9210ca1e857edf3f2d22",
+    "tests/cue-empty-convex-cache-assertions.cjs": "7d75880a24d75f906f17fe11553c2ef95e9e38a9b86ec7dd577cddaf982ab3bc",
+    "tests/cue-empty-cache-assertions.cjs": "4da1f29dc582098a842ef1bee94d9f7aeeb0d72a89f4f219079e476878be2c2d",
+    "tests/three-ball-contact-assertions.cjs": "ff5f99d90051a51f01a68f65553bb816fa47d146ce49393be721e1e479b8b9f2",
+    "tests/three-ball-pair-oracle.cjs": "491b05eec2763dcd63f976510b9486609739dc3da915a2d7644f1e88919f417b",
+    "tests/three-ball-cushion-assertions.cjs": "c9d9cc78704fa9115ecd96a4ef1754e8a102fb704aa1cfa8c8b0f54379fbd551",
+    "src/experimental-three-ball-world.js": "7264d279c0ce21161a6c95559139147098d212d7a6d68c5900ac73b8f440d686",
+    "src/experimental-cue-created-stroke-stage.js": "3c5d9856117e6372e5ae9e960433cddccfa239e3acbaed49fa2825fdcccbfa01",
+    "src/experimental-cue-joint-stepper.js": "66840aa686a929c6295c2a4fb92587fba157c00f4feff4337bd25229cdb7e43a",
+    "src/experimental-cue-joint.js": "17677f4bcc94e91fa6c77ce706e644995a93122d53ffa361fff030c9b0e09dcd",
+    "src/experimental-arithmetic-graph.js": "72f19e4e240521d13bdb3ac2da23e3c2fff43fff88ded7ef0319434b4a5ccb27",
+    "src/experimental-stage-runtime.js": "2619c5f5ab6c9f6f3d60ffc30b9e67feccd32d256e8bfd4ab1da03467882f8c5",
+    "src/experimental-cue-lateral-compensated.js": "f04ce491ec8dbd8c3c3a3fcdf1f963784d5e74ab29ec4a067d5e3a17e0369572",
+    "src/experimental-cue-joint-compliance.js": "c2750bccb21f51edb5e9555ccdbe730e0109f0cb7c937245058365be1156d3b8",
+    "src/experimental-double-single.js": "eb8ef8bf29c7f5419e13140174a773c129b644dfd6df9eaced817333a68fad94",
+    "src/experimental-cue-joint-tip-contact.js": "ebb6777755640b9a757f4c0006af036d840414d81f05db6dfa0d027d2f1865fe",
+    "src/experimental-ccd-inactive.js": "77ba85e13a012ce11f2b33673517ed8f3a911a1ddd966b62c74448c539b5ecdb",
+    "src/experimental-cue-initialization.js": "908faf1539421e05a655dbebdd6360f69206b7b5d416ab73ac74c82419efa905",
+    "src/experimental-scene-activation.js": "b5ccd0dbf6b69d5fcae020b5262b09e602323ec68c7f049b9602b2c1f28bf61c",
+    "src/experimental-sleep-activation.js": "be86e6b8a0243c4e267df1e9f8c535d0dfca315965c816dbb14a15fe56dcc746",
+    "src/experimental-free-body.js": "188591b6e4ca4335f1b01647c34e4d875da4ae7b3a36cacb8ded45509d0b29bf",
+    "src/experimental-world-lifecycle.js": "ec9addaa43a689ab57f48114f85d67bd405fcd0714e3340845d997309a6e5c08",
+    "src/experimental-world-stepper.js": "4630ee6dc63272d2c8d403e2b2925b3c35993ff44de8c9178c6ca484fb579130",
+    "src/experimental-awake-activation.js": "77b4e12cd29c8114bee85ce44bcb9ffa56c59191a625a78902666bd103ad4da8",
+    "src/experimental-cue-stroke-stage.js": "18bdf2a7eee089467fa8096c6a01d60a485fb55892be1ff42cdbfb519547de8d",
+    "src/experimental-angular-patch.js": "c1b010128cf068f353bfd0cb17f7b9ac1ebf3af6af078e3872461d7051f45cb7",
+    "src/experimental-pair-contact-stage.js": "a4e55f0ab2f283f08a5a6f660c57448ce470d9050a49c4c6b558451a5c0f7261",
+    "src/experimental-cloth-island-world.js": "77b0eb32ecf7f409dffd431a847c338c5d9bcd6d8adbaab0e04a49cf51a1c559",
+    "src/experimental-sphere-pair-world.js": "53cd5b340312cf8c23ddd1a5fda044fcdc75a094a3da4efe434da11d9e813c8e",
+    "src/experimental-contact-graph-journal.js": "3556db2aca9c0cb670d62be52fd4ce782345a81d8926e6294f09b55685d8cea7",
+    "src/experimental-cushion-contact-stage.js": "259c238a4680e06043ca33975ec428e538759123e03c4415221c66d1b1db5b32",
+    "src/experimental-cushion-roster-world.js": "50606a3f86ea03d71a3fbe481bcfc62c077c46204615272854296a23d6052483",
+    "src/experimental-convex-point.js": "3c2d27208bb137988e71ed8b567925d1c0605509e080c66dda621aba4ab6e578",
+    "src/experimental-cue-epa-core.js": "c3e8c11512e9faf0df0b61d0938854e602bcde5b360c38c96b244f27310a5516",
+    "src/experimental-cue-rigid-exclusion.js": "c55a45062f3aebe89a5fc5a48484c8f31f1e231d468e3800b97ec4df22b76873",
+    "src/experimental-cue-obstacle-contact.js": "8511705ca5534a5e94fd1cd924decd6381871fd57c4a9272fd6181103b20043d",
+    "src/experimental-cue-broad-phase.js": "bac8cf8fd346afe4b3a2e6a48f23d9731111ef7ae6ab0c5d79c055c6255cc8c6",
+    "src/experimental-cue-bvh-insertion.js": "670188f386c1ab760d3cafe67f5b0a1dc6b5c2cfda3b0c98bb55517e27a0d706",
+    "src/experimental-cue-empty-convex-cache.js": "be8b22113e85a318851f99ceb0f9b3f2c13b96080c831bd51c71ed61199dc25e",
+    "src/experimental-cue-empty-pair-cache.js": "60c8ec10eaa8315a23eb041add5b7f4afc60c5c325911ab905279a424662f8ef",
+    "tests/three-ball-contact-seed.cjs": "a4b698058fdf25d911861f36d0a7aa56c978cd618ae299621bf97c10c556f5cb",
+    "tests/cue-broad-phase-fixture.cjs": "89cbed6d25d89bb71856a6fb6d56786235cda90736421d4fb5a31e33f111fa2a",
+    "tests/three-ball-initial-pair-seeds.cjs": "ae6839c47e8322aa983c2c578807b86b368f4cbfc0d274ccfd6e767ebb49a1ce"
+  },
+  "results": [
+    {
+      "input": {
+        "id": "yaw23-side-follow",
+        "role": "representative",
+        "settings": {
+          "angle": 23,
+          "elevation": 8,
+          "speed": 1.5,
+          "tipX": 0.2,
+          "tipY": 0.1
+        }
+      },
+      "combinedEvidence": {
+        "path": "/workspace/scratch/f887f82f638e/billiard-generalized-cue-input-evidence/yaw23-side-follow-full-rest-4a233ac-combined.json",
+        "sha256": "f0d6a1022289a3ca4f87be38c55178417c415aa90188f3c6b0095d3795607241"
+      },
+      "nativeArtifacts": [
+        {
+          "path": "/workspace/scratch/f887f82f638e/billiard-generalized-cue-input-evidence/yaw23-side-follow-prefix.v8",
+          "sha256": "7c32d83cdd14559433815ce01f52127e2578d24460eaff89a7e02beeba8deb32"
+        },
+        {
+          "path": "/workspace/scratch/f887f82f638e/billiard-generalized-cue-input-evidence/yaw23-side-follow-full-rest.v8",
+          "sha256": "27a1bc003060d405b74c56b5295e9eb2258095e67b66de9b038338cfd6fa102c"
+        }
+      ],
+      "runs": [
+        {
+          "result": {
+            "scope": "source-validated-input-full25-to22-through-physical-rest",
+            "backend": "cpu-reference",
+            "status": "rest-complete",
+            "fullShot": true,
+            "input": {
+              "id": "yaw23-side-follow",
+              "role": "representative",
+              "settings": {
+                "angle": 23,
+                "elevation": 8,
+                "speed": 1.5,
+                "tipX": 0.2,
+                "tipY": 0.1
+              }
+            },
+            "recordedOuterSteps": 5981,
+            "horizonOuterSteps": 9600,
+            "firstRestOuter": 5980,
+            "score": {
+              "cueId": 1,
+              "delta": 0,
+              "nextCue": 2
+            },
+            "maxAbsolute": 8.049334865312119e-9,
+            "outerCompared": 5981,
+            "checkpoints": 82,
+            "eventsCompared": 3
+          },
+          "log": {
+            "path": "/workspace/scratch/f887f82f638e/billiard-generalized-cue-input-evidence/yaw23-side-follow-full-rest-4a233ac-cpu.log",
+            "sha256": "8493dca1ed3d0d23395ee521683c3c833fc30ae1949e07bd52e46d4906443f85",
+            "bytes": 15926
+          },
+          "process": {
+            "path": "/workspace/scratch/f887f82f638e/billiard-generalized-cue-input-evidence/yaw23-side-follow-full-rest-4a233ac-cpu.log.process.json",
+            "sha256": "ba84190d89e5672ef1189bea8776b9beda6821b059ee8d505e5df83d710e1160"
+          },
+          "lastProgress": {
+            "progress": true,
+            "backend": "cpu-reference",
+            "pid": 32,
+            "outer": 5632,
+            "h": 6199,
+            "maxAbsolute": 8.049334865312119e-9,
+            "memory": {
+              "rss": 997076992,
+              "heapTotal": 616742912,
+              "heapUsed": 344056848,
+              "external": 91963337,
+              "arrayBuffers": 87749951
+            }
+          },
+          "startedAt": "2026-10-24T20:27:56.896Z",
+          "endedAt": "2026-10-24T20:32:12.387Z"
+        },
+        {
+          "result": {
+            "scope": "source-validated-input-full25-to22-through-physical-rest",
+            "backend": "actual-webgpu",
+            "status": "rest-complete",
+            "fullShot": true,
+            "input": {
+              "id": "yaw23-side-follow",
+              "role": "representative",
+              "settings": {
+                "angle": 23,
+                "elevation": 8,
+                "speed": 1.5,
+                "tipX": 0.2,
+                "tipY": 0.1
+              }
+            },
+            "recordedOuterSteps": 5981,
+            "horizonOuterSteps": 9600,
+            "firstRestOuter": 5980,
+            "score": {
+              "cueId": 1,
+              "delta": 0,
+              "nextCue": 2
+            },
+            "maxAbsolute": 8.049334865312119e-9,
+            "outerCompared": 5981,
+            "checkpoints": 82,
+            "eventsCompared": 3
+          },
+          "log": {
+            "path": "/workspace/scratch/f887f82f638e/billiard-generalized-cue-input-evidence/yaw23-side-follow-full-rest-4a233ac-gpu.log",
+            "sha256": "4db70257d7ecb6ecb9c2db710d83ac03f4c27110595318cdfd6c8c3d82d5a35e",
+            "bytes": 15981
+          },
+          "process": {
+            "path": "/workspace/scratch/f887f82f638e/billiard-generalized-cue-input-evidence/yaw23-side-follow-full-rest-4a233ac-gpu.log.process.json",
+            "sha256": "c080ad821e352c44152b78855ad3e3c1592e696d6339e59059dce70892d5315c"
+          },
+          "lastProgress": {
+            "progress": true,
+            "backend": "actual-webgpu",
+            "pid": 32,
+            "outer": 5632,
+            "h": 6199,
+            "maxAbsolute": 8.049334865312119e-9,
+            "memory": {
+              "rss": 1977507840,
+              "heapTotal": 1087512576,
+              "heapUsed": 805218712,
+              "external": 91970255,
+              "arrayBuffers": 82632399
+            }
+          },
+          "startedAt": "2026-10-24T20:32:24.894Z",
+          "endedAt": "2026-10-24T20:37:33.683Z"
+        }
+      ]
+    },
+    {
+      "input": {
+        "id": "yaw-minus37-side-draw",
+        "role": "representative",
+        "settings": {
+          "angle": -37,
+          "elevation": 12,
+          "speed": 2.4,
+          "tipX": -0.18,
+          "tipY": -0.12
+        }
+      },
+      "combinedEvidence": {
+        "path": "/workspace/scratch/f887f82f638e/billiard-generalized-cue-input-evidence/yaw-minus37-side-draw-full-rest-4a233ac-combined.json",
+        "sha256": "b042ef59a1c1fe95222802174056bed3df58be28b7a6dd610a88d4c31af89d0c"
+      },
+      "nativeArtifacts": [
+        {
+          "path": "/workspace/scratch/f887f82f638e/billiard-generalized-cue-input-evidence/yaw-minus37-side-draw-prefix.v8",
+          "sha256": "147830ba664035b5f68440a444ea46c04c85026af6e2e96fba4cea5a1cabfbc2"
+        },
+        {
+          "path": "/workspace/scratch/f887f82f638e/billiard-generalized-cue-input-evidence/yaw-minus37-side-draw-full-rest.v8",
+          "sha256": "4b6ef0227b369441efeec0f80eda80670942f2ba6c8431b5878e110111fd4801"
+        }
+      ],
+      "runs": [
+        {
+          "result": {
+            "scope": "source-validated-input-full25-to22-through-physical-rest",
+            "backend": "cpu-reference",
+            "status": "rest-complete",
+            "fullShot": true,
+            "input": {
+              "id": "yaw-minus37-side-draw",
+              "role": "representative",
+              "settings": {
+                "angle": -37,
+                "elevation": 12,
+                "speed": 2.4,
+                "tipX": -0.18,
+                "tipY": -0.12
+              }
+            },
+            "recordedOuterSteps": 6501,
+            "horizonOuterSteps": 9600,
+            "firstRestOuter": 6500,
+            "score": {
+              "cueId": 1,
+              "delta": 0,
+              "nextCue": 2
+            },
+            "maxAbsolute": 2.1263861449405397e-8,
+            "outerCompared": 6501,
+            "checkpoints": 89,
+            "eventsCompared": 3
+          },
+          "log": {
+            "path": "/workspace/scratch/f887f82f638e/billiard-generalized-cue-input-evidence/yaw-minus37-side-draw-full-rest-4a233ac-cpu.log",
+            "sha256": "d3fc7dd995858d2f2211e013d7eec80737478547de1ad7ca871a5500f4b7da15",
+            "bytes": 16190
+          },
+          "process": {
+            "path": "/workspace/scratch/f887f82f638e/billiard-generalized-cue-input-evidence/yaw-minus37-side-draw-full-rest-4a233ac-cpu.log.process.json",
+            "sha256": "d26bc390b91c69799571136072cb3f93ce8caf052fde871c37adb981d583bc83"
+          },
+          "lastProgress": {
+            "progress": true,
+            "backend": "cpu-reference",
+            "pid": 40,
+            "outer": 6144,
+            "h": 6585,
+            "maxAbsolute": 2.1263861449405397e-8,
+            "memory": {
+              "rss": 1499275264,
+              "heapTotal": 1200775168,
+              "heapUsed": 653799664,
+              "external": 94354837,
+              "arrayBuffers": 90141451
+            }
+          },
+          "startedAt": "2026-10-24T20:37:53.206Z",
+          "endedAt": "2026-10-24T20:42:13.766Z"
+        },
+        {
+          "result": {
+            "scope": "source-validated-input-full25-to22-through-physical-rest",
+            "backend": "actual-webgpu",
+            "status": "rest-complete",
+            "fullShot": true,
+            "input": {
+              "id": "yaw-minus37-side-draw",
+              "role": "representative",
+              "settings": {
+                "angle": -37,
+                "elevation": 12,
+                "speed": 2.4,
+                "tipX": -0.18,
+                "tipY": -0.12
+              }
+            },
+            "recordedOuterSteps": 6501,
+            "horizonOuterSteps": 9600,
+            "firstRestOuter": 6500,
+            "score": {
+              "cueId": 1,
+              "delta": 0,
+              "nextCue": 2
+            },
+            "maxAbsolute": 2.1263861449405397e-8,
+            "outerCompared": 6501,
+            "checkpoints": 89,
+            "eventsCompared": 3
+          },
+          "log": {
+            "path": "/workspace/scratch/f887f82f638e/billiard-generalized-cue-input-evidence/yaw-minus37-side-draw-full-rest-4a233ac-gpu.log",
+            "sha256": "6fc65f52dc134a621915a61558b4a77a731a3e842c06db6b7630d1a00db0f97f",
+            "bytes": 16232
+          },
+          "process": {
+            "path": "/workspace/scratch/f887f82f638e/billiard-generalized-cue-input-evidence/yaw-minus37-side-draw-full-rest-4a233ac-gpu.log.process.json",
+            "sha256": "efa407ccd31ab8db31a6c1a671e4a81bfeafc9cc8b000da5aaa411403d2fb1cf"
+          },
+          "lastProgress": {
+            "progress": true,
+            "backend": "actual-webgpu",
+            "pid": 32,
+            "outer": 6144,
+            "h": 6585,
+            "maxAbsolute": 2.1263861449405397e-8,
+            "memory": {
+              "rss": 2046091264,
+              "heapTotal": 1127223296,
+              "heapUsed": 888966584,
+              "external": 98874328,
+              "arrayBuffers": 89513611
+            }
+          },
+          "startedAt": "2026-10-24T20:42:23.883Z",
+          "endedAt": "2026-10-24T20:47:41.173Z"
+        }
+      ]
+    },
+    {
+      "input": {
+        "id": "yaw61-25-elevated-holdout",
+        "role": "holdout",
+        "settings": {
+          "angle": 61.25,
+          "elevation": 20,
+          "speed": 1.8,
+          "tipX": 0.11,
+          "tipY": -0.16
+        }
+      },
+      "combinedEvidence": {
+        "path": "/workspace/scratch/f887f82f638e/billiard-generalized-cue-input-evidence/yaw61-25-elevated-holdout-full-rest-4a233ac-combined.json",
+        "sha256": "40ca1a3b4cc3b5743de66f7a3d652159de188e3c6c415cd14b8666bf4778787f"
+      },
+      "nativeArtifacts": [
+        {
+          "path": "/workspace/scratch/f887f82f638e/billiard-generalized-cue-input-evidence/yaw61-25-elevated-holdout-prefix.v8",
+          "sha256": "a806048436ac0f82b916078b58913383e808616ae176cb91cb754677e2fbccd6"
+        },
+        {
+          "path": "/workspace/scratch/f887f82f638e/billiard-generalized-cue-input-evidence/yaw61-25-elevated-holdout-full-rest.v8",
+          "sha256": "277051231ec674ceb9bc9baf248d97acb103a1787cb515ad94b2a671fdc6964f"
+        }
+      ],
+      "runs": [
+        {
+          "result": {
+            "scope": "source-validated-input-full25-to22-through-physical-rest",
+            "backend": "cpu-reference",
+            "status": "rest-complete",
+            "fullShot": true,
+            "input": {
+              "id": "yaw61-25-elevated-holdout",
+              "role": "holdout",
+              "settings": {
+                "angle": 61.25,
+                "elevation": 20,
+                "speed": 1.8,
+                "tipX": 0.11,
+                "tipY": -0.16
+              }
+            },
+            "recordedOuterSteps": 5762,
+            "horizonOuterSteps": 9600,
+            "firstRestOuter": 5761,
+            "score": {
+              "cueId": 1,
+              "delta": 0,
+              "nextCue": 2
+            },
+            "maxAbsolute": 2.7803868318798663e-8,
+            "outerCompared": 5762,
+            "checkpoints": 103,
+            "eventsCompared": 4
+          },
+          "log": {
+            "path": "/workspace/scratch/f887f82f638e/billiard-generalized-cue-input-evidence/yaw61-25-elevated-holdout-full-rest-4a233ac-cpu.log",
+            "sha256": "81a6c07d5c4f19f3e3b0507b8b02a5475d135d5f3067f5ddce0443ba3786d526",
+            "bytes": 15971
+          },
+          "process": {
+            "path": "/workspace/scratch/f887f82f638e/billiard-generalized-cue-input-evidence/yaw61-25-elevated-holdout-full-rest-4a233ac-cpu.log.process.json",
+            "sha256": "b54754c08f9639a33ff6e4794ef8f06bf09bfa2283b001151413fa14d0898c5a"
+          },
+          "lastProgress": {
+            "progress": true,
+            "backend": "cpu-reference",
+            "pid": 32,
+            "outer": 5632,
+            "h": 6136,
+            "maxAbsolute": 2.7803868318798663e-8,
+            "memory": {
+              "rss": 1541296128,
+              "heapTotal": 1209835520,
+              "heapUsed": 572804232,
+              "external": 101223993,
+              "arrayBuffers": 91762555
+            }
+          },
+          "startedAt": "2026-10-24T20:17:31.652Z",
+          "endedAt": "2026-10-24T20:21:53.111Z"
+        },
+        {
+          "result": {
+            "scope": "source-validated-input-full25-to22-through-physical-rest",
+            "backend": "actual-webgpu",
+            "status": "rest-complete",
+            "fullShot": true,
+            "input": {
+              "id": "yaw61-25-elevated-holdout",
+              "role": "holdout",
+              "settings": {
+                "angle": 61.25,
+                "elevation": 20,
+                "speed": 1.8,
+                "tipX": 0.11,
+                "tipY": -0.16
+              }
+            },
+            "recordedOuterSteps": 5762,
+            "horizonOuterSteps": 9600,
+            "firstRestOuter": 5761,
+            "score": {
+              "cueId": 1,
+              "delta": 0,
+              "nextCue": 2
+            },
+            "maxAbsolute": 2.7803868318798663e-8,
+            "outerCompared": 5762,
+            "checkpoints": 103,
+            "eventsCompared": 4
+          },
+          "log": {
+            "path": "/workspace/scratch/f887f82f638e/billiard-generalized-cue-input-evidence/yaw61-25-elevated-holdout-full-rest-4a233ac-gpu.log",
+            "sha256": "cfa6b333e0f739f123646c1f716edd335f45d701ecabec5c3fe91b07b2362d4c",
+            "bytes": 16016
+          },
+          "process": {
+            "path": "/workspace/scratch/f887f82f638e/billiard-generalized-cue-input-evidence/yaw61-25-elevated-holdout-full-rest-4a233ac-gpu.log.process.json",
+            "sha256": "67f456f51e3e4bbb2a8bd48c2d4d772b4d34d70b530e1f70018f70fc9062968b"
+          },
+          "lastProgress": {
+            "progress": true,
+            "backend": "actual-webgpu",
+            "pid": 32,
+            "outer": 5632,
+            "h": 6136,
+            "maxAbsolute": 2.7803868318798663e-8,
+            "memory": {
+              "rss": 2124189696,
+              "heapTotal": 1184944128,
+              "heapUsed": 513772864,
+              "external": 101111191,
+              "arrayBuffers": 91765683
+            }
+          },
+          "startedAt": "2026-10-24T20:22:06.147Z",
+          "endedAt": "2026-10-24T20:27:09.752Z"
+        }
+      ]
+    }
+  ],
+  "scope": "Original initial snapshots plus actual creation/mutation journals only. Physical ball state/scoring each outer, graph sequence/application events each h, predeclared grid/transition source graph/manager/cache checks. Same original parameters; no later-native seed or replay.",
+  "notClaimed": [
+    "Full engine bit/serialization equality",
+    "Every control value physically supported",
+    "Final integrated-main acceptance or real-app browser/device proof from these fixture gates"
+  ],
+  "remainingCapabilities": [
+    "Active CCD remains unsupported",
+    "Active rigid cue contact/coupled cue constraints remain unsupported",
+    "Multiple novel post-initial cue broadphase pairs remain unsupported",
+    "Complex simultaneous dynamic/contact components remain unsupported",
+    "Four-ball recurrent cue cache capabilities are not broadened by this N3 work"
+  ],
+  "historicalFailuresPreserved": [
+    "docs/evidence/cue-input-family-checkpoint-060a.json",
+    "docs/evidence/cue-input-full-rest-boundaries-4d343cc.json"
+  ],
+  "finalIntegration": "Coordinator owns final original-scenario acceptance on integrated main; these six proofs refer exactly to frozen4a233ac."
+}

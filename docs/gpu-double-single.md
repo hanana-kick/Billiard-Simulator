@@ -1,0 +1,11 @@
+# Bounded double-single graph arithmetic
+
+`experimental-double-single.js` supplies independently rounded f32 scalar-graph operations on `[hi, lo]` pairs. The same graph executes on the diagnostic CPU and actual WGSL. It uses two-sum, split-product (Dekker splitting constant 4097), renormalization, one residual division correction and a compensated square-root correction. It does not use a CPU answer callback or hardware f64. The implementation is Apache-2.0; algorithms are standard compensated floating-point transforms, not a replacement physics model.
+
+`attach({op,c,add,sub,mul,div,choose})` returns `of`, `constant`, `add`, `sub`, `mul`, `div`, `neg`, `select`, `lt`, `gt`, `max`, `sqrt`, `round`, `zero`, and `one`. `constant` splits an immutable JavaScript Number once. `round` explicitly returns a native f32 boundary value. Dynamic results remain graph-generated. Callers must select safe denominators before eager graph evaluation and admit a bounded numerical domain.
+
+This is approximately 48 significant bits in well-conditioned normal-range calculations, **not IEEE binary64**. Cancellation must be measured against input scale, not by claiming 48 relative bits in a tiny residual. Split products can overflow; subnormal products can lose error terms; nearly tied branches and adversarial f32 rounding midpoints can disagree with JavaScript Number. Tests retain both an adversarial midpoint transport counterexample and the insufficient-precision result of `sqrt((1e-20)^2)`. The finite-node runtime rejects nonfinite computation, but is not a general underflow or conditioning detector.
+
+Primitive validation uses fixed input-conditioned forward-error bounds for admitted normal-range cases and explicitly separates these unsupported precision probes. Physical modules must retain their original physical tolerances and independently compare against unchanged native/application outputs. No all-device precision guarantee follows from a Dawn/SwiftShader test.
+
+Current primitive gate: 2/2 tests, no skips, ten admitted cases on CPU and actual Dawn/SwiftShader WGSL. Maximum input-scaled forward residual is 7.077671781985371e-15 for both backends; the two unsupported precision counterexamples remain explicit.

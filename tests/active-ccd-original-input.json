@@ -1,0 +1,18 @@
+{
+  "schema": "unchanged-physicslab-supported-active-ccd-input-v1",
+  "id": "original-three-ball-speed10-elevation35-tipx025-right-cushion",
+  "classification": "discovery-case-preregistered-before-instrumented-capture-not-independent-holdout",
+  "layout": "original-three-ball-constructor-layout",
+  "selectedId": 1,
+  "settings": {"angle": 0, "elevation": 35, "tipX": 0.25, "tipY": 0, "speed": 10},
+  "parameters": "unchanged-PhysicsLab-defaults",
+  "dt": 0.0010416666666666667,
+  "strokeSubsteps": 64,
+  "maxCcdSubsteps": 4,
+  "constructorSettlingSteps": 72,
+  "additionalSettlingSteps": 0,
+  "placements": [],
+  "targetOriginalWorldStep": 389,
+  "discoveryFirstImpact": 0.0004171431646682322,
+  "require": ["original-strike-accepted-with-clearance", "no-velocity-injection", "cue-removed-before-target", "nonzero-pre-solve-source-toi", "native-per-pass-split-and-clamp-observations"]
+}

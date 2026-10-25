@@ -1,0 +1,217 @@
+{
+  "scope": "Original-controller reachable obstructed-stroke oracle only. UI settings and initial clearance/fire are accepted, but an actual cue-obstruction is emitted; this is not a valid unobstructed CPU-search shot or a floor-only parity acceptance case.",
+  "legalInput": {
+    "placements": [
+      {
+        "id": 1,
+        "x": -0.3,
+        "z": 0
+      },
+      {
+        "id": 2,
+        "x": -0.8,
+        "z": -0.4
+      },
+      {
+        "id": 3,
+        "x": 0.4,
+        "z": -0.4
+      },
+      {
+        "id": 4,
+        "x": 0.8,
+        "z": 0.4
+      }
+    ],
+    "settings": {
+      "angle": 0,
+      "elevation": 20,
+      "tipX": 0,
+      "tipY": -0.88,
+      "speed": 2
+    },
+    "method": "Original LabController.move -> native settling -> LabController.changeSettings -> LabController.fire -> PhysicsLab.step -> native sleep -> LabController.finishGameShot"
+  },
+  "derivation": "Centered elevation60/speed5 retained cloth contact. Original pose geometry then suggested elevation20/tipY=-.88: contact normal points upward and swept cue tip clears cloth. Speed5 proved flight but escaped finite room floor; speed2 gives table-cloth landing and full rest.",
+  "preliminaryDiagnosticsNotAuthoritativeFixture": [
+    {
+      "file": "derived-centered60-speed5-probe.json",
+      "settings": {
+        "angle": 0,
+        "elevation": 60,
+        "tipX": 0,
+        "tipY": 0,
+        "speed": 5
+      },
+      "status": "native-rest-complete",
+      "hCount": 8293,
+      "maxCenterY": 0.03068251721560955,
+      "floorLifecycle": "No cloth point, active or pair loss observed."
+    },
+    {
+      "file": "derived-elevation20-tip088-speed5-probe.json",
+      "settings": {
+        "angle": 0,
+        "elevation": 20,
+        "tipX": 0,
+        "tipY": -0.88,
+        "speed": 5
+      },
+      "status": "horizon-incomplete",
+      "hCount": 16252,
+      "maxCenterY": 0.25629833340644836,
+      "firstClothImpulseLossH": 149,
+      "firstClothPointAndActiveDeathH": 179,
+      "firstClothPairDeathH": 258,
+      "outcome": "Jumped table rail, contacted room floor, then escaped finite floor; not a rest fixture."
+    }
+  ],
+  "authoritativeArtifact": {
+    "relativePath": ".browser-decoder-evidence/elevated-flight/speed2-full.v8",
+    "sha256": "12ee0b8d4090805465cb8752decb1a3758cc591569cff17b64aee8ab2d91baf4",
+    "bytes": 62075981,
+    "initialSnapshotSha256": "bade93c4b1021ffc1531057cbbf35e18fa368e586ec2654a01093e304a52ccfb",
+    "sourcePhysicsSha256": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d",
+    "sourceControllerSha256": "93bc522f06df65a9373ecadc47836e14d4cb0141822412afc917b511f8663ab4",
+    "sourceRapierSha256": "fca22b2f33d4e88d2992215f42df6312093476db7fea4197816fb8e4ce17cba4",
+    "expectedBoundaryRows": 75,
+    "initialBoundary": "goalStrikeCreated",
+    "candidateInputPolicy": "Only goalStrikeCreated plus untouched original creation journal. All later native rows are expected-only assertions.",
+    "postStrikeBallAssignments": 0
+  },
+  "nativeMilestones": {
+    "firstImpulseLoss": {
+      "h": 377,
+      "cuePresent": true,
+      "target": {
+        "pair": true,
+        "points": 1,
+        "active": true,
+        "positive": false
+      }
+    },
+    "firstActiveDeath": {
+      "h": 425,
+      "cuePresent": true,
+      "target": {
+        "pair": true,
+        "points": 0,
+        "active": false,
+        "positive": false
+      }
+    },
+    "firstPointDeath": {
+      "h": 425,
+      "cuePresent": true,
+      "target": {
+        "pair": true,
+        "points": 0,
+        "active": false,
+        "positive": false
+      }
+    },
+    "cueWithdrawal": {
+      "h": 464,
+      "cuePresent": false,
+      "target": {
+        "pair": true,
+        "points": 0,
+        "active": false,
+        "positive": false
+      }
+    },
+    "firstPairDeath": {
+      "h": 515,
+      "cuePresent": false,
+      "target": {
+        "pair": false,
+        "points": 0,
+        "active": false,
+        "positive": false
+      }
+    },
+    "firstPairBirthAfterFlight": {
+      "h": 677,
+      "cuePresent": false,
+      "target": {
+        "pair": true,
+        "points": 0,
+        "active": false,
+        "positive": false
+      }
+    },
+    "firstPointBirthAfterFlight": {
+      "h": 680,
+      "cuePresent": false,
+      "target": {
+        "pair": true,
+        "points": 1,
+        "active": true,
+        "positive": true
+      }
+    },
+    "firstActiveBirthAfterFlight": {
+      "h": 680,
+      "cuePresent": false,
+      "target": {
+        "pair": true,
+        "points": 1,
+        "active": true,
+        "positive": true
+      }
+    },
+    "firstPositiveLanding": {
+      "h": 680,
+      "cuePresent": false,
+      "target": {
+        "pair": true,
+        "points": 1,
+        "active": true,
+        "positive": true
+      }
+    }
+  },
+  "apex": {
+    "h": 594,
+    "centerY": 0.0681011751294136
+  },
+  "rest": {
+    "hCount": 5346,
+    "firstRestOuter": 4842,
+    "score": {
+      "cueId": 1,
+      "delta": 0,
+      "nextCue": 2
+    }
+  },
+  "verification": {
+    "originalRecreations": 3,
+    "unobservedOriginalAgreement": true,
+    "sourceNativeByteRoundtrip": true,
+    "javascriptTypedByteRoundtrip": true,
+    "contractTestsPassed": 3,
+    "contractTestsSkipped": 0
+  },
+  "reproduction": [
+    "Set RAPIER_SNAPSHOT_DECODER to the admitted absolute rapier-snapshot-decoder executable.",
+    "Request the shared serial physics slot before capture, then set ELEVATED_FLIGHT_SERIAL_SLOT=1.",
+    "node --max-old-space-size=4096 tests/elevated-flight-original-fixture.cjs /absolute/nonexistent/speed2-full.v8 capture",
+    "ELEVATED_FLIGHT_ORACLE=/absolute/speed2-full.v8 node --test tests/elevated-flight-original-contract.cjs"
+  ],
+  "storage": "Identical snapshot hashes share decoded trees and assertion projections share immutable decoded fields to avoid duplicate typed buffers; original snapshots and byte-roundtrip verification are retained.",
+  "shotClassification": {
+    "uiInputAccepted": true,
+    "initialCueClearanceAccepted": true,
+    "actualCueObstruction": {
+      "eventOrder": 2,
+      "h": 389,
+      "kind": "cue-obstruction",
+      "label": "\ud14c\uc774\ube14 \ucc9c",
+      "part": "tip",
+      "impulse": 0.02441287226974964,
+      "time": 0.510498046874993
+    },
+    "originalSearchValidity": "src/optimizer-core.js marks cue-obstruction events cueObstructed=true and invalid=true.",
+    "gameScoringDistinction": "FourBallGame pending.foul stays false and delta0 does not imply absence of physical cue obstruction."
+  }
+}

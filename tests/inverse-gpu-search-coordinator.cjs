@@ -1,0 +1,45 @@
+'use strict';
+// Real planner + coordinator, controlled geometric branches/evaluator contracts.
+// No GPU physics claim; genuine native static semantics have a separate test.
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+function harness(config={}){
+ let now=0;const calls={plan:0,commit:[],accept:[],inspect:[],prepare:[],gpu:[],progress:[]};
+ const context={performance:{now:()=>now},LabOptimizer:{validate(){}},LabRouteRules:{byId:new Map(),successIdentity:JSON.stringify},LabInverseGeometry:{*enumerate(){for(let i=0;i<4;i++)yield{id:'branch-'+i,settings:{angle:i,elevation:8,speed:2,tipX:0,tipY:0},events:[{kind:'object',id:3}]};}},LabInverseSolver:{create({seed}){return{seed,done:false};},next(s){return s.done?[]:[['clearance',.5],['evaluate',0],['evaluate',2],['evaluate',2.1],['verify',2.2]].map(([purpose,speed],id)=>({id,purpose,settings:{...s.seed,speed}}));},accept(s,rows){calls.accept.push(rows);s.done=true;},result(s){return{status:s.done?'unconverged':'running',iterations:s.done?1:0};},resume(s){return{...s,done:false};}}};
+ vm.createContext(context);vm.runInContext(fs.readFileSync(require.resolve('../src/inverse-planner.js'),'utf8'),context);
+ const P=context.LabInversePlanner,plan=P.planWave,commit=P.commitWave;P.planWave=s=>{calls.plan++;return plan(s);};P.commitWave=(s,rows)=>{calls.commit.push(Array.from(rows,r=>r.id));assert.deepEqual(Array.from(rows,r=>r.id),Array.from(s.pending,j=>j.id),'exact original planner order');return commit(s,rows);};
+ const snapshot={world:new Uint8Array([1]),revision:7,time:0,steps:0,shots:0,dt:1/960},req={snapshot,selectedId:1,settings:{angle:0,elevation:8,speed:2,tipX:0,tipY:0},options:{searchAlgorithm:'inverse-constraints',gameMode:'four',mode:'carom',fourBallThreeCushion:false,budget:48,horizon:8,solveTimeMs:1000,objective:'shortest',spin:false}};
+ const controller={state:{selectedId:1,gameMode:'four',paused:true},game:{pending:null},lab:{...snapshot,cue:null,anyMotion:()=>false,snapshot:()=>structuredClone(snapshot)}};
+ const inspect=(R,req,t,s,p)=>{calls.inspect.push([t.id,p,s.speed]);if(p==='clearance'||s.speed===0||config.staticOnly)return{kind:p==='clearance'?'clearance':'rejected',nativeForwardSteps:0,outcome:{status:p==='clearance'?'clearance-feasible':'strike-rejected',steps:0,originalStatic:true,settings:s}};return{kind:'physical',nativeForwardSteps:0,clearance:.1,inequalities:[-.1]};};
+ const prepare=async({candidate,signal})=>{calls.prepare.push(candidate.settings);config.onPrepare?.();if(signal.aborted)throw signal.reason;return{source:7,settings:candidate.settings};};
+ const evaluate=async options=>{calls.gpu.push(options.candidates);assert.ok(options.candidates.length<=4);assert.equal(options.backend,'webgpu');config.onGpu?.();if(config.wait)await config.wait();now+=config.gpuMs??1;return{results:options.candidates.map((job,index)=>({index,status:config.failStatus??(options.signal.aborted?'cancelled':'evaluated'),reason:config.failStatus?'explicit unavailable':undefined,result:{steps:2,clearance:.1,inequalities:[-.1],physicalResult:{success:false},settings:job.settings}}))};};
+ const text=fs.readFileSync(require.resolve('../src/inverse-gpu-search-coordinator.mjs'),'utf8').replace(/^import .*;\n/gm,'').replace('export function createInverseGpuSearchCoordinator','function createInverseGpuSearchCoordinator');
+ const create=new Function('globalThis','inspectOriginalInverseInput','prepareLiveFourBallCandidate','evaluateInverseGpuWave','equalData','performance',text+'\nreturn createInverseGpuSearchCoordinator;')(context,inspect,prepare,evaluate,assert.deepEqual,context.performance);
+ const options={backend:'webgpu',R:{},controller,decoder:{decodeSnapshot(){}},device:{createBuffer(){},queue:{}},req,onProgress:r=>calls.progress.push(r)};
+ return{create,options,calls,controller,req};
+}
+test('real planner preserves all20 mixed jobs, original order and budget across bounded GPU chunks',async()=>{
+ const h=harness(),s=h.create(h.options),out=await s.run();assert.equal(out.tested,20,JSON.stringify(out.gpuCoordinator));assert.equal(out.physicsSteps,24);assert.equal(h.calls.gpu.length,3);assert.ok(h.calls.gpu.every(x=>x.length===4));assert.deepEqual(h.calls.commit,[Array.from({length:20},(_,i)=>i)]);
+ assert.equal(out.gpuCoordinator.clearanceOnly,4);assert.equal(out.gpuCoordinator.rejectedStrikes,4);assert.equal(out.gpuCoordinator.gpuEvaluations,12);assert.equal(out.gpuCoordinator.nativeForwardSteps,0);assert.equal(out.exhaustive,false);assert.equal(out.searchModel,'topology-constrained-inverse-root-solve');assert.equal(out.executionMode,'same-realm-inverse-gpu');
+ for(const rows of h.calls.accept){assert.deepEqual(Array.from(rows,r=>r.id),[0,1,2,3,4]);assert.equal(rows[0].status,'clearance-feasible');assert.equal(rows[1].status,'strike-rejected');assert.equal(rows[0].originalStatic,true);}
+ await s.dispose();
+});
+test('slow physical chunk stops at budget without committing an incomplete original planner wave',async()=>{
+ const h=harness({gpuMs:10});h.req.options.solveTimeMs=1;const s=h.create(h.options),out=await s.run();assert.equal(out.tested,0);assert.equal(out.terminationReason,'time-limit');assert.equal(out.gpuCoordinator.stopCause,'time-limit');assert.equal(out.partial,true);assert.equal(out.continuable,true);assert.equal(h.calls.commit.length,0);await s.dispose();
+});
+test('GPU unsupported/error stops partial without fake misses, domain exhaustion or native fallback',async()=>{
+ for(const failStatus of ['unsupported','failed']){const h=harness({failStatus}),s=h.create(h.options),out=await s.run();assert.equal(out.terminationReason,'gpu-'+failStatus);assert.equal(out.partial,true);assert.equal(out.exhaustive,false);assert.equal(out.tested,0);assert.equal(h.calls.commit.length,0);assert.equal(out.gpuCoordinator.failure.phase,'gpu-physical');assert.equal(s.resume(),false);await s.dispose();}
+});
+test('cancellation retains only whole-wave planner commits and supports explicit current-source resume',async()=>{
+ let unblock;const config={wait:()=>new Promise(r=>{unblock=r;})},h=harness(config),s=h.create(h.options),pending=s.run();while(!unblock)await new Promise(r=>setTimeout(r,0));s.cancel();unblock();const cancelled=await pending;assert.equal(cancelled.terminationReason,'cancelled');assert.equal(cancelled.tested,0);assert.equal(h.calls.commit.length,0);config.wait=null;assert.equal(s.resume(),false);assert.equal(s.resume({restartPhysicalJobs:true}),true);const resumed=await s.run();assert.equal(resumed.tested,20);assert.equal(h.calls.commit.length,1);await s.dispose();
+});
+test('source change during preparation and explicit backend/scope failures never publish stale results',async()=>{
+ let h;h=harness({onPrepare(){h.controller.lab.revision++;}});const s=h.create(h.options),out=await s.run();assert.equal(out.terminationReason,'source-changed');assert.equal(out.results.length,0);assert.equal(out.continuable,false);assert.equal(h.calls.gpu.length,0);assert.equal(s.resume(),false);await s.dispose();
+ const q=harness();assert.throws(()=>q.create({...q.options,backend:'cpu'}),/webgpu/);q.req.options.searchAlgorithm='legacy';assert.throws(()=>q.create(q.options),/inverse/);
+});
+
+test('all-static planner work commits exact outcomes without preparing or dispatching a physical candidate',async()=>{const h=harness({staticOnly:true}),s=h.create(h.options),out=await s.run();assert.equal(out.tested,20);assert.equal(out.physicsSteps,0);assert.equal(h.calls.prepare.length,0);assert.equal(h.calls.gpu.length,0);assert.equal(out.gpuCoordinator.rejectedStrikes,16);await s.dispose();});
+test('device lease and active-run guard release after cancelled service disposal',async()=>{let unblock;const config={wait:()=>new Promise(r=>{unblock=r;})},h=harness(config),one=h.create(h.options),two=h.create(h.options),run=one.run();while(!unblock)await new Promise(r=>setTimeout(r,0));assert.throws(()=>one.run(),/already running/);assert.throws(()=>two.run(),/already has/);const disposal=one.dispose();unblock();await run;await disposal;config.wait=null;assert.equal((await two.run()).tested,20);await two.dispose();assert.throws(()=>one.run(),/disposed/);});
+
+test('wall timer aborts pending GPU work promptly, distinguishes budget from user cancel and resumes unchanged pending wave',async()=>{
+ const config={wait:null},h=harness(config);h.req.options.solveTimeMs=20;let sawAbort=false;config.wait=()=>new Promise(resolve=>setTimeout(resolve,45));const s=h.create(h.options),start=performance.now(),out=await s.run();assert.equal(out.terminationReason,'time-limit');assert.equal(out.gpuCoordinator.stopCause,'time-limit');assert.equal(out.tested,0);assert.equal(h.calls.commit.length,0);assert.ok(performance.now()-start<500);assert.ok(h.calls.progress.some(p=>p.terminationReason==='time-limit'),'budget report before slow work drains');config.wait=null;assert.equal(s.resume(),false);assert.equal(s.resume({restartPhysicalJobs:true}),true);assert.equal((await s.run()).tested,20);await s.dispose();
+});

@@ -1,0 +1,2406 @@
+{
+  "schema": "source-only-retired-contact-color-checkpoints-v1",
+  "scope": "Read-only original native before/after projections; isolated bookkeeping component inputs, never whole-world recurrence input or public active-contact admission.",
+  "sourceRevision": "b716d375efc0201003f0cd9ef7168eee0b62c177",
+  "artifactSha256": "12ee0b8d4090805465cb8752decb1a3758cc591569cff17b64aee8ab2d91baf4",
+  "initialSnapshotSha256": "bade93c4b1021ffc1531057cbbf35e18fa368e586ec2654a01093e304a52ccfb",
+  "before": {
+    "boundary": "expected-only-h463-postApplication",
+    "candidateInput": false,
+    "snapshotSha256": "7b753ceb46398ad111c74f641895a5c53e4a1cace4f02e4b935e0982d5bfc4e7",
+    "bodies": [
+      {
+        "handle": {
+          "index": 0,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 1,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 2,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 3,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 4,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 5,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 6,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 7,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 8,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 9,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 10,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 11,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 12,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 13,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 14,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 15,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 16,
+          "generation": 0
+        },
+        "type": "Dynamic"
+      },
+      {
+        "handle": {
+          "index": 17,
+          "generation": 0
+        },
+        "type": "Dynamic"
+      },
+      {
+        "handle": {
+          "index": 18,
+          "generation": 0
+        },
+        "type": "Dynamic"
+      },
+      {
+        "handle": {
+          "index": 19,
+          "generation": 0
+        },
+        "type": "Dynamic"
+      },
+      {
+        "handle": {
+          "index": 20,
+          "generation": 0
+        },
+        "type": "Dynamic"
+      },
+      {
+        "handle": {
+          "index": 21,
+          "generation": 0
+        },
+        "type": "Dynamic"
+      },
+      {
+        "handle": {
+          "index": 22,
+          "generation": 0
+        },
+        "type": "Fixed"
+      }
+    ],
+    "liveColliders": [
+      {
+        "index": 0,
+        "generation": 0
+      },
+      {
+        "index": 1,
+        "generation": 0
+      },
+      {
+        "index": 2,
+        "generation": 0
+      },
+      {
+        "index": 3,
+        "generation": 0
+      },
+      {
+        "index": 4,
+        "generation": 0
+      },
+      {
+        "index": 5,
+        "generation": 0
+      },
+      {
+        "index": 6,
+        "generation": 0
+      },
+      {
+        "index": 7,
+        "generation": 0
+      },
+      {
+        "index": 8,
+        "generation": 0
+      },
+      {
+        "index": 9,
+        "generation": 0
+      },
+      {
+        "index": 10,
+        "generation": 0
+      },
+      {
+        "index": 11,
+        "generation": 0
+      },
+      {
+        "index": 12,
+        "generation": 0
+      },
+      {
+        "index": 13,
+        "generation": 0
+      },
+      {
+        "index": 14,
+        "generation": 0
+      },
+      {
+        "index": 15,
+        "generation": 0
+      },
+      {
+        "index": 16,
+        "generation": 0
+      },
+      {
+        "index": 17,
+        "generation": 0
+      },
+      {
+        "index": 18,
+        "generation": 0
+      },
+      {
+        "index": 19,
+        "generation": 0
+      },
+      {
+        "index": 20,
+        "generation": 0
+      },
+      {
+        "index": 21,
+        "generation": 0
+      },
+      {
+        "index": 22,
+        "generation": 0
+      },
+      {
+        "index": 23,
+        "generation": 0
+      },
+      {
+        "index": 24,
+        "generation": 0
+      },
+      {
+        "index": 25,
+        "generation": 0
+      },
+      {
+        "index": 26,
+        "generation": 0
+      }
+    ],
+    "edges": [
+      {
+        "collider1": {
+          "index": 0,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 16,
+          "generation": 0
+        },
+        "body1": {
+          "index": 0,
+          "generation": 0
+        },
+        "body2": {
+          "index": 16,
+          "generation": 0
+        },
+        "active": false
+      },
+      {
+        "collider1": {
+          "index": 0,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 20,
+          "generation": 0
+        },
+        "body1": {
+          "index": 0,
+          "generation": 0
+        },
+        "body2": {
+          "index": 18,
+          "generation": 0
+        },
+        "active": true
+      },
+      {
+        "collider1": {
+          "index": 0,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 18,
+          "generation": 0
+        },
+        "body1": {
+          "index": 0,
+          "generation": 0
+        },
+        "body2": {
+          "index": 17,
+          "generation": 0
+        },
+        "active": true
+      },
+      {
+        "collider1": {
+          "index": 0,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 22,
+          "generation": 0
+        },
+        "body1": {
+          "index": 0,
+          "generation": 0
+        },
+        "body2": {
+          "index": 19,
+          "generation": 0
+        },
+        "active": true
+      },
+      {
+        "collider1": {
+          "index": 6,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 24,
+          "generation": 0
+        },
+        "body1": {
+          "index": 6,
+          "generation": 0
+        },
+        "body2": {
+          "index": 20,
+          "generation": 0
+        },
+        "active": false
+      },
+      {
+        "collider1": {
+          "index": 5,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 24,
+          "generation": 0
+        },
+        "body1": {
+          "index": 5,
+          "generation": 0
+        },
+        "body2": {
+          "index": 20,
+          "generation": 0
+        },
+        "active": false
+      },
+      {
+        "collider1": {
+          "index": 16,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 26,
+          "generation": 0
+        },
+        "body1": {
+          "index": 16,
+          "generation": 0
+        },
+        "body2": {
+          "index": 21,
+          "generation": 0
+        },
+        "active": false
+      },
+      {
+        "collider1": {
+          "index": 0,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 25,
+          "generation": 0
+        },
+        "body1": {
+          "index": 0,
+          "generation": 0
+        },
+        "body2": {
+          "index": 21,
+          "generation": 0
+        },
+        "active": true
+      }
+    ],
+    "pairs": [
+      {
+        "hint": 32768,
+        "solverColor": 255,
+        "solverColorBodies": [
+          4294967295,
+          4294967295
+        ],
+        "manifolds": [
+          {
+            "activeContactCount": 0,
+            "solverFlags": 1,
+            "graphPos": 4294967295,
+            "solverColor": 127,
+            "solverBodyIds": [
+              4294967295,
+              2
+            ]
+          }
+        ]
+      },
+      {
+        "hint": 32768,
+        "solverColor": 127,
+        "solverColorBodies": [
+          18,
+          4294967295
+        ],
+        "manifolds": [
+          {
+            "activeContactCount": 1,
+            "solverFlags": 1,
+            "graphPos": 4294967295,
+            "solverColor": 127,
+            "solverBodyIds": [
+              4294967295,
+              2
+            ]
+          }
+        ]
+      },
+      {
+        "hint": 32768,
+        "solverColor": 127,
+        "solverColorBodies": [
+          17,
+          4294967295
+        ],
+        "manifolds": [
+          {
+            "activeContactCount": 1,
+            "solverFlags": 1,
+            "graphPos": 4294967295,
+            "solverColor": 127,
+            "solverBodyIds": [
+              4294967295,
+              1
+            ]
+          }
+        ]
+      },
+      {
+        "hint": 32768,
+        "solverColor": 127,
+        "solverColorBodies": [
+          19,
+          4294967295
+        ],
+        "manifolds": [
+          {
+            "activeContactCount": 1,
+            "solverFlags": 1,
+            "graphPos": 4294967295,
+            "solverColor": 127,
+            "solverBodyIds": [
+              4294967295,
+              3
+            ]
+          }
+        ]
+      },
+      {
+        "hint": 32768,
+        "solverColor": 255,
+        "solverColorBodies": [
+          4294967295,
+          4294967295
+        ],
+        "manifolds": [
+          {
+            "activeContactCount": 0,
+            "solverFlags": 1,
+            "graphPos": 4294967295,
+            "solverColor": 255,
+            "solverBodyIds": [
+              4294967295,
+              4294967295
+            ]
+          }
+        ]
+      },
+      {
+        "hint": 32768,
+        "solverColor": 255,
+        "solverColorBodies": [
+          4294967295,
+          4294967295
+        ],
+        "manifolds": [
+          {
+            "activeContactCount": 0,
+            "solverFlags": 1,
+            "graphPos": 4294967295,
+            "solverColor": 255,
+            "solverBodyIds": [
+              4294967295,
+              4294967295
+            ]
+          }
+        ]
+      },
+      {
+        "hint": 32768,
+        "solverColor": 255,
+        "solverColorBodies": [
+          4294967295,
+          4294967295
+        ],
+        "manifolds": [
+          {
+            "activeContactCount": 0,
+            "solverFlags": 1,
+            "graphPos": 4294967295,
+            "solverColor": 255,
+            "solverBodyIds": [
+              4294967295,
+              4294967295
+            ]
+          }
+        ]
+      },
+      {
+        "hint": 32769,
+        "solverColor": 127,
+        "solverColorBodies": [
+          21,
+          4294967295
+        ],
+        "manifolds": [
+          {
+            "activeContactCount": 1,
+            "solverFlags": 1,
+            "graphPos": 532676608,
+            "solverColor": 127,
+            "solverBodyIds": [
+              4294967295,
+              1
+            ]
+          }
+        ]
+      }
+    ],
+    "adjacency": [
+      {
+        "collider": {
+          "index": 0,
+          "generation": 0
+        },
+        "outgoing": [
+          7,
+          3,
+          2,
+          1,
+          0
+        ],
+        "incoming": []
+      },
+      {
+        "collider": {
+          "index": 16,
+          "generation": 0
+        },
+        "outgoing": [
+          6
+        ],
+        "incoming": [
+          0
+        ]
+      },
+      {
+        "collider": {
+          "index": 20,
+          "generation": 0
+        },
+        "outgoing": [],
+        "incoming": [
+          1
+        ]
+      },
+      {
+        "collider": {
+          "index": 18,
+          "generation": 0
+        },
+        "outgoing": [],
+        "incoming": [
+          2
+        ]
+      },
+      {
+        "collider": {
+          "index": 22,
+          "generation": 0
+        },
+        "outgoing": [],
+        "incoming": [
+          3
+        ]
+      },
+      {
+        "collider": {
+          "index": 6,
+          "generation": 0
+        },
+        "outgoing": [
+          4
+        ],
+        "incoming": []
+      },
+      {
+        "collider": {
+          "index": 24,
+          "generation": 0
+        },
+        "outgoing": [],
+        "incoming": [
+          5,
+          4
+        ]
+      },
+      {
+        "collider": {
+          "index": 5,
+          "generation": 0
+        },
+        "outgoing": [
+          5
+        ],
+        "incoming": []
+      },
+      {
+        "collider": {
+          "index": 26,
+          "generation": 0
+        },
+        "outgoing": [],
+        "incoming": [
+          6
+        ]
+      },
+      {
+        "collider": {
+          "index": 25,
+          "generation": 0
+        },
+        "outgoing": [],
+        "incoming": [
+          7
+        ]
+      }
+    ],
+    "bodySolverColorMasks": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "170141183460469231731687303715884105728",
+      "170141183460469231731687303715884105728",
+      "170141183460469231731687303715884105728",
+      "0",
+      "170141183460469231731687303715884105728"
+    ],
+    "buckets": [
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [
+        {
+          "edge": 7,
+          "manifold": 0
+        }
+      ],
+      [],
+      []
+    ],
+    "solverGraphValid": true,
+    "solverGraphEpoch": 2966,
+    "solverGraphMultibodyEpoch": 0,
+    "activeSetEpoch": 2966,
+    "multibodyTopologyEpoch": 0,
+    "awakeBodies": [
+      {
+        "body": {
+          "index": 20,
+          "generation": 0
+        },
+        "activeSetId": 0
+      },
+      {
+        "body": {
+          "index": 21,
+          "generation": 0
+        },
+        "activeSetId": 1
+      },
+      {
+        "body": {
+          "index": 16,
+          "generation": 0
+        },
+        "activeSetId": 2
+      }
+    ],
+    "removedColliders": []
+  },
+  "preWorld": {
+    "boundary": "expected-only-h464-preWorld",
+    "candidateInput": false,
+    "snapshotSha256": "9cf637b3dca6a14cb76a850bdec5de120bbb84fac3341bf0a008997ae24e9140",
+    "bodies": [
+      {
+        "handle": {
+          "index": 0,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 1,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 2,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 3,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 4,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 5,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 6,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 7,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 8,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 9,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 10,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 11,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 12,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 13,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 14,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 15,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 16,
+          "generation": 0
+        },
+        "type": "Dynamic"
+      },
+      {
+        "handle": {
+          "index": 17,
+          "generation": 0
+        },
+        "type": "Dynamic"
+      },
+      {
+        "handle": {
+          "index": 18,
+          "generation": 0
+        },
+        "type": "Dynamic"
+      },
+      {
+        "handle": {
+          "index": 19,
+          "generation": 0
+        },
+        "type": "Dynamic"
+      }
+    ],
+    "liveColliders": [
+      {
+        "index": 0,
+        "generation": 0
+      },
+      {
+        "index": 1,
+        "generation": 0
+      },
+      {
+        "index": 2,
+        "generation": 0
+      },
+      {
+        "index": 3,
+        "generation": 0
+      },
+      {
+        "index": 4,
+        "generation": 0
+      },
+      {
+        "index": 5,
+        "generation": 0
+      },
+      {
+        "index": 6,
+        "generation": 0
+      },
+      {
+        "index": 7,
+        "generation": 0
+      },
+      {
+        "index": 8,
+        "generation": 0
+      },
+      {
+        "index": 9,
+        "generation": 0
+      },
+      {
+        "index": 10,
+        "generation": 0
+      },
+      {
+        "index": 11,
+        "generation": 0
+      },
+      {
+        "index": 12,
+        "generation": 0
+      },
+      {
+        "index": 13,
+        "generation": 0
+      },
+      {
+        "index": 14,
+        "generation": 0
+      },
+      {
+        "index": 15,
+        "generation": 0
+      },
+      {
+        "index": 16,
+        "generation": 0
+      },
+      {
+        "index": 17,
+        "generation": 0
+      },
+      {
+        "index": 18,
+        "generation": 0
+      },
+      {
+        "index": 19,
+        "generation": 0
+      },
+      {
+        "index": 20,
+        "generation": 0
+      },
+      {
+        "index": 21,
+        "generation": 0
+      },
+      {
+        "index": 22,
+        "generation": 0
+      },
+      {
+        "index": 23,
+        "generation": 0
+      }
+    ],
+    "edges": [
+      {
+        "collider1": {
+          "index": 0,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 16,
+          "generation": 0
+        },
+        "body1": {
+          "index": 0,
+          "generation": 0
+        },
+        "body2": {
+          "index": 16,
+          "generation": 0
+        },
+        "active": false
+      },
+      {
+        "collider1": {
+          "index": 0,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 20,
+          "generation": 0
+        },
+        "body1": {
+          "index": 0,
+          "generation": 0
+        },
+        "body2": {
+          "index": 18,
+          "generation": 0
+        },
+        "active": true
+      },
+      {
+        "collider1": {
+          "index": 0,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 18,
+          "generation": 0
+        },
+        "body1": {
+          "index": 0,
+          "generation": 0
+        },
+        "body2": {
+          "index": 17,
+          "generation": 0
+        },
+        "active": true
+      },
+      {
+        "collider1": {
+          "index": 0,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 22,
+          "generation": 0
+        },
+        "body1": {
+          "index": 0,
+          "generation": 0
+        },
+        "body2": {
+          "index": 19,
+          "generation": 0
+        },
+        "active": true
+      },
+      {
+        "collider1": {
+          "index": 6,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 24,
+          "generation": 0
+        },
+        "body1": {
+          "index": 6,
+          "generation": 0
+        },
+        "body2": {
+          "index": 20,
+          "generation": 0
+        },
+        "active": false
+      },
+      {
+        "collider1": {
+          "index": 5,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 24,
+          "generation": 0
+        },
+        "body1": {
+          "index": 5,
+          "generation": 0
+        },
+        "body2": {
+          "index": 20,
+          "generation": 0
+        },
+        "active": false
+      },
+      {
+        "collider1": {
+          "index": 16,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 26,
+          "generation": 0
+        },
+        "body1": {
+          "index": 16,
+          "generation": 0
+        },
+        "body2": {
+          "index": 21,
+          "generation": 0
+        },
+        "active": false
+      },
+      {
+        "collider1": {
+          "index": 0,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 25,
+          "generation": 0
+        },
+        "body1": {
+          "index": 0,
+          "generation": 0
+        },
+        "body2": {
+          "index": 21,
+          "generation": 0
+        },
+        "active": true
+      }
+    ],
+    "pairs": [
+      {
+        "hint": 32768,
+        "solverColor": 255,
+        "solverColorBodies": [
+          4294967295,
+          4294967295
+        ],
+        "manifolds": [
+          {
+            "activeContactCount": 0,
+            "solverFlags": 1,
+            "graphPos": 4294967295,
+            "solverColor": 127,
+            "solverBodyIds": [
+              4294967295,
+              2
+            ]
+          }
+        ]
+      },
+      {
+        "hint": 32768,
+        "solverColor": 127,
+        "solverColorBodies": [
+          18,
+          4294967295
+        ],
+        "manifolds": [
+          {
+            "activeContactCount": 1,
+            "solverFlags": 1,
+            "graphPos": 4294967295,
+            "solverColor": 127,
+            "solverBodyIds": [
+              4294967295,
+              2
+            ]
+          }
+        ]
+      },
+      {
+        "hint": 32768,
+        "solverColor": 127,
+        "solverColorBodies": [
+          17,
+          4294967295
+        ],
+        "manifolds": [
+          {
+            "activeContactCount": 1,
+            "solverFlags": 1,
+            "graphPos": 4294967295,
+            "solverColor": 127,
+            "solverBodyIds": [
+              4294967295,
+              1
+            ]
+          }
+        ]
+      },
+      {
+        "hint": 32768,
+        "solverColor": 127,
+        "solverColorBodies": [
+          19,
+          4294967295
+        ],
+        "manifolds": [
+          {
+            "activeContactCount": 1,
+            "solverFlags": 1,
+            "graphPos": 4294967295,
+            "solverColor": 127,
+            "solverBodyIds": [
+              4294967295,
+              3
+            ]
+          }
+        ]
+      },
+      {
+        "hint": 32768,
+        "solverColor": 255,
+        "solverColorBodies": [
+          4294967295,
+          4294967295
+        ],
+        "manifolds": [
+          {
+            "activeContactCount": 0,
+            "solverFlags": 1,
+            "graphPos": 4294967295,
+            "solverColor": 255,
+            "solverBodyIds": [
+              4294967295,
+              4294967295
+            ]
+          }
+        ]
+      },
+      {
+        "hint": 32768,
+        "solverColor": 255,
+        "solverColorBodies": [
+          4294967295,
+          4294967295
+        ],
+        "manifolds": [
+          {
+            "activeContactCount": 0,
+            "solverFlags": 1,
+            "graphPos": 4294967295,
+            "solverColor": 255,
+            "solverBodyIds": [
+              4294967295,
+              4294967295
+            ]
+          }
+        ]
+      },
+      {
+        "hint": 32768,
+        "solverColor": 255,
+        "solverColorBodies": [
+          4294967295,
+          4294967295
+        ],
+        "manifolds": [
+          {
+            "activeContactCount": 0,
+            "solverFlags": 1,
+            "graphPos": 4294967295,
+            "solverColor": 255,
+            "solverBodyIds": [
+              4294967295,
+              4294967295
+            ]
+          }
+        ]
+      },
+      {
+        "hint": 32769,
+        "solverColor": 127,
+        "solverColorBodies": [
+          21,
+          4294967295
+        ],
+        "manifolds": [
+          {
+            "activeContactCount": 1,
+            "solverFlags": 1,
+            "graphPos": 532676608,
+            "solverColor": 127,
+            "solverBodyIds": [
+              4294967295,
+              1
+            ]
+          }
+        ]
+      }
+    ],
+    "adjacency": [
+      {
+        "collider": {
+          "index": 0,
+          "generation": 0
+        },
+        "outgoing": [
+          7,
+          3,
+          2,
+          1,
+          0
+        ],
+        "incoming": []
+      },
+      {
+        "collider": {
+          "index": 16,
+          "generation": 0
+        },
+        "outgoing": [
+          6
+        ],
+        "incoming": [
+          0
+        ]
+      },
+      {
+        "collider": {
+          "index": 20,
+          "generation": 0
+        },
+        "outgoing": [],
+        "incoming": [
+          1
+        ]
+      },
+      {
+        "collider": {
+          "index": 18,
+          "generation": 0
+        },
+        "outgoing": [],
+        "incoming": [
+          2
+        ]
+      },
+      {
+        "collider": {
+          "index": 22,
+          "generation": 0
+        },
+        "outgoing": [],
+        "incoming": [
+          3
+        ]
+      },
+      {
+        "collider": {
+          "index": 6,
+          "generation": 0
+        },
+        "outgoing": [
+          4
+        ],
+        "incoming": []
+      },
+      {
+        "collider": {
+          "index": 24,
+          "generation": 0
+        },
+        "outgoing": [],
+        "incoming": [
+          5,
+          4
+        ]
+      },
+      {
+        "collider": {
+          "index": 5,
+          "generation": 0
+        },
+        "outgoing": [
+          5
+        ],
+        "incoming": []
+      },
+      {
+        "collider": {
+          "index": 26,
+          "generation": 0
+        },
+        "outgoing": [],
+        "incoming": [
+          6
+        ]
+      },
+      {
+        "collider": {
+          "index": 25,
+          "generation": 0
+        },
+        "outgoing": [],
+        "incoming": [
+          7
+        ]
+      }
+    ],
+    "bodySolverColorMasks": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "170141183460469231731687303715884105728",
+      "170141183460469231731687303715884105728",
+      "170141183460469231731687303715884105728",
+      "0",
+      "170141183460469231731687303715884105728"
+    ],
+    "buckets": [
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [
+        {
+          "edge": 7,
+          "manifold": 0
+        }
+      ],
+      [],
+      []
+    ],
+    "solverGraphValid": true,
+    "solverGraphEpoch": 2966,
+    "solverGraphMultibodyEpoch": 0,
+    "activeSetEpoch": 2969,
+    "multibodyTopologyEpoch": 0,
+    "awakeBodies": [
+      {
+        "body": {
+          "index": 16,
+          "generation": 0
+        },
+        "activeSetId": 0
+      }
+    ],
+    "removedColliders": [
+      {
+        "index": 25,
+        "generation": 0
+      },
+      {
+        "index": 26,
+        "generation": 0
+      },
+      {
+        "index": 24,
+        "generation": 0
+      }
+    ]
+  },
+  "after": {
+    "boundary": "expected-only-h464-postWorld",
+    "candidateInput": false,
+    "snapshotSha256": "b5a99177445107e94c39f0ce003cfe79451285f646509e43c4c822aa14112b67",
+    "bodies": [
+      {
+        "handle": {
+          "index": 0,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 1,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 2,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 3,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 4,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 5,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 6,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 7,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 8,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 9,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 10,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 11,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 12,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 13,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 14,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 15,
+          "generation": 0
+        },
+        "type": "Fixed"
+      },
+      {
+        "handle": {
+          "index": 16,
+          "generation": 0
+        },
+        "type": "Dynamic"
+      },
+      {
+        "handle": {
+          "index": 17,
+          "generation": 0
+        },
+        "type": "Dynamic"
+      },
+      {
+        "handle": {
+          "index": 18,
+          "generation": 0
+        },
+        "type": "Dynamic"
+      },
+      {
+        "handle": {
+          "index": 19,
+          "generation": 0
+        },
+        "type": "Dynamic"
+      }
+    ],
+    "liveColliders": [
+      {
+        "index": 0,
+        "generation": 0
+      },
+      {
+        "index": 1,
+        "generation": 0
+      },
+      {
+        "index": 2,
+        "generation": 0
+      },
+      {
+        "index": 3,
+        "generation": 0
+      },
+      {
+        "index": 4,
+        "generation": 0
+      },
+      {
+        "index": 5,
+        "generation": 0
+      },
+      {
+        "index": 6,
+        "generation": 0
+      },
+      {
+        "index": 7,
+        "generation": 0
+      },
+      {
+        "index": 8,
+        "generation": 0
+      },
+      {
+        "index": 9,
+        "generation": 0
+      },
+      {
+        "index": 10,
+        "generation": 0
+      },
+      {
+        "index": 11,
+        "generation": 0
+      },
+      {
+        "index": 12,
+        "generation": 0
+      },
+      {
+        "index": 13,
+        "generation": 0
+      },
+      {
+        "index": 14,
+        "generation": 0
+      },
+      {
+        "index": 15,
+        "generation": 0
+      },
+      {
+        "index": 16,
+        "generation": 0
+      },
+      {
+        "index": 17,
+        "generation": 0
+      },
+      {
+        "index": 18,
+        "generation": 0
+      },
+      {
+        "index": 19,
+        "generation": 0
+      },
+      {
+        "index": 20,
+        "generation": 0
+      },
+      {
+        "index": 21,
+        "generation": 0
+      },
+      {
+        "index": 22,
+        "generation": 0
+      },
+      {
+        "index": 23,
+        "generation": 0
+      }
+    ],
+    "edges": [
+      {
+        "collider1": {
+          "index": 0,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 16,
+          "generation": 0
+        },
+        "body1": {
+          "index": 0,
+          "generation": 0
+        },
+        "body2": {
+          "index": 16,
+          "generation": 0
+        },
+        "active": false
+      },
+      {
+        "collider1": {
+          "index": 0,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 20,
+          "generation": 0
+        },
+        "body1": {
+          "index": 0,
+          "generation": 0
+        },
+        "body2": {
+          "index": 18,
+          "generation": 0
+        },
+        "active": true
+      },
+      {
+        "collider1": {
+          "index": 0,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 18,
+          "generation": 0
+        },
+        "body1": {
+          "index": 0,
+          "generation": 0
+        },
+        "body2": {
+          "index": 17,
+          "generation": 0
+        },
+        "active": true
+      },
+      {
+        "collider1": {
+          "index": 0,
+          "generation": 0
+        },
+        "collider2": {
+          "index": 22,
+          "generation": 0
+        },
+        "body1": {
+          "index": 0,
+          "generation": 0
+        },
+        "body2": {
+          "index": 19,
+          "generation": 0
+        },
+        "active": true
+      }
+    ],
+    "pairs": [
+      {
+        "hint": 32768,
+        "solverColor": 255,
+        "solverColorBodies": [
+          4294967295,
+          4294967295
+        ],
+        "manifolds": [
+          {
+            "activeContactCount": 0,
+            "solverFlags": 1,
+            "graphPos": 4294967295,
+            "solverColor": 127,
+            "solverBodyIds": [
+              4294967295,
+              2
+            ]
+          }
+        ]
+      },
+      {
+        "hint": 32768,
+        "solverColor": 127,
+        "solverColorBodies": [
+          18,
+          4294967295
+        ],
+        "manifolds": [
+          {
+            "activeContactCount": 1,
+            "solverFlags": 1,
+            "graphPos": 4294967295,
+            "solverColor": 127,
+            "solverBodyIds": [
+              4294967295,
+              2
+            ]
+          }
+        ]
+      },
+      {
+        "hint": 32768,
+        "solverColor": 127,
+        "solverColorBodies": [
+          17,
+          4294967295
+        ],
+        "manifolds": [
+          {
+            "activeContactCount": 1,
+            "solverFlags": 1,
+            "graphPos": 4294967295,
+            "solverColor": 127,
+            "solverBodyIds": [
+              4294967295,
+              1
+            ]
+          }
+        ]
+      },
+      {
+        "hint": 32768,
+        "solverColor": 127,
+        "solverColorBodies": [
+          19,
+          4294967295
+        ],
+        "manifolds": [
+          {
+            "activeContactCount": 1,
+            "solverFlags": 1,
+            "graphPos": 4294967295,
+            "solverColor": 127,
+            "solverBodyIds": [
+              4294967295,
+              3
+            ]
+          }
+        ]
+      }
+    ],
+    "adjacency": [
+      {
+        "collider": {
+          "index": 0,
+          "generation": 0
+        },
+        "outgoing": [
+          3,
+          2,
+          1,
+          0
+        ],
+        "incoming": []
+      },
+      {
+        "collider": {
+          "index": 16,
+          "generation": 0
+        },
+        "outgoing": [],
+        "incoming": [
+          0
+        ]
+      },
+      {
+        "collider": {
+          "index": 20,
+          "generation": 0
+        },
+        "outgoing": [],
+        "incoming": [
+          1
+        ]
+      },
+      {
+        "collider": {
+          "index": 18,
+          "generation": 0
+        },
+        "outgoing": [],
+        "incoming": [
+          2
+        ]
+      },
+      {
+        "collider": {
+          "index": 22,
+          "generation": 0
+        },
+        "outgoing": [],
+        "incoming": [
+          3
+        ]
+      },
+      {
+        "collider": {
+          "index": 6,
+          "generation": 0
+        },
+        "outgoing": [],
+        "incoming": []
+      },
+      {
+        "collider": {
+          "index": 5,
+          "generation": 0
+        },
+        "outgoing": [],
+        "incoming": []
+      }
+    ],
+    "bodySolverColorMasks": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "170141183460469231731687303715884105728",
+      "170141183460469231731687303715884105728",
+      "170141183460469231731687303715884105728",
+      "0",
+      "170141183460469231731687303715884105728"
+    ],
+    "buckets": [
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      []
+    ],
+    "solverGraphValid": true,
+    "solverGraphEpoch": 2970,
+    "solverGraphMultibodyEpoch": 0,
+    "activeSetEpoch": 2970,
+    "multibodyTopologyEpoch": 0,
+    "awakeBodies": [
+      {
+        "body": {
+          "index": 16,
+          "generation": 0
+        },
+        "activeSetId": 0
+      }
+    ],
+    "removedColliders": []
+  }
+}
