@@ -142,3 +142,40 @@ test('continuation intrinsics are explicitly isolated from earlier f64/numeric p
   const v=machine(program,{intrinsics:'source-continuations-v1',intrinsicHandler:(spec,words)=>{assert.equal(spec.opcode,opcode);assert.equal(words.length,args.length);return Uint32Array.of(0);}});v.begin();v.advance();assert.equal(v.state[C.status],S.complete);assert.equal(v.local(0,3),0,'source pending status is not VM transport failure');
  }
 });
+
+test('explicit immutable-program intrinsic allowlist removes unneeded native call sites and fails closed',()=>{
+ const options={localWords:16,instructionCount:1,intrinsics:'source-continuations-v1',intrinsicFunctions:['rc_num_cont_instruction','rc_source_program_instruction']},shader=generateMicrocodeVmWGSL(options);assert.match(shader,/intrinsicResult=rc_num_cont_instruction\(/);assert.match(shader,/intrinsicResult=rc_source_program_instruction\(/);assert.doesNotMatch(shader,/intrinsicResult=rc_f64_add\(|intrinsicResult=rc_num_eval\(/);
+ const v=machine(code(ins('F64_ADD',0,2,4)),{...options,instructionCount:1,intrinsicHandler:()=>{throw Error('unlisted must not run');}});v.begin();v.advance();assert.equal(v.state[C.status],S.unsupported);assert.equal(v.state[C.error],E.unsupportedPrimitive);
+ const noFunctions=generateMicrocodeVmWGSL({...options,intrinsicFunctions:[]});assert.doesNotMatch(noFunctions,/intrinsicResult=/);assert.throws(()=>generateMicrocodeVmWGSL({...options,intrinsicFunctions:['rc_num_cont_instruction','rc_num_cont_instruction']}),/Unique/);assert.throws(()=>generateMicrocodeVmWGSL({...options,intrinsics:'source-f64-v1'}),/out-of-profile/);assert.throws(()=>generateMicrocodeVmWGSL({...options,intrinsicFunctions:['fake']}),/Unknown/);
+});
+
+
+test('TEST-only call observer counts validated source entries across lanes and retained chunks without state authority',()=>{
+ const program=code(ins('CALL',0,3),ins('CALL',0,3),ins('HALT'),ins('CALL',0,5),ins('RET'),ins('RET')),calls=[],observed=machine(program,{count:2,onCall:row=>{assert.ok(Object.isFrozen(row));assert.deepEqual(Object.keys(row),['lane','pc','targetPc']);calls.push(row);}}),plain=machine(program,{count:2});
+ for(const lane of[0,1]){observed.begin(lane);plain.begin(lane);for(let chunk=0;chunk<16;chunk++){assert.equal(observed.advance(lane,1),plain.advance(lane,1));assert.deepEqual(observed.state,plain.state);}}
+ assert.deepEqual(calls,[0,1].flatMap(lane=>[{lane,pc:0,targetPc:3},{lane,pc:3,targetPc:5},{lane,pc:1,targetPc:3},{lane,pc:3,targetPc:5}]));
+ for(const invalid of[code(ins('CALL',0,99)),code(ins('CALL',0,0))]){let count=0;const v=machine(invalid,{stackCapacity:1,onCall:()=>count++});v.begin();v.advance();assert.equal(count,invalid[2]===99?0:1,'invalid branch or exhausted stack is not an entered call');}
+ const pending=machine(program,{onCall:row=>calls.push(row)});pending.begin();pending.advance(0,1);const resumeCalls=[],resumed=machine(program,{state:pending.state.slice(),onCall:row=>resumeCalls.push(row)});while(resumed.advance(0,1)===S.ready){}assert.deepEqual(resumeCalls,[{lane:0,pc:3,targetPc:5},{lane:0,pc:1,targetPc:3},{lane:0,pc:3,targetPc:5}]);
+ assert.throws(()=>machine(program,{onCall:{}}),/observer/);assert.throws(()=>create({code:program,localWords:16,onCall:()=>{}}),/TEST ONLY/);
+});
+
+
+test('TEST-only return observer exposes exact validated source return boundaries without mutable storage',()=>{
+ const program=code(ins('CALL',0,3),ins('CALL',0,3),ins('RET'),ins('CALL',0,5),ins('RET'),ins('RET')),returns=[],observed=machine(program,{onReturn:row=>{assert.ok(Object.isFrozen(row));assert.deepEqual(Object.keys(row),['lane','pc','targetPc']);returns.push(row);}}),plain=machine(program);observed.begin();plain.begin();while(observed.state[C.status]===S.ready){assert.equal(observed.advance(0,1),plain.advance(0,1));assert.deepEqual(observed.state,plain.state);}
+ assert.deepEqual(returns,[{lane:0,pc:5,targetPc:4},{lane:0,pc:4,targetPc:1},{lane:0,pc:5,targetPc:4},{lane:0,pc:4,targetPc:2},{lane:0,pc:2,targetPc:null}]);
+ let calls=0;const bad=machine(code(ins('RET')),{onReturn:()=>calls++});bad.begin();bad.state[C.sp]=1;bad.state[bad.layout.stackOffset]=99;assert.equal(bad.advance(),S.invalid);assert.equal(calls,0);assert.throws(()=>machine(program,{onReturn:0}),/observer/);
+});
+
+
+test('TEST-only PC counters count committed scalar steps across candidate lanes without changing execution',()=>{
+ const program=code(ins('SET',0,7),ins('CALL',0,4),ins('MOV',1,0),ins('HALT'),ins('UADD',0,0,0),ins('RET')),pcCounters=new Uint32Array(6),a=machine(program,{count:2,pcCounters}),b=machine(program,{count:2});assert.equal(a.pcCounters,pcCounters);
+ for(const lane of[0,1]){a.begin(lane);b.begin(lane);while(a.state[lane*a.layout.stride+C.status]===S.ready){a.advance(lane,1);b.advance(lane,1);assert.deepEqual(a.state,b.state);}assert.equal(pcCounters.reduce((n,x)=>n+x,0),[0,1].reduce((n,l)=>n+a.state[l*a.layout.stride+C.stepsLow],0));}
+ assert.deepEqual([...pcCounters],[2,2,2,2,2,2]);a.begin(0);assert.deepEqual([...pcCounters],[2,2,2,2,2,2],'begin does not erase diagnostic totals');
+ const rejected=machine(code(ins('SET',0,0),ins('GUARD',0,0)),{pcCounters:new Uint32Array(2)});rejected.begin();assert.equal(rejected.advance(),S.unsupported);assert.deepEqual([...rejected.pcCounters],[1,0]);
+});
+
+test('TEST-only PC counters reject aliased or malformed storage and fail rather than wrapping',()=>{
+ const program=code(ins('HALT'));assert.throws(()=>machine(program,{pcCounters:new Uint32Array(2)}),/instructionCount/);assert.throws(()=>machine(program,{pcCounters:new Uint32Array(program.buffer,0,1)}),/alias/);
+ const state=new Uint32Array(40);assert.throws(()=>machine(program,{state,pcCounters:new Uint32Array(state.buffer,0,1)}),/alias/);const source=new Uint32Array(8),bindings=[source,...Array.from({length:4},()=>new Uint32Array(1))];assert.throws(()=>machine(program,{bindings,pcCounters:new Uint32Array(source.buffer,4,1)}),/alias/);
+ const counters=Uint32Array.of(0xffffffff),v=machine(program,{pcCounters:counters});v.begin();assert.throws(()=>v.advance(),/counter overflow/);assert.equal(counters[0],0xffffffff);assert.equal(v.state[C.stepsLow],0);
+});

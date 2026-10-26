@@ -1,0 +1,13 @@
+{
+  "baselineOptions": {
+    "localWords": 32,
+    "instructionCount": 64
+  },
+  "baselineProfiles": {
+    "none": "1020a87ac7beb32658cb37b19e7e72bbe417be6ffb1d5f285ed06edaf00b92f9",
+    "source-f64-v1": "10dda29311ae629b1af93c97fcde6e0a6727b7a304ce715e9bd3206f75c115f5",
+    "source-numeric-v1": "42492524d2b657d800b0d1150d0b8d1761bdceaef640f876cf239cb078e76851",
+    "source-continuations-v1": "3ddcaaa966ac69f30a1b2512a00f63ef361c194e4744e2c0f798d0c8259bcbc6"
+  },
+  "baselineHostReferenceSha256": "f8b3c9ba3f255a549563f255765f7fabfed710c7c3cf21195a69a96c5df4e54b"
+}

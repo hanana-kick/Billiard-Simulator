@@ -29,3 +29,16 @@ test('numeric intrinsic lowering preserves every dirty scratch word, eager error
 test('actual dynamic owner source can select exact intrinsics without changing source identity or admission',t=>{
  const path='/tmp/resident-microcode-dynamic-world.wgsl';if(!existsSync(path))return t.skip('Coordinator source artifact unavailable');const source=readFileSync(path,'utf8'),baseline=compileMicrocodeWGSL(source,{entry:'rc_micro_world_run'});for(const intrinsics of['source-f64-v1','source-numeric-v1']){const p=compileMicrocodeWGSL(source,{entry:'rc_micro_world_run',intrinsics});assert.equal(p.sourceSha256,baseline.sourceSha256);assert.ok(p.instructions.length<baseline.instructions.length);assert.equal(p.capability.nativeQualified,false);t.diagnostic(JSON.stringify({intrinsics,instructions:p.instructions.length/8,localWords:p.localWords,functions:p.functions.length,sourceCompileOnly:true}));}
 });
+
+test('explicit intrinsicFunctions keeps excluded helpers scalar and listed roots source-bound',()=>{
+ const scalar=compileMicrocodeWGSL(f64,{entry:'rc_f64_sub'}),empty=compileMicrocodeWGSL(f64,{entry:'rc_f64_sub',intrinsics:'source-f64-v1',intrinsicFunctions:[]}),selected=compileMicrocodeWGSL(f64,{entry:'rc_f64_sub',intrinsics:'source-f64-v1',intrinsicFunctions:['rc_f64_add']});
+ assert.deepEqual(empty.instructions,scalar.instructions);assert.deepEqual(empty.intrinsicFunctions,[]);assert.equal(selected.functions.find(x=>x.name==='rc_f64_sub').intrinsic,undefined);assert.equal(selected.functions.find(x=>x.name==='rc_f64_add').intrinsic,'F64_ADD');assert.deepEqual(selected.intrinsicApproval.entries.map(x=>x.name),['rc_f64_add']);
+ for(const row of[[Math.PI,Math.E],[Number.MIN_VALUE,Number.MIN_VALUE],[-0,0],[Infinity,Infinity]]){const args=row.map(numberWords);assert.deepEqual(run(selected,args).out,run(scalar,args).out);}
+ const all=compileMicrocodeWGSL(f64,{entry:'rc_f64_sub',intrinsics:'source-f64-v1'}),explicit=compileMicrocodeWGSL(f64,{entry:'rc_f64_sub',intrinsics:'source-f64-v1',intrinsicFunctions:all.intrinsicApproval.entries.map(x=>x.name)});assert.deepEqual(all.instructions,explicit.instructions);
+ assert.throws(()=>compileMicrocodeWGSL(f64.replace('let s=a[i]+b[i];','let s=a[i]-b[i];'),{entry:'rc_f64_sub',intrinsics:'source-f64-v1',intrinsicFunctions:['rc_f64_add']}),/mismatch/);
+});
+test('explicit intrinsicFunctions rejects invalid, duplicate, absent and out-of-profile names',()=>{
+ for(const intrinsicFunctions of['rc_f64_add',[null],['typo'],['rc_f64_add','rc_f64_add'],['rc_num_eval']])assert.throws(()=>compileMicrocodeWGSL(f64,{entry:'rc_f64_sub',intrinsics:'source-f64-v1',intrinsicFunctions}),/intrinsic|Intrinsic/);
+ assert.throws(()=>compileMicrocodeWGSL('fn main(){}',{intrinsics:'source-f64-v1',intrinsicFunctions:['rc_f64_add']}),/absent/);
+ assert.throws(()=>compileMicrocodeWGSL(f64,{entry:'rc_f64_sub',intrinsics:'none',intrinsicFunctions:['rc_f64_add']}),/profile/);
+});

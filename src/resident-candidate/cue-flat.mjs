@@ -77,7 +77,15 @@ export function executeCueFlatForTest(bundle,initial,{testOnly=false,cueBase=0,b
  if(!Number.isSafeInteger(dispatches)||dispatches<1||!Number.isInteger(instructionBudget)||instructionBudget<1||instructionBudget>1000000)throw new RangeError('Fixed positive cue instruction schedule required');
  const rc_state=retained?.state??initial.slice(),rc_program=bundle.program,rc_scratch=retained?.scratch??new Uint32Array(scratchBase+bundle.scratchWords),continuations=retained?.continuations??new Map();
  const source=createSourceNumberContinuationForTest(rc_program,rc_state,{testOnly:true});
- const beginNumeric=(pb,sb,control)=>{let item;try{item=beginNumericContinuationForTest(rc_program,new Float32Array(rc_scratch.buffer,sb*4,rc_program[pb+3]),{testOnly:true,programBase:pb});}catch(e){return e.numericStatus??2;}if(item.status!==0)return item.status;continuations.set(control,item);rc_state.set([0x52434e43,pb,sb,0,item.initialized,0,0,0],control);return 0;};
+ const beginNumeric=(pb,sb,control)=>{
+  if(control>rc_state.length||rc_state.length-control<8)return 2;rc_state.fill(0,control,control+8);
+  let item;try{item=beginNumericContinuationForTest(rc_program,new Float32Array(rc_scratch.buffer,sb*4,rc_program[pb+3]),{testOnly:true,programBase:pb});}catch(e){return e.numericStatus??2;}
+  if(sb>rc_scratch.length||rc_scratch.length-sb<item.words.length)return 2;
+  // Original rc_num_cont_begin changes only the status slot, not unassigned
+  // registers. Keep dirty words so a partial node budget does not invent zeros.
+  const status=item.status;item.words.set(rc_scratch.subarray(sb,sb+item.words.length));item.words[item.registers]=status;rc_scratch.set(item.words,sb);
+  if(status!==0)return status;continuations.set(control,item);rc_state.set([0x52434e43,pb,sb,0,item.initialized,0,0,0],control);return 0;
+ };
  const instruction=control=>{const item=continuations.get(control);if(!item)return 2;const status=advanceNumericContinuationForTest(item,{testOnly:true});rc_scratch.set(item.words,rc_state[control+2]);rc_state[control+3]=item.instruction;rc_state[control+4]=item.initialized;rc_state[control+5]=status;return status;};
  let code=(stages()+DRIVER).replace(/fn (\w+)\(([^)]*)\)(?:->(?:u32|bool))?\s*\{/g,(_,name,args)=>`function ${name}(${args.replace(/:(?:u32|bool)/g,'')}){`)
   .replace(/:(?:u32|bool)(?=\s*=)/g,'').replace(/\b(0x[0-9a-f]+|\d+)u\b/g,'$1').replace(/\bvar\b/g,'let').replace(/\bloop\s*\{/g,'while(true){')

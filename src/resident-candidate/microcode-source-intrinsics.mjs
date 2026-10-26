@@ -27,8 +27,18 @@ export const MICROCODE_INTRINSIC_PROFILES=Object.freeze(['none','source-f64-v1',
 const hash=value=>createHash('sha256').update(typeof value==='string'?value:JSON.stringify(value)).digest('hex');
 const walk=(x,visit)=>{if(!x||typeof x!=='object')return;visit(x);for(const v of Object.values(x))if(Array.isArray(v))v.forEach(y=>walk(y,visit));else walk(v,visit);};
 const index=rows=>new Map(rows.map(x=>[x.name,x]));
-export function sourceIntrinsicNativeWGSL(profile){
+export function sourceIntrinsicNativeWGSL(profile,{functionNames}={}){
  if(!MICROCODE_INTRINSIC_PROFILES.includes(profile))throw new RangeError('Explicit exact-source intrinsic profile required');
+ if(functionNames!==undefined){
+  if(!Array.isArray(functionNames)||new Set(functionNames).size!==functionNames.length)throw new TypeError('Explicit unique intrinsic function names required');
+  const admitted=MICROCODE_SOURCE_INTRINSICS.filter(x=>profile==='source-continuations-v1'||profile==='source-numeric-v1'&&['f64','numeric'].includes(x.family)||profile==='source-f64-v1'&&x.family==='f64');
+  const selected=functionNames.map(name=>{const spec=admitted.find(x=>x.name===name);if(!spec)throw new TypeError('Intrinsic function is outside explicit profile: '+name);return spec;});
+  if(!selected.length)return '';
+  const root='fn rc_micro_intrinsic_selected(){'+selected.map(x=>x.name+'('+x.parameterWords.map(w=>w===2?'RcF64()':'0u').join(',')+');').join('')+'}';
+  const code=linkResidentWGSL([sourceIntrinsicNativeWGSL(profile),root],{entry:'rc_micro_intrinsic_selected'}).code;
+  if(code.split(root).length!==2)throw new Error('Exact selected intrinsic retention boundary changed');
+  return code.replace(root,'');
+ }
  if(profile==='source-continuations-v1'){
   // Link only verbatim existing source bodies. The synthetic root exists only
   // to retain approved closures, and is removed before parsing/submission.

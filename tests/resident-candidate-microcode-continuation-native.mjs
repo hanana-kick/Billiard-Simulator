@@ -4,7 +4,7 @@ import test from 'node:test';import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';import {mkdirSync,writeFileSync} from 'node:fs';
 import {createMicrocodeContinuationFixture,run as scalarRun} from './resident-candidate-microcode-continuation-fixture.mjs';
 import {compileMicrocodeWGSL} from '../src/resident-candidate/microcode-compiler.mjs';
-import {sourceIntrinsicNativeWGSL} from '../src/resident-candidate/microcode-source-intrinsics.mjs';
+import {sourceIntrinsicNativeWGSL,MICROCODE_SOURCE_INTRINSICS} from '../src/resident-candidate/microcode-source-intrinsics.mjs';
 import {generateMicrocodeVmWGSL,microcodeVmLayout} from '../src/resident-candidate/microcode-vm.mjs';
 import {MICROCODE_ISA as I} from '../src/resident-candidate/microcode-isa.mjs';
 import {createNativeOwner} from './resident-candidate-gpu-support.mjs';
@@ -26,7 +26,7 @@ export function prepareNativeContinuationFixture(){
 
 test('native original numeric and source continuations preserve every source word through retained checkpoints',async t=>{
  if(process.env.REQUIRE_WEBGPU!=='1')return t.skip('Coordinator exclusive numerical slot required');
- const f=prepareNativeContinuationFixture(),p=f.compiled,options={count:1,localWords:p.localWords,stackCapacity:Math.max(1,p.callDepth),instructionCount:p.instructions.length/8,entryPc:p.entryPc,intrinsics:p.intrinsicProfile,workgroupSize:64,instructionBudget:1},chunks=128,layout=microcodeVmLayout(options),shader=generateMicrocodeVmWGSL(options),artifactDir='/tmp/resident-microcode-continuation-native-artifact';
+ const f=prepareNativeContinuationFixture(),p=f.compiled,intrinsicFunctions=[...new Set(Array.from({length:p.instructions.length/8},(_,i)=>MICROCODE_SOURCE_INTRINSICS.find(d=>I.opcodes[d.opcode]===p.instructions[i*8])?.name).filter(Boolean))];assert.deepEqual([...intrinsicFunctions].sort(),['rc_num_cont_instruction','rc_source_program_instruction']);const options={count:1,localWords:p.localWords,stackCapacity:Math.max(1,p.callDepth),instructionCount:p.instructions.length/8,entryPc:p.entryPc,intrinsics:p.intrinsicProfile,intrinsicFunctions,workgroupSize:64,instructionBudget:1},chunks=128,layout=microcodeVmLayout(options),shader=generateMicrocodeVmWGSL(options),artifactDir=process.env.MICROCODE_CONT_ARTIFACT_DIR??'/tmp/resident-microcode-continuation-native-artifact';
  assert.ok(p.instructions.some((v,i)=>i%8===0&&v===I.opcodes.NUM_CONT_INSTRUCTION));assert.ok(p.instructions.some((v,i)=>i%8===0&&v===I.opcodes.SOURCE_PROGRAM_INSTRUCTION));
  const identity={sourceSha256:sha(f.source),programSha256:sha(p.instructions),shaderSha256:sha(shader),rows:f.rows,groups:f.groups.length,logicalCalls:f.logicalCalls,options,chunks,shaderBytes:shader.length,sourceCapsUnchanged:true,scope:'original continuation component, not whole world/strike/full-rest',futureSnapshotsUploaded:false,hardwarePerformance:false};mkdirSync(artifactDir,{recursive:true});writeFileSync(artifactDir+'/source.wgsl',f.source);writeFileSync(artifactDir+'/vm.wgsl',shader);writeFileSync(artifactDir+'/program.bin',p.instructions);writeFileSync(artifactDir+'/manifest.json',JSON.stringify(identity,null,2));
  const owner=await createNativeOwner('resident-source-continuation-intrinsics'),device=owner.device;let scoped=true;device.pushErrorScope('validation');
