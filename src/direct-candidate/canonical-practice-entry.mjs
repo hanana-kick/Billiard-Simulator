@@ -5,7 +5,7 @@ import {encodeCanonicalScene,CANONICAL_DEFAULT_PARAMETERS} from './canonical-eng
 import {createCanonicalStateStore} from './canonical-state-store.mjs';
 const own=x=>structuredClone(x),zero=()=>({x:0,y:0,z:0});
 const pending=new WeakSet();
-export function createCanonicalPracticePreset({PhysicsLab=globalThis.PhysicsLab,RAPIER=globalThis.RAPIER,selectedWorldProfile='mmq1-ball-ball'}={}){
+export function createCanonicalPracticePreset({PhysicsLab=globalThis.PhysicsLab,RAPIER=globalThis.RAPIER,selectedWorldProfile='mmq2-cushion'}={}){
  if(!['mmq1-ball-ball','mmq2-cushion'].includes(selectedWorldProfile))throw TypeError('명시된 canonical 프로필이 필요합니다.');
  if(typeof PhysicsLab!=='function'||!RAPIER)throw Error('초기화된 기본 테이블 형상이 필요합니다.');
  const template=new PhysicsLab(RAPIER);let snapshot;try{snapshot=template.snapshot({trails:false});}finally{template.dispose();}
@@ -21,7 +21,7 @@ function ready(c){if(!c?.state?.ready||!c.lab||c.disposed||c.canonicalPlayback)t
  if(!c.state.paused||c.lab.cue||c.lab.anyMotion()||c.game?.pending||c.drag||c.windup||c.state.routeStatus==='searching')throw Error('현재 타격·탐색을 마치고 공이 멈춘 뒤 시작하세요.');
  if(c.undoStack.length||c.redoStack.length)throw Error('기존 기록은 옮기지 않습니다. 먼저 기본 게임을 초기화한 뒤 다시 시작하세요.');}
 /** Internal dependency seam. Public browser wrapper owns install/device APIs. */
-export async function startCanonicalPracticeInternal(c,{install,requestDevice,signal,selectedWorldProfile='mmq1-ball-ball'}={}){
+export async function startCanonicalPracticeInternal(c,{install,requestDevice,signal,selectedWorldProfile='mmq2-cushion'}={}){
  if(!['mmq1-ball-ball','mmq2-cushion'].includes(selectedWorldProfile))throw TypeError('명시된 canonical 프로필이 필요합니다.');
  ready(c);if(pending.has(c))throw Error('이미 새 GPU 연습을 준비 중입니다.');if(typeof install!=='function'||typeof requestDevice!=='function')throw TypeError('Owned browser installer/device request required');
  const source={lab:c.lab,game:c.game,stamp:c.worldStamp(),settings:JSON.stringify(c.state.settings),routeOptions:JSON.stringify(c.state.routeOptions)};

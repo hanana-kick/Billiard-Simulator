@@ -13,9 +13,9 @@ export function installCanonicalController(controller,options={}){
 }
 
 /** Explicit UI confirmation calls this; importing the bundle remains inert. */
-export function startCanonicalPractice(controller,{signal,selectedWorldProfile='mmq1-ball-ball'}={}){
- if(!['mmq1-ball-ball','mmq2-cushion'].includes(selectedWorldProfile))throw TypeError('지원하는 canonical 프로필을 선택하세요.');
- const bindings=selectedWorldProfile==='mmq2-cushion'?10:9;
+export function startCanonicalPractice(controller,{signal,selectedWorldProfile='mmq2-cushion'}={}){
+ if(selectedWorldProfile!=='mmq2-cushion')throw TypeError('GPU 새 게임은 공·쿠션 통합 모드만 지원합니다.');
+ const bindings=10;
  return startCanonicalPracticeInternal(controller,{install:installCanonicalController,signal,selectedWorldProfile,requestDevice:async()=>{
   if(!globalThis.isSecureContext||!globalThis.navigator?.gpu)throw Error('이 브라우저에서 안전한 WebGPU 연결을 사용할 수 없습니다.');
   const adapter=await navigator.gpu.requestAdapter();if(!adapter)throw Error('WebGPU 장치를 찾지 못했습니다. 기존 엔진으로 대신 실행하지 않습니다.');

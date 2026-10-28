@@ -26,7 +26,7 @@ test('default absent, canonical fields labelled and actual parallelism is disclo
  assert.equal(render({}),'');const {canonicalSearchPopulation}=await import('../src/direct-candidate/canonical-search-domain.mjs');const {domain}=canonicalSearchPopulation({parameterGrid:grid});
  const html=render({canonicalPlayback:{searchDomain:domain}});for(const axis of Object.keys(grid)){assert.ok(html.includes('id="canonicalGrid-'+axis+'"'));assert.ok(html.includes('for="canonicalGrid-'+axis+'"'));}
  for(const text of ['입력 조합 3 × 3 × 1 × 1 × 1 = 9개','4096','아직 확인되지 않았습니다','미지원','무효화'])assert.ok(html.includes(text),text);
- assert.ok(!html.includes('쿠션 충돌은 미지원입니다'));const mmq1=render({canonicalPlayback:{searchDomain:domain,selectedWorldProfile:'mmq1-ball-ball'}});assert.ok(mmq1.includes('쿠션 충돌은 미지원입니다'));
+ assert.ok(html.includes('쿠션 충돌 지원은 제한적'));assert.ok(html.includes('모든 쿠션 상황을 지원하지 않습니다'));assert.doesNotMatch(html,/MMQ[12]|물리 프로필/);
  assert.match(html,/<button[^>]*id="applyCanonicalGrid"[^>]*disabled/);
  const busy=render({activeStroke:true,canonicalPlayback:{searchDomain:domain}});assert.match(busy,/<input[^>]*id="canonicalGrid-angles"[^>]*disabled/);
 });

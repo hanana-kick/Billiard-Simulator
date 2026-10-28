@@ -23,6 +23,13 @@ test('packaged experimental GPU entry opens and cancels without requesting an ad
  await entry.click();const dialog=page.getByRole('dialog');await expect(dialog).toBeVisible();
  await expect(page.locator('#canonicalManualTestNotice')).toContainText('자동 GPU 검증 미완료');
  await expect(dialog).toContainText('수동 테스트용');
+ await expect(dialog.locator('#canonicalPracticeProfile')).toHaveCount(0);
+ await expect(dialog.getByRole('combobox')).toHaveCount(0);
+ await expect(dialog).not.toContainText(/MMQ[12]|새 게임 물리 프로필|최대 16개/);
+ await expect(dialog).toContainText('공 충돌과 제한된 쿠션 충돌');
+ await expect(dialog).toContainText('최대 배치 폭은 3개');
+ await expect(dialog).toContainText('바인딩 10개');
+ await expect(dialog).toContainText('미지원·미완료를 실패로 바꾸지 않습니다');
  await page.locator('#cancelCanonicalPractice').click();await expect(dialog).not.toBeVisible();
  expect(await page.evaluate(()=>({requests:__manualEntryAdapterRequests,active:!!cueLab.canonicalPlayback,sameLab:cueLab.lab===__manualEntryOriginalLab,sameGame:cueLab.game===__manualEntryOriginalGame})))
   .toEqual({requests:0,active:false,sameLab:true,sameGame:true});
