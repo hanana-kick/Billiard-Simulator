@@ -17,7 +17,9 @@ test('release CI explicitly includes HOST and typecheck without launching native
  assert.match(workflow,/run: npm run typecheck\s/);
  assert.match(workflow,/run: npm run test:resident:host\s/);
  assert.doesNotMatch(workflow,/run:.*(?:test:resident:native|tip-impact-isolated|REQUIRE_WEBGPU)/);
- assert.ok(workflow.indexOf('run: npm run typecheck')<workflow.indexOf('run: npm run build'));
+ const buildCommand='run: node build.cjs --canonical-controller-assets';
+ assert.ok(workflow.includes(buildCommand),'release must package the opt-in GPU engine');
+ assert.ok(workflow.indexOf('run: npm run typecheck')<workflow.indexOf(buildCommand));
  assert.ok(workflow.indexOf('run: npm run test:resident:host')<workflow.indexOf('uses: actions\/upload-pages-artifact'));
 });
 test('HOST list is explicit, ordered, private-artifact independent and never a directory glob',t=>{
