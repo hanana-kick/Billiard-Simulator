@@ -111,11 +111,18 @@ export async function createRawWorldGPU(device,{onCompileStage=()=>{},strikeBack
   const d=batchData(batch),ownedBuffers=[],make=(size,usage)=>{const b=device.createBuffer({size,usage});ownedBuffers.push(b);return b;};
   // No raw pose, force, or integration invocation when the elapsed duration
   // contains no full canonical step. The zero buffer has no raw provenance.
-  const source=batch.effectiveMaximumSteps?raw.createBank(d.rawScene,d.rawRows,{chunkSize:16}):{resultBuffer:make(batch.count*128*4,132),dispatches:0,encode(){},dispose(){}},input=make(d.rawRows.byteLength,136),template=make(d.template.byteLength,136),admitted=make(d.admitted.byteLength,136),budgetBuffer=make(d.budgetWords.byteLength,136),world=make(batch.count*192*4,132),status=make(batch.count*16*4,132);
+  const source=batch.effectiveMaximumSteps?raw.createBank(d.rawScene,d.rawRows,{chunkSize:16}):{resultBuffer:make(batch.count*128*4,132),dispatches:0,encode(){},async encodeCooperatively(){},dispose(){}},input=make(d.rawRows.byteLength,136),template=make(d.template.byteLength,136),admitted=make(d.admitted.byteLength,136),budgetBuffer=make(d.budgetWords.byteLength,136),world=make(batch.count*192*4,132),status=make(batch.count*16*4,132);
   device.queue.writeBuffer(input,0,d.rawRows);device.queue.writeBuffer(template,0,d.template);device.queue.writeBuffer(admitted,0,d.admitted);device.queue.writeBuffer(budgetBuffer,0,d.budgetWords);
   const group=device.createBindGroup({layout:pipeline.getBindGroupLayout(0),entries:[source.resultBuffer,input,template,admitted,world,status,budgetBuffer].map((buffer,binding)=>({binding,resource:{buffer}}))});let disposed=false;
   return Object.freeze({strikeBackend,count:batch.count,preparedWorldBuffer:world,preparedWorldWordStride:192,handoffStatusBuffer:status,handoffStatusWordStride:16,rawResultBuffer:source.resultBuffer,rawResultWordStride:128,identity:batch,dispatches:source.dispatches+1,rawPhysicsDispatches:source.dispatches,effectiveMaximumSteps:batch.effectiveMaximumSteps,
    encode(encoder){if(disposed)throw Error('Disposed raw-world bank');source.encode(encoder);const pass=encoder.beginComputePass();pass.setPipeline(pipeline);pass.setBindGroup(0,group);pass.dispatchWorkgroups(Math.ceil(batch.count/32));pass.end();},
+   async encodeCooperatively({getEncoder,afterCommand,signal}={}){
+    if(typeof getEncoder!=='function'||typeof afterCommand!=='function')throw TypeError('Owned encoder and completed-command callback required');
+    const current=()=>{if(disposed)throw Error('Disposed raw-world bank');if(signal?.aborted)throw new DOMException('Cancelled','AbortError');};
+    current();if(typeof source.encodeCooperatively!=='function')throw Error('Cooperative encoding requires staged raw backend');
+    await source.encodeCooperatively({getEncoder,afterCommand:async()=>{await afterCommand();current();},signal});current();
+    const pass=getEncoder().beginComputePass();pass.setPipeline(pipeline);pass.setBindGroup(0,group);pass.dispatchWorkgroups(Math.ceil(batch.count/32));pass.end();await afterCommand();current();
+   },
    dispose(){if(!disposed){disposed=true;source.dispose();ownedBuffers.forEach(b=>b.destroy());}}});
  }
  });}

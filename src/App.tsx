@@ -13,6 +13,7 @@ import {Alert,AlertDescription} from '@/components/ui/alert'
 import {RoutePlanner} from '@/components/route-planner'
 import {CanonicalPracticeEntry} from '@/components/canonical-practice-entry'
 import {CanonicalSearchGrid} from '@/components/canonical-search-grid'
+import {canonicalSearchPhaseLabel} from '@/components/canonical-search-progress'
 import {Icon} from '@/icons'
 // A surrounding hit region forwards only clicks on its own empty padding.
 // The official button, keyboard behavior and visible registry styles stay intact.
@@ -137,7 +138,7 @@ function Workspace(){
       <p className="helper"><a href="./guide.html" target="_blank" rel="noopener">3구·삼구·4구·사구·3쿠션 연습 안내 (새 탭)</a></p>
      </TabsContent>
 
-     <span className="forecast-status" id="forecastStatus" title={s.forecastStatus} aria-live="polite">{s.routeStatus==='searching'?(s.canonicalPlayback?`GPU 파라미터 평가 ${s.routeProgress?.evaluated||0}회`:`제약식 계산 · 물리 평가 ${s.routeProgress?.evaluated||0}회`):s.predictionBusy?'예측 중…':s.forecastStatus}</span>
+     <span className="forecast-status" id="forecastStatus" title={s.forecastStatus} aria-live="polite">{s.routeStatus==='searching'?(s.canonicalPlayback?canonicalSearchPhaseLabel(s.routeProgress):`제약식 계산 · 물리 평가 ${s.routeProgress?.evaluated||0}회`):s.predictionBusy?'예측 중…':s.forecastStatus}</span>
      <section className="panel-utility" aria-label="기록 및 도움말"><Separator/><p className="muted-caption">기록 및 도움말</p><div className="action-row"><Button id="undo" variant="outline" size="sm" disabled={!s.undo} onClick={()=>controller.undo()}><Icon name="undo" data-icon="inline-start"/>되돌리기</Button><Button id="redo" variant="outline" size="sm" disabled={!s.redo} onClick={()=>controller.redo()}>다시 실행</Button><Button id="reset" variant="outline" size="sm" disabled={!!s.canonicalPlayback?.deviceLost} title={s.canonicalPlayback?'처음 GPU 게임 배치·점수·타격 설정으로 돌아가고 기록을 지웁니다. 탐색 조합은 유지합니다. GPU 장치 손실은 복구하지 않습니다.':undefined} onClick={()=>controller.reset()}><Icon name="reset" data-icon="inline-start"/>초기화</Button><Button variant="ghost" size="icon" aria-label="조작 도움말" onClick={()=>setHelpOpen(true)}><Icon name="info"/></Button></div></section>
      </SidebarContent>
     </Tabs>

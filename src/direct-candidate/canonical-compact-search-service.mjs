@@ -34,17 +34,18 @@ function core({device,selectedWorldProfile,maximumCandidates=4096},runtime){
    n16RosterCount:supportsN16?4:null,n16MaximumSteps:supportsN16?2048:null,tailWidth:1,maximumCandidates,
    physicalHardwareVerified:false,cumulativeWorkBudgetEnforced:false,cumulativeEventBudgetEnforced:false}),
   cancel,dispose(){if(!disposed){disposed=true;cancel('search service disposed');}},
-  async runSearch({request:requestOptions,population,raw,continuation,strikeBackend='staged',signal,onBatch=()=>{},assertCurrent=()=>{}}={}){
+  async runSearch({request:requestOptions,population,raw,continuation,strikeBackend='staged',signal,onBatch=()=>{},onPhase=()=>{},assertCurrent=()=>{}}={}){
    if(disposed)throw fail('SEARCH_DISPOSED','Search owner disposed');
    cancel('search replacement');const token=generation,abortController=new AbortController();activeAbort=abortController;
    const input=own({requestOptions,population,raw,continuation,strikeBackend});
-   if(typeof onBatch!=='function'||typeof assertCurrent!=='function')throw TypeError('Synchronous progress/source guards required');
+   if(typeof onBatch!=='function'||typeof onPhase!=='function'||typeof assertCurrent!=='function')throw TypeError('Synchronous progress/source guards required');
    if(signal?.aborted)abortController.abort(signal.reason);
    const onAbort=()=>abortController.abort(signal.reason);signal?.addEventListener('abort',onAbort,{once:true});
    const current=()=>{if(disposed||token!==generation||abortController.signal.aborted)throw fail('SEARCH_CANCELLED','Cancelled or superseded search result');const result=assertCurrent();if(result&&typeof result.then==='function')throw TypeError('Source guard must be synchronous');};
-   let release;
+   const phase=(phase,detail={})=>{current();const result=onPhase(freeze({phase,...detail}));if(result&&typeof result.then==='function')throw TypeError('Progress callback must be synchronous');current();};
+   let release,predecessor;
    try{
-    current();
+    phase('preparing');
     if(input.strikeBackend!=='staged')throw fail('SEARCH_BACKEND_UNSUPPORTED','Search and selected execution require explicit staged raw backend');
     if(input.requestOptions?.purpose!=='search'||Object.hasOwn(input.requestOptions??{},'epoch'))throw fail('SEARCH_REQUEST','Search service owns epoch; purpose must be search');
     const r=input.requestOptions?.rules;
@@ -63,16 +64,16 @@ function core({device,selectedWorldProfile,maximumCandidates=4096},runtime){
      sceneKey:rawBinding.sceneKey,requestKey:rawBinding.requestKey,
     });
     // One owner never compiles/submits two arenas concurrently after supersession.
-    const predecessor=tail;tail=new Promise(resolve=>{release=resolve;});await predecessor;current();
+    predecessor=tail;tail=new Promise(resolve=>{release=resolve;});phase('queued');await predecessor;current();
     const engines=new Map(),rows=[],counts={pass:0,miss:0,incomplete:0,unsupported:0},metrics=[],batchWidths=[],maximumSteps=input.raw?.maximumSteps??2048,
      n16Eligible=supportsN16&&rawBinding.bodyCount===4&&maximumSteps===2048;
     const progress=()=>freeze({rows:[...rows],counts:{...counts},batchWidths:[...batchWidths],total:candidates.length,tested:rows.length});
     for(let offset=0;offset<candidates.length;){
      current();const remaining=candidates.length-offset,width=n16Eligible&&remaining>=16&&candidates.slice(offset,offset+16).every(c=>c.admitted===true)?16:remaining>=3?3:1,tile=candidates.slice(offset,offset+width);let engine=engines.get(width);
-     if(!engine){engine=await runtime.createEngine(device,{request,binding,rawBinding,candidates:tile,maximumSteps,
-       preparation:'sealed-uploads',strikeBackend:input.strikeBackend,profile:profile.profile,faultPolicy:'atomic-per-access',compileOrder:width===16?'source':'largest-first',validationProfile:width===16?'mmq1-n16-repeat-qualification-v1':null,expectedBuildRevision:runtime.sourceRevision});
+     if(!engine){phase('preparing',{width});engine=await runtime.createEngine(device,{request,binding,rawBinding,candidates:tile,maximumSteps,
+       signal:abortController.signal,onCompilePhase:detail=>phase('compiling',{width,compileCompleted:detail.compileOrdinal+(detail.stage==='end'?1:0),compileTotal:detail.total,compileStage:detail.stage}),preparation:'sealed-uploads',strikeBackend:input.strikeBackend,profile:profile.profile,faultPolicy:'atomic-per-access',compileOrder:width===16?'source':'largest-first',validationProfile:width===16?'mmq1-n16-repeat-qualification-v1':null,expectedBuildRevision:runtime.sourceRevision});
       current();if(engine.buildRevision!==runtime.sourceRevision||engine.candidateCount!==width||engine.preparation!=='sealed-uploads'||(width===16&&engine.validationProfile!=='mmq1-n16-repeat-qualification-v1'))throw fail('SEARCH_SOURCE_MISMATCH','Only exact same-build sealed compact engine accepted');engines.set(width,engine);}
-     const result=await engine.run({signal:abortController.signal,candidates:tile});current();
+     phase('running',{width});const result=await engine.run({signal:abortController.signal,candidates:tile,onPhase:detail=>phase(detail.phase,{width,...detail})});current();
      if(result.buildRevision!==runtime.sourceRevision||result.requestIdentity!==binding.requestIdentity||result.sceneIdentity!==binding.sceneIdentity||result.epoch!==request.epoch||
         !Array.isArray(result.candidateKeys)||result.candidateKeys.length!==width||result.candidateKeys.some((key,i)=>key!==tile[i].candidateKey)||
         !(result.compact instanceof Uint32Array)||result.compact.length!==width*4||result.metrics?.readbackBytes!==width*16)
@@ -84,7 +85,7 @@ function core({device,selectedWorldProfile,maximumCandidates=4096},runtime){
     current();return Object.freeze({kind:'canonical-compact-search-result-v1',selectedWorldProfile,sourceRevision:runtime.sourceRevision,
      requestIdentity:request.requestKey,sceneIdentity:request.sceneId,epoch:request.epoch,...progress(),metrics:freeze(metrics),
      assertCurrent:current,readRequest(){current();return request;}});
-   }finally{signal?.removeEventListener('abort',onAbort);if(activeAbort===abortController)activeAbort=null;release?.();}
+   }finally{signal?.removeEventListener('abort',onAbort);if(activeAbort===abortController)activeAbort=null;if(release){await predecessor;release();}}
   },
  });
 }

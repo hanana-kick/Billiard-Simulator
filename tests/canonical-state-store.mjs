@@ -181,3 +181,12 @@ test('placement rejects overlap, bounds, extra axes, unknown IDs and stale gette
  const revision=store.readRevision(),p=scene.physical.bodies[0].pos;assert.equal(store.placeBall({id,position:{x:p.x,z:p.z},expectedRevision:revision}),false);assert.equal(store.readRevision(),revision);assert.ok(store.readFinalState());
  assert.throws(()=>store.placeBall({id,expectedRevision:revision,position:{get x(){store.cancel();return .8},z:.3}}),{code:'STALE_STATE_EDIT'});assert.equal(store.readScene(),scene);
 });
+
+test('authored static appearance survives commit, placement, undo and redo',()=>{
+ const store=makeStore(),before=store.snapshot(),appearance=structuredClone(store.readScene().staticPresentation);
+ assert.ok(appearance.some(o=>o.color==='#187365'));
+ const shot=submission(store);shot.begin().commit(shot.receipt);assert.deepEqual(store.readScene().staticPresentation,appearance);
+ const after=store.snapshot();store.restore(before);assert.deepEqual(store.readScene().staticPresentation,appearance);store.restore(after);assert.deepEqual(store.readScene().staticPresentation,appearance);
+ const body=store.readScene().physical.bodies[0];assert.equal(store.placeBall({id:body.id,position:{x:body.pos.x-.01,z:body.pos.z},expectedRevision:store.readRevision()}),true);
+ assert.deepEqual(store.readScene().staticPresentation,appearance);
+});

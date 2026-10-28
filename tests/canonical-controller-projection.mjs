@@ -30,3 +30,28 @@ test('renderer facade contains no simulation/native writeback API and owns pose 
 });
 
 test('wrong scene, cue, or full game snapshot cannot receive a genuine guarded outcome',()=>{const {scene,game}=fixture(),r=result(1,{scene,game},1);for(const args of [{scene:fixture(true).scene,game:fixture(true).game,selectedId:1},{scene,game,selectedId:2},{scene,game:{...game,scores:{1:8,2:0}},selectedId:1}])assert.throws(()=>prepareCanonicalGameProjection({...args,result:r}),{code:'CONTROLLER_GAME_SOURCE_MISMATCH'});});
+
+test('canonical projection retains every authored static color and material classification',async()=>{
+ const {createCanonicalRenderView}=await import('../src/direct-candidate/canonical-controller-projection.mjs');
+ const {view}=createCanonicalRenderView({scene:fixture().scene,pose:PhysicsLab.prototype.pose});
+ for(const o of view.statics){const original=source.statics.find(s=>s.label===o.label&&JSON.stringify(s.pos)===JSON.stringify(o.body.translation()));assert.ok(original,o.label);assert.equal(o.color,original.color);assert.equal(o.kind,original.kind);assert.equal(o.shape,original.shape);assert.deepEqual(o.body.translation(),original.pos);assert.deepEqual(o.body.rotation(),original.rot);}
+ assert.equal(view.statics.find(s=>s.kind==='cloth').color,'#187365');
+ assert.ok(new Set(view.statics.filter(s=>s.kind==='wood').map(s=>s.color)).size>1);
+});
+
+test('CPU renderer command spy retains authored lighting materials and both shadow passes after projection',async()=>{
+ require('../src/renderer.js');
+ const {createCanonicalRenderView}=await import('../src/direct-candidate/canonical-controller-projection.mjs');
+ const native=new PhysicsLab(R),scene=encodeCanonicalScene(native.snapshot(),{objectIds:native.objects.map(o=>o.id),staticCount:native.statics.length}).scene;
+ try{
+  const {view}=createCanonicalRenderView({scene,pose:PhysicsLab.prototype.pose});
+  const r=Object.create(LabRenderer.prototype),light={sentinel:'unchanged light matrix'},vp={sentinel:'unchanged camera matrix'},passes=[];
+  Object.assign(r,{gl:new Proxy({}, {get:()=>()=>{}}),canvas:{width:800,height:600},box:{},sphere:{},depth:{},main:{},light,vp,
+   size(){},convexMesh(){return this.box;},cushionMesh(){return this.box;},drawCommands(commands,program,matrix){passes.push({commands,program,matrix});}});
+  r.render(native,{});r.render(view,{});
+  assert.equal(passes.length,4);assert.equal(passes[0].program,r.depth);assert.equal(passes[2].program,r.depth);assert.equal(passes[0].matrix,light);assert.equal(passes[2].matrix,light);
+  assert.equal(passes[1].program,r.main);assert.equal(passes[3].program,r.main);assert.equal(passes[1].matrix,vp);assert.equal(passes[3].matrix,vp);
+  const staticCommands=p=>p.commands.slice(0,native.statics.length).map(c=>JSON.stringify({model:Array.from(c.model),scale:c.scale,color:c.color,material:c.material})).sort();
+  assert.deepEqual(staticCommands(passes[3]),staticCommands(passes[1]));assert.deepEqual(staticCommands(passes[2]),staticCommands(passes[0]));
+ }finally{native.dispose();}
+});

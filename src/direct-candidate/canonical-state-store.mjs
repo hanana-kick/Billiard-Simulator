@@ -17,7 +17,7 @@ function nextScene(scene,words) {
     objects:p.bodies.map((body,i)=>({...body,pos:{x:s[88+48*i]/Q,y:s[89+48*i]/Q,z:s[90+48*i]/Q},
       v:{x:0,y:0,z:0},w:{x:0,y:0,z:0},rot:presentation.get(body.id)?.rotation??{x:0,y:0,z:0,w:1},
       label:presentation.get(body.id)?.label??'',color:presentation.get(body.id)?.color??''})),
-    statics:p.statics.map(({rotation,...item})=>({...item,rot:rotation}))};
+    statics:p.statics.map(({rotation,...item},i)=>({...item,rot:rotation,color:scene.staticPresentation?.[i]?.color, label:scene.staticPresentation?.[i]?.label}))};
   const admission=encodeCanonicalScene(source,{objectIds:scene.slotToId,staticCount:p.statics.length});
   if(!admission.admitted)throw fail('STATE_SCENE_REJECTED','Exact final state cannot form an admitted complete scene');
   return admission.scene;
@@ -65,7 +65,7 @@ export function createCanonicalStateStore({scene,selectedWorldProfile}={}) {
       const p=source.physical,presentation=new Map(source.presentation.map(b=>[b.id,b]));
       const snapshot={params:p.parameters,...p.sourceSettings,
         objects:p.bodies.map(b=>({...b,pos:b.id===id?pos:b.pos,rot:presentation.get(b.id)?.rotation??{x:0,y:0,z:0,w:1},label:presentation.get(b.id)?.label??'',color:presentation.get(b.id)?.color??''})),
-        statics:p.statics.map(({rotation,...item})=>({...item,rot:rotation}))};
+        statics:p.statics.map(({rotation,...item},i)=>({...item,rot:rotation,color:source.staticPresentation?.[i]?.color, label:source.staticPresentation?.[i]?.label}))};
       const admission=encodeCanonicalScene(snapshot,{objectIds:source.slotToId,staticCount:p.statics.length});
       if(!admission.admitted)throw fail('STATE_EDIT_REJECTED','Complete authored scene is not admitted');
       const others=source.slotToId.filter(value=>value!==id);

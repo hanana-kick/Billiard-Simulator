@@ -203,3 +203,32 @@ from the preceding N33 pin. Artifact 936,405 bytes, SHA-256
 One unchanged bounded N33 diagnostic again matched 96,228 words, with 371 group
 creations and 28,256 exact reuses; see the wide-reference document for evidence,
 timing boundaries and unqualified scope. No shader/numeric recipe change occurred.
+
+### Reviewed cancellation/scheduling and appearance refresh (2026-10-28)
+
+Independent review of `938444c`, `e7bf005`, and `9980c2c` accepted the exact
+87-module closure revision
+`896cf3877e5e280d8082b804b640078ae165e9f42b8240a10741231b5330eeb7`.
+Compared with the preceding reviewed pin, 81 modules are byte-identical, five
+changed (compact search service, scene contract, raw strike/world factories,
+live batch), and one ordered-submission helper was added. The candidate was
+created with `createLiveWorldSealReviewCandidate`; no build bypass or automatic
+pin refresh was used. Nonminified bundle: 954,379 bytes, SHA-256
+`94de4ea262552b8b4bde99178e864efbaf05ff9c583f0fad37539c4e79d8f67c`.
+
+Review checked unchanged shader templates/numeric operations, exact raw pass
+ordering and world handoff, persistent buffers across bounded submissions,
+final-only gate/readback, drain-before-cleanup on abort or observer failure,
+terminal device loss, and serialized stop/restart ownership. N1/N3/N16 host
+encoding now yields between bounded ordered chunks; N33's diagnostic single-use
+profile deliberately retains its original one-submission path. Scene static
+colors/labels are presentation metadata only, outside physical identity, and no
+lighting coefficients or camera settings changed.
+
+Verification is **HOST/mock only**: all 14 new raw/scheduling/submission tests
+and nine asset/source-seal tests passed; the full canonical CPU integration
+runner passed 240 tests with three native-only skips (zero failures).
+Canonical-assets build and typecheck passed. No GPU/native execution or user-computer access was performed. Existing
+native receipts remain attached to their historical exact source revisions;
+they do **not** qualify this new scheduling/cancellation implementation, physical
+GPU responsiveness, context-loss recovery, or new performance claims.

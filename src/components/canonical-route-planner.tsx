@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
+import { CanonicalSearchProgress } from '@/components/canonical-search-progress'
 
 const fmt=(value:number,digits=2)=>Number.isFinite(value)?value.toFixed(digits):'—'
 const count=(value:unknown)=>Number.isSafeInteger(value)&&Number(value)>=0?String(value):'—'
@@ -17,7 +18,7 @@ function batchWidthsSummary(widths:unknown){
 export function CanonicalRoutePlanner({state:s,controller:c}:{state:any;controller:any}) {
  const busy=s.routeStatus==='searching',enabled=s.canonicalPlayback?.searchEnabled===true
  const result=s.routeResult?.kind==='canonical-compact-search-v1'?s.routeResult:null
- const progress=busy?s.routeProgress:result,domain=s.canonicalPlayback?.searchDomain
+ const progress=busy?s.routeProgress:result,phaseProgress=s.routeProgress,domain=s.canonicalPlayback?.searchDomain
  const rows=result?.results||[],[shown,setShown]=React.useState(6)
  React.useEffect(()=>{if(busy)setShown(6)},[busy])
  const canSearch=enabled&&s.ready&&s.canAim&&!busy&&!s.activeStroke
@@ -40,6 +41,7 @@ export function CanonicalRoutePlanner({state:s,controller:c}:{state:any;controll
    {domain?.parameterGrid?<Button id="editCanonicalGrid" variant="outline" onClick={()=>c.option('activePanel','shot')}>수동 탭에서 탐색 조합 편집</Button>:null}
    {!enabled?<Alert><AlertTitle>GPU 탐색 서비스 미연결</AlertTitle><AlertDescription>명시적 파라미터 범위와 호환되는 GPU 배치 서비스가 필요합니다. 기존 CPU 탐색으로 대체하지 않습니다.</AlertDescription></Alert>:null}
    <div className="route-actions">{busy?<Button id="cancelRoute" variant="outline" onClick={()=>c.stopSearch()}>중단 · 찾은 후보 유지</Button>:<Button id="findRoute" disabled={!canSearch} onClick={()=>c.startSearch()}>{result?'다시 계산':'GPU 후보 계산'}</Button>}</div>
+   {(busy||phaseProgress?.phase==='stopped')?<CanonicalSearchProgress progress={phaseProgress} busy={busy}/>:null}
    {progress?<div className="route-progress" role="status">
     <p>처리 {count(progress.tested)} / {count(progress.total)} · 판정 완료 {count(progress.evaluated)} · 성공 {count(progress.found)}</p>
     {executedWidths?<p id="canonicalActualBatchWidths" className="helper">실제 완료 배치: {executedWidths}</p>:null}
@@ -47,7 +49,7 @@ export function CanonicalRoutePlanner({state:s,controller:c}:{state:any;controll
     <p className="helper">미완료·미지원은 실패나 경로가 없다는 판정이 아닙니다.</p>
    </div>:null}
    {['error','canceled','stale','unavailable'].includes(s.routeStatus)?<Alert><AlertTitle>{s.routeStatus==='stale'?'배치·조건이 바뀌었습니다':s.routeStatus==='canceled'?'탐색 취소':'탐색을 완료하지 못했습니다'}</AlertTitle><AlertDescription>{s.routeError}</AlertDescription></Alert>:null}
-   {s.routeStatus==='done'&&result&&!rows.length?<Alert id="noRoute"><AlertTitle>평가한 조합에서 성공 후보를 찾지 못했습니다.</AlertTitle><AlertDescription>미완료·미지원 입력과 탐색하지 않은 조합이 있을 수 있습니다. 경로가 없다는 증명이 아닙니다.</AlertDescription></Alert>:null}
+   {s.routeStatus==='done'&&result&&!result.partial&&!rows.length?<Alert id="noRoute"><AlertTitle>평가한 조합에서 성공 후보를 찾지 못했습니다.</AlertTitle><AlertDescription>미완료·미지원 입력과 탐색하지 않은 조합이 있을 수 있습니다. 경로가 없다는 증명이 아닙니다.</AlertDescription></Alert>:null}
    {rows.length?<div className="route-results" aria-label="GPU 성공 후보">
     <p id="routeResultCount" role="status">성공 후보 {rows.length}개</p>
     <p id="routePageCount">{rows.length}개 중 {Math.min(shown,rows.length)}개 표시</p>

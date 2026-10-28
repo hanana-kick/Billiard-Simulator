@@ -29,5 +29,8 @@
   "tests/canonical-practice-ui.cjs",
   "tests/canonical-controller-search-assets.mjs",
   "tests/canonical-search-grid-ui.cjs",
-  "tests/canonical-placement-ui.cjs"
+  "tests/canonical-placement-ui.cjs",
+  "tests/deterministic-raw-cooperative-encoding.mjs",
+  "tests/experimental-live-world-submissions.mjs",
+  "tests/experimental-live-world-scheduling.mjs"
 ]

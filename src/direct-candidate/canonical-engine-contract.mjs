@@ -138,11 +138,16 @@ export function encodeCanonicalScene(snapshot, manifest) {
     return freeze({kind: 'canonical-scene-admission-v1', admitted: false, scene: null, reasons});
   }
   physical.bodies.sort((a, b) => a.id - b.id);
-  physical.statics.sort((a, b) => stable(a) < stable(b) ? -1 : stable(a) > stable(b) ? 1 : 0);
+  // Keep visual metadata aligned with the canonical geometry order without
+  // making colors/labels part of physical identity or admission.
+  const staticOrder = physical.statics.map((item, index) => ({item, index}));
+  staticOrder.sort((a, b) => stable(a.item) < stable(b.item) ? -1 : stable(a.item) > stable(b.item) ? 1 : 0);
+  physical.statics = staticOrder.map(({item}) => item);
   const slotToId = physical.bodies.map(o => o.id);
   const scene = {kind: 'canonical-scene-v1', modelId: CANONICAL_MODEL.id, sceneId: identity('scene-v1', physical), admitted: reasons.length === 0, physical,
     slotToId, idToSlot: Object.fromEntries(slotToId.map((id, slot) => [id, slot])),
     sourceRevision: uint(snapshot.revision) ? snapshot.revision : null,
+    staticPresentation: staticOrder.map(({index}) => ({color: snapshot.statics[index].color ?? '', label: snapshot.statics[index].label ?? ''})),
     presentation: snapshot.objects.map(o => ({id: o.id, label: o.label ?? '', color: o.color ?? '', rotation: finiteVector(o.rot, ['x', 'y', 'z', 'w']) ? quaternion(o.rot) : null})),
   };
   freeze(scene); trustedScenes.add(scene);

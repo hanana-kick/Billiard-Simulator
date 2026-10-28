@@ -67,3 +67,16 @@ test('MMQ2, three-body and non2048 requests retain N3/N1 without abort',async()=
 test('unadmitted row uses narrow explicit UNSUPPORTED and subsequent eligible tile still uses N16',async()=>{
  const f=setup({count:19,packet:c=>c.admitted?[c.candidateId,1,0,1]:[c.candidateId,4,4,0x80000000]});f.options.population[0].settings.tipX=.95;f.options.population[0].settings.tipY=.95;const r=await f.service.runSearch(f.options);assert.deepEqual(r.batchWidths,[3,16]);assert.equal(r.rows[0].status,'UNSUPPORTED');assert.deepEqual(r.counts,{pass:18,miss:0,incomplete:0,unsupported:1});assert.ok(f.calls.find(c=>c.candidates.length===16).candidates.every(c=>c.admitted));
 });
+
+test('stop during compilation signals factory, latest restart queues and stale phase cannot publish',async()=>{
+ const gate=deferred(),entered=deferred();let first=true;const phases=[];
+ const f=setup({count:3,beforeCompile:async o=>{if(first){first=false;entered.resolve();await gate.promise;assert.equal(o.signal.aborted,true);o.onCompilePhase({stage:'end',compileOrdinal:0,total:2});}else o.onCompilePhase({stage:'start',compileOrdinal:0,total:2});}});
+ const p=f.service.runSearch({...f.options,onPhase:x=>phases.push(x)}),bad=assert.rejects(p,{code:'SEARCH_CANCELLED'});await entered.promise;f.service.cancel('stop');const nextPhases=[],q=f.service.runSearch({...f.options,onPhase:x=>nextPhases.push(x)});assert.equal(nextPhases.at(-1).phase,'queued');gate.resolve();await bad;await q;assert.equal(phases.some(x=>x.phase==='compiling'),false);assert.equal(nextPhases.some(x=>x.phase==='compiling'&&x.compileTotal===2),true);assert.equal(f.runs.length,1);
+});
+test('repeated queued cancellation and throwing progress cannot overlap the active compile',async()=>{
+ const gate=deferred(),entered=deferred();let first=true;const f=setup({count:1,beforeCompile:async()=>{if(first){first=false;entered.resolve();await gate.promise;}}});
+ const a=assert.rejects(f.service.runSearch(f.options),{code:'SEARCH_CANCELLED'});await entered.promise;
+ const b=assert.rejects(f.service.runSearch({...f.options,onPhase:p=>{if(p.phase==='queued')throw Error('observer failed');}}),/observer failed/);
+ const c=f.service.runSearch(f.options);await Promise.resolve();await Promise.resolve();assert.equal(f.calls.length,1);gate.resolve();await a;await b;await c;assert.equal(f.calls.length,2);assert.equal(f.runs.length,1);
+});
+test('run failure releases serialization for a clean restart with fresh engine ownership',async()=>{let first=true;const f=setup({count:1,beforeRun(){if(first){first=false;throw Error('mock submit failure');}}});await assert.rejects(f.service.runSearch(f.options),/mock submit failure/);const r=await f.service.runSearch(f.options);assert.equal(r.tested,1);assert.equal(f.calls.length,2);});

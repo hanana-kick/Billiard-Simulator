@@ -330,3 +330,14 @@ test('declared absolute clock overflow rejects before execution; per-shot clock 
   const huge = request(r.scene, {budget: {...r.budget, maximumTicks: 0xffffffff}});
   assert.throws(() => createCanonicalShotClock(huge, 0), error => error.code === 'CLOCK_OVERFLOW');
 });
+
+test('static appearance follows canonical sorting and transport without entering physical identity',()=>{
+ const s=snapshot();s.statics.forEach((o,i)=>{o.color='#12345'+i;o.label='surface '+i;});
+ const a=encode(s).scene;
+ a.physical.statics.forEach((o,i)=>{const original=s.statics.find(x=>x.kind===o.kind&&JSON.stringify(x.pos)===JSON.stringify(o.pos));assert.deepEqual(a.staticPresentation[i],{color:original.color,label:original.label});});
+ const reordered=structuredClone(s);reordered.statics.reverse();assert.deepEqual(encode(reordered).scene.staticPresentation,a.staticPresentation);
+ const changed=structuredClone(s);changed.statics.forEach(o=>{o.color='#ffffff';o.label='new label';});assert.equal(encode(changed).scene.sceneId,a.sceneId);
+ assert.deepEqual(validateCanonicalScene(structuredClone(a)).staticPresentation,a.staticPresentation);
+ assert.deepEqual(readCanonicalSceneTransfer(createCanonicalSceneTransfer(a),a.sceneId).staticPresentation,a.staticPresentation);
+ assert.ok(Object.isFrozen(a.staticPresentation[0]));s.statics[0].color='#000000';assert.notEqual(a.staticPresentation.find(x=>x.label==='surface 0').color,s.statics[0].color);
+});

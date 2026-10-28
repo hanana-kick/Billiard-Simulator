@@ -64,7 +64,9 @@ export function createCanonicalRenderView({scene,pose,isBusy=()=>false}={}) {
       body:Object.freeze({translation:()=>own(positions.get(id)),rotation:()=>own(p?.rotation??identity),
         linvel:()=>own(velocities.get(id)),angvel:()=>own(spins.get(id)),isSleeping:()=>!isBusy()})});});
   const colors={cloth:'#17483c',cushion:'#215647',wood:'#63432b',floor:'#111827'};
-  const statics=scene.physical.statics.map(s=>Object.freeze({...own(s),color:colors[s.kind],
+  // Older scene transfers may lack static presentation. New scenes retain the
+  // authored material colors; changing physics owners must not darken the table.
+  const statics=scene.physical.statics.map((s,i)=>Object.freeze({...own(s),color:scene.staticPresentation?.[i]?.color||colors[s.kind],label:scene.staticPresentation?.[i]?.label??'',
     body:Object.freeze({translation:()=>own(s.pos),rotation:()=>own(s.rotation),linvel:zero,angvel:zero,isSleeping:()=>true})}));
   const view={objects:Object.freeze(objects),statics:Object.freeze(statics),params:Object.freeze(own(scene.physical.parameters)),
     dt:scene.physical.sourceSettings.dt,strokeSubsteps:scene.physical.sourceSettings.strokeSubsteps,

@@ -1,6 +1,7 @@
 /** Bounded N1/N3 current-source prototype. Captures the actual live host graph;
  * no frozen WGSL refresh, hand-written world schedule, or CPU physics replay.
  * No app integration, release qualification, or large-N performance claim. */
+import {createLiveWorldSubmissionQueue} from './experimental-live-world-submissions.mjs';
 import {createLiveWorldRunBindGroups} from './experimental-live-world-bind-groups.mjs';
 import {captureRawWorldResourceFacts} from './experimental-live-world-raw-resources.mjs';
 import {planLiveWorldResources,validateLiveWorldResources} from './experimental-live-world-resources.mjs';
@@ -11,6 +12,8 @@ import {captureLiveWorldPlan,assertLiveWorldPlansCompatible,assertLiveWorldPlans
 import {liftGuardedCandidatePhase,coalesceGuardedInvocationFault} from './experimental-guarded-storage-lift.mjs';
 import {guardLiveCushionIndirect} from './experimental-live-indirect.mjs';
 const abort=signal=>{if(signal?.aborted)throw new DOMException('Cancelled','AbortError');};
+// Yield to browser input between bounded host stages; submitted GPU work must drain.
+const checkpoint=async signal=>{abort(signal);await new Promise(resolve=>setTimeout(resolve,0));abort(signal);};
 const equal=(a,b)=>a.length===b.length&&a.every((x,i)=>x===b[i]);
 export function liveCompileIndices(definitions,order='source'){if(!['source','largest-first'].includes(order))throw RangeError('Explicit compilation order');const indices=definitions.map((_,i)=>i);if(order==='largest-first')indices.sort((a,b)=>definitions[b].code.length-definitions[a].code.length||a-b);return indices;}
 export async function lowerLiveWorldPlans(plans,{faultPolicy='atomic-per-access',candidateLocalAllocations=[]}={}){
@@ -59,7 +62,8 @@ export function assertLiveWorldReplacementCandidates(replacement,count,validatio
  if(!Array.isArray(replacement)||replacement.length!==count||new Set(replacement.map(c=>c?.candidateId)).size!==count)throw RangeError('Same width distinct owned candidates required');
  if(validationProfile==='mmq1-n16-repeat-qualification-v1'&&replacement.some(c=>c?.admitted!==true))throw RangeError('N16 qualification requires admitted replacement candidates');
 }
-export async function createExperimentalLiveWorldBatchGPU(device,{binding,rawBinding,candidates,request,preparation='full-capture',validationProfile=null,maximumOwnedBytes=8*1024*1024,maximumSteps=2048,strikeBackend='staged',profile='mmq1-no-cushion',faultPolicy='atomic-per-access',compileOrder='source',expectedBuildRevision,expectedPlanIdentity,expectedRecipeIdentity,expectedPlan,expectedRecipe,onCompilePhase=()=>{}}={}){
+export async function createExperimentalLiveWorldBatchGPU(device,{binding,rawBinding,candidates,request,preparation='full-capture',validationProfile=null,maximumOwnedBytes=8*1024*1024,maximumSteps=2048,strikeBackend='staged',profile='mmq1-no-cushion',faultPolicy='atomic-per-access',compileOrder='source',expectedBuildRevision,expectedPlanIdentity,expectedRecipeIdentity,expectedPlan,expectedRecipe,onCompilePhase=()=>{},signal}={}){
+ await checkpoint(signal);
  if(!Number.isSafeInteger(maximumOwnedBytes)||maximumOwnedBytes<1||maximumOwnedBytes>8*1024*1024)throw RangeError('Explicit owned-buffer policy budget1..8MiB');
  if(!['full-capture','sealed-uploads'].includes(preparation))throw RangeError('Explicit preparation mode');
  if(preparation==='sealed-uploads'&&!LIVE_WORLD_UPLOAD_SOURCE_SEALED)throw Error('Upload-only graph reuse requires verified sealed build');
@@ -72,16 +76,17 @@ export async function createExperimentalLiveWorldBatchGPU(device,{binding,rawBin
  const batch=prepareRawWorldBatch(rawBinding,candidates,{maximumSteps}),N=candidates.length;
  let plans,uploadPreparer,uploadTokens;
  if(preparation==='sealed-uploads'){
-  const first=prepareRawWorldBatch(rawBinding,[candidates[0]],{maximumSteps});uploadPreparer=await createLiveWorldUploadPreparer({request,binding,batch:first,strikeBackend,profile});
+  const first=prepareRawWorldBatch(rawBinding,[candidates[0]],{maximumSteps});await checkpoint(signal);uploadPreparer=await createLiveWorldUploadPreparer({request,binding,batch:first,strikeBackend,profile});
   if(!uploadPreparer.graphReuseQualified)throw Error('Unqualified upload preparation');
-  uploadTokens=await Promise.all(candidates.map(c=>uploadPreparer.prepare(prepareRawWorldBatch(rawBinding,[c],{maximumSteps}))));
+  uploadTokens=[];for(const c of candidates){await checkpoint(signal);uploadTokens.push(await uploadPreparer.prepare(prepareRawWorldBatch(rawBinding,[c],{maximumSteps})));}
   const base=uploadPreparer.runtimePlan(uploadTokens[0]);plans=Array(N).fill(base);
- }else plans=await captureTile(binding,rawBinding,candidates,maximumSteps,strikeBackend,undefined,profile);
+ }else plans=await captureTile(binding,rawBinding,candidates,maximumSteps,strikeBackend,signal,profile);
+ await checkpoint(signal);
  const candidateLocalAllocations=uploadPreparer&&N>1?uploadPreparer.roles.map(r=>r.index):[];
  const lowered=await lowerLiveWorldPlans(plans,{faultPolicy,candidateLocalAllocations}),plan=plans[0];
  if(expectedPlan!==undefined)assertLiveWorldPlansEqual(plan,expectedPlan);if(expectedRecipe!==undefined)assertLiveWorldRecipesEqual(lowered,expectedRecipe);
  if(expectedPlanIdentity!==undefined&&expectedPlanIdentity!==lowered.identity)throw Error('Live source/schedule/ownership mismatch; cannot mix search and selected engines');
- const recipeIdentity=await liveWorldRecipeIdentity(lowered);if(expectedRecipeIdentity!==undefined&&expectedRecipeIdentity!==recipeIdentity)throw Error('Guarded recipe mismatch');
+ await checkpoint(signal);const recipeIdentity=await liveWorldRecipeIdentity(lowered);if(expectedRecipeIdentity!==undefined&&expectedRecipeIdentity!==recipeIdentity)throw Error('Guarded recipe mismatch');
  const requiredStorageBuffers=lowered.ownershipReport.requiredStorageBuffersPerShaderStage;if((device.limits.maxStorageBuffersPerShaderStage??0)<requiredStorageBuffers)throw RangeError('Experimental guarded profile requires '+requiredStorageBuffers+' storage buffers per shader stage');
  const rawAllocations=await captureRawWorldResourceFacts(batch,{strikeBackend}),resourceInput={plan,shared:lowered.shared,commands:lowered.commands,definitions:lowered.definitions,count:N,rawAllocations},compactResources=planLiveWorldResources(resourceInput),diagnosticResources=planLiveWorldResources({...resourceInput,diagnostic:true});
  validateLiveWorldResources(diagnosticResources,device.limits,{maximumOwnedBytes});
@@ -89,15 +94,15 @@ export async function createExperimentalLiveWorldBatchGPU(device,{binding,rawBin
  // Stream exact source preflight/compile: do not retain future shader modules.
  // Error timing differs from eager all-source preflight; no shader or graph changes.
  const compileIndices=liveCompileIndices(lowered.definitions,compileOrder);
- for(const [compileOrdinal,i] of compileIndices.entries()){const d=lowered.definitions[i],definitionStarted=performance.now();
+ for(const [compileOrdinal,i] of compileIndices.entries()){await checkpoint(signal);const d=lowered.definitions[i],definitionStarted=performance.now();
   onCompilePhase({stage:'start',phase:i,compileOrdinal,total:lowered.definitions.length,elapsedMs:definitionStarted-compileStart,...(compileOrdinal===0?{recipeSHA256}:{} )});const m=device.createShaderModule({code:d.code,label:'experimental-live-world-'+i}),info=await m.getCompilationInfo();if(info.messages.some(x=>x.type==='error'))throw Error('Live batch phase '+i+': '+info.messages.map(x=>x.message).join('\n'));
-  const layout=d.layout==='auto'?'auto':device.createPipelineLayout({bindGroupLayouts:d.layout.bindGroupLayouts.map(x=>device.createBindGroupLayout(x))});
-  pipelines[i]=await device.createComputePipelineAsync({layout,compute:{module:m,entryPoint:'main'}});onCompilePhase({stage:'end',phase:i,compileOrdinal,total:lowered.definitions.length,definitionMs:performance.now()-definitionStarted,elapsedMs:performance.now()-compileStart});
+  abort(signal);const layout=d.layout==='auto'?'auto':device.createPipelineLayout({bindGroupLayouts:d.layout.bindGroupLayouts.map(x=>device.createBindGroupLayout(x))});
+  pipelines[i]=await device.createComputePipelineAsync({layout,compute:{module:m,entryPoint:'main'}});abort(signal);onCompilePhase({stage:'end',phase:i,compileOrdinal,total:lowered.definitions.length,definitionMs:performance.now()-definitionStarted,elapsedMs:performance.now()-compileStart});
  }
- const finalStride=plan.allocations[plan.readback].size/4;const gateCode=liveBoundsResultGateSource(finalStride);const gateModule=device.createShaderModule({code:gateCode}),gatePipeline=await device.createComputePipelineAsync({layout:'auto',compute:{module:gateModule,entryPoint:'main'}});
- const raw=await createRawWorldGPU(device,{strikeBackend}),compileMs=performance.now()-compileStart;
+ await checkpoint(signal);const finalStride=plan.allocations[plan.readback].size/4;const gateCode=liveBoundsResultGateSource(finalStride);const gateModule=device.createShaderModule({code:gateCode}),gatePipeline=await device.createComputePipelineAsync({layout:'auto',compute:{module:gateModule,entryPoint:'main'}});
+ abort(signal);const raw=await createRawWorldGPU(device,{strikeBackend,onCompileStage:()=>{abort(signal);}});abort(signal);const compileMs=performance.now()-compileStart;
  return Object.freeze({sourcePlanIdentity:lowered.identity,recipeIdentity,compileOrder,compileMs,preparation,validationProfile,maximumOwnedBytes,resourceRequirements:diagnosticResources.requiredLimits,buildRevision:LIVE_WORLD_UPLOAD_SOURCE_REVISION,candidateCount:N,definitionCount:pipelines.length,requiredStorageBuffersPerShaderStage:requiredStorageBuffers,productionEnabled:false,
-  async run({signal,diagnostic=false,candidates:replacement}={}){
+  async run({signal,diagnostic=false,candidates:replacement,onPhase=()=>{}}={}){
    abort(signal);if(widthPolicy.diagnosticOnly&&(diagnostic!==true||replacement!==undefined))throw Error('N33 validation permits original diagnostic submission only');if(widthPolicy.singleSubmission&&validationSubmissionUsed)throw Error('N33 validation submission already used');let activePlans=plans,activeBatch=batch,activeCandidates=candidates,activeUploadTokens=uploadTokens;
    if(replacement!==undefined){assertLiveWorldReplacementCandidates(replacement,N,validationProfile);activeCandidates=[...replacement];activeBatch=prepareRawWorldBatch(rawBinding,activeCandidates,{maximumSteps});if(uploadPreparer){activeUploadTokens=[];for(const c of activeCandidates){abort(signal);activeUploadTokens.push(await uploadPreparer.prepare(prepareRawWorldBatch(rawBinding,[c],{maximumSteps})));}}else{activePlans=await captureTile(binding,rawBinding,activeCandidates,maximumSteps,strikeBackend,signal,profile);assertLiveWorldRecipesEqual(lowered,await lowerLiveWorldPlans(activePlans,{faultPolicy}));}abort(signal);}
    const resources=diagnostic?diagnosticResources:compactResources;validateLiveWorldResources(resources,device.limits,{maximumOwnedBytes});
@@ -110,13 +115,18 @@ export async function createExperimentalLiveWorldBatchGPU(device,{binding,rawBin
      const bytes=new Uint8Array(size);for(let c=0;c<(lowered.shared[i]?1:N);c++)bytes.set(activeUploads?.[c].get(i)??activePlans[c].allocations[i].initial,c*a.size);device.queue.writeBuffer(b,0,bytes);
     }
     const stride=plan.allocations[plan.readback].size/4,outputSize=diagnostic?stride*N*4:16*N,read=device.createBuffer({size:outputSize,usage:1|8});owned.push(read);
-    const fault=device.createBuffer({size:N*4,usage:128|8}),ids=device.createBuffer({size:N*4,usage:128|8});owned.push(fault,ids);device.queue.writeBuffer(fault,0,new Uint32Array(N));device.queue.writeBuffer(ids,0,Uint32Array.from(activeCandidates,c=>c.candidateId));
-    const commandEncodingStart=performance.now(),encoder=device.createCommandEncoder();rawBank.encode(encoder);let dispatches=rawBank.dispatches;
-    for(const c of lowered.commands){if(c.kind==='clear'){encoder.clearBuffer(buffers[c.buffer]);continue;}const p=pipelines[c.definition],group=runGroups.get(p,[...c.entries.map(e=>({binding:e.binding,resource:{buffer:buffers[e.buffer],offset:e.offset,size:e.size}})),...(lowered.definitions[c.definition].faultBinding===null?[]:[{binding:lowered.definitions[c.definition].faultBinding,resource:{buffer:fault}}])]),pass=encoder.beginComputePass();pass.setPipeline(p);pass.setBindGroup(0,group);pass.dispatchWorkgroups(c.x,N);pass.end();dispatches++;}
+    const fault=device.createBuffer({size:N*4,usage:128|8});owned.push(fault);const ids=device.createBuffer({size:N*4,usage:128|8});owned.push(ids);device.queue.writeBuffer(fault,0,new Uint32Array(N));device.queue.writeBuffer(ids,0,Uint32Array.from(activeCandidates,c=>c.candidateId));
+    const commandEncodingStart=performance.now(),submissions=createLiveWorldSubmissionQueue(device,{signal,onPhase});let encoder=device.createCommandEncoder(),rawCommands=0;const dispatchesRaw=rawBank.dispatches;
+    if(widthPolicy.singleSubmission)rawBank.encode(encoder);
+    else{await rawBank.encodeCooperatively({signal,getEncoder:()=>encoder,afterCommand:async()=>{rawCommands++;if(rawCommands%256===0){await submissions.submit(encoder);encoder=device.createCommandEncoder();await checkpoint(signal);onPhase({phase:'encoding',encodedCommands:rawCommands,totalCommands:dispatchesRaw+lowered.commands.length});}}});
+     if(rawCommands%256){await submissions.submit(encoder);encoder=device.createCommandEncoder();}}
+    let dispatches=dispatchesRaw;
+    let encodedCommands=0;onPhase({phase:'encoding',encodedCommands:dispatchesRaw+encodedCommands,totalCommands:dispatchesRaw+lowered.commands.length});
+    for(const c of lowered.commands){if(!widthPolicy.singleSubmission&&encodedCommands&&encodedCommands%256===0){await submissions.submit(encoder);encoder=device.createCommandEncoder();await checkpoint(signal);onPhase({phase:'encoding',encodedCommands:dispatchesRaw+encodedCommands,totalCommands:dispatchesRaw+lowered.commands.length});}encodedCommands++;if(c.kind==='clear'){encoder.clearBuffer(buffers[c.buffer]);continue;}const p=pipelines[c.definition],group=runGroups.get(p,[...c.entries.map(e=>({binding:e.binding,resource:{buffer:buffers[e.buffer],offset:e.offset,size:e.size}})),...(lowered.definitions[c.definition].faultBinding===null?[]:[{binding:lowered.definitions[c.definition].faultBinding,resource:{buffer:fault}}])]),pass=encoder.beginComputePass();pass.setPipeline(p);pass.setBindGroup(0,group);pass.dispatchWorkgroups(c.x,N);pass.end();dispatches++;}
     {const pass=encoder.beginComputePass();pass.setPipeline(gatePipeline);pass.setBindGroup(0,runGroups.get(gatePipeline,[fault,buffers[plan.readback],ids].map((buffer,binding)=>({binding,resource:{buffer}}))));pass.dispatchWorkgroups(N);pass.end();dispatches++;}
     if(diagnostic)encoder.copyBufferToBuffer(buffers[plan.readback],0,read,0,outputSize);else for(let i=0;i<N;i++)encoder.copyBufferToBuffer(buffers[plan.readback],(i*stride+stride-4)*4,read,i*16,16);
-    abort(signal);if(widthPolicy.singleSubmission)validationSubmissionUsed=true;const commandBuffer=encoder.finish(),commandEncodingMs=performance.now()-commandEncodingStart,start=performance.now();device.queue.submit([commandBuffer]);await device.queue.onSubmittedWorkDone();abort(signal);await read.mapAsync(1);mapped=true;mappedRead=read;abort(signal);const words=new Uint32Array(read.getMappedRange()).slice();read.unmap();mapped=false;
-    return{buildRevision:LIVE_WORLD_UPLOAD_SOURCE_REVISION,preparation,validationProfile,requestIdentity:binding.requestIdentity,sceneIdentity:binding.sceneIdentity,epoch:binding.epoch,candidateKeys:[...activeBatch.candidateKeys],...(diagnostic?{words,diagnosticWordStride:stride}:{}),compact:diagnostic?Uint32Array.from(Array.from({length:N},(_,i)=>Array.from(words.slice((i+1)*stride-4,(i+1)*stride))).flat()):words,sourcePlanIdentity:lowered.identity,recipeIdentity,coverage:'experimental-current-source-'+profile+'-'+(validationProfile??'N1-N3'),metrics:{compileMs,dispatches,commandEncodingMs,bindGroups:runGroups.stats(),readbackBytes:outputSize,submitToDoneMs:performance.now()-start,allocatedWorldBytes:owned.reduce((s,b)=>s+b.size,0),plannedTotalOwnedBytes:resources.totalOwnedBytes,maximumOwnedBytes,hardwareVerified:false},cumulativeWorkBudgetEnforced:false,cumulativeEventBudgetEnforced:false};
+    abort(signal);if(widthPolicy.singleSubmission)validationSubmissionUsed=true;const commandEncodingMs=performance.now()-commandEncodingStart-submissions.stats().waitMs;await submissions.submit(encoder);abort(signal);await read.mapAsync(1);mapped=true;mappedRead=read;abort(signal);const words=new Uint32Array(read.getMappedRange()).slice();read.unmap();mapped=false;
+    return{buildRevision:LIVE_WORLD_UPLOAD_SOURCE_REVISION,preparation,validationProfile,requestIdentity:binding.requestIdentity,sceneIdentity:binding.sceneIdentity,epoch:binding.epoch,candidateKeys:[...activeBatch.candidateKeys],...(diagnostic?{words,diagnosticWordStride:stride}:{}),compact:diagnostic?Uint32Array.from(Array.from({length:N},(_,i)=>Array.from(words.slice((i+1)*stride-4,(i+1)*stride))).flat()):words,sourcePlanIdentity:lowered.identity,recipeIdentity,coverage:'experimental-current-source-'+profile+'-'+(validationProfile??'N1-N3'),metrics:{compileMs,dispatches,commandEncodingMs,bindGroups:runGroups.stats(),readbackBytes:outputSize,submitToDoneMs:submissions.stats().waitMs,submittedChunks:submissions.stats().submittedChunks,maximumWorldCommandsPerSubmission:widthPolicy.singleSubmission?null:256,allocatedWorldBytes:owned.reduce((s,b)=>s+b.size,0),plannedTotalOwnedBytes:resources.totalOwnedBytes,maximumOwnedBytes,hardwareVerified:false},cumulativeWorkBudgetEnforced:false,cumulativeEventBudgetEnforced:false};
    }finally{runGroups.dispose();if(mapped)mappedRead?.unmap();owned.forEach(b=>b.destroy());rawBank.dispose();}
   }
  });

@@ -28,10 +28,37 @@ test('canonical progress reports batch evaluations while preserving the default 
  const busy=state();busy.routeStatus='searching';busy.routeProgress={...busy.routeResult,tested:2,evaluated:1};const html=render(busy);assert.ok(html.includes('id="cancelRoute"'));assert.ok(html.includes('처리 2 / 3'));assert.ok(!html.includes('제약식'));
  const routes=fs.readFileSync(path.join(root,'src/components/route-planner.tsx'),'utf8'),app=fs.readFileSync(path.join(root,'src/App.tsx'),'utf8');
  assert.ok(routes.includes('props.state.canonicalPlayback?<CanonicalRoutePlanner {...props}/>:<LegacyRoutePlanner {...props}/>'));
- assert.ok(routes.includes('접촉 제약식으로 큐 입력 계산'));assert.ok(app.includes('GPU 파라미터 평가'));assert.ok(app.includes('제약식 계산 · 물리 평가'));
+ assert.ok(routes.includes('접촉 제약식으로 큐 입력 계산'));assert.ok(app.includes('canonicalSearchPhaseLabel(s.routeProgress)'));assert.ok(app.includes('제약식 계산 · 물리 평가'));
 });
 
 test('actual completed batch widths render from receipts and never from candidate totals',()=>{
  const s=state();s.routeResult.batchWidths=[16,16,3,1];const html=render(s);assert.ok(html.includes('실제 완료 배치: 16개 × 2회 · 3개 × 1회 · 1개 × 1회'));
  assert.ok(!render(state()).includes('canonicalActualBatchWidths'));s.routeResult.batchWidths=[NaN];assert.ok(!render(s).includes('canonicalActualBatchWidths'));
+});
+
+
+test('GPU preparation phases are distinct from completed candidate counts without invented percentages',()=>{
+ const labels={preparing:'GPU 계산 준비 중',queued:'이전 GPU 작업 종료 대기 중',compiling:'GPU 셰이더 컴파일 중',running:'GPU 파라미터 평가 중',encoding:'GPU 명령 준비 중',submitted:'제출한 GPU 배치 완료 대기 중'};
+ for(const [phase,label] of Object.entries(labels)){
+  const s=state();s.routeStatus='searching';s.routeResult=null;s.routeProgress={phase,total:3,tested:0,evaluated:0,found:0,compileCompleted:2,compileTotal:17,encodedCommands:256,totalCommands:1024,elapsedMs:12345};
+  const html=render(s);assert.ok(html.includes(label),phase);assert.ok(html.includes('경과 12초'));assert.ok(html.includes('처리 0 / 3'));assert.ok(html.includes('남은 시간은 알 수 없습니다'));assert.ok(!html.includes('aria-valuenow'));assert.ok(!html.includes('%'));
+  assert.ok(html.includes('이미 제출한 GPU 작업은 즉시 취소되지 않으며'));
+  if(phase==='compiling')assert.ok(html.includes('셰이더 준비 2 / 17'));
+  else assert.ok(!html.includes('셰이더 준비 2 / 17'));
+  if(phase==='encoding')assert.ok(html.includes('명령 준비 256 / 1024'));
+  if(phase==='queued')assert.ok(html.includes('아직 새 후보를 계산하지 않습니다'));
+ }
+});
+test('stop without any completed batch stays visible and explains restart drain',()=>{
+ const s=state();s.routeResult=null;s.routeProgress={phase:'stopped',elapsedMs:2000};const html=render(s);
+ assert.ok(html.includes('GPU 후보 계산 중단'));assert.ok(html.includes('다시 계산은 종료를 기다립니다'));assert.ok(html.includes('id="findRoute"'));assert.ok(!html.includes('id="cancelRoute"'));assert.ok(!html.includes('평가한 조합에서 성공 후보를 찾지 못했습니다'));
+});
+test('missing progress does not fabricate candidate work or elapsed time',()=>{
+ const s=state();s.routeStatus='searching';s.routeProgress={phase:'compiling'};const html=render(s);
+ assert.ok(html.includes('셰이더 준비 — / —'));assert.ok(!html.includes('경과 '));assert.ok(!html.includes('NaN'));assert.ok(!html.includes('undefined'));
+});
+
+test('stopped partial empty results do not announce completed unsuccessful search',()=>{
+ const s=state();s.routeProgress={phase:'stopped',elapsedMs:2000};s.routeResult={...s.routeResult,partial:true,results:[],found:0};
+ const html=render(s);assert.ok(html.includes('GPU 후보 계산 중단'));assert.ok(!html.includes('id="noRoute"'));
 });
