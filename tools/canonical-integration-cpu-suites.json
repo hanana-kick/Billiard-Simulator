@@ -32,5 +32,7 @@
   "tests/canonical-placement-ui.cjs",
   "tests/deterministic-raw-cooperative-encoding.mjs",
   "tests/experimental-live-world-submissions.mjs",
-  "tests/experimental-live-world-scheduling.mjs"
+  "tests/experimental-live-world-scheduling.mjs",
+  "tests/experimental-live-world-pipeline-cache.mjs",
+  "tests/deterministic-raw-compilation-reuse.mjs"
 ]

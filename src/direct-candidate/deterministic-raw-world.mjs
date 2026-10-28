@@ -1,3 +1,4 @@
+import {compileLiveWorldPipeline,prepareLiveWorldShader} from './experimental-live-world-pipeline-cache.mjs';
 /** Opt-in raw strike → full PW1 roster. No host candidate physics between GPU phases.
  * Full immutable scene admission is conservative: sphere/hull AABBs may reject
  * feasible strikes; they never stand in for a collision response. */
@@ -99,14 +100,15 @@ fn rv(b:u32)->vec3<i32>{return vec3<i32>(bitcast<i32>(raw[b]),bitcast<i32>(raw[b
 `;
 export const RAW_WORLD_STRIKE_BACKENDS=Object.freeze(['staged','chunked-16']);
 export function validateRawWorldStrikeBackend(value){if(!RAW_WORLD_STRIKE_BACKENDS.includes(value))throw RangeError('Explicit raw strike backend: staged or chunked-16');return value;}
-export async function createRawWorldGPU(device,{onCompileStage=()=>{},strikeBackend='staged'}={}){
+export async function createRawWorldGPU(device,{onCompileStage=()=>{},strikeBackend='staged',signal,reusePipelines=false}={}){
  validateRawWorldStrikeBackend(strikeBackend);
+ if(typeof reusePipelines!=='boolean')throw TypeError('Explicit pipeline reuse flag');
  if(typeof onCompileStage!=='function')throw TypeError('Compile-stage observer');
  // Pre-validate every module before any heavy pipeline lowering. Raw numerical
  // sources remain unchanged; its factory compiles the same preflighted code.
- const parseStarted=performance.now(),sources=[...(strikeBackend==='staged'?generateRawStrikePhases():generateChunkedRawStrikePhases()),{name:'raw_world_handoff',code:RAW_WORLD_HANDOFF_WGSL}];let module;
- for(const source of sources){const started=performance.now(),candidate=device.createShaderModule({code:source.code,label:source.name}),info=await candidate.getCompilationInfo();if(info.messages.some(x=>x.type==='error'))throw Error(source.name+': '+info.messages.map(x=>x.message).join('\n'));onCompileStage({name:source.name,phase:'parse-complete',parseMs:performance.now()-started});if(source.name==='raw_world_handoff')module=candidate;}
- const parseMs=performance.now()-parseStarted,raw=await (strikeBackend==='staged'?createRawStrikeGPU(device,{onCompileStage}):createExperimentalChunkedRawStrikeGPU(device,{onCompileStage})),start=performance.now(),pipeline=await device.createComputePipelineAsync({layout:'auto',compute:{module,entryPoint:'main'}}),compileMs=performance.now()-start;onCompileStage({name:'raw_world_handoff',phase:'complete',compileMs});return Object.freeze({strikeBackend,compileMs,parseMs,rawCompileMs:raw.compileMs,shaderBytes:new TextEncoder().encode(RAW_WORLD_HANDOFF_WGSL).length,
+ const parseStarted=performance.now(),sources=[...(strikeBackend==='staged'?generateRawStrikePhases():generateChunkedRawStrikePhases()),{name:'raw_world_handoff',code:RAW_WORLD_HANDOFF_WGSL}];let module;const nativeCache=reusePipelines&&typeof device?.lost?.then==='function',preflightShaders=new Map();
+ for(const source of sources){const started=performance.now();let candidate;if(nativeCache){candidate=await prepareLiveWorldShader(device,{code:source.code,label:source.name,signal});preflightShaders.set(source.name,candidate);}else{candidate=device.createShaderModule({code:source.code,label:source.name});const info=await candidate.getCompilationInfo();if(info.messages.some(x=>x.type==='error'))throw Error(source.name+': '+info.messages.map(x=>x.message).join('\n'));}onCompileStage({name:source.name,phase:'parse-complete',parseMs:performance.now()-started});if(source.name==='raw_world_handoff')module=candidate;}
+ const parseMs=performance.now()-parseStarted,raw=await (strikeBackend==='staged'?createRawStrikeGPU(device,{onCompileStage,preflightShaders,signal,reusePipelines:nativeCache}):createExperimentalChunkedRawStrikeGPU(device,{onCompileStage})),start=performance.now(),pipeline=await (nativeCache?compileLiveWorldPipeline(device,{code:RAW_WORLD_HANDOFF_WGSL,preflightShader:module,signal}):device.createComputePipelineAsync({layout:'auto',compute:{module,entryPoint:'main'}})),compileMs=performance.now()-start;onCompileStage({name:'raw_world_handoff',phase:'complete',compileMs});return Object.freeze({strikeBackend,compileMs,parseMs,rawCompileMs:raw.compileMs,shaderBytes:new TextEncoder().encode(RAW_WORLD_HANDOFF_WGSL).length,
  createBank(batch){
   const d=batchData(batch),ownedBuffers=[],make=(size,usage)=>{const b=device.createBuffer({size,usage});ownedBuffers.push(b);return b;};
   // No raw pose, force, or integration invocation when the elapsed duration

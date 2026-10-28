@@ -1,6 +1,7 @@
 /** Bounded N1/N3 current-source prototype. Captures the actual live host graph;
  * no frozen WGSL refresh, hand-written world schedule, or CPU physics replay.
  * No app integration, release qualification, or large-N performance claim. */
+import {compileLiveWorldPipeline} from './experimental-live-world-pipeline-cache.mjs';
 import {createLiveWorldSubmissionQueue} from './experimental-live-world-submissions.mjs';
 import {createLiveWorldRunBindGroups} from './experimental-live-world-bind-groups.mjs';
 import {captureRawWorldResourceFacts} from './experimental-live-world-raw-resources.mjs';
@@ -95,12 +96,11 @@ export async function createExperimentalLiveWorldBatchGPU(device,{binding,rawBin
  // Error timing differs from eager all-source preflight; no shader or graph changes.
  const compileIndices=liveCompileIndices(lowered.definitions,compileOrder);
  for(const [compileOrdinal,i] of compileIndices.entries()){await checkpoint(signal);const d=lowered.definitions[i],definitionStarted=performance.now();
-  onCompilePhase({stage:'start',phase:i,compileOrdinal,total:lowered.definitions.length,elapsedMs:definitionStarted-compileStart,...(compileOrdinal===0?{recipeSHA256}:{} )});const m=device.createShaderModule({code:d.code,label:'experimental-live-world-'+i}),info=await m.getCompilationInfo();if(info.messages.some(x=>x.type==='error'))throw Error('Live batch phase '+i+': '+info.messages.map(x=>x.message).join('\n'));
-  abort(signal);const layout=d.layout==='auto'?'auto':device.createPipelineLayout({bindGroupLayouts:d.layout.bindGroupLayouts.map(x=>device.createBindGroupLayout(x))});
-  pipelines[i]=await device.createComputePipelineAsync({layout,compute:{module:m,entryPoint:'main'}});abort(signal);onCompilePhase({stage:'end',phase:i,compileOrdinal,total:lowered.definitions.length,definitionMs:performance.now()-definitionStarted,elapsedMs:performance.now()-compileStart});
+  onCompilePhase({stage:'start',phase:i,compileOrdinal,total:lowered.definitions.length,elapsedMs:definitionStarted-compileStart,...(compileOrdinal===0?{recipeSHA256}:{} )});
+  pipelines[i]=await compileLiveWorldPipeline(device,{code:d.code,layout:d.layout,label:'experimental-live-world-'+i,signal});abort(signal);onCompilePhase({stage:'end',phase:i,compileOrdinal,total:lowered.definitions.length,definitionMs:performance.now()-definitionStarted,elapsedMs:performance.now()-compileStart});
  }
- await checkpoint(signal);const finalStride=plan.allocations[plan.readback].size/4;const gateCode=liveBoundsResultGateSource(finalStride);const gateModule=device.createShaderModule({code:gateCode}),gatePipeline=await device.createComputePipelineAsync({layout:'auto',compute:{module:gateModule,entryPoint:'main'}});
- abort(signal);const raw=await createRawWorldGPU(device,{strikeBackend,onCompileStage:()=>{abort(signal);}});abort(signal);const compileMs=performance.now()-compileStart;
+ await checkpoint(signal);const finalStride=plan.allocations[plan.readback].size/4;const gateCode=liveBoundsResultGateSource(finalStride);const gatePipeline=await compileLiveWorldPipeline(device,{code:gateCode,preflight:false,signal});
+ abort(signal);const raw=await createRawWorldGPU(device,{strikeBackend,signal,reusePipelines:true,onCompileStage:()=>{abort(signal);}});abort(signal);const compileMs=performance.now()-compileStart;
  return Object.freeze({sourcePlanIdentity:lowered.identity,recipeIdentity,compileOrder,compileMs,preparation,validationProfile,maximumOwnedBytes,resourceRequirements:diagnosticResources.requiredLimits,buildRevision:LIVE_WORLD_UPLOAD_SOURCE_REVISION,candidateCount:N,definitionCount:pipelines.length,requiredStorageBuffersPerShaderStage:requiredStorageBuffers,productionEnabled:false,
   async run({signal,diagnostic=false,candidates:replacement,onPhase=()=>{}}={}){
    abort(signal);if(widthPolicy.diagnosticOnly&&(diagnostic!==true||replacement!==undefined))throw Error('N33 validation permits original diagnostic submission only');if(widthPolicy.singleSubmission&&validationSubmissionUsed)throw Error('N33 validation submission already used');let activePlans=plans,activeBatch=batch,activeCandidates=candidates,activeUploadTokens=uploadTokens;

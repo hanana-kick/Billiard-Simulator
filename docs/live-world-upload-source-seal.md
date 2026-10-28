@@ -232,3 +232,38 @@ Canonical-assets build and typecheck passed. No GPU/native execution or user-com
 native receipts remain attached to their historical exact source revisions;
 they do **not** qualify this new scheduling/cancellation implementation, physical
 GPU responsiveness, context-loss recovery, or new performance claims.
+
+### Reviewed device-local compilation reuse (2026-10-28)
+
+Review of `c948578` plus the explicit boolean guard on raw-strike reuse accepts
+88 modules at revision
+`d0b419dbc35847d9d2210e52bb0e5ed10fff288ab90871aef9f1826b80838d62`.
+Three existing factory modules changed, one compilation helper was added, and
+84 modules remain byte-identical to the preceding pin. The exact shader
+sources, numerical operations, dispatch order, request identities, per-run
+buffers and bind groups are unchanged. The separately reviewed candidate was
+created with `createLiveWorldSealReviewCandidate`; no drift bypass was used.
+Nonminified bundle: 960,752 bytes, SHA-256
+`4df1fb162d1c4901e811117f8feab982865c5b54d9fd1a63972e1637e5e2c58e`.
+
+Only successful immutable pipelines are retained by exact device, source and
+owned layout descriptor. The cache has an LRU limit of 128 entries and 32 MiB
+of exact-source key storage. This is **not** a bound on opaque native driver or
+GPU compilation memory. Failed/cancelled compilation is not inserted; device
+loss clears entries and rejects pending waits. Pending native work remains
+independent between callers. Cache hits intentionally skip repeated native
+allocation and its validation/OOM observations; this is an explicit live-batch
+contract, not a transparent replacement for arbitrary WebGPU error scopes.
+Raw factories preserve their previous behavior by default and opt in only from
+the live batch. Owned preflight receipts remove duplicate raw module creation
+while retaining all-source preflight before raw pipeline lowering.
+
+Verification is HOST/mock only. Exact-source/layout/device changes, eviction,
+failed preflight/compile, device loss, cancellation/restart, raw validation
+order, standalone defaults and repeated live-engine pipeline reuse are tested.
+The repeated same-device live factory fixture requests zero additional native
+pipelines; opted-in cold raw module creation is reduced from 13 to seven.
+Seven raw preflight modules still recur, and first-run compilation, graph
+preparation and all per-run state allocation remain. These counts are not GPU
+latency measurements or proof of physical-device responsiveness. Historical
+native receipts do not qualify this changed host implementation.
