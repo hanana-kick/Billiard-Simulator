@@ -29,7 +29,7 @@ test('controller composition is inert, self-contained and internally owns sealed
   assert.equal(owned.options.searchService.shared,17);assert.equal(owned.options.searchService.options.maximumCandidates,12);assert.equal(owned.shared,17);
   const oldSecure=globalThis.isSecureContext,oldNavigator=Object.getOwnPropertyDescriptor(globalThis,'navigator');let requests=0;
   try{globalThis.isSecureContext=true;Object.defineProperty(globalThis,'navigator',{configurable:true,value:{gpu:{requestAdapter:async()=>{requests++;return {limits:{maxStorageBuffersPerShaderStage:10},requestDevice:async opts=>({requested:opts})};}}}});
-   assert.equal(requests,0);const explicit=await api.startCanonicalPractice('idle');assert.equal(requests,1);assert.deepEqual(explicit.requested,{requiredLimits:{maxStorageBuffersPerShaderStage:9}});
+   assert.equal(requests,0);const explicit=await api.startCanonicalPractice('idle');assert.equal(requests,1);assert.deepEqual(explicit.requested,{requiredLimits:{maxStorageBuffersPerShaderStage:10}});
   }finally{globalThis.isSecureContext=oldSecure;if(oldNavigator)Object.defineProperty(globalThis,'navigator',oldNavigator);else delete globalThis.navigator;}
   globalThis.__testDisposed=0;assert.throws(()=>api.installCanonicalController('fail',{searchOptions:{}}),/install fail/);assert.equal(globalThis.__testDisposed,1);delete globalThis.__testDisposed;
  }finally{await f.cleanup();}
@@ -43,7 +43,7 @@ test('selected/batch shared bytes drift and unreviewed seals fail before artifac
  }finally{await f.cleanup();}
  const g=await fixture();try{g.pin.reviewStatus='UNREVIEWED';await fs.writeFile(g.pinFile,JSON.stringify(g.pin));await assert.rejects(()=>buildCanonicalControllerAssetsVerified(g),/Reviewed/);}finally{await g.cleanup();}
 });
-test('explicit MMQ2 wrapper requires ten bindings and rejects invalid profile before GPU access',async()=>{
+test('unified GPU wrapper requires ten bindings and rejects invalid profile before GPU access',async()=>{
  const f=await fixture(),oldSecure=globalThis.isSecureContext,oldNavigator=Object.getOwnPropertyDescriptor(globalThis,'navigator');
  let adapterRequests=0,deviceRequests=0,availableBindings=10;
  try{
@@ -60,7 +60,7 @@ test('explicit MMQ2 wrapper requires ten bindings and rejects invalid profile be
   availableBindings=9;
   await assert.rejects(()=>api.startCanonicalPractice('idle',{selectedWorldProfile:'mmq2-cushion'}),/10개/);
   assert.equal(adapterRequests,2);assert.equal(deviceRequests,1);assert.equal(globalThis.__assetInstallCalls,1);
-  assert.throws(()=>api.startCanonicalPractice('idle',{selectedWorldProfile:'unknown'}),/프로필/);
+  assert.throws(()=>api.startCanonicalPractice('idle',{selectedWorldProfile:'unknown'}),/공·쿠션 통합 모드/);
   assert.equal(adapterRequests,2);assert.equal(deviceRequests,1);assert.equal(globalThis.__assetInstallCalls,1);
  }finally{globalThis.isSecureContext=oldSecure;if(oldNavigator)Object.defineProperty(globalThis,'navigator',oldNavigator);else delete globalThis.navigator;delete globalThis.__assetInstallCalls;await f.cleanup();}
 });
