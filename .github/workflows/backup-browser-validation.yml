@@ -32,8 +32,8 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npm run prepare:engine
       - run: npm run typecheck
-      - name: Build default application (no opt-in engine activation)
-        run: npm run build
+      - name: Build application with opt-in GPU engine for manual testing
+        run: node build.cjs --canonical-controller-assets
       - name: Physics, search and feature regressions
         run: npm test
       - name: Resident HOST contracts only (not GPU qualification)
@@ -62,7 +62,7 @@ jobs:
           assert.equal(use.ignoreHTTPSErrors, undefined);
           NODE
       - name: Full real-app desktop, narrow-screen, settings and Korean-font checks
-        run: npm run test:e2e
+        run: CANONICAL_ASSETS_REQUIRED=1 npm run test:e2e
       - name: Preserve browser evidence (not a deployed build)
         if: always()
         uses: actions/upload-artifact@v4
@@ -80,7 +80,7 @@ jobs:
         shell: bash
         run: |
           {
-            echo '### Default application validation only; no deployment'
+            echo '### Application validation with packaged opt-in GPU engine; no GPU execution or deployment'
             echo 'Consult individual step results and browser evidence. An HTTP response, build, or test enumeration is not browser QA.'
             echo 'This job does not activate or qualify the opt-in canonical WebGPU controller, native GPU parity, or GPU performance.'
             echo 'Missing sandbox, browser, font, or rendering support must fail; no security-relaxing fallback is permitted.'
