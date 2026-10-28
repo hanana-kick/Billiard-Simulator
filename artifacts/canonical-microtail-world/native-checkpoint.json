@@ -1,0 +1,40 @@
+{
+  "scope": "canonical-local common-clock microtail component; not whole-shot REST or gameplay release",
+  "backend": "SwiftShader software Vulkan; not hardware timing",
+  "tests": 9,
+  "pass": 9,
+  "fail": 0,
+  "proposalExactWords": 92064,
+  "worldExactWords": 12736,
+  "worldCompileMs": 20107.945361,
+  "boundedProcess": {
+    "elapsedSeconds": 20.77,
+    "sampledAggregateRSSMiB": 1080.4,
+    "maxChildRSSMiB": 1043.68,
+    "limitSeconds": 150,
+    "limitRSSMiB": 1500,
+    "exitCode": 0
+  },
+  "wholePrefixSeparatingPairGuard": false,
+  "compositeEpisodeMetadata": {
+    "flag": 51,
+    "actualImpulseCount": 53,
+    "absoluteLowerEndTick": 54,
+    "absoluteUpperEndTick": 55,
+    "durationSecondsNumerator": 58,
+    "durationSecondsDenominator": 59
+  },
+  "sha256": {
+    "src/direct-candidate/deterministic-cloth-microtail.mjs": "476ecf8117eb741257200daf68a5a1b26f91fede520df02a5c0c59368a1973d0",
+    "src/direct-candidate/deterministic-microtail-fraction.mjs": "0ae54aa762c583ea28444bd43cd435785c2deadc6cbffd092b72bf4755f8438a",
+    "src/direct-candidate/deterministic-microtail-world.mjs": "da4057811059fb1e5e09d2e115732dc062a5ab07bed00ded985e750ec97c6b3b",
+    "src/direct-candidate/deterministic-microtail-world-gpu.mjs": "2635839bb13d06e8a2b13633b5729bff59e31d0f08d52a600b238c23842f5a4f",
+    "src/direct-candidate/deterministic-smooth-segment.mjs": "ac167a917c84c15bcc1351487b905b6d2569323a9f4cafb52a3781e5b12615cf",
+    "tests/deterministic-cloth-microtail.mjs": "cab0dc0d4a468c862ecccfce822c915d70f1740b01e95713c01513b6e5331294",
+    "tests/deterministic-microtail-world.mjs": "3fd45697b137ab2881ef774e4656c90eb01a2014f53bb83c5fc60626a95bba4f",
+    "src/direct-candidate/deterministic-rolling-fraction.mjs": "55a9569c7a27c56a0c041b4320b07d8845b6ba882208169a772c60fa642dedcc"
+  },
+  "stillTouchingPairPolicy": "pending; no synthetic trajectory derivative provider",
+  "fractionalRollingAnalyticCases": 120,
+  "proposalEvidence": "Previous standalone proposal run; proposal code unchanged"
+}

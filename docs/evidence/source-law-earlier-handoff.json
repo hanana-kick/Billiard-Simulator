@@ -1,0 +1,331 @@
+{
+  "kind": "bounded-earlier-handoff-characterization",
+  "acceptanceClaim": false,
+  "stateOrLoadForced": false,
+  "results": [
+    {
+      "earlierFrames": 0,
+      "prefixFrames": 81,
+      "originalSteps": 15,
+      "angularErrorAt96": -0.16335201263427734,
+      "rows": [
+        {
+          "frame": 82,
+          "positionY": 0.030745195224881172,
+          "velocityY": -0.009367188438773155,
+          "angularZ": -18.990982055664062,
+          "clothNormalImpulse": 0.00017882813699543476
+        },
+        {
+          "frame": 83,
+          "positionY": 0.030744198709726334,
+          "velocityY": -0.0008515625959262252,
+          "angularZ": -19.283477783203125,
+          "clothNormalImpulse": 0.003934219013899565
+        },
+        {
+          "frame": 84,
+          "positionY": 0.030755015090107918,
+          "velocityY": 0.005616870708763599,
+          "angularZ": -17.935569763183594,
+          "clothNormalImpulse": 0
+        },
+        {
+          "frame": 85,
+          "positionY": 0.030755100771784782,
+          "velocityY": -0.0046018799766898155,
+          "angularZ": -17.935598373413086,
+          "clothNormalImpulse": 0
+        }
+      ]
+    },
+    {
+      "earlierFrames": 4,
+      "wallMs": 122.017826,
+      "prefixFrames": 77,
+      "originalSteps": 19,
+      "angularErrorAt96": -0.1889963150024414,
+      "hybridEndpoint": {
+        "id": 1,
+        "position": [
+          -0.1199740394949913,
+          0.030740557238459587,
+          1.3127221490844568e-32
+        ],
+        "velocity": [
+          0.04749403893947601,
+          0,
+          2.730881016282303e-30
+        ],
+        "angular": [
+          6.451056808306586e-27,
+          7.988757409318254e-31,
+          -16.101537704467773
+        ],
+        "sleeping": false
+      },
+      "referenceEndpoint": {
+        "id": 1,
+        "position": [
+          -0.11995679140090942,
+          0.030726009979844093,
+          -1.147142474541635e-20
+        ],
+        "velocity": [
+          0.0495881587266922,
+          0,
+          2.479071756392655e-22
+        ],
+        "angular": [
+          1.395310229239468e-19,
+          0,
+          -15.912541389465332
+        ],
+        "sleeping": false
+      },
+      "rows": [
+        {
+          "frame": 78,
+          "positionY": 0.03074527159333229,
+          "velocityY": -0.009839256294071674,
+          "angularZ": -18.367849349975586,
+          "clothNormalImpulse": 0.0000796936874394305
+        },
+        {
+          "frame": 79,
+          "positionY": 0.030744250863790512,
+          "velocityY": -0.0002789497375488281,
+          "angularZ": -18.67732810974121,
+          "clothNormalImpulse": 0.004153601825237274
+        },
+        {
+          "frame": 81,
+          "positionY": 0.030743233859539032,
+          "velocityY": 0,
+          "angularZ": -18.989904403686523,
+          "clothNormalImpulse": 0.002145937643945217
+        },
+        {
+          "frame": 82,
+          "positionY": 0.030742736533284187,
+          "velocityY": 0,
+          "angularZ": -19.14393424987793,
+          "clothNormalImpulse": 0.002145937643945217
+        },
+        {
+          "frame": 83,
+          "positionY": 0.03074224479496479,
+          "velocityY": 0,
+          "angularZ": -19.29796028137207,
+          "clothNormalImpulse": 0.002145937643945217
+        },
+        {
+          "frame": 84,
+          "positionY": 0.03075391612946987,
+          "velocityY": 0.006466519553214312,
+          "angularZ": -17.950319290161133,
+          "clothNormalImpulse": 0
+        },
+        {
+          "frame": 85,
+          "positionY": 0.03075488843023777,
+          "velocityY": -0.0037522311322391033,
+          "angularZ": -17.950366973876953,
+          "clothNormalImpulse": 0
+        }
+      ]
+    },
+    {
+      "earlierFrames": 8,
+      "wallMs": 110.85038300000001,
+      "prefixFrames": 73,
+      "originalSteps": 23,
+      "angularErrorAt96": -0.1882791519165039,
+      "hybridEndpoint": {
+        "id": 1,
+        "position": [
+          -0.11997414380311966,
+          0.030740566551685333,
+          -1.8031101632810407e-15
+        ],
+        "velocity": [
+          0.04749249294400215,
+          5.820766091346741e-11,
+          -1.2988121320632595e-13
+        ],
+        "angular": [
+          -4.433796537382795e-13,
+          8.687981371221019e-23,
+          -16.100820541381836
+        ],
+        "sleeping": false
+      },
+      "referenceEndpoint": {
+        "id": 1,
+        "position": [
+          -0.11995679140090942,
+          0.030726009979844093,
+          -1.147142474541635e-20
+        ],
+        "velocity": [
+          0.0495881587266922,
+          0,
+          2.479071756392655e-22
+        ],
+        "angular": [
+          1.395310229239468e-19,
+          0,
+          -15.912541389465332
+        ],
+        "sleeping": false
+      },
+      "rows": [
+        {
+          "frame": 74,
+          "positionY": 0.03074558638036251,
+          "velocityY": -0.009052067063748837,
+          "angularZ": -17.76372528076172,
+          "clothNormalImpulse": 0.00024500349536538124
+        },
+        {
+          "frame": 75,
+          "positionY": 0.030744604766368866,
+          "velocityY": -0.000021457701222971082,
+          "angularZ": -18.064571380615234,
+          "clothNormalImpulse": 0.004042365588247776
+        },
+        {
+          "frame": 81,
+          "positionY": 0.030741630122065544,
+          "velocityY": 0,
+          "angularZ": -18.989059448242188,
+          "clothNormalImpulse": 0.002145937643945217
+        },
+        {
+          "frame": 82,
+          "positionY": 0.030741147696971893,
+          "velocityY": 0,
+          "angularZ": -19.143083572387695,
+          "clothNormalImpulse": 0.002145937643945217
+        },
+        {
+          "frame": 83,
+          "positionY": 0.03074066713452339,
+          "velocityY": 0,
+          "angularZ": -19.297107696533203,
+          "clothNormalImpulse": 0.002145937643945217
+        },
+        {
+          "frame": 84,
+          "positionY": 0.03075234219431877,
+          "velocityY": 0.006472417619079351,
+          "angularZ": -17.949464797973633,
+          "clothNormalImpulse": 0
+        },
+        {
+          "frame": 85,
+          "positionY": 0.03075331822037697,
+          "velocityY": -0.0037463330663740635,
+          "angularZ": -17.94951629638672,
+          "clothNormalImpulse": 0
+        }
+      ]
+    },
+    {
+      "earlierFrames": 16,
+      "wallMs": 154.731808,
+      "prefixFrames": 65,
+      "originalSteps": 31,
+      "angularErrorAt96": -0.18705272674560547,
+      "hybridEndpoint": {
+        "id": 1,
+        "position": [
+          -0.119974285364151,
+          0.03074059821665287,
+          -1.8057028362136109e-19
+        ],
+        "velocity": [
+          0.04749768227338791,
+          0,
+          5.491142336687065e-19
+        ],
+        "angular": [
+          3.9620728437472427e-16,
+          4.649861719734732e-26,
+          -16.099594116210938
+        ],
+        "sleeping": false
+      },
+      "referenceEndpoint": {
+        "id": 1,
+        "position": [
+          -0.11995679140090942,
+          0.030726009979844093,
+          -1.147142474541635e-20
+        ],
+        "velocity": [
+          0.0495881587266922,
+          0,
+          2.479071756392655e-22
+        ],
+        "angular": [
+          1.395310229239468e-19,
+          0,
+          -15.912541389465332
+        ],
+        "sleeping": false
+      },
+      "rows": [
+        {
+          "frame": 66,
+          "positionY": 0.03074616752564907,
+          "velocityY": -0.008411407470703125,
+          "angularZ": -16.541357040405273,
+          "clothNormalImpulse": 0.0003795420052483678
+        },
+        {
+          "frame": 67,
+          "positionY": 0.030745213851332664,
+          "velocityY": 0,
+          "angularZ": -16.832122802734375,
+          "clothNormalImpulse": 0.003912333399057388
+        },
+        {
+          "frame": 81,
+          "positionY": 0.03073843941092491,
+          "velocityY": 0,
+          "angularZ": -18.988330841064453,
+          "clothNormalImpulse": 0.002145937643945217
+        },
+        {
+          "frame": 82,
+          "positionY": 0.0307379812002182,
+          "velocityY": 0,
+          "angularZ": -19.142349243164062,
+          "clothNormalImpulse": 0.002145937643945217
+        },
+        {
+          "frame": 83,
+          "positionY": 0.03073752671480179,
+          "velocityY": 5.820766091346741e-11,
+          "angularZ": -19.296344757080078,
+          "clothNormalImpulse": 0.002145937643945217
+        },
+        {
+          "frame": 84,
+          "positionY": 0.030749207362532616,
+          "velocityY": 0.006481807213276625,
+          "angularZ": -17.948684692382812,
+          "clothNormalImpulse": 0
+        },
+        {
+          "frame": 85,
+          "positionY": 0.030750194564461708,
+          "velocityY": -0.0037369434721767902,
+          "angularZ": -17.9487247467041,
+          "clothNormalImpulse": 0
+        }
+      ]
+    }
+  ]
+}

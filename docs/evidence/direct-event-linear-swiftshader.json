@@ -1,0 +1,25 @@
+{
+  "profile": "experimental-planar-frictionless-linear-event-gpu-v1",
+  "adapter": {
+    "vendor": "google",
+    "architecture": "swiftshader",
+    "device": "swiftshader-device-subzero-",
+    "description": "SwiftShader driver 5.0.0"
+  },
+  "shaderBytes": 3680,
+  "compileMs": 291.424382,
+  "metrics": {
+    "count": 9,
+    "persistentBytes": 896,
+    "resultBytes": 144,
+    "readbackBytes": 144,
+    "submitToDoneMs": 0.19951000000003205,
+    "hardwareSpeedClaim": false,
+    "rawShot": false
+  },
+  "preparedCases": 9,
+  "productionEnabled": false,
+  "rawShot": false,
+  "coulombOnGPU": false,
+  "rapierParity": false
+}

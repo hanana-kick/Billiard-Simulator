@@ -1,0 +1,25 @@
+{
+  "chainWordsChecked": 56816,
+  "literalCpuGpuReferenceWords": 55280,
+  "invalidHeaderExpectedWords": 1536,
+  "validInitializerRowsComparedToCPU": 64,
+  "invalidInitializerRowsCheckedAgainstExplicitPending": 3,
+  "invalidInitializerExpectedHeader": [
+    0,
+    7,
+    64
+  ],
+  "rawHandoffWorldAllRowsLiteralCpuGpuParity": true,
+  "syntheticGateWords": 3952,
+  "syntheticGateAuthority": "independent expected ABI outputs only; not physical entry",
+  "strictCPUInitializerOnInvalidPW1": "throws validation error; GPU robust invalid packet maps to pending",
+  "elapsedDurationBudgetCases": 11,
+  "elapsedDurationBudgetLiteralCpuGpuWords": 3696,
+  "zeroRawPhysicsBudgetCases": 2,
+  "totalLiteralCpuGpuReferenceWords": 58976,
+  "exactFinishBoundary": {
+    "baselineElapsedTicks": 7696,
+    "budgetTicks7696to7711": "INCOMPLETE; final non-integrating separation check exceeds capped iteration count",
+    "budgetTicks7712": "READY at elapsed7696; no time overshoot"
+  }
+}

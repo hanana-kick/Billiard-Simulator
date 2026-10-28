@@ -1,0 +1,29 @@
+{
+  "profile": "gpu-canonical-q-v2-mixed-continuation",
+  "cases": 39,
+  "comparedWords": 6240,
+  "exactWords": true,
+  "compileMs": 1958.515305,
+  "shaderBytes": [
+    4116,
+    8418,
+    5991,
+    5906,
+    6974
+  ],
+  "metrics": {
+    "count": 39,
+    "dispatches": 5,
+    "intermediateReadbacks": 0,
+    "hostPhysicsBetweenPhases": 0,
+    "finalReadbacks": 1,
+    "stateBytesPerCandidate": 640,
+    "allocatedBytes": 105376,
+    "submitToDoneMs": 56.401036000000204,
+    "fullShot": false,
+    "physicalAcceptance": false,
+    "hardwareSpeedClaim": false
+  },
+  "advanced": 33,
+  "fullShot": false
+}

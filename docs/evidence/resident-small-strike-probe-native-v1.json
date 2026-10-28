@@ -1,0 +1,294 @@
+{
+  "kind": "resident-small-strike-probe-native-evidence-v1",
+  "status": "bounded-original-source-parity-pass",
+  "sourceHead": "de9a2b62a99f6a0f337b1b7bee204834dd5f39fb",
+  "declaredRoster": [
+    {
+      "id": 219,
+      "settings": {
+        "angle": 310,
+        "elevation": 85,
+        "speed": 4.5,
+        "tipX": 0.2,
+        "tipY": -0.1
+      },
+      "role": "one actual trajectory; independently verified tip h165 lies beyond this probe"
+    },
+    {
+      "id": 522,
+      "settings": {
+        "angle": 9,
+        "elevation": 8,
+        "speed": 0,
+        "tipX": 0,
+        "tipY": 0
+      },
+      "role": "original invalid-input rejection lane"
+    }
+  ],
+  "assertion": {
+    "kind": "resident-small-strike-phase-assertion-v1",
+    "profile": "probe",
+    "status": "pass",
+    "count": 2,
+    "frames": 8,
+    "runtimeSha256": "385ceaf0889104ddd524242050bfe88a78e6c8c85507ca99075a98307020fc7f",
+    "actualSha256": "36c798593dc4b4e3c6b3347cf04edb09e08bd9780ed07e8423d96ef5713173b3",
+    "expectedSha256": "38470ebcb4f968d95ce5d6ef5eb2a3f323724ac7bc77e5221c0b79f623160422",
+    "gpuInvocationId": "d10b368a-9ca5-4dae-94e4-c2dd70652911",
+    "transport": {
+      "profile": "probe",
+      "frames": 8,
+      "initializations": 1,
+      "hostStateReadbacksDuringContinuation": 0,
+      "transportSnapshots": 1,
+      "sourceParity": "independent all11 comparison still required"
+    },
+    "source": {
+      "kind": "resident-small-strike-source-comparison-v1",
+      "count": 2,
+      "frames": 8,
+      "strictOriginalComparisons": 1,
+      "all11SourceGroups": true,
+      "rejectedAtH0": 1,
+      "nativeOuterCompared": false,
+      "transportValidated": false,
+      "fullRest": false,
+      "rawToStrike": false,
+      "native1024": false
+    },
+    "native": null,
+    "fullRest": false,
+    "rawToStrike": false,
+    "native1024": false,
+    "hardwarePerformance": false
+  },
+  "profile": {
+    "frames": 8,
+    "work": [
+      2048
+    ],
+    "runtimeSha256": "385ceaf0889104ddd524242050bfe88a78e6c8c85507ca99075a98307020fc7f",
+    "originalGeneration": "2b8586c897f2c2adc0b24a54fcb9785c04b39ddb77ec7a2e9dc6eae065efbc7c",
+    "sourceSha256": "5f425339e340f8688b2d1015ea437ed3f9b1ffbd2491dc7b92ab879af3069d0a",
+    "bytecodeSha256": "0ebf5643989c4a68afa4836fae4ad713fc8dddbca4d0c5e070ed82ed5d4ec9ba",
+    "vmShaderSha256": "88246d1594f50f331e31ee5f4b2e7b3c2c2c421b312e46525a1fcd89385eb89e",
+    "instructions": 134775,
+    "localWords": 7783,
+    "stackCapacity": 15,
+    "handlers": [
+      {
+        "id": 0,
+        "name": "rc_cue_flat_advance",
+        "sha256": "3acda65b57a92fe85bb3194d8bec5a30be42cee7a14b4395818a28fcd9a5acec"
+      },
+      {
+        "id": 1,
+        "name": "rc_num_eval",
+        "sha256": "185d35d20bcaa7c0e8406cdd47004281c6e88d34b9378bf38dc75af4f7f2a339"
+      },
+      {
+        "id": 2,
+        "name": "rc_world_broad_commit_collision",
+        "sha256": "2be62be108eb94ede3ea18c0b7362386085edf33584c48f8ed42c54bda7d88f9"
+      }
+    ]
+  },
+  "adapter": {
+    "vendor": "google",
+    "architecture": "swiftshader",
+    "device": "swiftshader-device-subzero-",
+    "description": "SwiftShader driver 5.0.0",
+    "isFallbackAdapter": true
+  },
+  "precompile": {
+    "wallMs": 101625.422933,
+    "cache": {
+      "requests": 50,
+      "coldCompiles": 26,
+      "warmHits": 24,
+      "inflightHits": 0,
+      "failures": 0,
+      "compileWallMs": 101347.19828299998,
+      "validationRequests": 50,
+      "validationCold": 26,
+      "validationWarm": 24,
+      "validationFailures": 0,
+      "entries": 26
+    },
+    "order": [
+      "external macro 2 rc_world_broad_commit_collision",
+      "microcode begin",
+      "microcode bounded pump",
+      "device-pc-begin",
+      "initialize raw-init",
+      "initialize raw-step",
+      "initialize raw-finish",
+      "initialize contact-init",
+      "initialize contact-gjk",
+      "initialize contact-epa",
+      "initialize contact-finish",
+      "initialize cast-init",
+      "initialize cast-cast",
+      "initialize cast-contact-init",
+      "initialize cast-contact-gjk",
+      "initialize cast-contact-epa",
+      "initialize cast-finish",
+      "initialize world-transfer",
+      "initialize creation-begin",
+      "initialize creation-gather",
+      "initialize creation-evaluate",
+      "initialize creation-scatter",
+      "initialize creation-finish",
+      "external macro 0 rc_cue_flat_advance",
+      "external macro 1 rc_num_eval",
+      "microcode begin",
+      "microcode bounded pump",
+      "device-pc-begin",
+      "initialize raw-init",
+      "initialize raw-step",
+      "initialize raw-finish",
+      "initialize contact-init",
+      "initialize contact-gjk",
+      "initialize contact-epa",
+      "initialize contact-finish",
+      "initialize cast-init",
+      "initialize cast-cast",
+      "initialize cast-contact-init",
+      "initialize cast-contact-gjk",
+      "initialize cast-contact-epa",
+      "initialize cast-finish",
+      "initialize world-transfer",
+      "initialize creation-begin",
+      "initialize creation-gather",
+      "initialize creation-evaluate",
+      "initialize creation-scatter",
+      "initialize creation-finish",
+      "external macro 0 rc_cue_flat_advance",
+      "external macro 1 rc_num_eval",
+      "external macro 2 rc_world_broad_commit_collision"
+    ],
+    "bothProfilesBeforeAnySourceVmAllocation": true
+  },
+  "stats": {
+    "dispatches": 76507,
+    "submissions": 76,
+    "initialWrites": 8,
+    "copies": 2,
+    "mappings": 1,
+    "encodeWallMs": 580.0746519979439,
+    "submitWallMs": 31.892028999951435,
+    "queueDrainWallMs": 315048.79096599994,
+    "executionGroups": [
+      {
+        "name": "initialize",
+        "wallMs": 4612.108288000003,
+        "dispatches": 68315,
+        "submissions": 67,
+        "encodeWallMs": 362.57063899860077,
+        "submitWallMs": 25.612412999995286,
+        "queueDrainWallMs": 4211.154226999919,
+        "externalHandlerDispatches": 0,
+        "pumpCycles": 0
+      },
+      {
+        "name": "pump",
+        "wallMs": 311107.366698,
+        "dispatches": 8192,
+        "submissions": 8,
+        "encodeWallMs": 217.5040129993431,
+        "submitWallMs": 6.211192999966443,
+        "queueDrainWallMs": 310837.338109,
+        "externalHandlerDispatches": 6144,
+        "pumpCycles": 2048
+      }
+    ],
+    "externalHandlerDispatches": 6144,
+    "pumpCycles": 2048,
+    "readbackWallMs": 0.9268549999687821,
+    "cache": {
+      "requests": 25,
+      "coldCompiles": 0,
+      "warmHits": 25,
+      "inflightHits": 0,
+      "failures": 0,
+      "compileWallMs": 0,
+      "validationRequests": 25,
+      "validationCold": 0,
+      "validationWarm": 25,
+      "validationFailures": 0,
+      "entries": 0
+    },
+    "steadyEndToEndWallMs": 315721.925268,
+    "steadyEndToEndScope": "after compilation/bindings/upload drain through initialization, pump, final diagnostics map and validation"
+  },
+  "controls": [
+    [
+      1380142422,
+      1,
+      2,
+      0,
+      2474,
+      0,
+      13471342,
+      0,
+      78,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      1380142422,
+      1,
+      2,
+      0,
+      2474,
+      0,
+      2511,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  ],
+  "decision": {
+    "kind": "resident-small-strike-decision-v1",
+    "action": "go",
+    "gpuInvocationId": "d10b368a-9ca5-4dae-94e4-c2dd70652911",
+    "probeRuntimeSha256": "385ceaf0889104ddd524242050bfe88a78e6c8c85507ca99075a98307020fc7f",
+    "outerRuntimeSha256": "e0800adef3060dbdc7e5c9facbe127d1daadc7a199c777af5f8cef6f0fd2c6c8",
+    "probeActualSha256": "36c798593dc4b4e3c6b3347cf04edb09e08bd9780ed07e8423d96ef5713173b3"
+  },
+  "h64": {
+    "status": "running-not-yet-qualified",
+    "bornRequest": 64,
+    "freshRawInitialization": true,
+    "probeStateReused": false,
+    "retainedDeviceAndPipelineCache": true,
+    "rateOnlyProjectionSeconds": 2488.858933584,
+    "projectionNotMeasurement": true
+  },
+  "timing": {
+    "probeWorkerQuietHold": true,
+    "outerWorkerQuietHold": false,
+    "outerCorrectnessRunAllowsIndependentHostWork": true,
+    "gpuTimestamp": false,
+    "hardwareCalibration": false
+  },
+  "limits": {
+    "fullRest": false,
+    "rawToStrike": false,
+    "native1024": false,
+    "fullAcceptedEmissionTapeQualified": false,
+    "hardwarePerformance": false
+  }
+}

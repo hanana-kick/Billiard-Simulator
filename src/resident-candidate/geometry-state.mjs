@@ -2,9 +2,12 @@
  * Initial-only packing of the authenticated original registered four-ball
  * geometry/cache roster. No native stepping and no future/oracle states.
  */
-import World from '../experimental-four-ball-world.js';
-import PairContact from '../experimental-pair-contact-stage.js';
-import CushionContact from '../experimental-cushion-contact-stage.js';
+import * as importedWorld from '../experimental-four-ball-world.js';
+const World=importedWorld.default??globalThis.LabFourBallWorldExperimental;
+import * as importedPairContact from '../experimental-pair-contact-stage.js';
+const PairContact=importedPairContact.default??globalThis.LabPairContactStageExperimental;
+import * as importedCushionContact from '../experimental-cushion-contact-stage.js';
+const CushionContact=importedCushionContact.default??globalThis.LabCushionContactStageExperimental;
 import {packFloorNarrow,packPairNarrow,packConvexNarrow,NARROW_LAYOUT} from './narrowphase.mjs';
 import {packSharedConvexHull,CONVEX_POINT_LAYOUT} from './convex-point.mjs';
 import {COUPLED_BODY_OFFSETS} from './coupled-solver.mjs';

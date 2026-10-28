@@ -11,6 +11,25 @@ export const REASON = Object.freeze({NONE: 0, NONFINITE_INPUT: 1, SOURCE_INPUT_R
   CUE_BLOCKED: 3, CAPACITY: 4, NUMERIC: 5, PHYSICS_SCOPE: 6, HORIZON: 7,
   CANCELLED: 8, DEVICE_LOST: 9, STALE_SOURCE: 10, INCOMPLETE_COMMIT: 11,
   CUE_CONTINUATION_PROFILE: 12});
+// Ordinary WebGPU pages need not expose SharedArrayBuffer at all. Admit the
+// actual non-shared backing store positively, using intrinsic brand getters;
+// neither a missing constructor nor a spoofed .buffer/prototype can admit SAB.
+// Preserve the existing same-realm Uint32Array contract. "Owned" here means
+// non-shared storage, not exclusive JS references or authenticated provenance.
+const typedArrayPrototype = Object.getPrototypeOf(Uint32Array.prototype);
+const backingBuffer = Object.getOwnPropertyDescriptor(typedArrayPrototype, 'buffer').get;
+const viewByteOffset = Object.getOwnPropertyDescriptor(typedArrayPrototype, 'byteOffset').get;
+const viewByteLength = Object.getOwnPropertyDescriptor(typedArrayPrototype, 'byteLength').get;
+const typedArrayName = Object.getOwnPropertyDescriptor(typedArrayPrototype, Symbol.toStringTag).get;
+const arrayBufferByteLength = Object.getOwnPropertyDescriptor(ArrayBuffer.prototype, 'byteLength').get;
+export function isOwnedUint32Array(value) {
+  if (!(value instanceof Uint32Array)) return false;
+  try {
+    if (typedArrayName.call(value) !== 'Uint32Array') return false;
+    arrayBufferByteLength.call(backingBuffer.call(value));
+    return true;
+  } catch { return false; }
+}
 const names = Object.fromEntries(Object.entries(STATUS).map(([name, code]) => [code, name.toLowerCase()]));
 const uint = x => Number.isInteger(x) && x >= 0 && x < UNSET;
 const ownData = (value, keys, label) => {
@@ -46,9 +65,9 @@ export function packCandidates(rows, {selectedIndex, ruleId = 0, maxCandidates =
 }
 
 export function unpackCandidates(words) {
-  if (!(words instanceof Uint32Array) || words.buffer instanceof SharedArrayBuffer || words.length % INPUT_WORDS)
+  if (!isOwnedUint32Array(words) || words.length % INPUT_WORDS)
     throw new TypeError('Whole owned candidate records required');
-  const view = new DataView(words.buffer, words.byteOffset, words.byteLength), result = [];
+  const view = new DataView(backingBuffer.call(words), viewByteOffset.call(words), viewByteLength.call(words)), result = [];
   for (let i = 0; i < words.length / INPUT_WORDS; i++) {
     const base = i * INPUT_WORDS * 4;
     result.push({id: view.getUint32(base, true), settings: Object.fromEntries(PARAMETER_KEYS.map((key, axis) =>
@@ -58,7 +77,7 @@ export function unpackCandidates(words) {
 }
 
 export function initialResults(input) {
-  if (!(input instanceof Uint32Array) || input.length % INPUT_WORDS) throw new TypeError('Packed candidate records required');
+  if (!isOwnedUint32Array(input) || input.length % INPUT_WORDS) throw new TypeError('Packed candidate records required');
   const out = new Uint32Array(input.length / INPUT_WORDS * RESULT_WORDS);
   for (let i = 0; i < out.length / RESULT_WORDS; i++) out.set([input[i * INPUT_WORDS], STATUS.PENDING, UNSET, REASON.NONE], i * RESULT_WORDS);
   return out;
@@ -66,7 +85,7 @@ export function initialResults(input) {
 
 /** Never collapse unsupported/incomplete/cancelled into an evaluated miss. */
 export function decodeResults(words, expectedIds, {allowPending = false} = {}) {
-  if (!(words instanceof Uint32Array) || words.buffer instanceof SharedArrayBuffer || !Array.isArray(expectedIds) || words.length !== expectedIds.length * RESULT_WORDS)
+  if (!isOwnedUint32Array(words) || !Array.isArray(expectedIds) || words.length !== expectedIds.length * RESULT_WORDS)
     throw new TypeError('Complete detached terminal result range required');
   return expectedIds.map((id, index) => {
     const [actual, status, pass, reason] = words.subarray(index * RESULT_WORDS, (index + 1) * RESULT_WORDS);

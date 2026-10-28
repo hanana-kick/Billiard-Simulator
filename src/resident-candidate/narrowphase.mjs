@@ -3,9 +3,12 @@
  * Geometry comes from unchanged Rapier/Parry source-ordered graph builders;
  * see those modules and vendor/RAPIER-LICENSE.txt. No CPU continuation.
  */
-import Floor from '../experimental-world-stepper.js';
-import Pair from '../experimental-cloth-island-world.js';
-import Convex from '../experimental-cushion-roster-world.js';
+import * as importedFloor from '../experimental-world-stepper.js';
+const Floor=importedFloor.default??globalThis.LabWorldStepperExperimental;
+import * as importedPair from '../experimental-cloth-island-world.js';
+const Pair=importedPair.default??globalThis.LabClothIslandWorldExperimental;
+import * as importedConvex from '../experimental-cushion-roster-world.js';
+const Convex=importedConvex.default??globalThis.LabCushionRosterWorldExperimental;
 import {compileGraph} from './numeric-program.mjs';
 
 export const NARROW_STATUS = Object.freeze({OK:0,NUMERIC:1,FLOOR_FEATURE:2,INVALID:3});

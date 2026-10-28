@@ -1,0 +1,930 @@
+{
+  "kind": "original-source-precontact-forward-slip-diagnostic",
+  "duration": 0.05,
+  "wallMs": 153.265066,
+  "productionEnabled": false,
+  "acceptanceClaim": false,
+  "runs": [
+    {
+      "refinement": 1,
+      "dt": 0.0010416666666666667,
+      "sourceSteps": 48,
+      "constructorSteps": 72,
+      "material": {
+        "gravity": 9.81,
+        "clothFriction": 0.20000000298023224,
+        "rollingLength": 0.00045,
+        "spinLength": 0.00035
+      },
+      "initial": {
+        "position": [
+          -0.20000000298023224,
+          0.030750000849366188,
+          0
+        ],
+        "velocity": [
+          1,
+          0,
+          0
+        ],
+        "angular": [
+          0,
+          0,
+          -6.504065036773682
+        ]
+      },
+      "actual": {
+        "position": [
+          -0.15245608985424042,
+          0.030728250741958618,
+          0
+        ],
+        "velocity": [
+          0.9019126892089844,
+          0,
+          0
+        ],
+        "angular": [
+          0,
+          0,
+          -13.896992683410645
+        ]
+      },
+      "analytic": {
+        "id": 1,
+        "position": [
+          -0.15245250301677735,
+          0.030750000849366188,
+          0
+        ],
+        "velocity": [
+          0.9018999985381961,
+          0,
+          0
+        ],
+        "angular": [
+          0,
+          0,
+          -13.896093710051414
+        ],
+        "radius": 0.03075,
+        "mass": 0.21,
+        "orientationAdvance": false
+      },
+      "analyticAcceleration": [
+        -1.9620000292360784,
+        0,
+        0
+      ],
+      "analyticAngularAcceleration": [
+        0,
+        0,
+        -147.84057346555463
+      ],
+      "normalRatio": {
+        "min": 0.8677105438731827,
+        "max": 1.1322895902828374
+      },
+      "sums": {
+        "observedFrictionImpulse": 0.020598336084617586,
+        "muNormalImpulse": 0.020601001688852927,
+        "worldVelocityDelta": -0.09808731079101562,
+        "worldAngularDelta": -7.974917888641357,
+        "patchTorqueZ": 0.0000462245017928593,
+        "patchAngularDelta": 0.5819902420043945,
+        "patchIdealAngularDelta": 0.5819728341703795
+      },
+      "signedEndpointError": {
+        "position": [
+          -0.00000358683746307098,
+          -0.000021750107407569885,
+          0
+        ],
+        "velocity": [
+          0.000012690670788240155,
+          0,
+          0
+        ],
+        "angular": [
+          0,
+          0,
+          -0.0008989733592308369
+        ]
+      },
+      "firstSteps": [
+        {
+          "time": 0.0010416666666666667,
+          "contacts": 1,
+          "normalY": 1,
+          "normalRatio": 0.8677105438731827,
+          "cappedNormalRatio": 0.8677105438731827,
+          "observedFrictionImpulse": 0.000372354999079505,
+          "muNormalImpulse": 0.00037241052459792076,
+          "worldVelocityDelta": -0.0017731189727783203,
+          "worldAngularDelta": -0.14418697357177734,
+          "patchTorqueZ": 8.379236678592862e-7,
+          "patchAngularDelta": 0.010549545288085938,
+          "patchIdealAngularDelta": 0.010549574206072679,
+          "slipBefore": 0.8000000001192094,
+          "slipAfter": 0.7941175302267075,
+          "actual": {
+            "position": [
+              -0.1989593356847763,
+              0.03074939362704754,
+              0
+            ],
+            "velocity": [
+              0.9982268810272217,
+              -0.0013518333435058594,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              -6.637702465057373
+            ]
+          }
+        },
+        {
+          "time": 0.0020833333333333333,
+          "contacts": 1,
+          "normalY": 1,
+          "normalRatio": 1.1322895902828374,
+          "cappedNormalRatio": 1,
+          "observedFrictionImpulse": 0.00048590900444622775,
+          "muNormalImpulse": 0.0004859645457709512,
+          "worldVelocityDelta": -0.002313852310180664,
+          "worldAngularDelta": -0.18814468383789062,
+          "patchTorqueZ": 9.656718749999999e-7,
+          "patchAngularDelta": 0.012157917022705078,
+          "patchIdealAngularDelta": 0.012157941701368231,
+          "slipBefore": 0.7941175302267075,
+          "slipAfter": 0.7863920848369599,
+          "actual": {
+            "position": [
+              -0.19792088866233826,
+              0.03074878640472889,
+              0
+            ],
+            "velocity": [
+              0.995913028717041,
+              0,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              -6.813689231872559
+            ]
+          }
+        },
+        {
+          "time": 0.003125,
+          "contacts": 1,
+          "normalY": 1,
+          "normalRatio": 1.00000006707801,
+          "cappedNormalRatio": 1,
+          "observedFrictionImpulse": 0.00042913200176286637,
+          "muNormalImpulse": 0.000429187535184436,
+          "worldVelocityDelta": -0.002043485641479492,
+          "worldAngularDelta": -0.1661701202392578,
+          "patchTorqueZ": 9.656718749999999e-7,
+          "patchAngularDelta": 0.012157917022705078,
+          "patchIdealAngularDelta": 0.012157941701368231,
+          "slipBefore": 0.7863920848369599,
+          "slipAfter": 0.7796127239465713,
+          "actual": {
+            "position": [
+              -0.19688457250595093,
+              0.03074824996292591,
+              0
+            ],
+            "velocity": [
+              0.9938695430755615,
+              0,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              -6.967701435089111
+            ]
+          }
+        },
+        {
+          "time": 0.004166666666666667,
+          "contacts": 1,
+          "normalY": 1,
+          "normalRatio": 1.00000006707801,
+          "cappedNormalRatio": 1,
+          "observedFrictionImpulse": 0.00042913200176286637,
+          "muNormalImpulse": 0.000429187535184436,
+          "worldVelocityDelta": -0.002043485641479492,
+          "worldAngularDelta": -0.16616153717041016,
+          "patchTorqueZ": 9.656718749999999e-7,
+          "patchAngularDelta": 0.012157917022705078,
+          "patchIdealAngularDelta": 0.012157941701368231,
+          "slipBefore": 0.7796127239465713,
+          "slipAfter": 0.7728336269855499,
+          "actual": {
+            "position": [
+              -0.1958504021167755,
+              0.030747735872864723,
+              0
+            ],
+            "velocity": [
+              0.991826057434082,
+              0,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              -7.121705055236816
+            ]
+          }
+        },
+        {
+          "time": 0.005208333333333333,
+          "contacts": 1,
+          "normalY": 1,
+          "normalRatio": 1.00000006707801,
+          "cappedNormalRatio": 1,
+          "observedFrictionImpulse": 0.00042913200176286637,
+          "muNormalImpulse": 0.000429187535184436,
+          "worldVelocityDelta": -0.002043485641479492,
+          "worldAngularDelta": -0.1661667823791504,
+          "patchTorqueZ": 9.656718749999999e-7,
+          "patchAngularDelta": 0.012157917022705078,
+          "patchIdealAngularDelta": 0.012157941701368231,
+          "slipBefore": 0.7728336269855499,
+          "slipAfter": 0.7660543687343597,
+          "actual": {
+            "position": [
+              -0.194818377494812,
+              0.030747221782803535,
+              0
+            ],
+            "velocity": [
+              0.9897825717926025,
+              0,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              -7.275713920593262
+            ]
+          }
+        }
+      ],
+      "lastStep": {
+        "time": 0.05000000000000005,
+        "contacts": 1,
+        "normalY": 1,
+        "normalRatio": 1.00000006707801,
+        "cappedNormalRatio": 1,
+        "observedFrictionImpulse": 0.00042913200176286637,
+        "muNormalImpulse": 0.000429187535184436,
+        "worldVelocityDelta": -0.002043485641479492,
+        "worldAngularDelta": -0.16612529754638672,
+        "patchTorqueZ": 9.656718749999999e-7,
+        "patchAngularDelta": 0.012158393859863281,
+        "patchIdealAngularDelta": 0.012157941701368231,
+        "slipBefore": 0.4813581321239471,
+        "slipAfter": 0.47458016419410703,
+        "actual": {
+          "position": [
+            -0.15245608985424042,
+            0.030728250741958618,
+            0
+          ],
+          "velocity": [
+            0.9019126892089844,
+            0,
+            0
+          ],
+          "angular": [
+            0,
+            0,
+            -13.896992683410645
+          ]
+        }
+      }
+    },
+    {
+      "refinement": 2,
+      "dt": 0.0005208333333333333,
+      "sourceSteps": 96,
+      "constructorSteps": 72,
+      "material": {
+        "gravity": 9.81,
+        "clothFriction": 0.20000000298023224,
+        "rollingLength": 0.00045,
+        "spinLength": 0.00035
+      },
+      "initial": {
+        "position": [
+          -0.20000000298023224,
+          0.030750000849366188,
+          0
+        ],
+        "velocity": [
+          1,
+          0,
+          0
+        ],
+        "angular": [
+          0,
+          0,
+          -6.504065036773682
+        ]
+      },
+      "actual": {
+        "position": [
+          -0.15245507657527924,
+          0.0307358019053936,
+          0
+        ],
+        "velocity": [
+          0.9018783569335938,
+          0,
+          0
+        ],
+        "angular": [
+          0,
+          0,
+          -13.897775650024414
+        ]
+      },
+      "analytic": {
+        "id": 1,
+        "position": [
+          -0.15245250301677735,
+          0.030750000849366188,
+          0
+        ],
+        "velocity": [
+          0.9018999985381961,
+          0,
+          0
+        ],
+        "angular": [
+          0,
+          0,
+          -13.896093710051414
+        ],
+        "radius": 0.03075,
+        "mass": 0.21,
+        "orientationAdvance": false
+      },
+      "analyticAcceleration": [
+        -1.9620000292360784,
+        0,
+        0
+      ],
+      "analyticAngularAcceleration": [
+        0,
+        0,
+        -147.84057346555463
+      ],
+      "normalRatio": {
+        "min": 0.8656106128674573,
+        "max": 1.1343893585410618
+      },
+      "sums": {
+        "observedFrictionImpulse": 0.020605545862736108,
+        "muNormalImpulse": 0.02060100165392833,
+        "worldVelocityDelta": -0.09812164306640625,
+        "worldAngularDelta": -7.976459503173828,
+        "patchTorqueZ": 0.00004628736197427382,
+        "patchAngularDelta": 0.5827488899230957,
+        "patchIdealAngularDelta": 0.5827642524986542
+      },
+      "signedEndpointError": {
+        "position": [
+          -0.000002573558501889339,
+          -0.000014198943972587585,
+          0
+        ],
+        "velocity": [
+          -0.000021641604602384845,
+          0,
+          0
+        ],
+        "angular": [
+          0,
+          0,
+          -0.0016819399730003681
+        ]
+      },
+      "firstSteps": [
+        {
+          "time": 0.0005208333333333333,
+          "contacts": 1,
+          "normalY": 1,
+          "normalRatio": 0.8656106128674573,
+          "cappedNormalRatio": 0.8656106128674573,
+          "observedFrictionImpulse": 0.00018580199026274613,
+          "muNormalImpulse": 0.00018575463022298556,
+          "worldVelocityDelta": -0.0008847713470458984,
+          "worldAngularDelta": -0.071929931640625,
+          "patchTorqueZ": 4.1794791177380827e-7,
+          "patchAngularDelta": 0.005261898040771484,
+          "patchIdealAngularDelta": 0.005262021683664086,
+          "slipBefore": 0.8000000001192094,
+          "slipAfter": 0.7970651867389679,
+          "actual": {
+            "position": [
+              -0.19947941601276398,
+              0.0307498499751091,
+              0
+            ],
+            "velocity": [
+              0.9991152286529541,
+              -0.0006866455078125,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              -6.570733070373535
+            ]
+          }
+        },
+        {
+          "time": 0.0010416666666666667,
+          "contacts": 1,
+          "normalY": 1,
+          "normalRatio": 1.1343893585410618,
+          "cappedNormalRatio": 1,
+          "observedFrictionImpulse": 0.00024348021521092278,
+          "muNormalImpulse": 0.00024343287003685335,
+          "worldVelocityDelta": -0.0011594295501708984,
+          "worldAngularDelta": -0.09425926208496094,
+          "patchTorqueZ": 4.828359374999999e-7,
+          "patchAngularDelta": 0.006079196929931641,
+          "patchIdealAngularDelta": 0.0060789708506841155,
+          "slipBefore": 0.7970651867389679,
+          "slipAfter": 0.7931942201852799,
+          "actual": {
+            "position": [
+              -0.19895939528942108,
+              0.030749669298529625,
+              0
+            ],
+            "velocity": [
+              0.9979557991027832,
+              0,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              -6.6589131355285645
+            ]
+          }
+        },
+        {
+          "time": 0.0015625,
+          "contacts": 1,
+          "normalY": 1,
+          "normalRatio": 1.00000006707801,
+          "cappedNormalRatio": 1,
+          "observedFrictionImpulse": 0.00021464110273683445,
+          "muNormalImpulse": 0.000214593767592218,
+          "worldVelocityDelta": -0.0010221004486083984,
+          "worldAngularDelta": -0.08309078216552734,
+          "patchTorqueZ": 4.828359374999999e-7,
+          "patchAngularDelta": 0.006079196929931641,
+          "patchIdealAngularDelta": 0.0060789708506841155,
+          "slipBefore": 0.7931942201852799,
+          "slipAfter": 0.7898040134906769,
+          "actual": {
+            "position": [
+              -0.19843989610671997,
+              0.03074951283633709,
+              0
+            ],
+            "velocity": [
+              0.9969336986541748,
+              0,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              -6.73592472076416
+            ]
+          }
+        },
+        {
+          "time": 0.0020833333333333333,
+          "contacts": 1,
+          "normalY": 1,
+          "normalRatio": 1.00000006707801,
+          "cappedNormalRatio": 1,
+          "observedFrictionImpulse": 0.00021464110273683445,
+          "muNormalImpulse": 0.000214593767592218,
+          "worldVelocityDelta": -0.0010221004486083984,
+          "worldAngularDelta": -0.08309555053710938,
+          "patchTorqueZ": 4.828359374999999e-7,
+          "patchAngularDelta": 0.006079196929931641,
+          "patchIdealAngularDelta": 0.0060789708506841155,
+          "slipBefore": 0.7898040134906769,
+          "slipAfter": 0.7864136601686478,
+          "actual": {
+            "position": [
+              -0.19792093336582184,
+              0.030749356374144554,
+              0
+            ],
+            "velocity": [
+              0.9959115982055664,
+              -2.9103830456733704e-11,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              -6.812941074371338
+            ]
+          }
+        },
+        {
+          "time": 0.0026041666666666665,
+          "contacts": 1,
+          "normalY": 1,
+          "normalRatio": 1.00000006707801,
+          "cappedNormalRatio": 1,
+          "observedFrictionImpulse": 0.00021464110273683445,
+          "muNormalImpulse": 0.000214593767592218,
+          "worldVelocityDelta": -0.0010221004486083984,
+          "worldAngularDelta": -0.08309316635131836,
+          "patchTorqueZ": 4.828359374999999e-7,
+          "patchAngularDelta": 0.006079196929931641,
+          "patchIdealAngularDelta": 0.0060789708506841155,
+          "slipBefore": 0.7864136601686478,
+          "slipAfter": 0.7830233801603317,
+          "actual": {
+            "position": [
+              -0.19740250706672668,
+              0.03074919991195202,
+              0
+            ],
+            "velocity": [
+              0.994889497756958,
+              0,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              -6.889955043792725
+            ]
+          }
+        }
+      ],
+      "lastStep": {
+        "time": 0.049999999999999975,
+        "contacts": 1,
+        "normalY": 1,
+        "normalRatio": 1.00000006707801,
+        "cappedNormalRatio": 1,
+        "observedFrictionImpulse": 0.00021464110273683445,
+        "muNormalImpulse": 0.000214593767592218,
+        "worldVelocityDelta": -0.0010221004486083984,
+        "worldAngularDelta": -0.08308696746826172,
+        "patchTorqueZ": 4.828359374999999e-7,
+        "patchAngularDelta": 0.0060787200927734375,
+        "patchIdealAngularDelta": 0.0060789708506841155,
+        "slipBefore": 0.4779118597507477,
+        "slipAfter": 0.47452175569534305,
+        "actual": {
+          "position": [
+            -0.15245507657527924,
+            0.0307358019053936,
+            0
+          ],
+          "velocity": [
+            0.9018783569335938,
+            0,
+            0
+          ],
+          "angular": [
+            0,
+            0,
+            -13.897775650024414
+          ]
+        }
+      }
+    },
+    {
+      "refinement": 4,
+      "dt": 0.00026041666666666666,
+      "sourceSteps": 192,
+      "constructorSteps": 72,
+      "material": {
+        "gravity": 9.81,
+        "clothFriction": 0.20000000298023224,
+        "rollingLength": 0.00045,
+        "spinLength": 0.00035
+      },
+      "initial": {
+        "position": [
+          -0.20000000298023224,
+          0.030750000849366188,
+          0
+        ],
+        "velocity": [
+          1,
+          0,
+          0
+        ],
+        "angular": [
+          0,
+          0,
+          -6.504065036773682
+        ]
+      },
+      "actual": {
+        "position": [
+          -0.15245237946510315,
+          0.030741415917873383,
+          0
+        ],
+        "velocity": [
+          0.901947021484375,
+          0,
+          0
+        ],
+        "angular": [
+          0,
+          0,
+          -13.899697303771973
+        ]
+      },
+      "analytic": {
+        "id": 1,
+        "position": [
+          -0.15245250301677735,
+          0.030750000849366188,
+          0
+        ],
+        "velocity": [
+          0.9018999985381961,
+          0,
+          0
+        ],
+        "angular": [
+          0,
+          0,
+          -13.896093710051414
+        ],
+        "radius": 0.03075,
+        "mass": 0.21,
+        "orientationAdvance": false
+      },
+      "analyticAcceleration": [
+        -1.9620000292360784,
+        0,
+        0
+      ],
+      "analyticAngularAcceleration": [
+        0,
+        0,
+        -147.84057346555463
+      ],
+      "normalRatio": {
+        "min": 0.9328054213464843,
+        "max": 1.067194712809536
+      },
+      "sums": {
+        "observedFrictionImpulse": 0.020591126306499064,
+        "muNormalImpulse": 0.020601001677211395,
+        "worldVelocityDelta": -0.098052978515625,
+        "worldAngularDelta": -7.97898530960083,
+        "patchTorqueZ": 0.00004633602801131064,
+        "patchAngularDelta": 0.5833530426025391,
+        "patchIdealAngularDelta": 0.5833769645972978
+      },
+      "signedEndpointError": {
+        "position": [
+          1.2355167419708657e-7,
+          -0.000008584931492805481,
+          0
+        ],
+        "velocity": [
+          0.000047022946178865155,
+          0,
+          0
+        ],
+        "angular": [
+          0,
+          0,
+          -0.003603593720558962
+        ]
+      },
+      "firstSteps": [
+        {
+          "time": 0.00026041666666666666,
+          "contacts": 1,
+          "normalY": 1,
+          "normalRatio": 0.9328054213464843,
+          "cappedNormalRatio": 0.9328054213464843,
+          "observedFrictionImpulse": 0.00010003567139449387,
+          "muNormalImpulse": 0.00010008710818495015,
+          "worldVelocityDelta": -0.0004763603210449219,
+          "worldAngularDelta": -0.03876209259033203,
+          "patchTorqueZ": 2.251959900604561e-7,
+          "patchAngularDelta": 0.0028352737426757812,
+          "patchIdealAngularDelta": 0.0028352484828626963,
+          "slipBefore": 0.8000000001192094,
+          "slipAfter": 0.7984188901185989,
+          "actual": {
+            "position": [
+              -0.19973964989185333,
+              0.030749958008527756,
+              0
+            ],
+            "velocity": [
+              0.9995236396789551,
+              -0.000171661376953125,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              -6.539991855621338
+            ]
+          }
+        },
+        {
+          "time": 0.0005208333333333333,
+          "contacts": 1,
+          "normalY": 1,
+          "normalRatio": 1.00000006707801,
+          "cappedNormalRatio": 1,
+          "observedFrictionImpulse": 0.00010724544951301596,
+          "muNormalImpulse": 0.000107296883796109,
+          "worldVelocityDelta": -0.0005106925964355469,
+          "worldAngularDelta": -0.04155302047729492,
+          "patchTorqueZ": 2.4141796874999996e-7,
+          "patchAngularDelta": 0.0030393600463867188,
+          "patchIdealAngularDelta": 0.0030394854253420578,
+          "slipBefore": 0.7984188901185989,
+          "slipAfter": 0.796723902463913,
+          "actual": {
+            "position": [
+              -0.19947946071624756,
+              0.030749913305044174,
+              0
+            ],
+            "velocity": [
+              0.9990129470825195,
+              -0.000171661376953125,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              -6.578505516052246
+            ]
+          }
+        },
+        {
+          "time": 0.00078125,
+          "contacts": 1,
+          "normalY": 1,
+          "normalRatio": 1.067194712809536,
+          "cappedNormalRatio": 1,
+          "observedFrictionImpulse": 0.00011445522763153804,
+          "muNormalImpulse": 0.00011450665940726783,
+          "worldVelocityDelta": -0.0005450248718261719,
+          "worldAngularDelta": -0.04435157775878906,
+          "patchTorqueZ": 2.4141796874999996e-7,
+          "patchAngularDelta": 0.0030393600463867188,
+          "patchIdealAngularDelta": 0.0030394854253420578,
+          "slipBefore": 0.796723902463913,
+          "slipAfter": 0.7949085268974304,
+          "actual": {
+            "position": [
+              -0.19921939074993134,
+              0.030749864876270294,
+              0
+            ],
+            "velocity": [
+              0.9984679222106934,
+              0,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              -6.619817733764648
+            ]
+          }
+        },
+        {
+          "time": 0.0010416666666666667,
+          "contacts": 1,
+          "normalY": 1,
+          "normalRatio": 1.00000006707801,
+          "cappedNormalRatio": 1,
+          "observedFrictionImpulse": 0.00010724544951301596,
+          "muNormalImpulse": 0.000107296883796109,
+          "worldVelocityDelta": -0.0005106925964355469,
+          "worldAngularDelta": -0.041554927825927734,
+          "patchTorqueZ": 2.4141796874999996e-7,
+          "patchAngularDelta": 0.0030393600463867188,
+          "patchIdealAngularDelta": 0.0030394854253420578,
+          "slipBefore": 0.7949085268974304,
+          "slipAfter": 0.793213480591774,
+          "actual": {
+            "position": [
+              -0.19895942509174347,
+              0.030749820172786713,
+              0
+            ],
+            "velocity": [
+              0.9979572296142578,
+              0,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              -6.6583333015441895
+            ]
+          }
+        },
+        {
+          "time": 0.0013020833333333333,
+          "contacts": 1,
+          "normalY": 1,
+          "normalRatio": 1.00000006707801,
+          "cappedNormalRatio": 1,
+          "observedFrictionImpulse": 0.00010724544951301596,
+          "muNormalImpulse": 0.000107296883796109,
+          "worldVelocityDelta": -0.0005106925964355469,
+          "worldAngularDelta": -0.04155397415161133,
+          "patchTorqueZ": 2.4141796874999996e-7,
+          "patchAngularDelta": 0.0030393600463867188,
+          "patchIdealAngularDelta": 0.0030394854253420578,
+          "slipBefore": 0.793213480591774,
+          "slipAfter": 0.7915184636116028,
+          "actual": {
+            "position": [
+              -0.19869960844516754,
+              0.03074977546930313,
+              0
+            ],
+            "velocity": [
+              0.9974465370178223,
+              0,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              -6.696847915649414
+            ]
+          }
+        }
+      ],
+      "lastStep": {
+        "time": 0.0499999999999999,
+        "contacts": 1,
+        "normalY": 1,
+        "normalRatio": 1.00000006707801,
+        "cappedNormalRatio": 1,
+        "observedFrictionImpulse": 0.00010724544951301596,
+        "muNormalImpulse": 0.000107296883796109,
+        "worldVelocityDelta": -0.0005106925964355469,
+        "worldAngularDelta": -0.04155921936035156,
+        "patchTorqueZ": 2.4141796874999996e-7,
+        "patchAngularDelta": 0.0030393600463867188,
+        "patchIdealAngularDelta": 0.0030394854253420578,
+        "slipBefore": 0.4762265076637268,
+        "slipAfter": 0.4745313293933868,
+        "actual": {
+          "position": [
+            -0.15245237946510315,
+            0.030741415917873383,
+            0
+          ],
+          "velocity": [
+            0.901947021484375,
+            0,
+            0
+          ],
+          "angular": [
+            0,
+            0,
+            -13.899697303771973
+          ]
+        }
+      }
+    }
+  ]
+}

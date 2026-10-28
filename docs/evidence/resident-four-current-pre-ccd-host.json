@@ -1,0 +1,47 @@
+{
+  "kind": "resident-four-current-pre-ccd-host-schedule-component-v1",
+  "profile": "four-ball-live-cue-native-current-pre-v1",
+  "base": "5333749",
+  "witnessCommit": "0334c3c",
+  "authenticBoundaries": [
+    2,
+    128,
+    164,
+    165,
+    192,
+    193
+  ],
+  "command": "node --test tests/resident-candidate-world-current-pre-ccd.mjs",
+  "tests": {
+    "passed": 7,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 9622.748753
+  },
+  "coverage": [
+    "complete source schedule relocation and removal of obsolete calls",
+    "actual changed stage body guards",
+    "all64 source inputs and all11 source outputs at six prepared authentic boundaries",
+    "true current awake order and reverse membership",
+    "phase/mask/order/late-wake/retained-force/withdrawal rejection",
+    "two-bank control isolation",
+    "default and unaffected pipeline identity",
+    "original16-owner and merged source-as-data linking"
+  ],
+  "originalProgramChanged": false,
+  "defaultChanged": false,
+  "preparedComponentInputs": true,
+  "initialOnlyWholeHExecuted": false,
+  "ownedH192WholeHExecuted": false,
+  "nativeQualified": false,
+  "numericalQualified": false,
+  "releaseActivated": false,
+  "gpuExecuted": false,
+  "sameHWithdrawal": "unsupported before solve/h publication; preceding application/collision state may be partial",
+  "nextGate": "fresh separately named source/PC/bytecode lowering then entire old/new h transition with independent original source/native projections",
+  "files": {
+    "src/resident-candidate/world-current-pre-ccd.mjs": "3c85ddffbd8f68a5360ff3457bfb2a65ae756abf870107d6993c59beb27c5fa3",
+    "tests/resident-candidate-world-current-pre-ccd.mjs": "a938b4c3c971009d7168ae82649b4f57362598ed1c133ccc5a8083164003e1ea",
+    "docs/parity/resident-four-current-pre-ccd-profile.md": "7c8efa615a65f9b94c9bfeb0dc2c15c6aa541270c176e6ead45555e54ba9aa6c"
+  }
+}

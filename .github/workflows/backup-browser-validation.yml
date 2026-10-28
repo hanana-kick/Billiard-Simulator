@@ -1,0 +1,139 @@
+name: Backup application validation (no deployment)
+on:
+  push:
+    branches: ['backup/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: backup-browser-validation-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  application:
+    if: startsWith(github.ref, 'refs/heads/backup/')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run prepare:engine
+      - run: npm run typecheck
+      - name: Build default application (no opt-in engine activation)
+        run: npm run build
+      - name: Physics, search and feature regressions
+        run: npm test
+      - name: Resident HOST contracts only (not GPU qualification)
+        run: npm run test:resident:host
+      - name: Official component provenance
+        run: npm run test:provenance
+      - name: Record runner and browser versions; require sandbox-enabled config
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(id -u)" != 0
+          {
+            cat /etc/os-release
+            google-chrome --version
+            node --version
+            npm exec -- playwright --version
+            git rev-parse HEAD
+          } | tee browser-environment.log
+          node - <<'NODE'
+          const assert = require('node:assert/strict');
+          const {use} = require('./playwright.config.cjs');
+          assert.equal(use.channel, 'chrome');
+          assert.equal(use.launchOptions.chromiumSandbox, true);
+          assert.equal(use.launchOptions.executablePath, undefined);
+          assert.deepEqual(use.launchOptions.args || [], []);
+          assert.equal(use.ignoreHTTPSErrors, undefined);
+          NODE
+      - name: Full real-app desktop, narrow-screen, settings and Korean-font checks
+        run: npm run test:e2e
+      - name: Preserve browser evidence (not a deployed build)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-browser-evidence
+          path: |
+            browser-environment.log
+            playwright-report/
+            test-results/
+            docs/ui-bundle-audit.json
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Record qualification boundary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '### Default application validation only; no deployment'
+            echo 'Consult individual step results and browser evidence. An HTTP response, build, or test enumeration is not browser QA.'
+            echo 'This job does not activate or qualify the opt-in canonical WebGPU controller, native GPU parity, or GPU performance.'
+            echo 'Missing sandbox, browser, font, or rendering support must fail; no security-relaxing fallback is permitted.'
+          } >> "$GITHUB_STEP_SUMMARY"
+  canonical-application:
+    name: Opt-in canonical application (real browser WebGPU required)
+    if: startsWith(github.ref, 'refs/heads/backup/')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run prepare:engine
+      - run: npm run typecheck
+      - name: Build opt-in canonical controller assets
+        run: node build.cjs --canonical-controller-assets
+      - name: Require sandbox-enabled Chrome without security-relaxing flags
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(id -u)" != 0
+          {
+            cat /etc/os-release
+            google-chrome --version
+            node --version
+            npm exec -- playwright --version
+            git rev-parse HEAD
+          } | tee canonical-browser-environment.log
+          node - <<'NODE'
+          const assert = require('node:assert/strict');
+          const {use} = require('./playwright.canonical.config.cjs');
+          assert.equal(use.channel, 'chrome');
+          assert.equal(use.launchOptions.chromiumSandbox, true);
+          assert.equal(use.launchOptions.executablePath, undefined);
+          assert.deepEqual(use.launchOptions.args || [], []);
+          assert.equal(use.ignoreHTTPSErrors, undefined);
+          NODE
+      - name: Canonical search, apply and shot in real browser (no WebGPU skip)
+        run: npx playwright test -c playwright.canonical.config.cjs
+      - name: Preserve canonical browser evidence (no deployment)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-canonical-browser-evidence
+          path: |
+            canonical-browser-environment.log
+            playwright-canonical-report/
+            test-results-canonical/
+            docs/ui-bundle-audit.json
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Record qualification boundary
+        if: always()
+        run: echo 'Opt-in real-browser validation; missing browser WebGPU is a failure, not CPU/native qualification or hardware performance evidence. No deployment.' >> "$GITHUB_STEP_SUMMARY"

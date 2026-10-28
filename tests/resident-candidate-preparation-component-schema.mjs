@@ -1,0 +1,27 @@
+// Lean diagnostic input admission: no oracle, compiler, or original world imports.
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+export const preparationComponentSha=x=>createHash('sha256').update(x).digest('hex');
+export const PREPARATION_COMPONENT_CASES=Object.freeze(['kind-1','kind-2','kind-3','kind-4','kind-5','kind-6','source-negative-kind','partial-geometry-read-fault','cross-candidate-read-fault','unsigned-bank-admission']);
+const lengths=[127176,874992,25408,27264];
+export function preparationExactKeys(value,keys,label){assert.ok(value&&typeof value==='object'&&!Array.isArray(value),label);assert.deepEqual(Object.keys(value).sort(),[...keys].sort(),label+' exact keys');}
+export function assertPreparationComponentInput(p){
+ preparationExactKeys(p,['kind','selection','componentOnly','rawWorldInput','independentCases','sourceSha256','initialSha256','canonicalSourceSha256','descriptor','readonlyBindings','cases'],'preparation initial-only component');
+ assert.equal(p.kind,'resident-preparation-component-initial-only-v2');assert.equal(p.selection,'max-source-writes-earliest-tie');assert.equal(p.componentOnly,true);assert.equal(p.rawWorldInput,false);assert.equal(p.independentCases,true);
+ assert.equal(p.sourceSha256,'5a18bbbbd646454f2e00f7b1422773b2851b64d5ff165626f2a9f835ff86c0e7');assert.equal(p.initialSha256,'74c67de5efd476cbbe394678cfc927ac5ed6d70a3b38c5e24697dd735895eb75');assert.equal(p.canonicalSourceSha256,'6e16f188778849dff8df7a37a51c160e758ef2747f3f8bc2a57ad48be8ebde45');
+ preparationExactKeys(p.readonlyBindings,['1','2','4','5'],'readonly input bindings');for(const [id,a]of Object.entries(p.readonlyBindings)){assert.ok(a instanceof Uint32Array&&a.length>0);if(lengths[id])assert.equal(a.length,lengths[id]);}
+ assert.ok(Array.isArray(p.cases)&&p.cases.length===PREPARATION_COMPONENT_CASES.length);
+ for(const [i,c]of p.cases.entries()){
+  preparationExactKeys(c,['index','name','capturedKind','capturedOrdinal','args','before','geometryPatch'],'component case');assert.equal(c.index,i);assert.equal(c.name,PREPARATION_COMPONENT_CASES[i]);assert.ok(Number.isInteger(c.capturedKind)&&c.capturedKind>=1&&c.capturedKind<=6);assert.ok(Number.isInteger(c.capturedOrdinal)&&c.capturedOrdinal>=1&&c.capturedOrdinal<=216);assert.ok(Array.isArray(c.args)&&c.args.length===6&&c.args.every(x=>Number.isInteger(x)&&x>=0&&x<=0xffffffff));
+  preparationExactKeys(c.before,['state','scratch'],'initial source state only');assert.ok(c.before.state instanceof Uint32Array&&c.before.state.length===lengths[0]);assert.ok(c.before.scratch instanceof Uint32Array&&c.before.scratch.length===lengths[3]);assert.equal(c.before.state[4],219);assert.equal(c.before.state[5],0,'genuine first-h component, not future recurrence input');assert.ok(Array.isArray(c.geometryPatch));
+  if(i<6){assert.equal(c.capturedKind,i+1);assert.equal(c.args[5],i+1);assert.equal(c.geometryPatch.length,0);}else if(i===6){assert.equal(c.args[5],0);assert.equal(c.geometryPatch.length,0);}else if(i===7){assert.equal(c.args[5],5);assert.equal(c.geometryPatch.length,1);const patch=c.geometryPatch[0];assert.ok(Array.isArray(patch)&&patch.length===2);assert.ok(Number.isInteger(patch[0])&&patch[0]>=0&&patch[0]<lengths[2]);assert.equal(patch[1],lengths[2]-8);}else if(i===8){assert.equal(c.args[5],6);assert.equal(c.geometryPatch.length,0);}else{assert.equal(c.args[0],0xffffffff);assert.equal(c.geometryPatch.length,0);}
+ }
+ return p;
+}
+export function preparationCaseBindings(input,c){assertPreparationComponentInput(input);assert.equal(input.cases[c.index],c);const b=[c.before.state.slice(),input.readonlyBindings[1].slice(),input.readonlyBindings[2].slice(),c.before.scratch.slice(),new Uint32Array(input.readonlyBindings[4].length+6),input.readonlyBindings[5].slice()];b[4].set(input.readonlyBindings[4]);b[4].set(c.args,input.readonlyBindings[4].length);for(const[at,value]of c.geometryPatch)b[2][at]=value;return b;}
+export function assertPreparationComponentAssertions(expected,{input,inputSha256}){
+ assertPreparationComponentInput(input);preparationExactKeys(expected,['kind','expectedNeverRuntimeInput','inputSha256','cases','captureReport'],'assertion-only file');assert.equal(expected.kind,'resident-preparation-component-assertions-only-v1');assert.equal(expected.expectedNeverRuntimeInput,true);assert.equal(expected.inputSha256,inputSha256);assert.match(inputSha256,/^[a-f0-9]{64}$/);assert.equal(expected.cases.length,input.cases.length);
+ for(const[i,e]of expected.cases.entries()){preparationExactKeys(e,['index','name','sourceBindings','vmState','scalar','guarded','result','status','error'],'component expected');assert.equal(e.index,i);assert.equal(e.name,input.cases[i].name);assert.ok(Array.isArray(e.sourceBindings)&&e.sourceBindings.length===6&&e.sourceBindings.every(x=>x instanceof Uint32Array));assert.ok(e.vmState instanceof Uint32Array);}
+ const report=expected.captureReport;assert.equal(report.captures,216);assert.equal(report.allCapturesFullWordEqual,true);assert.equal(report.finalFullSourceAndAuditEqual,true);assert.equal(report.componentSelection.method,input.selection);assert.equal(Object.values(report.componentSelection.kinds).reduce((n,k)=>n+k.calls,0),216);for(let i=0;i<6;i++){const s=report.componentSelection.kinds[i+1];assert.equal(s.ordinal,input.cases[i].capturedOrdinal);assert.equal(s.writes,expected.cases[i].guarded.writes);assert.equal(s.reads,expected.cases[i].guarded.reads);}
+ return expected;
+}

@@ -1,0 +1,22 @@
+{
+  "cases": 43,
+  "words": 19264,
+  "compileMs": 2821.730413,
+  "shaderBytes": [
+    9878,
+    9764,
+    8353,
+    8752,
+    825
+  ],
+  "metrics": {
+    "candidates": 43,
+    "allocatedBytes": 171136,
+    "dispatches": 5,
+    "intermediateReadbacks": 0,
+    "hostPhysicsBetweenPhases": 0,
+    "submitToDoneMs": 12.034967999999935,
+    "physicalAcceptance": false
+  },
+  "resolved": 35
+}

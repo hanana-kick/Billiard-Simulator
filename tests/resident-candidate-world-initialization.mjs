@@ -7,6 +7,7 @@ import {executeSourceNumberProgramReference} from '../src/resident-candidate/raw
 import {unpackCandidates,STATUS,REASON} from '../src/resident-candidate/abi.mjs';
 import {numberWords} from '../src/resident-candidate/source-number.mjs';
 import {RAW_POSE_LAYOUT} from '../src/resident-candidate/raw-strike.mjs';
+import {RULE_LAYOUT as RL} from '../src/resident-candidate/physical-rules.mjs';
 import Init from '../src/experimental-cue-initialization.js';
 import Graph from '../src/experimental-arithmetic-graph.js';
 const require=createRequire(import.meta.url),H=require('./cue-obstacle-fixtures.cjs'),R=H.R;
@@ -54,9 +55,19 @@ const initializationCases=()=>[
  {settings:settings(NaN,8,2),kind:'invalid',reason:REASON.NONFINITE_INPUT},
  {settings:settings(83,86,2),kind:'invalid',reason:REASON.SOURCE_INPUT_RANGE}
 ];
+// Independent t0 expectation from actual unchanged PhysicsLab.events, not the
+// imported contact-only seed or the resident history packer's count/rows.
+function nativeInitialHistory(events,colliders){
+ const tail=events.slice(-8),words=new Uint32Array(32);
+ for(const[i,event]of tail.entries()){
+  let pair=0,keyed=0;if(event.key!==undefined){const handles=String(event.key).split(':').map(x=>numberWords(Number(x)));assert.equal(handles.length,2);const slots=handles.map(([index,generation])=>colliders.findIndex(c=>c.handle.index===index&&c.handle.generation===generation));assert.ok(slots.every(x=>x>=0));pair=Math.min(...slots)*27+Math.max(...slots);keyed=1;}
+  words.set([pair,...numberWords(event.time),keyed],i*4);
+ }
+ return{count:tail.length,head:tail.length%8,words};
+}
 let nativeCasesPending;
 const originalInitializationCases=()=>nativeCasesPending??=(async()=>{
- await R.init();const{plan,raw}=await fixture(),cases=initializationCases(),rows=cases.map((c,i)=>({id:17+i*101,settings:c.settings})),expected=[];
+ await R.init();const{plan,raw,seed}=await fixture(),cases=initializationCases(),rows=cases.map((c,i)=>({id:17+i*101,settings:c.settings})),expected=[];
  for(const[rowIndex,row]of rows.entries()){
   const lab=restore(raw),c=cases[rowIndex];
   try{
@@ -73,7 +84,7 @@ const originalInitializationCases=()=>nativeCasesPending??=(async()=>{
      ii:Array.from(body.effectiveWorldInvInertia().elements).slice(0,6)
     };
    }):null;
-   expected.push({kind:c.kind,status:result.ok?STATUS.RUNNING:STATUS.REJECTED,reason:result.ok?REASON.NONE:c.kind==='blocked'?REASON.CUE_BLOCKED:c.reason,pose,clearance,bodies});
+   expected.push({kind:c.kind,status:result.ok?STATUS.RUNNING:STATUS.REJECTED,reason:result.ok?REASON.NONE:c.kind==='blocked'?REASON.CUE_BLOCKED:c.reason,pose,clearance,bodies,history:nativeInitialHistory(lab.events,seed.contactGraphSeed.colliders)});
   }finally{lab.dispose();}
  }
  return{plan,rows,expected};
@@ -85,6 +96,7 @@ function assertInitializedBank(words,plan,row,wanted,index){
  assert.equal(words[base+2],wanted.status,label+' exact terminal initialization status; unsupported cannot be a miss');
  assert.equal(words[base+3],wanted.reason,label+' exact rejection reason');
  assert.equal(words[base+5],0,label+' no h has run');
+ const history=base+o.rules.offset;assert.equal(words[history+RL.ringCount],wanted.history.count,label+' actual native full history count');assert.equal(words[history+RL.ringHead],wanted.history.head,label+' canonical t0 head');assert.deepEqual(words.slice(history+RL.ring,history+RL.ring+32),wanted.history.words,label+' exact native full history keyed/nonkey FIFO and binary64 timestamps');
  if(wanted.pose){
   assert.equal(words[r],1,label+' raw pose ready');assert.equal(words[cl],wanted.kind==='clear'?1:2,label+' complete source clearance');
   assert.equal(words[cl+10],177,label+' all original sampled queries');assert.equal(words[cl+11],59,label+' all original part/obstacle pairs');
@@ -120,6 +132,7 @@ test('native initializer holdouts are fixed original clear, blocked and invalid 
  expected.forEach((e,i)=>{prepared[i*plan.raw.layout.stateWords+plan.raw.layout.clearance+8]=Number(e.clearance?.swept??false);});
  const a=transport(plan,rows,prepared);a.run();
  rows.forEach((row,i)=>assertInitializedBank(a.state,plan,row,expected[i],i));
+ const complete=a.state.slice();for(let i=0;i<rows.length;i++)a.stages.finish({x:i});assert.deepEqual(a.state,complete,'actual generated finish is exactly once for accepted/rejected/blocked rows');
 });
 
 // The coordinator alone enables this gate. It exercises the actual public
@@ -133,6 +146,13 @@ test('actual raw rows initialize source-created resident aliases with one final 
  const make=(words,usage,label)=>{assert.ok(words*4<=device.limits.maxBufferSize,label+' buffer capacity');const b=device.createBuffer({size:words*4,usage,label});allocations.push(b);return b;};
  try{
   device.pushErrorScope('validation');scoped=true;
+  // Fail every composed shader's syntax before ANY pipeline or source buffer
+  // allocation. This changes preparation only, never source execution order.
+  const modules={};for(const[name,stage]of Object.entries(commands.stages)){
+   console.log(JSON.stringify({gate:'world-initialization',stage:'preflight-start',name,bytes:stage.code.length}));
+   const module=device.createShaderModule({code:stage.code,label:name}),info=await module.getCompilationInfo();
+   assert.deepEqual(info.messages.filter(m=>m.type==='error').map(m=>`${m.lineNum}:${m.linePos} ${m.message}`),[],name+' original WGSL');modules[name]=module;
+  }
   const resource={},sharedScratch=make(commands.scratchAlias.words,128,'initializer liveness-reused scratch');
   assert.ok(commands.scratchAlias.words*4<=device.limits.maxStorageBufferBindingSize,'source scratch capacity unchanged');
   for(const[name,value]of Object.entries(commands.resources)){
@@ -145,9 +165,7 @@ test('actual raw rows initialize source-created resident aliases with one final 
   for(const upload of commands.initialUploads)device.queue.writeBuffer(resource[upload.resource],upload.offsetWords*4,upload.data);
   const stages={};
   for(const[name,stage]of Object.entries(commands.stages)){
-   console.log(JSON.stringify({gate:'world-initialization',stage:'compile-start',name,bytes:stage.code.length}));
-   const groupLayout=device.createBindGroupLayout({entries:stage.bindingTypes.map((type,binding)=>({binding,visibility:4,buffer:{type}}))}),layout=device.createPipelineLayout({bindGroupLayouts:[groupLayout]}),module=device.createShaderModule({code:stage.code,label:name}),info=await module.getCompilationInfo();
-   assert.deepEqual(info.messages.filter(m=>m.type==='error').map(m=>`${m.lineNum}:${m.linePos} ${m.message}`),[],name+' original WGSL');
+   const groupLayout=device.createBindGroupLayout({entries:stage.bindingTypes.map((type,binding)=>({binding,visibility:4,buffer:{type}}))}),layout=device.createPipelineLayout({bindGroupLayouts:[groupLayout]}),module=modules[name];
    console.log(JSON.stringify({gate:'world-initialization',stage:'pipeline-start',name}));
    const pipeline=await device.createComputePipelineAsync({layout,compute:{module,entryPoint:stage.entryPoint}}),group=device.createBindGroup({layout:groupLayout,entries:stage.resources.map((key,binding)=>({binding,resource:{buffer:resource[key]}}))});
    stages[name]={pipeline,group,workgroups:stage.workgroups};console.log(JSON.stringify({gate:'world-initialization',stage:'pipeline-ready',name}));

@@ -1,0 +1,779 @@
+{
+  "kind": "resident-control-cache-abba-native-v1",
+  "status": "bounded-original-parity-pass",
+  "comparison": {
+    "status": "pass",
+    "scope": "same-device raw6 two-h control strategies; independent physics gates required separately",
+    "order": [
+      "storage-v1",
+      "invocation-cache-v1",
+      "invocation-cache-v1",
+      "storage-v1"
+    ],
+    "allSourceAndVmWordsEqual": true,
+    "runsPerVariant": 2,
+    "hardwarePerformance": false,
+    "fullRest": false,
+    "native1024": false,
+    "timings": [
+      {
+        "mode": "storage-v1",
+        "runs": [
+          {
+            "pumpHostWallMs": 135780.205098,
+            "steadyEndToEndHostWallMs": 143853.8663,
+            "coldCompileHostWallMs": 0,
+            "coldCompiles": 0,
+            "warmHits": 25
+          },
+          {
+            "pumpHostWallMs": 125899.01942299999,
+            "steadyEndToEndHostWallMs": 132943.208844,
+            "coldCompileHostWallMs": 0,
+            "coldCompiles": 0,
+            "warmHits": 25
+          }
+        ]
+      },
+      {
+        "mode": "invocation-cache-v1",
+        "runs": [
+          {
+            "pumpHostWallMs": 109611.83839499997,
+            "steadyEndToEndHostWallMs": 117133.00956399998,
+            "coldCompileHostWallMs": 0,
+            "coldCompiles": 0,
+            "warmHits": 25
+          },
+          {
+            "pumpHostWallMs": 103731.25334399997,
+            "steadyEndToEndHostWallMs": 110472.49967400002,
+            "coldCompileHostWallMs": 0,
+            "coldCompiles": 0,
+            "warmHits": 25
+          }
+        ]
+      }
+    ],
+    "timingInterpretation": "host wall, not GPU timestamps; one warm sample per strategy; no hardware calibration ratio",
+    "stage": "control-variants-strict-gate-passed",
+    "originalAssertions": [
+      {
+        "stage": "microcode-world-strict-gate-passed",
+        "runtimeSha256": "df080d33c6aa537e651756be1a5e0917a9aea9bae69c9e7af6e4a03a6e2c4f97",
+        "actualSha256": "364a945ab975bc5a9227805b5523727a34ffcae5d3085dbc69ae5ec952f8a8e7",
+        "count": 6,
+        "frames": 2,
+        "runs": 2,
+        "strictOriginalComparisons": 8,
+        "all11SourceGroups": true,
+        "rawParameters": true,
+        "expectedStatesUploaded": false,
+        "fullRest": false,
+        "native1024": false,
+        "hardwarePerformance": false
+      },
+      {
+        "stage": "microcode-world-strict-gate-passed",
+        "runtimeSha256": "05de29cab18f9743717769cb1b9a7c5a456ca1660ee553fd6251161d420ed356",
+        "actualSha256": "08d1b52cb38e9d2b16dc10f6dd4b1cc1662947f01d65fd32875891e96dadc49c",
+        "count": 6,
+        "frames": 2,
+        "runs": 2,
+        "strictOriginalComparisons": 8,
+        "all11SourceGroups": true,
+        "rawParameters": true,
+        "expectedStatesUploaded": false,
+        "fullRest": false,
+        "native1024": false,
+        "hardwarePerformance": false
+      }
+    ],
+    "strictOriginalComparisons": 16,
+    "all11SourceGroups": true
+  },
+  "resources": {
+    "stage": "native-child-terminal",
+    "startUtc": "2026-10-25T23:34:39.487805+00:00",
+    "endUtc": "2026-10-25T23:45:04.593680+00:00",
+    "elapsedSeconds": 625.1058694470266,
+    "returncode": 0,
+    "signal": null,
+    "maxRssKiB": 1666676,
+    "rlimits": {
+      "RLIMIT_AS": [
+        -1,
+        -1
+      ],
+      "RLIMIT_DATA": [
+        -1,
+        -1
+      ],
+      "RLIMIT_RSS": [
+        -1,
+        -1
+      ],
+      "RLIMIT_CPU": [
+        -1,
+        -1
+      ]
+    },
+    "noSubprocessTimeout": true,
+    "meminfo": {
+      "MemFree": "3104536 kB",
+      "MemAvailable": "3289612 kB",
+      "SwapTotal": "0 kB",
+      "SwapFree": "0 kB",
+      "Shmem": "2489924 kB"
+    }
+  },
+  "samePayloadRetry": {
+    "scope": "resource-sensitive retry",
+    "proofs": [
+      {
+        "mode": "storage-v1",
+        "entireRuntimeByteIdentical": true,
+        "runtimeSha256": "df080d33c6aa537e651756be1a5e0917a9aea9bae69c9e7af6e4a03a6e2c4f97",
+        "sourceHead": "123c5b6cb5790f92189f9f4f2eb843b7d62ee1ce"
+      },
+      {
+        "mode": "invocation-cache-v1",
+        "entireRuntimeByteIdentical": true,
+        "runtimeSha256": "05de29cab18f9743717769cb1b9a7c5a456ca1660ee553fd6251161d420ed356",
+        "sourceHead": "123c5b6cb5790f92189f9f4f2eb843b7d62ee1ce"
+      }
+    ],
+    "physicalBoundsChanged": false,
+    "preparationOnlyChanges": true
+  },
+  "variantSession": {
+    "kind": "resident-control-cache-abba-v1",
+    "order": [
+      0,
+      1,
+      1,
+      0
+    ],
+    "modes": [
+      "storage-v1",
+      "invocation-cache-v1"
+    ],
+    "deviceOwners": 1,
+    "sharedPipelineCache": true,
+    "allPipelinesWarmBeforeRuns": true,
+    "precompile": {
+      "hostWallMs": 116372.765804,
+      "cache": {
+        "requests": 27,
+        "coldCompiles": 27,
+        "warmHits": 0,
+        "inflightHits": 0,
+        "failures": 0,
+        "compileWallMs": 116068.36202300005,
+        "validationRequests": 50,
+        "validationCold": 27,
+        "validationWarm": 23,
+        "validationFailures": 0,
+        "entries": 27
+      },
+      "beforeAnySourceVmAllocation": true,
+      "preparationOrder": [
+        "external macro 2 rc_world_broad_commit_collision",
+        "storage-v1 microcode begin",
+        "storage-v1 microcode bounded pump",
+        "invocation-cache-v1 microcode begin",
+        "invocation-cache-v1 microcode bounded pump",
+        "external macro 0 rc_cue_flat_advance",
+        "external macro 1 rc_num_eval",
+        "device-pc-begin",
+        "initialize raw-init",
+        "initialize raw-step",
+        "initialize raw-finish",
+        "initialize contact-init",
+        "initialize contact-gjk",
+        "initialize contact-epa",
+        "initialize contact-finish",
+        "initialize cast-init",
+        "initialize cast-cast",
+        "initialize cast-contact-init",
+        "initialize cast-contact-gjk",
+        "initialize cast-contact-epa",
+        "initialize cast-finish",
+        "initialize world-transfer",
+        "initialize creation-begin",
+        "initialize creation-gather",
+        "initialize creation-evaluate",
+        "initialize creation-scatter",
+        "initialize creation-finish"
+      ],
+      "orderPolicy": "broad-first-then-both-small-core-variants; execution order unchanged"
+    },
+    "processInvocationId": "6538d0e3-7544-4c0c-ad2b-3b715e1d217e"
+  },
+  "artifacts": [
+    {
+      "mode": "storage-v1",
+      "sourceHead": "123c5b6cb5790f92189f9f4f2eb843b7d62ee1ce",
+      "sourceHashes": {
+        "src/resident-candidate/microcode-isa.mjs": "c08d3a6aad7ead49e576c5716c6f980497fdaa549d173741e0c0a25e4a848f68",
+        "src/resident-candidate/microcode-source-intrinsics.mjs": "040640bc29a159c146b18401ede033eada4c428a3c018e134abba7a348d81a2f",
+        "src/resident-candidate/microcode-source-macros.mjs": "01190b6122283661950534e268e82b9d56e505eef16fb03e83dfd1cc85d9a8a2",
+        "src/resident-candidate/microcode-parser.mjs": "8d084d13af53d4c34fce043355daf24791c7233e1fe7e0dcfdf72f1a0bbfd680",
+        "src/resident-candidate/microcode-compiler.mjs": "1af94eda5f88779a5d19e36e42389600362dfa195c947ebc8571c98de79f0faa",
+        "src/resident-candidate/microcode-allocation.mjs": "91fdf7931ab1c812620d9cd7f1acedd4238c8bb6aa3683aac7493c6bc8ca94eb",
+        "src/resident-candidate/microcode-vm.mjs": "911ea45c0c7abb7a98124d2ebdb173db08e8ac9c6363847de21fdb955461b2d1",
+        "src/resident-candidate/microcode-control-cache.mjs": "e7c1555193a24d2500e4b9d58b886a13d6462e0f8d274597a7da2a64b8895717",
+        "src/resident-candidate/world-microcode-source.mjs": "37e0da68516a24ce6a523a4428f944f0ea21f3c5f22c6b3ff14a1f073ad216ff",
+        "tests/resident-candidate-microcode-world-runtime.mjs": "74e5e819bfe5b1f5dc95ff3a379e94e784e573f5a5564055d5a7076f2bda0ed5",
+        "tests/resident-candidate-microcode-world-isolated.mjs": "4eaf9f21714f22608628209784a8ef0b9b45cf97a3b0c9616e7b14aeba3c5dc3",
+        "tests/resident-candidate-invocation-identity.mjs": "943be0524a2662311aa6dd39f6f4d0c209d4ac1d1c0bd38f66998aeb33c51d10",
+        "tests/resident-candidate-microcode-variant-contract.mjs": "db18e52106b3a94c06e32f784978cead03682510b4c32d5cf1ac7002dcbea761"
+      },
+      "runtimeSha256": "df080d33c6aa537e651756be1a5e0917a9aea9bae69c9e7af6e4a03a6e2c4f97",
+      "actualSha256": "364a945ab975bc5a9227805b5523727a34ffcae5d3085dbc69ae5ec952f8a8e7",
+      "bytecodeSha256": "958a525cb73faef1c369e9b4c99bad5155c32fa4d4f307a7a5ae27ef8fea01c3",
+      "vmShaderSha256": "5db2e6c921b656f5ff36f0f6f0d3d4e3529581667218433fb37606eee1df078c",
+      "handlers": [
+        {
+          "id": 0,
+          "name": "rc_cue_flat_advance",
+          "workgroupSize": 1,
+          "shaderBytes": 32661,
+          "shaderSha256": "8597f7cc84513bb43f47e1700334c60a776d7e408b4a9518d8fbe6fffd22dd23"
+        },
+        {
+          "id": 1,
+          "name": "rc_num_eval",
+          "workgroupSize": 1,
+          "shaderBytes": 17081,
+          "shaderSha256": "770f132f98d86fe7d4d169a632336cf9f70599d9609a4c04c3e8fdb52f47c221"
+        },
+        {
+          "id": 2,
+          "name": "rc_world_broad_commit_collision",
+          "workgroupSize": 1,
+          "shaderBytes": 42158,
+          "shaderSha256": "bcc6accd7fc989e046847fc754c2a1d21e4810adc47018df20a248b415e2154c"
+        }
+      ],
+      "adapter": {
+        "vendor": "google",
+        "architecture": "swiftshader",
+        "device": "swiftshader-device-subzero-",
+        "description": "SwiftShader driver 5.0.0",
+        "isFallbackAdapter": true
+      },
+      "controls": [
+        [
+          1380142422,
+          1,
+          2,
+          0,
+          2474,
+          0,
+          3664809,
+          0,
+          24,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1380142422,
+          1,
+          2,
+          0,
+          2474,
+          0,
+          3666316,
+          0,
+          24,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1380142422,
+          1,
+          2,
+          0,
+          2474,
+          0,
+          3666550,
+          0,
+          24,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1380142422,
+          1,
+          2,
+          0,
+          2474,
+          0,
+          3735006,
+          0,
+          24,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1380142422,
+          1,
+          2,
+          0,
+          2474,
+          0,
+          2511,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1380142422,
+          1,
+          2,
+          0,
+          2474,
+          0,
+          2511,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "stats": [
+        {
+          "dispatches": 70363,
+          "submissions": 70,
+          "initialWrites": 8,
+          "copies": 2,
+          "mappings": 1,
+          "encodeWallMs": 398.78374899849587,
+          "submitWallMs": 28.542224000004353,
+          "queueDrainWallMs": 143358.017035,
+          "executionGroups": [
+            {
+              "name": "initialize",
+              "wallMs": 8053.080438999998,
+              "dispatches": 68315,
+              "submissions": 67,
+              "encodeWallMs": 391.6898919982923,
+              "submitWallMs": 26.89552300001378,
+              "queueDrainWallMs": 7620.813362999994,
+              "externalHandlerDispatches": 0,
+              "pumpCycles": 0
+            },
+            {
+              "name": "pump",
+              "wallMs": 135780.205098,
+              "dispatches": 2048,
+              "submissions": 2,
+              "encodeWallMs": 7.09385700020357,
+              "submitWallMs": 1.53705600000103,
+              "queueDrainWallMs": 135736.968988,
+              "externalHandlerDispatches": 1536,
+              "pumpCycles": 512
+            }
+          ],
+          "externalHandlerDispatches": 1536,
+          "pumpCycles": 512,
+          "readbackWallMs": 2.082578999979887,
+          "cache": {
+            "requests": 25,
+            "coldCompiles": 0,
+            "warmHits": 25,
+            "inflightHits": 0,
+            "failures": 0,
+            "compileWallMs": 0,
+            "validationRequests": 25,
+            "validationCold": 0,
+            "validationWarm": 25,
+            "validationFailures": 0,
+            "entries": 0
+          },
+          "steadyEndToEndWallMs": 143853.8663,
+          "steadyEndToEndScope": "after compilation/bindings/upload drain through initialization, pump, final diagnostics map and validation"
+        },
+        {
+          "dispatches": 70363,
+          "submissions": 70,
+          "initialWrites": 8,
+          "copies": 2,
+          "mappings": 1,
+          "encodeWallMs": 505.21872600220377,
+          "submitWallMs": 27.446189999813214,
+          "queueDrainWallMs": 132359.14153100003,
+          "executionGroups": [
+            {
+              "name": "initialize",
+              "wallMs": 7006.879258000001,
+              "dispatches": 68315,
+              "submissions": 67,
+              "encodeWallMs": 454.8086900008493,
+              "submitWallMs": 26.227054999850225,
+              "queueDrainWallMs": 6512.105472999916,
+              "externalHandlerDispatches": 0,
+              "pumpCycles": 0
+            },
+            {
+              "name": "pump",
+              "wallMs": 125899.01942299999,
+              "dispatches": 2048,
+              "submissions": 2,
+              "encodeWallMs": 50.410036001354456,
+              "submitWallMs": 1.132694999978412,
+              "queueDrainWallMs": 125846.78959700005,
+              "externalHandlerDispatches": 1536,
+              "pumpCycles": 512
+            }
+          ],
+          "externalHandlerDispatches": 1536,
+          "pumpCycles": 512,
+          "readbackWallMs": 0.6963290000567213,
+          "cache": {
+            "requests": 25,
+            "coldCompiles": 0,
+            "warmHits": 25,
+            "inflightHits": 0,
+            "failures": 0,
+            "compileWallMs": 0,
+            "validationRequests": 25,
+            "validationCold": 0,
+            "validationWarm": 25,
+            "validationFailures": 0,
+            "entries": 0
+          },
+          "steadyEndToEndWallMs": 132943.208844,
+          "steadyEndToEndScope": "after compilation/bindings/upload drain through initialization, pump, final diagnostics map and validation"
+        }
+      ]
+    },
+    {
+      "mode": "invocation-cache-v1",
+      "sourceHead": "123c5b6cb5790f92189f9f4f2eb843b7d62ee1ce",
+      "sourceHashes": {
+        "src/resident-candidate/microcode-isa.mjs": "c08d3a6aad7ead49e576c5716c6f980497fdaa549d173741e0c0a25e4a848f68",
+        "src/resident-candidate/microcode-source-intrinsics.mjs": "040640bc29a159c146b18401ede033eada4c428a3c018e134abba7a348d81a2f",
+        "src/resident-candidate/microcode-source-macros.mjs": "01190b6122283661950534e268e82b9d56e505eef16fb03e83dfd1cc85d9a8a2",
+        "src/resident-candidate/microcode-parser.mjs": "8d084d13af53d4c34fce043355daf24791c7233e1fe7e0dcfdf72f1a0bbfd680",
+        "src/resident-candidate/microcode-compiler.mjs": "1af94eda5f88779a5d19e36e42389600362dfa195c947ebc8571c98de79f0faa",
+        "src/resident-candidate/microcode-allocation.mjs": "91fdf7931ab1c812620d9cd7f1acedd4238c8bb6aa3683aac7493c6bc8ca94eb",
+        "src/resident-candidate/microcode-vm.mjs": "911ea45c0c7abb7a98124d2ebdb173db08e8ac9c6363847de21fdb955461b2d1",
+        "src/resident-candidate/microcode-control-cache.mjs": "e7c1555193a24d2500e4b9d58b886a13d6462e0f8d274597a7da2a64b8895717",
+        "src/resident-candidate/world-microcode-source.mjs": "37e0da68516a24ce6a523a4428f944f0ea21f3c5f22c6b3ff14a1f073ad216ff",
+        "tests/resident-candidate-microcode-world-runtime.mjs": "74e5e819bfe5b1f5dc95ff3a379e94e784e573f5a5564055d5a7076f2bda0ed5",
+        "tests/resident-candidate-microcode-world-isolated.mjs": "4eaf9f21714f22608628209784a8ef0b9b45cf97a3b0c9616e7b14aeba3c5dc3",
+        "tests/resident-candidate-invocation-identity.mjs": "943be0524a2662311aa6dd39f6f4d0c209d4ac1d1c0bd38f66998aeb33c51d10",
+        "tests/resident-candidate-microcode-variant-contract.mjs": "db18e52106b3a94c06e32f784978cead03682510b4c32d5cf1ac7002dcbea761"
+      },
+      "runtimeSha256": "05de29cab18f9743717769cb1b9a7c5a456ca1660ee553fd6251161d420ed356",
+      "actualSha256": "08d1b52cb38e9d2b16dc10f6dd4b1cc1662947f01d65fd32875891e96dadc49c",
+      "bytecodeSha256": "958a525cb73faef1c369e9b4c99bad5155c32fa4d4f307a7a5ae27ef8fea01c3",
+      "vmShaderSha256": "a61172ff26cbdbfeeb1dd9e831a1015ea40fd47485260167ea99029907226bed",
+      "handlers": [
+        {
+          "id": 0,
+          "name": "rc_cue_flat_advance",
+          "workgroupSize": 1,
+          "shaderBytes": 32661,
+          "shaderSha256": "8597f7cc84513bb43f47e1700334c60a776d7e408b4a9518d8fbe6fffd22dd23"
+        },
+        {
+          "id": 1,
+          "name": "rc_num_eval",
+          "workgroupSize": 1,
+          "shaderBytes": 17081,
+          "shaderSha256": "770f132f98d86fe7d4d169a632336cf9f70599d9609a4c04c3e8fdb52f47c221"
+        },
+        {
+          "id": 2,
+          "name": "rc_world_broad_commit_collision",
+          "workgroupSize": 1,
+          "shaderBytes": 42158,
+          "shaderSha256": "bcc6accd7fc989e046847fc754c2a1d21e4810adc47018df20a248b415e2154c"
+        }
+      ],
+      "adapter": {
+        "vendor": "google",
+        "architecture": "swiftshader",
+        "device": "swiftshader-device-subzero-",
+        "description": "SwiftShader driver 5.0.0",
+        "isFallbackAdapter": true
+      },
+      "controls": [
+        [
+          1380142422,
+          1,
+          2,
+          0,
+          2474,
+          0,
+          3664809,
+          0,
+          24,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1380142422,
+          1,
+          2,
+          0,
+          2474,
+          0,
+          3666316,
+          0,
+          24,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1380142422,
+          1,
+          2,
+          0,
+          2474,
+          0,
+          3666550,
+          0,
+          24,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1380142422,
+          1,
+          2,
+          0,
+          2474,
+          0,
+          3735006,
+          0,
+          24,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1380142422,
+          1,
+          2,
+          0,
+          2474,
+          0,
+          2511,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1380142422,
+          1,
+          2,
+          0,
+          2474,
+          0,
+          2511,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "stats": [
+        {
+          "dispatches": 70363,
+          "submissions": 70,
+          "initialWrites": 8,
+          "copies": 2,
+          "mappings": 1,
+          "encodeWallMs": 472.9656389900192,
+          "submitWallMs": 28.3665669997863,
+          "queueDrainWallMs": 116552.95535900013,
+          "executionGroups": [
+            {
+              "name": "initialize",
+              "wallMs": 7489.496254000027,
+              "dispatches": 68315,
+              "submissions": 67,
+              "encodeWallMs": 464.4406779895944,
+              "submitWallMs": 26.921087999799056,
+              "queueDrainWallMs": 6967.235758000112,
+              "externalHandlerDispatches": 0,
+              "pumpCycles": 0
+            },
+            {
+              "name": "pump",
+              "wallMs": 109611.83839499997,
+              "dispatches": 2048,
+              "submissions": 2,
+              "encodeWallMs": 8.52496100042481,
+              "submitWallMs": 1.3626640000147745,
+              "queueDrainWallMs": 109585.48096100002,
+              "externalHandlerDispatches": 1536,
+              "pumpCycles": 512
+            }
+          ],
+          "externalHandlerDispatches": 1536,
+          "pumpCycles": 512,
+          "readbackWallMs": 0.7043209999683313,
+          "cache": {
+            "requests": 25,
+            "coldCompiles": 0,
+            "warmHits": 25,
+            "inflightHits": 0,
+            "failures": 0,
+            "compileWallMs": 0,
+            "validationRequests": 25,
+            "validationCold": 0,
+            "validationWarm": 25,
+            "validationFailures": 0,
+            "entries": 0
+          },
+          "steadyEndToEndWallMs": 117133.00956399998,
+          "steadyEndToEndScope": "after compilation/bindings/upload drain through initialization, pump, final diagnostics map and validation"
+        },
+        {
+          "dispatches": 70363,
+          "submissions": 70,
+          "initialWrites": 8,
+          "copies": 2,
+          "mappings": 1,
+          "encodeWallMs": 412.87985500274226,
+          "submitWallMs": 27.331220999651123,
+          "queueDrainWallMs": 109987.13228699978,
+          "executionGroups": [
+            {
+              "name": "initialize",
+              "wallMs": 6739.818188000005,
+              "dispatches": 68315,
+              "submissions": 67,
+              "encodeWallMs": 405.90552900132025,
+              "submitWallMs": 26.249531999696046,
+              "queueDrainWallMs": 6293.8199389998335,
+              "externalHandlerDispatches": 0,
+              "pumpCycles": 0
+            },
+            {
+              "name": "pump",
+              "wallMs": 103731.25334399997,
+              "dispatches": 2048,
+              "submissions": 2,
+              "encodeWallMs": 6.974326001422014,
+              "submitWallMs": 0.9833209999487735,
+              "queueDrainWallMs": 103693.08695899998,
+              "externalHandlerDispatches": 1536,
+              "pumpCycles": 512
+            }
+          ],
+          "externalHandlerDispatches": 1536,
+          "pumpCycles": 512,
+          "readbackWallMs": 0.6271650000126101,
+          "cache": {
+            "requests": 25,
+            "coldCompiles": 0,
+            "warmHits": 25,
+            "inflightHits": 0,
+            "failures": 0,
+            "compileWallMs": 0,
+            "validationRequests": 25,
+            "validationCold": 0,
+            "validationWarm": 25,
+            "validationFailures": 0,
+            "entries": 0
+          },
+          "steadyEndToEndWallMs": 110472.49967400002,
+          "steadyEndToEndScope": "after compilation/bindings/upload drain through initialization, pump, final diagnostics map and validation"
+        }
+      ]
+    }
+  ],
+  "scope": {
+    "rawRows": 6,
+    "acceptedRows": 4,
+    "rejectedRows": 2,
+    "h": 2,
+    "independentOriginalComparisons": 16,
+    "sourceGroups": 11,
+    "allSourceAndVmWordsEqual": true,
+    "fullRest": false,
+    "rawToStrike": false,
+    "native1024": false,
+    "hardwarePerformance": false,
+    "cpuFutureStateUploads": false,
+    "timingKind": "same-device SwiftShader host wall; not GPU timestamps; two observations each; not hardware calibration"
+  },
+  "timingHold": {
+    "allChildExecutionsHeld": true,
+    "from": "before native child start",
+    "through": "native child terminal"
+  },
+  "limitations": [
+    "First SIGKILL cause remains unproven; successful resource/preparation-only retry is not an OOM diagnosis.",
+    "Storage VM remains default; cache mode requires explicit disjoint runtime guard.",
+    "Different two-h samples and previous processes are not a calibrated speedup ratio.",
+    "No full-shot extrapolation from pre-impact h2."
+  ]
+}

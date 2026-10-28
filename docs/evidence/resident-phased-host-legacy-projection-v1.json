@@ -1,0 +1,36 @@
+{
+  "kind": "resident-phased-host-legacy-projection-v1",
+  "sourceCommit": "37afc58b51ef9cdcfb2be2737d3f503c3ae7f827",
+  "previousFailedEvidence": "docs/evidence/resident-maintained-test-inventory-host-v2.json",
+  "sourceSha256": {
+    "tests/resident-candidate-microcode-operand-loads.mjs": "b0802081aa8f770f9a323de71f44848131c293ed135bd50836322f915d48aa27",
+    "tests/fixtures/resident-microcode-phased-host-projection.json": "352e4ae7994f430fb2565808248b24fe87b9e6f28c95ac1b51dc5b8554280c78",
+    "tests/fixtures/resident-microcode-operand-load-baseline.json": "d133836040011a9f0454d46da48bbe96376406b83f86f45e15922566375afc3b"
+  },
+  "focused": {
+    "tests": 21,
+    "passed": 21,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 2401.357147,
+    "logSha256": "65f8e693f64189f1bbafd3084dd88ddf7058fdedfe61e1ab5dc6ec5a4efd8b40"
+  },
+  "guardedDefaultHost": {
+    "tests": 277,
+    "passed": 270,
+    "failed": 0,
+    "skipped": 7,
+    "exit": 0,
+    "durationMs": 17879.753256,
+    "logSha256": "c0e8182dbe021f884351ffc2e25ea75c9705fe65d4f21c893d1f216fecb5c78d"
+  },
+  "historicalEvidenceUnchanged": true,
+  "productionSourceUnchanged": true,
+  "capability": {
+    "sourceSuitesExecuted": false,
+    "actualBrowser": false,
+    "moduleWorker": false,
+    "gpuExecution": false,
+    "releaseQualified": false
+  }
+}

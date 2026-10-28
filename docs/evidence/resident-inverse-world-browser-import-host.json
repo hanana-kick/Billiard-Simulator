@@ -1,0 +1,53 @@
+{
+  "scope": "exact import selection and original initial-only shader equality",
+  "hashes": [
+    {
+      "count": 1,
+      "entry": "initial",
+      "bytes": 82304,
+      "sha256": "4e9e9f676946940e5cad0a67e20a4598012569bc8631d3dd19db6a32470c82ac"
+    },
+    {
+      "count": 1,
+      "entry": "boundary",
+      "bytes": 82305,
+      "sha256": "172e1a14a979d030c19ab6091619d750e9677ac779840d04ab3f43a14e72a499"
+    },
+    {
+      "count": 1,
+      "entry": "library",
+      "bytes": 82141,
+      "sha256": "621c143f69ee2983197c82481bf005cbf1d65dcdcafab5e6ce015789ed25d401"
+    },
+    {
+      "count": 2,
+      "entry": "initial",
+      "bytes": 82304,
+      "sha256": "68e0e4e6a41a097d7b8db1440c5160f0427addb9e2d039eceb47a6022d6d7e50"
+    },
+    {
+      "count": 2,
+      "entry": "boundary",
+      "bytes": 82305,
+      "sha256": "df7ca36fdb66cc6c2dcb3460d8480bc0055ef9ac9058e23609e9601d538fb9de"
+    },
+    {
+      "count": 2,
+      "entry": "library",
+      "bytes": 82141,
+      "sha256": "36c66d45e93d5ebe5e1eba67392168c105e76a56b5636fe9244e804d4faea461"
+    }
+  ],
+  "gpuExecuted": false,
+  "completeBrowserClosureQualified": false,
+  "kind": "resident-inverse-world-browser-import-host-v1",
+  "passed": 2,
+  "failed": 0,
+  "skipped": 0,
+  "durationMs": 5038.48756,
+  "sourceFiles": {
+    "src/resident-candidate/inverse-world-observation.mjs": "3e7147e92c7f814501853e1107cf685554edd3224b5c16a561bb8696f5123276",
+    "src/experimental-four-ball-world.js": "54e1ce64274abb7e74914f8eeb3df5db373460c3b3decdfa56e6e5d1d5a5da4b",
+    "tests/resident-candidate-inverse-world-browser-module.mjs": "99981169dbfb5cdf3440cd2fdf8e299df365a653d68d02c525ad82507918d699"
+  }
+}

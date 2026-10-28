@@ -1,0 +1,415 @@
+{
+  "kind": "resident-mixed-six-bounded-native-validation-snapshot-v1",
+  "evidenceRoot": "resident-native-artifacts/",
+  "artifactScope": "locally retained artifacts; no publication or qualification token",
+  "source": {
+    "runtimeDataSha256": "5a114404df0eb616c8b112b553f484d837171bdfbef9f9b7c138686b30aaf958",
+    "runtimeSha256": "780872cc0105e20375dcbd2f84a2e1962176133feefb23fdaa0a0778b312b4de",
+    "sourceSha256": "c2aded677c03f8db550530c39df80a5591057f892a2f44aa4f6fe99d956baa20",
+    "bytecodeSha256": "30f7e7aae2258d01bdcb98811024f314592351f83ced1ffadfde2cda36c825e4",
+    "generationIdentity": "4a8e93bf1880d547983561d7df8b4dfb4c5de18672bcc030455d838ab213244c",
+    "count": 6,
+    "frames": 2,
+    "generatorProfile": "resident-preparation-disabled-integrated-isa-source-v1",
+    "initialHistoryProfile": "source-full-application-history-v1"
+  },
+  "scope": {
+    "originalCreatedT0": true,
+    "isolatedSourceOwnerHSteps": 2,
+    "originalControllerOuterSteps": 0,
+    "referenceAuthority": "original-js-number-v1",
+    "assertionProfile": "mixed-six-original-t0-native-scene-and-h2-v2",
+    "assertionCommit": "89270bfac0b9333e1c5e3386d43b5f87a8496b06",
+    "owners": [
+      "balls",
+      "cue",
+      "caches",
+      "cueCloth",
+      "journal",
+      "roster",
+      "scene",
+      "bvh",
+      "clock",
+      "rules",
+      "game"
+    ],
+    "acceptedRows": [
+      17,
+      118,
+      219,
+      320
+    ],
+    "rejectedRows": [
+      421,
+      522
+    ],
+    "acceptedAndRejectedHistory": true,
+    "original13CallJournalValidated": true,
+    "wgs8BaselineFullWorldVmScratchBitParity": true,
+    "fullRestQualified": false,
+    "native1024Qualified": false,
+    "calibratedPerformance": false,
+    "productionCompactProducerAvailable": false
+  },
+  "adapter": {
+    "vendor": "google",
+    "architecture": "swiftshader",
+    "device": "swiftshader-device-subzero-",
+    "description": "SwiftShader driver 5.0.0",
+    "isFallbackAdapter": true
+  },
+  "deviceLimits": {
+    "maxStorageBufferBindingSize": 134217728,
+    "maxBufferSize": 268435456,
+    "maxStorageBuffersPerShaderStage": 8,
+    "maxBindingsPerBindGroup": 1000,
+    "maxBindGroups": 4,
+    "maxComputeInvocationsPerWorkgroup": 256,
+    "maxComputeWorkgroupSizeX": 256,
+    "maxComputeWorkgroupsPerDimension": 65535
+  },
+  "schedule": {
+    "cycles": 512,
+    "cycleDispatchOrder": [
+      "core pump",
+      "macro 0 cue",
+      "macro 1 numeric",
+      "macro 2 broad",
+      "macro 3 coupled"
+    ],
+    "t0Boundary": "after all raw initialization + source PC begin + VM begin; before first scalar pump",
+    "stageCounts": [
+      {
+        "stage": "raw-init",
+        "commandEntries": 1,
+        "dispatches": 1,
+        "workgroups": 6
+      },
+      {
+        "stage": "raw-step",
+        "commandEntries": 1,
+        "dispatches": 79,
+        "workgroups": 6
+      },
+      {
+        "stage": "raw-finish",
+        "commandEntries": 1,
+        "dispatches": 1,
+        "workgroups": 6
+      },
+      {
+        "stage": "contact-init",
+        "commandEntries": 180,
+        "dispatches": 180,
+        "workgroups": 6
+      },
+      {
+        "stage": "contact-gjk",
+        "commandEntries": 180,
+        "dispatches": 46080,
+        "workgroups": 6
+      },
+      {
+        "stage": "contact-epa",
+        "commandEntries": 180,
+        "dispatches": 180,
+        "workgroups": 6
+      },
+      {
+        "stage": "contact-finish",
+        "commandEntries": 180,
+        "dispatches": 180,
+        "workgroups": 6
+      },
+      {
+        "stage": "cast-init",
+        "commandEntries": 60,
+        "dispatches": 60,
+        "workgroups": 6
+      },
+      {
+        "stage": "cast-cast",
+        "commandEntries": 60,
+        "dispatches": 6000,
+        "workgroups": 6
+      },
+      {
+        "stage": "cast-contact-init",
+        "commandEntries": 60,
+        "dispatches": 60,
+        "workgroups": 6
+      },
+      {
+        "stage": "cast-contact-gjk",
+        "commandEntries": 60,
+        "dispatches": 15360,
+        "workgroups": 6
+      },
+      {
+        "stage": "cast-contact-epa",
+        "commandEntries": 60,
+        "dispatches": 60,
+        "workgroups": 6
+      },
+      {
+        "stage": "cast-finish",
+        "commandEntries": 60,
+        "dispatches": 60,
+        "workgroups": 6
+      },
+      {
+        "stage": "world-transfer",
+        "commandEntries": 1,
+        "dispatches": 1,
+        "workgroups": 1
+      },
+      {
+        "stage": "creation-begin",
+        "commandEntries": 1,
+        "dispatches": 1,
+        "workgroups": 1
+      },
+      {
+        "stage": "creation-gather",
+        "commandEntries": 3,
+        "dispatches": 3,
+        "workgroups": 1
+      },
+      {
+        "stage": "creation-evaluate",
+        "commandEntries": 3,
+        "dispatches": 3,
+        "workgroups": 1
+      },
+      {
+        "stage": "creation-scatter",
+        "commandEntries": 3,
+        "dispatches": 3,
+        "workgroups": 1
+      },
+      {
+        "stage": "creation-finish",
+        "commandEntries": 1,
+        "dispatches": 1,
+        "workgroups": 1
+      }
+    ],
+    "stats": {
+      "initializationDispatches": 68315,
+      "continuationDispatches": 2560,
+      "totalDispatches": 70875,
+      "initializationSubmissions": 67,
+      "continuationSubmissions": 3,
+      "captureSubmissions": 2,
+      "totalSubmissions": 72,
+      "copies": 6,
+      "mappings": 1,
+      "initialWrites": 8,
+      "storageBuffers": 11,
+      "storageBytes": 10196212,
+      "readbackBytes": 4065376,
+      "peakLiveBytes": 14261588
+    },
+    "compileOrder": [
+      "macro-launch 2 rc_world_broad_commit_collision",
+      "macro-launch core begin",
+      "macro-launch core pump",
+      "macro-launch source PC begin",
+      "macro-launch initialize raw-init",
+      "macro-launch initialize raw-step",
+      "macro-launch initialize raw-finish",
+      "macro-launch initialize contact-init",
+      "macro-launch initialize contact-gjk",
+      "macro-launch initialize contact-epa",
+      "macro-launch initialize contact-finish",
+      "macro-launch initialize cast-init",
+      "macro-launch initialize cast-cast",
+      "macro-launch initialize cast-contact-init",
+      "macro-launch initialize cast-contact-gjk",
+      "macro-launch initialize cast-contact-epa",
+      "macro-launch initialize cast-finish",
+      "macro-launch initialize world-transfer",
+      "macro-launch initialize creation-begin",
+      "macro-launch initialize creation-gather",
+      "macro-launch initialize creation-evaluate",
+      "macro-launch initialize creation-scatter",
+      "macro-launch initialize creation-finish",
+      "macro-launch 0 rc_cue_flat_advance",
+      "macro-launch 1 rc_num_eval",
+      "macro-launch 3 rc_coupled_transport_advance"
+    ]
+  },
+  "runs": [
+    {
+      "macroWgs": 1,
+      "compileCacheDelta": {
+        "requests": 26,
+        "coldCompiles": 26,
+        "warmHits": 0,
+        "inflightHits": 0,
+        "failures": 0,
+        "compileWallMs": 151642.643698,
+        "validationRequests": 26,
+        "validationCold": 26,
+        "validationWarm": 0,
+        "validationFailures": 0,
+        "entries": 26
+      },
+      "executionStats": {
+        "dispatches": 70875,
+        "submissions": 72,
+        "copies": 6,
+        "mappings": 1,
+        "initialWrites": 8,
+        "encodeWallMs": 500.95174700551433,
+        "submitWallMs": 30.972572000173386,
+        "drainWallMs": 136698.61256299983,
+        "groups": [
+          {
+            "name": "initialization",
+            "wallMs": 8017.59902199998,
+            "dispatches": 68315,
+            "submissions": 67,
+            "encodeWallMs": 493.5422050054767,
+            "submitWallMs": 29.50348900014069,
+            "drainWallMs": 7480.952168999764
+          },
+          {
+            "name": "continuation",
+            "wallMs": 129253.46768100001,
+            "dispatches": 2560,
+            "submissions": 3,
+            "encodeWallMs": 7.409542000037618,
+            "submitWallMs": 1.3162120000342838,
+            "drainWallMs": 129216.838827
+          }
+        ]
+      }
+    },
+    {
+      "macroWgs": 8,
+      "compileCacheDelta": {
+        "requests": 26,
+        "coldCompiles": 4,
+        "warmHits": 22,
+        "inflightHits": 0,
+        "failures": 0,
+        "compileWallMs": 103399.95022500027,
+        "validationRequests": 26,
+        "validationCold": 4,
+        "validationWarm": 22,
+        "validationFailures": 0,
+        "entries": 4
+      },
+      "executionStats": {
+        "dispatches": 70875,
+        "submissions": 72,
+        "copies": 6,
+        "mappings": 1,
+        "initialWrites": 8,
+        "encodeWallMs": 351.2022339561954,
+        "submitWallMs": 32.14171499945223,
+        "drainWallMs": 114161.6146090005,
+        "groups": [
+          {
+            "name": "initialization",
+            "wallMs": 7459.671133999946,
+            "dispatches": 68315,
+            "submissions": 67,
+            "encodeWallMs": 340.0725539592095,
+            "submitWallMs": 30.643758999183774,
+            "drainWallMs": 7070.236748000374
+          },
+          {
+            "name": "continuation",
+            "wallMs": 107104.2691990002,
+            "dispatches": 2560,
+            "submissions": 3,
+            "encodeWallMs": 11.129679996985942,
+            "submitWallMs": 1.373789000324905,
+            "drainWallMs": 107090.6873610001
+          }
+        ]
+      }
+    }
+  ],
+  "evidence": {
+    "wgs1Compile": {
+      "path": "mixed-six-macro-held-native-v2/wgs1-compile-receipt.json",
+      "bytes": 2074,
+      "sha256": "466ca3143a18c05e06bcee86b71c8c77604ab7db86303666bac3ef65a128720f"
+    },
+    "wgs8Compile": {
+      "path": "mixed-six-macro-held-native-v2/wgs8-compile-receipt.json",
+      "bytes": 2085,
+      "sha256": "3bdccaa60989a78f315ea02ca77eaeabaf57397fa40c4eb6262aee45cd8bfa1f"
+    },
+    "wgs1Actual": {
+      "path": "mixed-six-macro-held-native-v2/wgs1/actual.v8",
+      "bytes": 4068615,
+      "sha256": "d26d7eff65990499cf6ea583d9f08b031f100b1b2e5768d2d7edb19f0a17716c"
+    },
+    "wgs8Actual": {
+      "path": "mixed-six-macro-held-native-v2/wgs8/actual.v8",
+      "bytes": 4068615,
+      "sha256": "e4152203a8c69ca869b52c0885284eec4d7cee5559156520a951c46c18a11fd5"
+    },
+    "wgs1IndependentPass": {
+      "path": "mixed-six-macro-t0-reference-repair-v1/assertion-receipt.json",
+      "bytes": 4136,
+      "sha256": "da0c02ce7ed5639bf4aebe30923e25ab6c2958b014e84fec92220d45f8972dd3"
+    },
+    "wgs8IndependentPass": {
+      "path": "mixed-six-macro-held-native-v2/wgs8/assertion-receipt.json",
+      "bytes": 4213,
+      "sha256": "548b6d40f57fb84ee1a3a29d351506b79d9b0c1a1884d7f247dc659fafd055ac"
+    },
+    "t0Derivation": {
+      "path": "mixed-six-macro-t0-reference-repair-v1/derivation-receipt.json",
+      "bytes": 853,
+      "sha256": "105c2e917f04769ab99eb7e7f9e6e2a1e02568e12e76a0c2b04abad99093cc29"
+    },
+    "wgs1StageCount": {
+      "path": "mixed-six-macro-gate-wgs1-v2/stage-count-receipt.json",
+      "bytes": 12337,
+      "sha256": "d227da625e057012f3b55847ca69a70f12ee5ee5f4abff1956fb2aec4b9c95ba"
+    },
+    "wgs8StageCount": {
+      "path": "mixed-six-macro-gate-wgs8-v2/stage-count-receipt.json",
+      "bytes": 12337,
+      "sha256": "ecfa7831947617f33c540048a18cdd29e29d6c5494a4cd0d82bad09a7fc2001d"
+    },
+    "runtime": {
+      "path": "mixed-six-macro-launch-v1/runtime.v8",
+      "bytes": 13649787,
+      "sha256": "780872cc0105e20375dcbd2f84a2e1962176133feefb23fdaa0a0778b312b4de"
+    },
+    "independentExpected": {
+      "path": "mixed-six-macro-launch-expectations-v1/assertions.v8",
+      "bytes": 4613038,
+      "sha256": "c8d1dca508e4139d76916816bb71a0595be7b2ac42f7643b8fe0f300b6c49680"
+    },
+    "source": {
+      "path": "mixed-six-macro-launch-v1/source.wgsl",
+      "bytes": 542365,
+      "sha256": "c2aded677c03f8db550530c39df80a5591057f892a2f44aa4f6fe99d956baa20"
+    },
+    "wgs1Gate": {
+      "path": "mixed-six-macro-gate-wgs1-v2/gate.v8",
+      "bytes": 14455223,
+      "sha256": "94da29a365e1d77590da92f8fa1846b5871666334b3b1d01d39a4ebb5d848a5b"
+    },
+    "wgs8Gate": {
+      "path": "mixed-six-macro-gate-wgs8-v2/gate.v8",
+      "bytes": 14455223,
+      "sha256": "49a9b76909a1e35774b990041b138661bb8bf9bb1235100ed24fc11171805378"
+    }
+  },
+  "sourceFiles": {
+    "tests/resident-candidate-macro-launch-expectations.mjs": "1225b3db989501e979099abce0633ed2b722e33876af18619b7e9f4e0c3b9e61",
+    "tests/resident-candidate-original-t0-created-scene.mjs": "be81f6a168c4bab38c79b111284259b5df7206e48d4f1b46fd6c958623feba1a",
+    "src/experimental-live-registered-origin.js": "f51994cbbc68ac421e16adc1fce23a16973f40f81c76e3a008901ddac7fd84fc",
+    "src/resident-candidate/world-initialization.mjs": "b0ee670e717f21a7cb51e1c75b2458a61dbc551a5118d80bffea63455b2796b3",
+    "src/resident-candidate/macro-launch-profile.mjs": "1c5147260445953110e02845e527cd1b43258ca5a8a39291f1215d0b36d9296c"
+  }
+}

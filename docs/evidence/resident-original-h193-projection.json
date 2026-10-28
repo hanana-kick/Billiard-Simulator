@@ -1,0 +1,159 @@
+{
+  "kind": "original-native-partial-outer-h193-comparison-v1",
+  "status": "pass",
+  "sourceCheckpoint": "8d63cbe",
+  "candidate": 219,
+  "originalCPUOnly": true,
+  "source": {
+    "physicsSha256": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d",
+    "stepFunctionSha256": "0e2c7249989d718ff03d115ab2e9e20307b78898667e7531bf185280fa608ae6",
+    "tipFunctionSha256": "962579fdcd11f146954b27cca53527d2e3e949bda4d1ca4599cf68667a4d4bcc",
+    "angularFunctionSha256": "5adb7e3fc192ed00ed1c62c7adb32a4f0047a807239f63b264638a2014026081",
+    "sourceIdentity": "feb6b6eea9a0d29236df73680e79d3cbedf84dee702f3dae0c1e80a33ef9c2ef",
+    "preStrikeIdentity": "2d5a2cbf1b7dc481cb90a19de8fa5cee7ea389c7dbbede645324afbcb87279c8",
+    "artifactSha256": "11f41cd9c11ff47911f14afc084b27f32a15fc69db1f26d7970eb864f35f2262"
+  },
+  "boundary": {
+    "hCompleted": 193,
+    "nextHNotEntered": 194,
+    "outerCompleted": 3,
+    "outerOrdinal": 4,
+    "substepCompleted": 1,
+    "subdivisions": 64,
+    "h": 0.000016276041666666666,
+    "timeBeforeOuter": 5.632291666666382,
+    "timeAfterH": 5.6323079427080485,
+    "currentNativeDtWord": 931694729,
+    "outerDt": 0.0010416666666666667,
+    "applicationSteps": 5407,
+    "scorerSteps": 3,
+    "firstInnerEntry": {
+      "h": 0.000016276041666666666,
+      "nativeDtWord": 931694729,
+      "time": 5.632291666666382,
+      "applicationSteps": 5407,
+      "cuePresent": true
+    },
+    "nextInnerEntry": {
+      "h": 0.000016276041666666666,
+      "nativeDtWord": 931694729,
+      "time": 5.6323079427080485,
+      "applicationSteps": 5407,
+      "cuePresent": true
+    },
+    "angularCompletions": 1,
+    "sourceOrder": "compliantTipContact; native step; time += h; obstructions; collision drain; angular patch; cue expiry; NEXT compliantTipContact"
+  },
+  "groups": [
+    {
+      "group": "balls",
+      "mismatch": null
+    },
+    {
+      "group": "cue",
+      "mismatch": null
+    },
+    {
+      "group": "clock",
+      "mismatch": null
+    },
+    {
+      "group": "rules",
+      "mismatch": null
+    },
+    {
+      "group": "history",
+      "mismatch": null
+    },
+    {
+      "group": "game",
+      "mismatch": null
+    },
+    {
+      "group": "partialOuter",
+      "mismatch": null
+    },
+    {
+      "group": "emissions",
+      "mismatch": null
+    }
+  ],
+  "coverage": {
+    "candidate": 219,
+    "rawControls": true,
+    "source": "fresh original PhysicsLab/Rapier from authenticated prestrike",
+    "boundary": "after all application work of h193, before compliantTipContact of h194",
+    "completeNativeH": true,
+    "completeOuter": false,
+    "completedOuters": 3,
+    "partialOuter": 4,
+    "completedSubsteps": 1,
+    "latchedSubdivisions": 64,
+    "fullNativeSnapshotCaptured": true,
+    "completeNativeMemoryCompared": false,
+    "futureStatesRuntimeInputs": false,
+    "gpuExecuted": false,
+    "scalarVmReplay": false,
+    "fullRest": false,
+    "hardwarePerformance": false,
+    "projectionGroups": [
+      "balls",
+      "cue",
+      "clock",
+      "rules",
+      "history",
+      "game",
+      "partialOuter",
+      "emissions"
+    ],
+    "existingOuterProjectionFieldsDropped": [],
+    "retainedNativeCaptureFields": [
+      "full original balls/cue including body handles, COM/mass/inertia/sleep",
+      "complete game snapshot and optimizer accumulator",
+      "all emitted events/receipts and presentation debounce history",
+      "native snapshot bytes; source and boundary provenance"
+    ],
+    "notRepresentedByThisBankProjection": [
+      "native contact caches, BVH, complete scene/journal allocator and solver warmstarts require the independent all11 source-owner gate",
+      "presentation labels/event positions, paths and ranking diagnostics",
+      "cue native joint impulses are not projected here",
+      "full game static metadata/scores and full native cue guide/COM/joint metadata are retained in the native capture but not falsely reconstructed as resident fields"
+    ],
+    "qualifiedAtMost": "represented original source observables at this fixed partial-outer endpoint; not complete native-engine memory"
+  },
+  "comparisonOnlyPins": {
+    "capture": "11f41cd9c11ff47911f14afc084b27f32a15fc69db1f26d7970eb864f35f2262",
+    "created": "feb6b6eea9a0d29236df73680e79d3cbedf84dee702f3dae0c1e80a33ef9c2ef",
+    "postInitial": "05f78ef994c2b69960e8e64c07d03cd17c0947656d573afee82820d764a5ff5e",
+    "postFinal": "893b7ed95bbf2881b4fb518421ef37339ca8857944603c898391237f125996a5",
+    "nativeExpected": "c04be6c729651540a1993f0f4addbc7f4c1338851a5d141e5e107688e65e2b23"
+  },
+  "artifacts": {
+    "capturePath": "/tmp/resident-original-h193-native-comparison-v1/native-h193.v8",
+    "captureSha256": "254257154f75ecff1f2241ad86a5b6a8cf827d64afec3535459dbfc06116db31",
+    "captureBytes": 284263,
+    "nativeH193SnapshotSha256": "06704f42291eb93dbd5226c8bd4ddd729827bbe129c56bf43da3e025ac8adfe8",
+    "nativeH192SnapshotSha256": "17993c9fa182c6e9daae9a69a5043fe577d5a2a0a1e1e451d768a3353c912a8e",
+    "comparisonPath": "/tmp/resident-original-h193-native-comparison-v1/comparison.json",
+    "comparisonSha256": "7e8a0c5beff1da3b0b1fcac4e303099938563075fa09e9fb2e2496f0445926ac"
+  },
+  "observations": {
+    "nativeEmittedTotal": 2,
+    "initialEmittedPrefix": 1,
+    "postCreationAcceptedEmissions": 1,
+    "fullPresentationHistory": 10,
+    "normalImpulse": 0.5958041510074077,
+    "cpuPrefixWallMs": 147.46111500000006
+  },
+  "focusedHostTests": {
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "command": "node --test tests/resident-candidate-post-impact-native-projection-tests.mjs"
+  },
+  "gpuExecuted": false,
+  "scalarVmReplay": false,
+  "rawToH193NativeQualified": false,
+  "fullRest": false,
+  "hardwarePerformance": false
+}

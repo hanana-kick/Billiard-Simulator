@@ -1,0 +1,67 @@
+{
+  "kind": "resident-inverse-world-producer-host-evidence-v1",
+  "scope": "authenticated original created-t0 and retained two-h source execution",
+  "tests": {
+    "producerGroups": 3,
+    "clearanceReadsetGroups": 1,
+    "failed": 0
+  },
+  "producer": {
+    "sourceFrames": [
+      0,
+      1,
+      2
+    ],
+    "frameWords": 108,
+    "allFrameWordsEqual": true,
+    "all11FinalSourceGroupsEqual": true,
+    "extraAlignedStateWords": 2496,
+    "extraProgramWords": 23,
+    "sourceBindings": 5,
+    "physicalBindingsWithCodeVmAndAudit": 8,
+    "compiledInstructions": 152742,
+    "executedCoreInstructions": 9389401,
+    "hostPumps": 259,
+    "hostTwoHWallMs": 24410.702725,
+    "negativeCases": [
+      "rejected-world-no-write",
+      "generation-corruption",
+      "duplicate-initial",
+      "cache-status",
+      "orphan-point",
+      "nan-impulse",
+      "stale-h-epoch",
+      "post-commit-cut"
+    ],
+    "convexGjkCap": 256,
+    "sourceCapsAndCallOrderUnchanged": true
+  },
+  "clearanceReadset": {
+    "acceptedIds": [
+      17,
+      118,
+      219,
+      320
+    ],
+    "nativeSteps": 0,
+    "completeQueryReadsetExact": true,
+    "allClearanceFieldsExact": true,
+    "callback": "original FourBallGame.contact only",
+    "physicsSha256": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d"
+  },
+  "futureStatesRuntimeInputs": false,
+  "gpuExecuted": false,
+  "nativeCompilationQualified": false,
+  "hardwarePerformance": false,
+  "rawCreationQualified": false,
+  "activeImpactQualified": false,
+  "fullRestQualified": false,
+  "candidate1024Qualified": false,
+  "scorerJoinImplemented": false,
+  "finalGameplayQualified": false,
+  "defaultEnabled": false,
+  "reproduction": "local diagnostic requires authenticated original initial capture and decoder provenance; not artifact-independent CI",
+  "historicalProfile": "source-four-ball-inverse-producer-v1",
+  "superseded": true,
+  "malformedPhysicalViewParity": "not qualified: original physical views were enlarged"
+}

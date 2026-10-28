@@ -1,0 +1,132 @@
+{
+  "profile": "native-f32-direct-compliant-tip-component-v1",
+  "adapter": {
+    "vendor": "google",
+    "architecture": "swiftshader",
+    "device": "swiftshader-device-subzero-",
+    "description": "SwiftShader driver 5.0.0",
+    "isFallbackAdapter": true
+  },
+  "backend": "Vulkan / explicitly configured SwiftShader software ICD",
+  "referenceProvenance": {
+    "reference": "original-PhysicsLab-JS-Number/native-Rapier-call-boundary",
+    "physicsSha256": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d",
+    "mathSha256": "ea76455919c3fb22557680c5422902cf631753215492e799b32791993a939046",
+    "rapierSha256": "fca22b2f33d4e88d2992215f42df6312093476db7fea4197816fb8e4ce17cba4",
+    "readOnlyBranchObserver": true,
+    "preparedComponentOnly": true
+  },
+  "shaderBytes": 7159,
+  "compactShaderBytes": 340,
+  "compileMs": 324.90211400000004,
+  "diagnostic": {
+    "count": 9,
+    "allocatedBufferBytes": 18784,
+    "bufferSizes": [
+      64,
+      9216,
+      144,
+      144,
+      9216
+    ],
+    "semanticPersistentBytes": 9280,
+    "readbackBytes": 9360,
+    "submitToDoneMs": 11.982605000000035,
+    "timingIncludesDispatchAndCopies": true,
+    "hardwareSpeedClaim": false,
+    "wholeWorld": false
+  },
+  "compactOnly": {
+    "count": 9,
+    "allocatedBufferBytes": 9568,
+    "bufferSizes": [
+      64,
+      9216,
+      144,
+      144
+    ],
+    "semanticPersistentBytes": 9280,
+    "readbackBytes": 144,
+    "submitToDoneMs": 0.19386200000008103,
+    "timingIncludesDispatchAndCopies": true,
+    "hardwareSpeedClaim": false,
+    "wholeWorld": false
+  },
+  "errors": [
+    {
+      "name": "center",
+      "maxError": {
+        "linear": 0,
+        "angular": 0,
+        "tangent": 0
+      }
+    },
+    {
+      "name": "tangent-stick",
+      "maxError": {
+        "linear": 1.8189894035458565e-12,
+        "angular": 7.450580596923828e-9,
+        "tangent": 1.51582450260195e-14
+      }
+    },
+    {
+      "name": "tangent-slip",
+      "maxError": {
+        "linear": 0,
+        "angular": 0,
+        "tangent": 4.960689327306207e-11
+      }
+    },
+    {
+      "name": "lateral-spring",
+      "maxError": {
+        "linear": 0.000002384185791015625,
+        "angular": 7.152557373046875e-7,
+        "tangent": 3.32863341563402e-12
+      }
+    },
+    {
+      "name": "persistent-shear",
+      "maxError": {
+        "linear": 9.094947017729282e-13,
+        "angular": 7.450580596923828e-9,
+        "tangent": 3.284124729890876e-14
+      }
+    },
+    {
+      "name": "separation",
+      "maxError": {
+        "linear": 0,
+        "angular": 0,
+        "tangent": 0
+      }
+    },
+    {
+      "name": "ordered-two-contacts",
+      "maxError": {
+        "linear": 0,
+        "angular": 0,
+        "tangent": 1.0326318555938744e-12
+      }
+    },
+    {
+      "name": "normal-clamped",
+      "maxError": {
+        "linear": 0,
+        "angular": 0,
+        "tangent": 0
+      }
+    },
+    {
+      "name": "rotated-shaft-inertia",
+      "maxError": {
+        "linear": 0.000002384185791015625,
+        "angular": 5.960464477539062e-7,
+        "tangent": 3.473116412527642e-12
+      }
+    }
+  ],
+  "originalObservations": true,
+  "fullShot": false,
+  "productionEnabled": false
+}

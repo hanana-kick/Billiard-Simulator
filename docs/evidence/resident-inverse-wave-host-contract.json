@@ -1,0 +1,48 @@
+{
+  "kind": "resident-inverse-wave-host-contract-evidence-v1",
+  "scope": "HOST source-query adapter contract and actual planner/solver discrete-control differential only",
+  "files": {
+    "src/resident-candidate/inverse-wave-adapter.mjs": "ebfede263083e1c65e7b19f2794a2fcd69a94d90fec9a1a60f3193e8e5c27663",
+    "src/inverse-planner.js": "5e07803dd3e593fb015428366038446caa9aa46c5b449c99b0155408a0357100",
+    "src/inverse-solver.js": "86195c73110b269bce942bf472a150c7b507c3dcd52e63723f792434bb5cee49",
+    "src/inverse-events.js": "5eff496a7baec8dcc108a61207877bd8c50fc303d6d66cb0dd1681a79022ec5e",
+    "src/optimizer-service.js": "5d36bee85c2a339e9499e31817c1ab1502ddfa7a540204d2763bdc6276612a92",
+    "src/optimizer-worker.js": "db59acf841bc8697eccaa9cb9e25e056f73b26eb61bf000214c21b68f0f7f53a",
+    "tests/resident-candidate-inverse-query-initial-fixture.mjs": "ae3271846763098e425f5d679881dbe0783bc60d54ee0d994669fc4c41535007",
+    "tests/resident-candidate-inverse-wave-adapter.mjs": "be1d31befc461ef9c588e140ed88f98cc1b5e9ae129ef7d8704f990fbff03ab1"
+  },
+  "suite": {
+    "passed": 14,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 31747.618534,
+    "adapterGroups": 6,
+    "legacyInitialAndJoinGroups": 8
+  },
+  "assertions": {
+    "genuineInitialAdmission": true,
+    "sourceRequestRulesSettingsTopologyGenerationBound": true,
+    "completeWaveAtomicBeforeMutation": true,
+    "exactNumberBitsUntilLegacySolverJson": true,
+    "nullableAndUnavailablePreserved": true,
+    "unsupportedIsNotInfeasible": true,
+    "incompleteCancelledStaleFailedHoldPendingWave": true,
+    "publicUnqualifiedCommitCannotMutate": true,
+    "positiveVerifyDeferredForQualifiedProducerAndWinnerReplay": true
+  },
+  "qualification": {
+    "gpuExecuted": false,
+    "physicalTrajectory": false,
+    "qualifiedReceiptAvailable": false,
+    "publicSolverCommitEnabled": false,
+    "fullRest": false,
+    "1024Executed": false,
+    "defaultChanged": false
+  },
+  "notes": [
+    "The original actual planner and solver are unchanged; only the geometry frontier and observation frames are declared discrete HOST fixtures.",
+    "Production commit intentionally has no enabling receipt factory or Boolean/hash override.",
+    "The shared initial fixture performs original initial admission/clearance, not a forward replay; its private original capture prerequisite is documented.",
+    "The exact source Number values are preserved until the original solver JSON copy, whose existing signed-zero/nonfinite semantics are characterized rather than changed."
+  ]
+}

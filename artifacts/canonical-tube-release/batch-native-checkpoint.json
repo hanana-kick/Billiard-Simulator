@@ -1,0 +1,152 @@
+{
+  "scope": "Prepared candidate batch regression after independent phase9 local-address audit; not full raw-shot goal or hardware performance",
+  "sourceIndex": 9,
+  "sourceSHA256": "99b9af1f06f184155e63fffaaee5d39ede1a341fb60a0263213896783efd5c74",
+  "changedSourceIndices": [
+    9
+  ],
+  "allOther28SourcePinsUnchanged": true,
+  "result": {
+    "cases": 12,
+    "comparedWords": 234752,
+    "scaleMetrics": [],
+    "compileMs": 35631.971838000005,
+    "timings": [
+      {
+        "candidateCount": 1,
+        "allocatedBytes": 69384,
+        "sharedImmutableBytes": 1952,
+        "dispatches": 88,
+        "bufferClears": 9,
+        "submissions": 1,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "readbackBytes": 8400,
+        "candidateDispatchAxis": "y",
+        "submitToDoneMs": 39.46094599999924
+      },
+      {
+        "candidateCount": 3,
+        "allocatedBytes": 204248,
+        "sharedImmutableBytes": 1952,
+        "dispatches": 88,
+        "bufferClears": 9,
+        "submissions": 1,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "readbackBytes": 25200,
+        "candidateDispatchAxis": "y",
+        "submitToDoneMs": 36.566463999995904
+      },
+      {
+        "candidateCount": 31,
+        "allocatedBytes": 2092344,
+        "sharedImmutableBytes": 1952,
+        "dispatches": 88,
+        "bufferClears": 9,
+        "submissions": 1,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "readbackBytes": 260400,
+        "candidateDispatchAxis": "y",
+        "submitToDoneMs": 142.92494799999986
+      },
+      {
+        "candidateCount": 32,
+        "allocatedBytes": 2159776,
+        "sharedImmutableBytes": 1952,
+        "dispatches": 88,
+        "bufferClears": 9,
+        "submissions": 1,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "readbackBytes": 268800,
+        "candidateDispatchAxis": "y",
+        "submitToDoneMs": 164.89277700000093
+      },
+      {
+        "candidateCount": 33,
+        "allocatedBytes": 2227208,
+        "sharedImmutableBytes": 1952,
+        "dispatches": 88,
+        "bufferClears": 9,
+        "submissions": 1,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "readbackBytes": 277200,
+        "candidateDispatchAxis": "y",
+        "submitToDoneMs": 140.83479299999453
+      },
+      {
+        "candidateCount": 3,
+        "allocatedBytes": 204248,
+        "sharedImmutableBytes": 1952,
+        "dispatches": 2662,
+        "bufferClears": 360,
+        "submissions": 1,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "readbackBytes": 25200,
+        "candidateDispatchAxis": "y",
+        "submitToDoneMs": 943.1552999999985
+      },
+      {
+        "candidateCount": 3,
+        "allocatedBytes": 204248,
+        "sharedImmutableBytes": 1952,
+        "dispatches": 2662,
+        "bufferClears": 360,
+        "submissions": 1,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "readbackBytes": 25200,
+        "candidateDispatchAxis": "y",
+        "submitToDoneMs": 904.2256449999986
+      },
+      {
+        "candidateCount": 3,
+        "allocatedBytes": 204248,
+        "sharedImmutableBytes": 1952,
+        "dispatches": 2662,
+        "bufferClears": 360,
+        "submissions": 1,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "readbackBytes": 25200,
+        "candidateDispatchAxis": "y",
+        "submitToDoneMs": 1063.2310300000026
+      }
+    ],
+    "compactMetrics": {
+      "candidateCount": 33,
+      "allocatedBytes": 1673864,
+      "sharedImmutableBytes": 1952,
+      "dispatches": 87,
+      "bufferClears": 9,
+      "submissions": 1,
+      "intermediateReadbacks": 0,
+      "hostPhysicsBetweenPhases": 0,
+      "readbackBytes": 528,
+      "candidateDispatchAxis": "y",
+      "submitToDoneMs": 183.90398700000515
+    }
+  },
+  "process": {
+    "boundedNativeProcess": true,
+    "exitCode": 0,
+    "stopReason": null,
+    "sampledAggregateRSSMiB": 1118.51,
+    "maxChildRSSMiB": 1083.0,
+    "rssCoverage": "PPid status-table ancestry; sampled aggregate, RUSAGE_CHILDREN maximum separately",
+    "elapsedSeconds": 43.323,
+    "limitRSSMiB": 1500,
+    "limitSeconds": 180.0
+  },
+  "backend": "SwiftShader software Vulkan",
+  "cpuScheduleAndBatch": {
+    "passed": 5,
+    "nativeSkipped": 1,
+    "failed": 0
+  },
+  "directGateEvidence": "Separate parent native old+new gate suite passed7/7,10752 words; not rerun in this batch checkpoint"
+}

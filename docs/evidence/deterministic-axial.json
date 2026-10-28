@@ -1,0 +1,60 @@
+{
+  "bulk": {
+    "candidates": 1024,
+    "comparedWords": 49152,
+    "exactWords": true,
+    "maxNodes": 128,
+    "cpuMs": 10.010659000000032,
+    "metrics": {
+      "candidates": 1024,
+      "inputBytes": 196608,
+      "outputBytes": 196608,
+      "readbackBytes": 196608,
+      "allocatedBytes": 589824,
+      "submitToDoneMs": 8.821241999999984,
+      "hardwareSpeedClaim": false,
+      "physicalAcceptance": false
+    },
+    "intervalNodes": 24034,
+    "statuses": {
+      "1": 896,
+      "2": 0,
+      "4": 128,
+      "5": 0
+    }
+  },
+  "statuses": {
+    "1": 47,
+    "2": 2,
+    "4": 22,
+    "5": 1
+  },
+  "profile": "prepared-original-law-axial-integer-v1",
+  "cases": 72,
+  "comparedWords": 3456,
+  "exactWords": true,
+  "cpuMs": 1.9829270000000037,
+  "intervalNodes": 2225,
+  "compileMs": 264.069344,
+  "shaderBytes": 4116,
+  "metrics": {
+    "candidates": 72,
+    "inputBytes": 13824,
+    "outputBytes": 13824,
+    "readbackBytes": 13824,
+    "allocatedBytes": 41472,
+    "submitToDoneMs": 3.905963999999983,
+    "hardwareSpeedClaim": false,
+    "physicalAcceptance": false
+  },
+  "positionQuantum": 5.960464477539063e-8,
+  "timeQuantum": 9.5367431640625e-7,
+  "maxDuration": 0.062499046325683594,
+  "physicalAcceptance": false,
+  "adapter": {
+    "vendor": "google",
+    "architecture": "swiftshader",
+    "device": "swiftshader-device-subzero-",
+    "description": "SwiftShader driver 5.0.0"
+  }
+}

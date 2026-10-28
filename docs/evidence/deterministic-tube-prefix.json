@@ -1,0 +1,23 @@
+{
+  "cases": 4,
+  "words": 5632,
+  "compileMs": 13101.389979,
+  "shaderBytes": [
+    9878,
+    9764,
+    8353,
+    8754,
+    825,
+    7517,
+    10031,
+    10062,
+    11492,
+    7850
+  ],
+  "allocatedBytes": 16128,
+  "dispatches": 10,
+  "intermediateReadbacks": 0,
+  "hostPhysicsBetweenPhases": 0,
+  "submitToDoneMs": 1.869317000000592,
+  "timingCase": "upstream-query-budget"
+}

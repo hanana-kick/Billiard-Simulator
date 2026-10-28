@@ -1,0 +1,34 @@
+{
+  "kind": "resident-coupled-profile-integration-contract-v1",
+  "base": "e637915",
+  "profile": "source-coupled-macro-v1",
+  "defaultProfile": "omitted/source-three-macros-v1",
+  "fixedAdmission": {
+    "count": 2,
+    "h": 192,
+    "actualAuditBinding": 7,
+    "bytecodeSha256": "d0241fb5daa61ea4923cde61881beb799f3407d2c686f3661a22dea36c79cde5",
+    "descriptorsSha256": "abc724d27c7f2d1ccb7dc8699779188fb93878c1325d19914759859e7bb017a6",
+    "guardedSourceInstructionBudget": 32768,
+    "literalCallArgument": false,
+    "sourceOnlyArtifactSha256": "f23e08f16a942826b754ae805e294112bae03bef0b83f47fb1d22e7cdbb3ea75"
+  },
+  "hostTests": {
+    "passed": 32,
+    "failed": 0,
+    "skipped": 1,
+    "skip": "optional existing h8 actual snapshot absent in chosen historical artifact",
+    "wallMs": 5489.251924
+  },
+  "coverage": {
+    "newWholeWorldReplay": false,
+    "newGpuRun": false,
+    "legacyRuntimeGatesPreserved": true,
+    "oldVmContinuationRelocated": false,
+    "expectedFuturesRuntimeInputs": false,
+    "newProfileActivatedByDefault": false,
+    "fullRest": false,
+    "native1024": false,
+    "hardwarePerformance": false
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "elapsedSeconds": 1.2088158690021373,
+  "returnCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "rssWatchdogTriggered": false,
+  "rssLimitKiB": 1572864,
+  "peakOwnedGroupRSSKiB": 277620,
+  "maximumChildRSSKiB": 243980,
+  "cgroupBefore": {
+    "available": false
+  },
+  "cgroupAfter": {
+    "available": false
+  },
+  "processGroup": 5,
+  "terminatedAndReaped": true
+}

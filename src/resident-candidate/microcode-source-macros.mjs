@@ -3,27 +3,34 @@
  * Native handlers execute separately from the generic scalar instruction loop.
  * This is source-closure admission, not device/whole-shot qualification.
  */
-import {createHash} from 'node:crypto';
+import {createHash} from './source-sha256.mjs';
 import {parseMicrocodeWGSL} from './microcode-parser.mjs';
 import {generateCueFlatWGSL} from './cue-flat.mjs';
 import {generateProfiledNumericWGSL,NUMERIC_PROFILE} from './numeric-profile.mjs';
 import {generateWorldBroadWGSL} from './world-broad.mjs';
 import {generateBvhWGSL} from './bvh.mjs';
 import {generateContactJournalWGSL} from './contact-journal.mjs';
+import {generateCoupledTransportWGSL} from './coupled-transport.mjs';
+import {generateRawStrikeProgramWGSL} from './raw-strike.mjs';
 import {linkResidentWGSL} from './wgsl-linker.mjs';
 export const MICROCODE_SOURCE_MACROS=Object.freeze([
  Object.freeze({id:0,name:'rc_cue_flat_advance',parameterWords:Object.freeze(Array(8).fill(1)),resultWords:1,sourceBudget:'original argument8; no budget substitution'}),
  Object.freeze({id:1,name:'rc_num_eval',parameterWords:Object.freeze([1,1]),resultWords:1,sourceBudget:'original immutable graph node/operand/output limits'}),
  Object.freeze({id:2,name:'rc_world_broad_commit_collision',parameterWords:Object.freeze([1,1,1]),resultWords:0,sourceBudget:'original bounded BVH lifecycle and ordered changed-tree journal walk'}),
+ Object.freeze({id:3,name:'rc_coupled_transport_advance',parameterWords:Object.freeze(Array(6).fill(1)),resultWords:1,sourceBudget:'original argument6; default32768 and maximum1000000 unchanged; no budget substitution'}),
 ]);
+// The qualified four-owner roster above is intentionally unchanged. This
+// additional owner is selected only by an explicit separately versioned caller.
+export const MICROCODE_NUMBER_PROGRAM_MACRO=Object.freeze({id:4,name:'rc_raw_program_step',parameterWords:Object.freeze(Array(4).fill(1)),resultWords:0,sourceBudget:'original argument4 and immutable program cumulative cap; no budget substitution'});
+export const MICROCODE_ALL_SOURCE_MACROS=Object.freeze([...MICROCODE_SOURCE_MACROS,MICROCODE_NUMBER_PROGRAM_MACRO]);
 const hash=x=>createHash('sha256').update(typeof x==='string'?x:JSON.stringify(x)).digest('hex');
 const index=rows=>new Map(rows.map(x=>[x.name,x]));
 const walk=(x,visit)=>{if(!x||typeof x!=='object')return;visit(x);for(const v of Object.values(x))if(Array.isArray(v))v.forEach(y=>walk(y,visit));else walk(v,visit);};
 const cache=new Map();
 function canonical(name){
  if(cache.has(name))return cache.get(name);
- const spec=MICROCODE_SOURCE_MACROS.find(x=>x.name===name);if(!spec)throw new TypeError('Unknown exact source macro '+name);
- const source=name==='rc_cue_flat_advance'?generateCueFlatWGSL({numericProfile:NUMERIC_PROFILE.PRESERVED_F32}):name==='rc_num_eval'?generateProfiledNumericWGSL(NUMERIC_PROFILE.PRESERVED_F32):[generateWorldBroadWGSL(),generateBvhWGSL(),generateContactJournalWGSL()].join('\n');
+ const spec=MICROCODE_ALL_SOURCE_MACROS.find(x=>x.name===name);if(!spec)throw new TypeError('Unknown exact source macro '+name);
+ const source=name==='rc_raw_program_step'?generateRawStrikeProgramWGSL():name==='rc_cue_flat_advance'?generateCueFlatWGSL({numericProfile:NUMERIC_PROFILE.PRESERVED_F32}):name==='rc_num_eval'?generateProfiledNumericWGSL(NUMERIC_PROFILE.PRESERVED_F32):name==='rc_coupled_transport_advance'?generateCoupledTransportWGSL({numericProfile:NUMERIC_PROFILE.PRESERVED_F32}):[generateWorldBroadWGSL(),generateBvhWGSL(),generateContactJournalWGSL()].join('\n');
  const root='fn rc_micro_macro_keep(){'+name+'('+spec.parameterWords.map(()=> '0u').join(',')+');}',linked=linkResidentWGSL([source,root],{entry:'rc_micro_macro_keep'}).code;
  if(linked.split(root).length!==2)throw new TypeError('Exact source macro retention boundary');
  const code=linked.replace(root,''),ast=parseMicrocodeWGSL(code);
@@ -42,7 +49,7 @@ export function approveSourceMacros(code,{functionNames=[],storageBindings={rc_s
  const source=parseMicrocodeWGSL(code),actual=index(source.functions),entries=[];
  for(const name of functionNames){
   const c=canonical(name);if(!actual.has(name))throw new TypeError('External source macro is absent: '+name);
-  const requiredBindings=name==='rc_world_broad_commit_collision'?[['rc_state',0,'read_write']]:[['rc_program',1,'read'],['rc_scratch',3,'read_write'],...(name==='rc_cue_flat_advance'?[['rc_state',0,'read_write']]:[])];
+  const requiredBindings=name==='rc_raw_program_step'?[['rc_state',0,'read_write'],['rc_program',1,'read']]:name==='rc_world_broad_commit_collision'?[['rc_state',0,'read_write']]:[['rc_program',1,'read'],['rc_scratch',3,'read_write'],...(['rc_cue_flat_advance','rc_coupled_transport_advance'].includes(name)?[['rc_state',0,'read_write']]:[])];
   for(const [bindingName,binding,access]of requiredBindings){
    const g=source.globals.find(x=>x.name===bindingName),b=g?.attributes.find(a=>a.name==='binding'),group=g?.attributes.find(a=>a.name==='group');
    if(!g||g.storage!=='storage'||g.access!==access||g.type?.name!=='array'||g.type.args.length!==1||g.type.args[0].name!=='u32'||g.type.args[0].args.length!==0||b?.args.length!==1||Number(b.args[0].text)!==binding||group?.args.length!==1||Number(group.args[0].text)!==0||storageBindings[bindingName]!==binding)throw new TypeError('Exact external source address-space binding required: '+bindingName);
@@ -51,7 +58,17 @@ export function approveSourceMacros(code,{functionNames=[],storageBindings={rc_s
   const dependencies={},todo=[name],seen=new Set();while(todo.length){const f=todo.pop();if(seen.has(f))continue;seen.add(f);const want=c.functions.get(f),got=actual.get(f);if(!want||!got||hash(want)!==hash(got))throw new TypeError('Exact external source signature/body mismatch: '+f);dependencies[f]=hash(want);walk(want.body,n=>{if(n.kind==='call'&&n.callee?.kind==='name'&&c.functions.has(n.callee.name))todo.push(n.callee.name);});}
   const f=c.functions.get(name),returnMatches=c.spec.resultWords===0?f.returnType===null:f.returnType?.name==='u32'&&f.returnType.args.length===0;
   if(f.params.length!==c.spec.parameterWords.length||f.params.some(p=>p.type.name!=='u32'||p.type.args.length)||!returnMatches)throw new TypeError('Exact scalar-word/void external signature required');
-  entries.push(Object.freeze({...c.spec,signatureSha256:hash({params:f.params,returnType:f.returnType}),bodySha256:hash(f.body),dependencies:Object.freeze(dependencies),closureSha256:hash(Object.fromEntries(Object.entries(dependencies).sort())),nativeSourceSha256:hash(c.code)}));
+  // New opt-in admission records its declaration/profile identity explicitly.
+  // Preserve all historical id0..2 metadata and native code byte-for-byte.
+  const extra=name==='rc_coupled_transport_advance'?{
+   numericProfile:NUMERIC_PROFILE.PRESERVED_F32,
+   declarationsSha256:hash({aliases:c.ast.aliases,structs:c.ast.structs,globals:c.ast.globals}),
+   numericProfileDeclarationSha256:hash(c.ast.globals.find(x=>x.name==='RC_NUMERIC_IMPLEMENTATION_PROFILE')),
+  }:name==='rc_raw_program_step'?{
+   numericProfile:'original-source-number-software-binary64-v1',
+   declarationsSha256:hash({aliases:c.ast.aliases,structs:c.ast.structs,globals:c.ast.globals}),
+  }:{};
+  entries.push(Object.freeze({...c.spec,signatureSha256:hash({params:f.params,returnType:f.returnType}),bodySha256:hash(f.body),dependencies:Object.freeze(dependencies),closureSha256:hash(Object.fromEntries(Object.entries(dependencies).sort())),nativeSourceSha256:hash(c.code),...extra}));
  }
  return Object.freeze({kind:'resident-source-macro-approval-v1',sourceSha256:hash(code),entries:Object.freeze(entries)});
 }

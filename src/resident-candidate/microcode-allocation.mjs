@@ -5,7 +5,7 @@
  * No instruction is removed, reordered or evaluated. Only certified local
  * operands and compiler-marked address constants are relocated.
  */
-import {createHash} from 'node:crypto';
+import {createHash} from './source-sha256.mjs';
 import {MICROCODE_ISA as I} from './microcode-isa.mjs';
 import {MICROCODE_SOURCE_INTRINSICS} from './microcode-source-intrinsics.mjs';
 const hash=x=>createHash('sha256').update(x).digest('hex'),bad=x=>{throw new TypeError('Microcode frame allocation: '+x);};

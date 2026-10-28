@@ -1,0 +1,36 @@
+{
+  "profile": "canonical-local-v1",
+  "scope": "original-shot elapsed-time enforcement; not cumulative work/event or rule authority",
+  "world": {
+    "testsPassed": 6,
+    "continuationCases": 13,
+    "continuationWordsCompared": 9984,
+    "initializerWordsCompared": 3072,
+    "compileMs": 21092.575814,
+    "wallSeconds": 27.797,
+    "maxChildRSSMiB": 1001.39,
+    "sampledAggregateRSSMiB": 1036.79,
+    "intermediateReadbacks": 0,
+    "hostPhysicsBetweenPhases": 0,
+    "genuineHitDeadlineTick": 550000,
+    "genuineHitTerminalClock": 550000,
+    "genuineHitStatus": 5,
+    "genuineHitReason": 84
+  },
+  "wrapper": {
+    "testsPassed": 4,
+    "fullResultWordsCompared": 1536,
+    "wallSeconds": 20.83,
+    "maxChildRSSMiB": 1043.32,
+    "sampledAggregateRSSMiB": 1077.98
+  },
+  "cpuManifest": {
+    "tests": 194,
+    "pass": 157,
+    "nativeSkips": 37,
+    "fail": 0
+  },
+  "backend": "SwiftShader native WebGPU software Vulkan",
+  "hardwareSpeedClaim": false,
+  "productionActivated": false
+}

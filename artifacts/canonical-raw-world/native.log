@@ -1,0 +1,85 @@
+TAP version 13
+# Subtest: full3/4 stable-ID roster, clock, exact p/v/q and qy survive real supported raw strike
+ok 1 - full3/4 stable-ID roster, clock, exact p/v/q and qy survive real supported raw strike
+  ---
+  duration_ms: 165.410235
+  type: 'test'
+  ...
+# Subtest: every initial body must be stationary supported; changed UI/material/box/profile and incomplete scenes rejected
+ok 2 - every initial body must be stationary supported; changed UI/material/box/profile and incomplete scenes rejected
+  ---
+  duration_ms: 37.195298
+  type: 'test'
+  ...
+# Subtest: immutable scene/candidate bindings and failed/budget raw rows never become prepared success or MISS
+ok 3 - immutable scene/candidate bindings and failed/budget raw rows never become prepared success or MISS
+  ---
+  duration_ms: 199.065849
+  type: 'test'
+  ...
+# Subtest: actual strong strike uses shared v8/q16, never legacy4 clipping; common-clock overflow rejects
+ok 4 - actual strong strike uses shared v8/q16, never legacy4 clipping; common-clock overflow rejects
+  ---
+  duration_ms: 39.180398
+  type: 'test'
+  ...
+# Subtest: all actual static/other-ball geometry retained; cue obstruction is explicit unsupported
+ok 5 - all actual static/other-ball geometry retained; cue obstruction is explicit unsupported
+  ---
+  duration_ms: 5.531935
+  type: 'test'
+  ...
+# Subtest: elapsed duration budget caps whole raw steps, preserves work cap, and has zero-work incomplete
+ok 6 - elapsed duration budget caps whole raw steps, preserves work cap, and has zero-work incomplete
+  ---
+  duration_ms: 286.535018
+  type: 'test'
+  ...
+# Subtest: raw source cannot be transplanted across complete scene/request identities
+ok 7 - raw source cannot be transplanted across complete scene/request identities
+  ---
+  duration_ms: 54.741988
+  type: 'test'
+  ...
+# Subtest: finite-cloth support exclusion is checked through the entire compliant stroke
+ok 8 - finite-cloth support exclusion is checked through the entire compliant stroke
+  ---
+  duration_ms: 37.138198
+  type: 'test'
+  ...
+# RAW_WORLD_PHASE {"name":"initialize","phase":"parse-complete","parseMs":3.22485800000004}
+# RAW_WORLD_PHASE {"name":"clearance_pre","phase":"parse-complete","parseMs":2.7892219999998815}
+# RAW_WORLD_PHASE {"name":"cue_contact","phase":"parse-complete","parseMs":3.503917999999885}
+# RAW_WORLD_PHASE {"name":"cloth_advance","phase":"parse-complete","parseMs":3.5653510000001916}
+# RAW_WORLD_PHASE {"name":"clearance_post","phase":"parse-complete","parseMs":4.0800859999999375}
+# RAW_WORLD_PHASE {"name":"finalize","phase":"parse-complete","parseMs":2.648279999999886}
+# RAW_WORLD_PHASE {"name":"raw_world_handoff","phase":"parse-complete","parseMs":2.1863430000003063}
+# RAW_WORLD_PHASE {"name":"initialize","phase":"start","milliseconds":3656.151978}
+# RAW_WORLD_PHASE {"name":"initialize","compileMs":570.0254110000005,"shaderBytes":10632,"phase":"complete","milliseconds":4260.545844}
+# RAW_WORLD_PHASE {"name":"clearance_pre","phase":"start","milliseconds":4261.044665}
+# RAW_WORLD_PHASE {"name":"clearance_pre","compileMs":432.9882810000008,"shaderBytes":10497,"phase":"complete","milliseconds":4705.309014}
+# RAW_WORLD_PHASE {"name":"cue_contact","phase":"start","milliseconds":4706.067036}
+# RAW_WORLD_PHASE {"name":"cue_contact","compileMs":4056.464221000001,"shaderBytes":12298,"phase":"complete","milliseconds":8833.224868}
+# RAW_WORLD_PHASE {"name":"cloth_advance","phase":"start","milliseconds":8833.480282}
+# RAW_WORLD_PHASE {"name":"cloth_advance","compileMs":632.1947949999994,"shaderBytes":11764,"phase":"complete","milliseconds":9507.971228}
+# RAW_WORLD_PHASE {"name":"clearance_post","phase":"start","milliseconds":9508.762548}
+# RAW_WORLD_PHASE {"name":"clearance_post","compileMs":666.6773410000005,"shaderBytes":10574,"phase":"complete","milliseconds":10189.031483}
+# RAW_WORLD_PHASE {"name":"finalize","phase":"start","milliseconds":10189.195019}
+# RAW_WORLD_PHASE {"name":"finalize","compileMs":126.32727899999918,"shaderBytes":10333,"phase":"complete","milliseconds":10315.633966}
+# RAW_WORLD_PHASE {"name":"raw_world_handoff","phase":"complete","compileMs":52.89505300000019}
+# Subtest: resident many-row raw→PW1→real initializer is CPU/GPU all-word identical
+ok 9 - resident many-row raw→PW1→real initializer is CPU/GPU all-word identical
+  ---
+  duration_ms: 13523.706343
+  type: 'test'
+  ...
+# {"cases":67,"words":56816,"admitted":64,"exactWords":true,"actualSourceStatics":16,"ownedCloth":{"staticSlot":4,"canonicalOwner":"scene-static-slot:4","kind":"cloth","shape":"box","representation":"persistent support law plus finite footprint guards"},"staticObstacleCount":15,"otherSphereObstacleCount":3,"supportExclusionCount":4,"obstacles":22,"residentRawToPreparedWorld":true,"residentInitializerConsumed":67,"intermediateReadbacks":0,"hostPhysicsBetweenPhases":false,"parseMs":23.06850200000008,"rawCompileMs":6659.824965,"handoffCompileMs":52.89505300000019,"handoffShaderBytes":6025,"submitToReadMs":2106.8528029999998,"dispatches":8262,"syntheticHandoffGateProbes":{"cases":19,"words":3952,"authoritativePhysics":false},"elapsedDurationBudgetProbes":{"cases":11,"words":3696,"zeroPhysicsCases":2,"exactWords":true}}
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 14725.440768

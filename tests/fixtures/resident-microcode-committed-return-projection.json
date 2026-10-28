@@ -1,0 +1,19 @@
+{
+  "kind": "resident-committed-return-host-legacy-projection-v1",
+  "sourceBoundary": "d1ef30a460637de31848f994ae2dddd51d1617b2",
+  "scope": "TEST-only exact projection of two reviewed additions; no projected execution or numeric qualification",
+  "currentHostReferenceSha256": "fb7fd6855664486dd0d49b50aef671e870600b1a083a5566d67b6678e88484f3",
+  "beforeHostReferenceSha256": "f7d59549c0478e68d594d325c0499bf76bbb4f7dc1e66242cda17c9d6c9f66a6",
+  "patches": [
+    {
+      "label": "optional-stop-callback-admission",
+      "current": "if(options.stopAfterCommittedReturn!==undefined&&typeof options.stopAfterCommittedReturn!=='function')throw new TypeError('TEST-only committed return stop must be a function');",
+      "currentSha256": "fbe18bb9c6881446d841eeb0012e06359db7ab6c097729500cb22509bbdc7cf5"
+    },
+    {
+      "label": "after-committed-RET-budget-stop",
+      "current": "\n   if(name==='RET'&&options.stopAfterCommittedReturn){let stop;try{stop=options.stopAfterCommittedReturn(Object.freeze({lane,pc,targetPc:state[at+C.status]===S.complete?null:next}));if(typeof stop!=='boolean')throw new TypeError('TEST-only committed return stop requires boolean');}catch(error){fail(at,E.malformedControl);throw error;}if(stop)break;}",
+      "currentSha256": "2c443ef3f18f7ad9e46dc8302df5f9260cf94a8caeb3364caee7fbf303ea5945"
+    }
+  ]
+}

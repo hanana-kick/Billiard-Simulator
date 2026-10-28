@@ -1,0 +1,265 @@
+{
+  "kind": "owned-host-h192-current-preccd-one-h-evidence-v1",
+  "sourceOrderProfile": "four-ball-live-cue-native-current-pre-v1",
+  "status": "pass",
+  "ownedInitialSha256": "05f78ef994c2b69960e8e64c07d03cd17c0947656d573afee82820d764a5ff5e",
+  "initialSha256": "316e12d1794a81ea9ab1f65dc228d302a620a929ae7990cdaa6f18d7c9494d1f",
+  "finalSha256": "1117b13edb594291702f69bdd6be07fbad3ac7cb11114bdf0fe754843e5632b4",
+  "sourceSha256": "7827c343188a011087d88f898c7547b27829e9b43dd45c9a0fd157d4a863f2e3",
+  "bytecodeSha256": "e66298aa35f9eb9185afd91f49a3961e9d7f98e1fe30b7d831b6bc13af0288a7",
+  "phaseBytecodeSha256": "822f4d349681c386e9a3f3265ae270b8d2ddb34a8b04abe66489b83b760ec8d2",
+  "sourcePhaseInstructions": 118,
+  "sourceInstructions": 133288,
+  "run": {
+    "pumps": 108,
+    "coreSteps": 2720947,
+    "calls": {
+      "rc_cue_flat_advance": 4,
+      "rc_world_broad_commit_collision": 1,
+      "rc_num_eval": 77,
+      "rc_coupled_transport_advance": 3
+    },
+    "hostWallMs": 34177.459277999995,
+    "worldH": 193,
+    "worldStatus": 1,
+    "worldReason": 0
+  },
+  "sourceGroups": [
+    {
+      "group": "balls",
+      "mismatch": null
+    },
+    {
+      "group": "cue",
+      "mismatch": null
+    },
+    {
+      "group": "caches",
+      "mismatch": null
+    },
+    {
+      "group": "cueCloth",
+      "mismatch": null
+    },
+    {
+      "group": "journal",
+      "mismatch": null
+    },
+    {
+      "group": "roster",
+      "mismatch": null
+    },
+    {
+      "group": "scene",
+      "mismatch": null
+    },
+    {
+      "group": "bvh",
+      "mismatch": null
+    },
+    {
+      "group": "clock",
+      "mismatch": null
+    },
+    {
+      "group": "rules",
+      "mismatch": null
+    },
+    {
+      "group": "game",
+      "mismatch": null
+    }
+  ],
+  "t0Groups": [
+    {
+      "group": "balls",
+      "mismatch": null
+    },
+    {
+      "group": "cue",
+      "mismatch": null
+    },
+    {
+      "group": "caches",
+      "mismatch": null
+    },
+    {
+      "group": "cueCloth",
+      "mismatch": null
+    },
+    {
+      "group": "journal",
+      "mismatch": null
+    },
+    {
+      "group": "roster",
+      "mismatch": null
+    },
+    {
+      "group": "scene",
+      "mismatch": null
+    },
+    {
+      "group": "bvh",
+      "mismatch": null
+    },
+    {
+      "group": "clock",
+      "mismatch": null
+    },
+    {
+      "group": "rules",
+      "mismatch": null
+    },
+    {
+      "group": "game",
+      "mismatch": null
+    }
+  ],
+  "nativeGroups": [
+    {
+      "group": "balls",
+      "mismatch": null
+    },
+    {
+      "group": "cue",
+      "mismatch": null
+    },
+    {
+      "group": "clock",
+      "mismatch": null
+    },
+    {
+      "group": "rules",
+      "mismatch": null
+    },
+    {
+      "group": "history",
+      "mismatch": null
+    },
+    {
+      "group": "game",
+      "mismatch": null
+    },
+    {
+      "group": "partialOuter",
+      "mismatch": null
+    },
+    {
+      "group": "emissions",
+      "mismatch": null
+    }
+  ],
+  "newOrder": {
+    "roles": [
+      4,
+      5,
+      1
+    ],
+    "handles": [
+      {
+        "index": 22,
+        "generation": 3
+      },
+      {
+        "index": 20,
+        "generation": 3
+      },
+      {
+        "index": 17,
+        "generation": 0
+      }
+    ],
+    "mask": 50,
+    "all64InputWordsExact": true,
+    "all11OutputWordsExact": true,
+    "dtWord": 931694729,
+    "preEnergy": true,
+    "retainedForce": true,
+    "roleLabels": [
+      "shaft",
+      "head",
+      "selected"
+    ]
+  },
+  "independentNativeSha256": "01c1944d053d99369eaca38a1de6ede59ed06448a3814ec7bc77000bfe832f57",
+  "independentSourceSha256": "6d8feadcbe18b4eee50511074a587601a3a839b19010d82a762679c75af0b2a7",
+  "independentOrderSha256": "baf2c2a3e771532195caa748397d0fd0675a667642162af8b97e623c98a1ba44",
+  "differences": {
+    "words": 293,
+    "regions": {
+      "ccd": 16,
+      "source-phase-pc": 12,
+      "numeric-request-tail": 1,
+      "binding-1": 264
+    },
+    "sha256": "6847c946de776d2cd74ffcf3f88422009ca38e4995a76b9938c409c2748dce66",
+    "file": "all-old-new-differences.v8"
+  },
+  "differenceAudit": {
+    "status": "pass",
+    "allPhysicalAndSourceOwnerWordsExact": true,
+    "allDirtyScratchWordsExact": true,
+    "allAuditWordsExact": true,
+    "allRejectedLaneWordsExact": true,
+    "allOriginalArithmeticProgramWordsExact": true,
+    "independentlyExpectedCurrentRoles": [
+      4,
+      5,
+      1
+    ],
+    "independentlyExpectedCurrentEpoch": 15107,
+    "sourceCalls": 599,
+    "controlCounterScope": "new source schedule; counters retained, not forced equal to old split schedule",
+    "controlStack": "stale loop frames each match their new immutable begin/body/end rows and unchanged caps",
+    "request": "same completed original pipeline, relocated originalPC only"
+  },
+  "retainedFailure": {
+    "initialSha256": "88c26ce0319fd658af3a43906bd326847b4f27bc6bf3c20fee9f8a0ef56b0891",
+    "finalSha256": "5b2089cddde8375dc2b2fa8cdb378b151cc65e0bcd3e656f09e122a258a8e873",
+    "worldH": 192,
+    "worldStatus": 4,
+    "worldReason": 6,
+    "preReason": 1,
+    "pumps": 65,
+    "cause": "new opt-in adapter copied cue-absent journal.cuePresent==0 guard; corrected to actual live value1"
+  },
+  "tests": {
+    "component": {
+      "pass": 7,
+      "fail": 0,
+      "skip": 0,
+      "wallMs": 10160.818592
+    },
+    "artifactOnly": {
+      "pass": 6,
+      "fail": 0,
+      "skip": 0,
+      "wallMs": 2837.815181
+    }
+  },
+  "sourceFiles": {
+    "src/resident-candidate/world-current-pre-ccd.mjs": "33855dc12050c6a51bb46e086cc6c69bcb68279cd2e7a95089f2d28826361aa4",
+    "tests/resident-candidate-four-current-preccd-whole-h.mjs": "c8ad2955d9b4fa0bf325b1af8b38caaadc34f02f87a36246f3994d22f942c274",
+    "tests/resident-candidate-four-current-preccd-whole-h-tests.mjs": "83ed34fa8db870388003a9154282029ba9b15b6666779a40335c448e7b6a6b98",
+    "src/resident-candidate/world-h.mjs": "80772132a29223b220468162767cf223e2e2d789cd00875f67e90c44e2a63807",
+    "src/resident-candidate/world-ccd.mjs": "1643ac36c3d3e58d00faf8b93c9f9f17750c625f09aae73739ee05b3fce42235",
+    "src/resident-candidate/cue-bridge.mjs": "c17026a7bca22e1b460fc7e7f86d0f9a2218e503362e9cf786d56d91d7e1bd9b",
+    "src/physics.js": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d"
+  },
+  "coverage": {
+    "ownedHostOneH": true,
+    "allMeaningfulSourceGroups": true,
+    "independentOriginalNativeProjection": true,
+    "allControlAndScratchDifferencesRetained": true,
+    "rawInput": false,
+    "rawToH193": false,
+    "gpuExecuted": false,
+    "newProfileNativeQualified": false,
+    "arbitraryInputs": false,
+    "fullRest": false,
+    "releaseActivated": false,
+    "defaultModified": false,
+    "completeNativeEngineMemoryCompared": false
+  }
+}

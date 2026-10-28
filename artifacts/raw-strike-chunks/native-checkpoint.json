@@ -1,0 +1,336 @@
+{
+  "scope": "Raw compliant-strike execution only; not complete shot or gameplay throughput",
+  "backend": "SwiftShader software Vulkan",
+  "timingInterpretation": "Single samples, not hardware GPU measurements; compile time separate",
+  "originalRawSourceSHA256": "aa30d6e9ab33ae6f8ebdf5455f2103c58b1d28cf9b7e270f1288aaf5158640dd",
+  "runs": [
+    {
+      "name": "initial",
+      "diagnostic": {
+        "cases": 2312,
+        "words": 295936,
+        "exactCPUAndOriginalGPU": true,
+        "chunkCompileMs": 10885.651350000002,
+        "compileStages": [
+          {
+            "name": "initialize",
+            "compileMs": 499.9440770000001,
+            "shaderBytes": 11439
+          },
+          {
+            "name": "runtime_chunked_original_steps",
+            "compileMs": 10293.363788,
+            "shaderBytes": 22998
+          },
+          {
+            "name": "finalize",
+            "compileMs": 83.98009599999932,
+            "shaderBytes": 11140
+          }
+        ],
+        "metrics": [
+          {
+            "count": 1,
+            "original": {
+              "candidates": 1,
+              "dispatches": 16386,
+              "scratchBytes": 128,
+              "submitToReadMs": 1818.5899880000034,
+              "exactInteger": true,
+              "hostPhysicsBetweenPhases": false,
+              "rawInputUploads": 1,
+              "sceneUploads": 1
+            },
+            "chunks": [
+              {
+                "experimental": true,
+                "candidates": 1,
+                "dispatches": 514,
+                "chunkSize": 8,
+                "encodeMs": 2.427836999999272,
+                "finishMs": 0.03355999999985215,
+                "submitToReadMs": 357.18065800000113,
+                "exactInteger": true,
+                "hostPhysicsBetweenPhases": false,
+                "sourcePhases": 6,
+                "executionPhases": 3
+              },
+              {
+                "experimental": true,
+                "candidates": 1,
+                "dispatches": 258,
+                "chunkSize": 16,
+                "encodeMs": 32.35795300000245,
+                "finishMs": 0.025088000002142508,
+                "submitToReadMs": 161.83002900000065,
+                "exactInteger": true,
+                "hostPhysicsBetweenPhases": false,
+                "sourcePhases": 6,
+                "executionPhases": 3
+              }
+            ]
+          },
+          {
+            "count": 32,
+            "original": {
+              "candidates": 32,
+              "dispatches": 16386,
+              "scratchBytes": 4096,
+              "submitToReadMs": 1774.249995000002,
+              "exactInteger": true,
+              "hostPhysicsBetweenPhases": false,
+              "rawInputUploads": 1,
+              "sceneUploads": 1
+            },
+            "chunks": [
+              {
+                "experimental": true,
+                "candidates": 32,
+                "dispatches": 514,
+                "chunkSize": 8,
+                "encodeMs": 2.6177440000028582,
+                "finishMs": 0.03577399999994668,
+                "submitToReadMs": 276.8727910000016,
+                "exactInteger": true,
+                "hostPhysicsBetweenPhases": false,
+                "sourcePhases": 6,
+                "executionPhases": 3
+              },
+              {
+                "experimental": true,
+                "candidates": 32,
+                "dispatches": 258,
+                "chunkSize": 16,
+                "encodeMs": 1.2799080000004324,
+                "finishMs": 0.023334999998041894,
+                "submitToReadMs": 336.24022499999774,
+                "exactInteger": true,
+                "hostPhysicsBetweenPhases": false,
+                "sourcePhases": 6,
+                "executionPhases": 3
+              }
+            ]
+          },
+          {
+            "count": 1024,
+            "original": {
+              "candidates": 1024,
+              "dispatches": 16386,
+              "scratchBytes": 131072,
+              "submitToReadMs": 11155.275847999997,
+              "exactInteger": true,
+              "hostPhysicsBetweenPhases": false,
+              "rawInputUploads": 1,
+              "sceneUploads": 1
+            },
+            "chunks": [
+              {
+                "experimental": true,
+                "candidates": 1024,
+                "dispatches": 514,
+                "chunkSize": 8,
+                "encodeMs": 2.9763239999956568,
+                "finishMs": 0.03306000000156928,
+                "submitToReadMs": 2042.7220959999977,
+                "exactInteger": true,
+                "hostPhysicsBetweenPhases": false,
+                "sourcePhases": 6,
+                "executionPhases": 3
+              },
+              {
+                "experimental": true,
+                "candidates": 1024,
+                "dispatches": 258,
+                "chunkSize": 16,
+                "encodeMs": 1.3558419999972102,
+                "finishMs": 0.04175299999769777,
+                "submitToReadMs": 1199.4826299999986,
+                "exactInteger": true,
+                "hostPhysicsBetweenPhases": false,
+                "sourcePhases": 6,
+                "executionPhases": 3
+              }
+            ]
+          }
+        ],
+        "softwareVulkanOnly": true,
+        "singleTimingSamples": true
+      },
+      "process": {
+        "boundedNativeProcess": true,
+        "exitCode": 0,
+        "stopReason": null,
+        "sampledAggregateRSSMiB": 652.54,
+        "maxChildRSSMiB": 617.31,
+        "rssCoverage": "PPid status-table ancestry; sampled aggregate, RUSAGE_CHILDREN maximum separately",
+        "elapsedSeconds": 48.489,
+        "limitRSSMiB": 1500,
+        "limitSeconds": 160.0
+      }
+    },
+    {
+      "name": "extended-domain",
+      "diagnostic": {
+        "cases": 2726,
+        "words": 348928,
+        "exactCPUAndOriginalGPU": true,
+        "chunkCompileMs": 11547.706608,
+        "compileStages": [
+          {
+            "name": "initialize",
+            "compileMs": 704.4351289999995,
+            "shaderBytes": 11439
+          },
+          {
+            "name": "runtime_chunked_original_steps",
+            "compileMs": 10637.601378000001,
+            "shaderBytes": 22998
+          },
+          {
+            "name": "finalize",
+            "compileMs": 184.88098900000114,
+            "shaderBytes": 11140
+          }
+        ],
+        "metrics": [
+          {
+            "count": 1,
+            "original": {
+              "candidates": 1,
+              "dispatches": 16386,
+              "scratchBytes": 128,
+              "submitToReadMs": 1654.8994010000024,
+              "exactInteger": true,
+              "hostPhysicsBetweenPhases": false,
+              "rawInputUploads": 1,
+              "sceneUploads": 1
+            },
+            "chunks": [
+              {
+                "experimental": true,
+                "candidates": 1,
+                "dispatches": 514,
+                "chunkSize": 8,
+                "encodeMs": 3.3775600000008126,
+                "finishMs": 0.045248000002175104,
+                "submitToReadMs": 263.19247699999687,
+                "exactInteger": true,
+                "hostPhysicsBetweenPhases": false,
+                "sourcePhases": 6,
+                "executionPhases": 3
+              },
+              {
+                "experimental": true,
+                "candidates": 1,
+                "dispatches": 258,
+                "chunkSize": 16,
+                "encodeMs": 1.512909999997646,
+                "finishMs": 0.022795000004407484,
+                "submitToReadMs": 122.67506900000444,
+                "exactInteger": true,
+                "hostPhysicsBetweenPhases": false,
+                "sourcePhases": 6,
+                "executionPhases": 3
+              }
+            ]
+          },
+          {
+            "count": 32,
+            "original": {
+              "candidates": 32,
+              "dispatches": 16386,
+              "scratchBytes": 4096,
+              "submitToReadMs": 1663.4254040000014,
+              "exactInteger": true,
+              "hostPhysicsBetweenPhases": false,
+              "rawInputUploads": 1,
+              "sceneUploads": 1
+            },
+            "chunks": [
+              {
+                "experimental": true,
+                "candidates": 32,
+                "dispatches": 514,
+                "chunkSize": 8,
+                "encodeMs": 3.415436999996018,
+                "finishMs": 0.04988500000035856,
+                "submitToReadMs": 314.5874649999969,
+                "exactInteger": true,
+                "hostPhysicsBetweenPhases": false,
+                "sourcePhases": 6,
+                "executionPhases": 3
+              },
+              {
+                "experimental": true,
+                "candidates": 32,
+                "dispatches": 258,
+                "chunkSize": 16,
+                "encodeMs": 1.23233700000128,
+                "finishMs": 0.020300999996834435,
+                "submitToReadMs": 178.24173800000426,
+                "exactInteger": true,
+                "hostPhysicsBetweenPhases": false,
+                "sourcePhases": 6,
+                "executionPhases": 3
+              }
+            ]
+          },
+          {
+            "count": 1024,
+            "original": {
+              "candidates": 1024,
+              "dispatches": 16386,
+              "scratchBytes": 131072,
+              "submitToReadMs": 9705.633876,
+              "exactInteger": true,
+              "hostPhysicsBetweenPhases": false,
+              "rawInputUploads": 1,
+              "sceneUploads": 1
+            },
+            "chunks": [
+              {
+                "experimental": true,
+                "candidates": 1024,
+                "dispatches": 514,
+                "chunkSize": 8,
+                "encodeMs": 2.6245249999992666,
+                "finishMs": 0.03253899999981513,
+                "submitToReadMs": 2143.4719690000056,
+                "exactInteger": true,
+                "hostPhysicsBetweenPhases": false,
+                "sourcePhases": 6,
+                "executionPhases": 3
+              },
+              {
+                "experimental": true,
+                "candidates": 1024,
+                "dispatches": 258,
+                "chunkSize": 16,
+                "encodeMs": 1.1486000000004424,
+                "finishMs": 0.01888800000597257,
+                "submitToReadMs": 1175.9126350000006,
+                "exactInteger": true,
+                "hostPhysicsBetweenPhases": false,
+                "sourcePhases": 6,
+                "executionPhases": 3
+              }
+            ]
+          }
+        ],
+        "softwareVulkanOnly": true,
+        "singleTimingSamples": true
+      },
+      "process": {
+        "boundedNativeProcess": true,
+        "exitCode": 0,
+        "stopReason": null,
+        "sampledAggregateRSSMiB": 650.12,
+        "maxChildRSSMiB": 614.43,
+        "rssCoverage": "PPid status-table ancestry; sampled aggregate, RUSAGE_CHILDREN maximum separately",
+        "elapsedSeconds": 67.367,
+        "limitRSSMiB": 1500,
+        "limitSeconds": 160.0
+      }
+    }
+  ]
+}

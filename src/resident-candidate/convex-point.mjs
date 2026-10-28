@@ -4,7 +4,8 @@
  * Source: experimental-convex-point.js / experimental-cue-epa-core.js;
  * upstream provenance and notices remain in those modules and vendor licenses.
  */
-import Point from '../experimental-convex-point.js';
+import * as importedPoint from '../experimental-convex-point.js';
+const Point=importedPoint.default??globalThis.LabConvexPointExperimental;
 export const CONVEX_POINT_LAYOUT=Object.freeze({scratchWords:Point.STATE_FLOATS,outputWords:Point.OUTPUT_FLOATS,hullWords:Point.HULL_FLOATS,gjkIterations:Point.GJK_DISPATCHES});
 export function packSharedConvexHull(hull){const a=Point.packQuery({hull,point:[0,0,0]}).hulls;return new Uint32Array(a.buffer,a.byteOffset,a.length).slice();}
 function functions(source){const result=new Map(),re=/\bfn\s+(\w+)\s*\(/g;let m;while((m=re.exec(source))){const open=source.indexOf('{',re.lastIndex);let depth=1,end=open+1;for(;depth&&end<source.length;end++){if(source[end]==='{')depth++;if(source[end]==='}')depth--;}if(depth)throw Error('Original query function is unbalanced');result.set(m[1],source.slice(m.index,end));re.lastIndex=end;}return result;}

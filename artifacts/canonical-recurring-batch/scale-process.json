@@ -1,0 +1,11 @@
+{
+  "boundedNativeProcess": true,
+  "exitCode": 0,
+  "stopReason": null,
+  "sampledAggregateRSSMiB": 1117.25,
+  "maxChildRSSMiB": 1082.64,
+  "rssCoverage": "PPid status-table ancestry; sampled aggregate, RUSAGE_CHILDREN maximum separately",
+  "elapsedSeconds": 65.991,
+  "limitRSSMiB": 1500,
+  "limitSeconds": 230.0
+}

@@ -15,7 +15,7 @@ const names = [
   'F64_ADD','F64_SUB','F64_MUL','F64_DIV','F64_SQRT','F64_FROM_U32',
   'F64_FROM_F32','F64_TO_F32','F64_EQ','F64_LT','F64_LE','F64_FINITE',
   'NUM_EVAL','NUM_SOFT_ARITH','NUM_WIDEN',
-  'NUM_CONT_INSTRUCTION','SOURCE_PROGRAM_INSTRUCTION','EXTERNAL_CALL'
+  'NUM_CONT_INSTRUCTION','SOURCE_PROGRAM_INSTRUCTION','EXTERNAL_CALL','GEOMETRY_NUMERIC_PREPARE'
 ];
 export const MICROCODE_ISA = Object.freeze({
   kind: 'resident-wgsl-microcode-isa', version: 1, instructionWords: 8,
@@ -34,7 +34,7 @@ export const MICROCODE_ISA = Object.freeze({
 // Lightweight ABI metadata for lean submission. This describes names, not
 // numerical admission: body/closure validation stays in the host compiler.
 const intrinsicRootOverrides=Object.freeze({F64_FROM_F32:'rc_f64_from_f32_bits',F64_TO_F32:'rc_f64_to_f32_bits',NUM_SOFT_ARITH:'rc_num_soft_arithmetic'});
-export const MICROCODE_INTRINSIC_ROOTS=Object.freeze(Object.fromEntries(names.slice(names.indexOf('F64_ADD'),names.indexOf('EXTERNAL_CALL')).map(name=>[names.indexOf(name),intrinsicRootOverrides[name]??'rc_'+name.toLowerCase()])));
+export const MICROCODE_INTRINSIC_ROOTS=Object.freeze(Object.fromEntries([...names.slice(names.indexOf('F64_ADD'),names.indexOf('EXTERNAL_CALL')),'GEOMETRY_NUMERIC_PREPARE'].map(name=>[names.indexOf(name),intrinsicRootOverrides[name]??'rc_'+name.toLowerCase()])));
 export function microcodeUsedIntrinsicFunctions(code){
  if(!(code instanceof Uint32Array)||code.length%MICROCODE_ISA.instructionWords)throw new TypeError('Whole immutable microcode instructions required');
  const result=new Set();for(let i=0;i<code.length;i+=MICROCODE_ISA.instructionWords){if(code[i]>=names.length)throw new RangeError('Unknown immutable microcode opcode');const name=MICROCODE_INTRINSIC_ROOTS[code[i]];if(name)result.add(name);}

@@ -1,0 +1,51 @@
+{
+  "kind": "resident-legacy-macro-core-source-version-profiles-v1",
+  "scope": "HOST source provenance only; no shader substitution or native qualification",
+  "historical": {
+    "profile": "pre-preparation-opcode-core-v1",
+    "baseCommit": "4a021f46c277c13dcdd39ad8a65e7f1d465d5db4",
+    "receipt": "docs/evidence/resident-coupled-macro-admission.json",
+    "receiptSha256": "1dbfd8d1ba469d45bd2677cbc4e036dd19f16a258fd502e6dd51a3e9b7cafb35",
+    "coreBytes": 33674,
+    "lastOpcode": 86
+  },
+  "transition": {
+    "commit": "26cd3721c5b30152546e2a1245bff8df00aa0a7a",
+    "parentCommit": "5a2c7f86dff87f2b5b294c32816198a3b027d3d4",
+    "name": "GEOMETRY_NUMERIC_PREPARE",
+    "opcode": 87,
+    "vmSourceBeforeSha256": "fa726fdb325d948f30cb7665556c6ef62ce6e837594718065bbf784d9dd912b7",
+    "vmSourceAtCommitSha256": "3c3f11d3a1bf0baf2c2619c5a73eb3c6d61a65bbbb6b9fbbc54e3a3c6c7dc0c4",
+    "addedCaseBytes": 258,
+    "addedCaseSha256": "7595aee57a881c3489dc3a053fce07ef08bac61ec79a43ed0f895b94dc7c4b67",
+    "addedCase": "\ncase 87u:{if(rc_microcode[ip+1u]>=32u||rc_microcode[ip+2u]>=32u||rc_microcode[ip+3u]>=32u||rc_microcode[ip+4u]>=32u||rc_microcode[ip+5u]>=32u||rc_microcode[ip+6u]>=32u||rc_microcode[ip+7u]>=32u){return rc_vm_fail(base,4u,3u);}return rc_vm_fail(base,9u,4u);}"
+  },
+  "current": {
+    "profile": "integrated-preparation-opcode-disabled-core-v1",
+    "observedAtCommit": "94511056de1c1460c6189415d894025342409393",
+    "vmSourceSha256": "4bc332f78108088f02f9e66521295ee9173a577e23d7d3c2737cf48d8047382e",
+    "laterExplicitPreparationLaneGuardCommit": "fb038cd9539dd83cbcc3049d5fb80ba3f97f7df0",
+    "coreBytes": 33932,
+    "intrinsics": "none",
+    "preparationHelperPresent": false,
+    "nativeEvidenceInherited": false,
+    "rows": [
+      {"id": 0, "coreSha256": "3fb55e44510e9960772dda2967f0e5b409ddd98359b2e62c19f6ce6ec2b1328d"},
+      {"id": 1, "coreSha256": "003298e16c2a6b3009ee63d66b70bf8c59f03ad46b9a3fedd80dbef488c50987"},
+      {"id": 2, "coreSha256": "6f490024906e966d4cc69fc00564ab065766c902551d5846507b03da22f34b48"}
+    ]
+  },
+  "configuration": {
+    "count": 2,
+    "localWords": 32,
+    "stackCapacity": 4,
+    "instructionCount": 4,
+    "entryPc": 0,
+    "instructionBudget": 4096,
+    "workgroupSize": 1,
+    "intrinsics": "none",
+    "controlMode": "storage-v1",
+    "vmStateDisjoint": false,
+    "eventAudit": false
+  }
+}

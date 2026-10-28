@@ -1,0 +1,45 @@
+{
+  "kind": "resident-tip-impact-full-history-h8-host-evidence-v1",
+  "initialSha256": "c500a622817129cfa240aa6ac2a49582dd2391398a6e391b1692563cf34d7b53",
+  "expectedSha256": "eefa6069514ae4ae0c7cf4ae593fa1591a8551c4b0d172d0b51691b85f329226",
+  "sourceSha256": "5a18bbbbd646454f2e00f7b1422773b2851b64d5ff165626f2a9f835ff86c0e7",
+  "bytecodeSha256": "f69fed561bc145fb685f59b78fc5891314030cacf82d66e6bdc67e1a09cd438a",
+  "historicalSourceAndBytecodeExactlyEqual": true,
+  "short": {
+    "h": 8,
+    "requestedHUnchanged": 192,
+    "boundary": "after original source-owner returns with original PC.completedH8",
+    "all11SourceGroups": true,
+    "nativeT0History": true,
+    "nativeFirst64PostT0Events": 0,
+    "history": {
+      "profile": "source-full-application-history-v1",
+      "initialEventCount": 9,
+      "initialContactCount": 7,
+      "ringCount": 8,
+      "ringHead": 0,
+      "eventSha256": "9d7b309e3ce81ca04a88a2a71d93822809462dbe094d3866283006315f27dd88",
+      "preStrikeEventSha256": "e8f3386e627e4efd6b57bc2841fb9fe1bd5028f5f0d25c1eba3ca23ae717a389"
+    },
+    "actualPostT0Events": 0,
+    "nativeH8BodyProjection": false,
+    "gpuExecuted": false,
+    "captureSha256": "7d43ef3fbaa1412bf8e23c4da4c481497ec0ca3a35f021a7400fa647952c8a45",
+    "owner": "rc_micro_original_owner_13",
+    "returnPc": 23455
+  },
+  "retained": {
+    "h": 9,
+    "pumps": 768,
+    "coreSteps": [
+      "16374320",
+      "2511"
+    ],
+    "hostWallMs": 61040.211230999994,
+    "continuationSha256": "4c754a25b172199fbc89ac2e3173352a1abdfec4c52b1db3d86b61416cb5ca61"
+  },
+  "gpuExecuted": false,
+  "rawInput": false,
+  "fullRest": false,
+  "native1024": false
+}

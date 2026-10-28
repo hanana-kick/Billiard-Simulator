@@ -1,0 +1,77 @@
+{
+  "kind": "resident-retained-microcode-host-evidence-v1",
+  "gpuExecuted": false,
+  "numericallyQualified": false,
+  "physicalProducerAvailable": false,
+  "testDeviceComputesPhysics": false,
+  "smallBanks": [
+    2,
+    2
+  ],
+  "chunkCaps": [
+    2,
+    3
+  ],
+  "totalCaps": [
+    5,
+    7
+  ],
+  "buffers": 25,
+  "singleReadbackBytes": 64,
+  "initialMatrix": {
+    "groups": 8,
+    "passed": 8,
+    "exitCode": 0
+  },
+  "subsequentInterruptionGroups": {
+    "groups": 2,
+    "passed": 2,
+    "exitCode": 0,
+    "cases": [
+      "idle-abort",
+      "idle-loss",
+      "post-map-stale",
+      "commit-callback-cancel"
+    ]
+  },
+  "finalPublicationTypedViewSealRegression": {
+    "passed": 2,
+    "exitCode": 0,
+    "sourceCommit": "ba3418596d2df9f61454d7946812b7661c19fafc"
+  },
+  "practicalWorkAllowanceMeasured": false,
+  "oldSourceAndExecutorsChanged": false,
+  "logs": [
+    {
+      "name": "retained-microcode-first.log",
+      "sha256": "975f85a51530189740572e02a2f7583ce83f5672cedb8d3ddd56095e3df779b9",
+      "bytes": 655
+    },
+    {
+      "name": "retained-microcode-full.log",
+      "sha256": "ba84d169a57d505de7376bb65b627e32ee6fe6d757b8cbf042f1aa976282c2e1",
+      "bytes": 2124
+    },
+    {
+      "name": "retained-microcode-hardening.log",
+      "sha256": "503db9c8905d89974a355ae0d2b758fc1fc7277eb21f93c4eea7ab214887620a",
+      "bytes": 601
+    },
+    {
+      "name": "retained-microcode-publication-seal.log",
+      "sha256": "e48b5f34ddc07b785c65f343c3989437fe051dc2342e23728a1db0a1d1ab093b",
+      "bytes": 620
+    },
+    {
+      "name": "retained-microcode-final-success.log",
+      "sha256": "91e75ae48c112f071a4c37c537a80c9c1a009350b613f169a618910c9b0fda53",
+      "bytes": 392
+    }
+  ],
+  "finalNormalRetainedLifecycle": {
+    "passed": 1,
+    "exitCode": 0,
+    "sourceCommit": "ba3418596d2df9f61454d7946812b7661c19fafc"
+  },
+  "sequentialCheckpointScope": "ten distinct groups covered across sequential checkpoints; no all-ten final-process claim"
+}

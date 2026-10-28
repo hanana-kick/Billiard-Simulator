@@ -1,0 +1,3 @@
+import {registerHooks} from 'node:module';
+const names=['sampleMixedMotionCPU','sampleMixedMotionV2CPU','runRollingPartialCPU','runSmoothSegmentsCPU','runClothMicrotailsCPU','runPreparedWorldCPU','runRawWorldCPU'];
+registerHooks({load(url,context,next){const result=next(url,context);if(result.format!=='module'||!url.includes('/src/direct-candidate/'))return result;let source=typeof result.source==='string'?result.source:Buffer.from(result.source).toString('utf8');for(const name of names)source=source.replace(new RegExp('(export function '+name+'\\([^)]*\\)\\{)'),"$1throw Error('SOURCE_DYNAMICS_FORBIDDEN');");return {...result,source};}});

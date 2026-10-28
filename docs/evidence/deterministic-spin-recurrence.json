@@ -1,0 +1,23 @@
+{
+  "profile": "prepared-original-law-normal-spin-recurrence-v1",
+  "cases": 141,
+  "comparedWords": 9024,
+  "exactWords": true,
+  "cpuMs": 4.672188000000006,
+  "pairIntervalNodes": 529,
+  "compileMs": 434.092661,
+  "shaderBytes": 7200,
+  "metrics": {
+    "candidates": 141,
+    "inputBytes": 36096,
+    "outputBytes": 36096,
+    "readbackBytes": 36096,
+    "allocatedBytes": 108288,
+    "submitToDoneMs": 2.8053859999999986,
+    "hardwareSpeedClaim": false,
+    "physicalAcceptance": false
+  },
+  "attitudeComplete": false,
+  "physicalAcceptance": false,
+  "stopTraceCount": 266
+}

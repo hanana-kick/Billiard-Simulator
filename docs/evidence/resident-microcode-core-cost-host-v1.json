@@ -1,0 +1,3400 @@
+{
+  "kind": "host-only-created-two-h-core-cost-report-v1",
+  "scope": "One original-created seed, two unchanged h; core scalar VM only; external native bodies excluded",
+  "status": "pass",
+  "sourceParity": "all11-source-groups-exact",
+  "rawInput": false,
+  "gpuExecuted": false,
+  "fullRest": false,
+  "performancePrediction": false,
+  "expectedFutureRuntimeInput": false,
+  "inclusiveCostsOverlap": true,
+  "sourceSha256": "df676add37bca889876fd21682953e314505cdcf7601c16d3fdbf3990855c6e5",
+  "bytecodeSha256": "64114146c7834453d5ff39c4839a1b8b93ce0a1e6f6d2f2573a1d9b71458178d",
+  "frames": 2,
+  "instructionBudget": 65536,
+  "maxChunks": 512,
+  "scalarInstructions": 4710762,
+  "pumps": 186,
+  "budgetYields": 40,
+  "externalCalls": {
+    "rc_cue_flat_advance": 8,
+    "rc_num_eval": 137
+  },
+  "hostWallMs": 13228.464312999999,
+  "localWords": 7820,
+  "costTrace": {
+    "path": "/tmp/resident-microcode-world-host-costs.v8",
+    "bytes": 6022895,
+    "sha256": "c8a1d6e6483ca9e35e3df51e36644b0a7a7669b19bf30cc3f7c8cce74828a42c"
+  },
+  "number64": {
+    "nameRegex": "^rc_(?:f64|u128|rsp)_",
+    "exclusive": 94240,
+    "share": 0.02000525604987049,
+    "functions": [
+      {
+        "name": "rc_u128_shl",
+        "calls": 146,
+        "exclusive": 40714,
+        "inclusive": 40714,
+        "replaceBodyWithStubCoreSavings": 40422
+      },
+      {
+        "name": "rc_u128_lt",
+        "calls": 113,
+        "exclusive": 11437,
+        "inclusive": 11437,
+        "replaceBodyWithStubCoreSavings": 11211
+      },
+      {
+        "name": "rc_u128_div",
+        "calls": 1,
+        "exclusive": 7795,
+        "inclusive": 56216,
+        "replaceBodyWithStubCoreSavings": 56214
+      },
+      {
+        "name": "rc_f64_decode",
+        "calls": 68,
+        "exclusive": 6376,
+        "inclusive": 6616,
+        "replaceBodyWithStubCoreSavings": 6480
+      },
+      {
+        "name": "rc_u128_shr",
+        "calls": 22,
+        "exclusive": 5666,
+        "inclusive": 5666,
+        "replaceBodyWithStubCoreSavings": 5622
+      },
+      {
+        "name": "rc_u128_sub",
+        "calls": 18,
+        "exclusive": 4860,
+        "inclusive": 4860,
+        "replaceBodyWithStubCoreSavings": 4824
+      },
+      {
+        "name": "rc_f64_add",
+        "calls": 10,
+        "exclusive": 3045,
+        "inclusive": 24371,
+        "replaceBodyWithStubCoreSavings": 24351
+      },
+      {
+        "name": "rc_u128_add",
+        "calls": 10,
+        "exclusive": 2540,
+        "inclusive": 2540,
+        "replaceBodyWithStubCoreSavings": 2520
+      },
+      {
+        "name": "rc_u128_bit",
+        "calls": 116,
+        "exclusive": 2436,
+        "inclusive": 2436,
+        "replaceBodyWithStubCoreSavings": 2204
+      },
+      {
+        "name": "rc_u128_blen",
+        "calls": 23,
+        "exclusive": 1909,
+        "inclusive": 1909,
+        "replaceBodyWithStubCoreSavings": 1863
+      },
+      {
+        "name": "rc_f64_pack",
+        "calls": 14,
+        "exclusive": 1292,
+        "inclusive": 10232,
+        "replaceBodyWithStubCoreSavings": 10204
+      },
+      {
+        "name": "rc_u128_zero",
+        "calls": 45,
+        "exclusive": 1080,
+        "inclusive": 1080,
+        "replaceBodyWithStubCoreSavings": 990
+      },
+      {
+        "name": "rc_u128_round",
+        "calls": 12,
+        "exclusive": 954,
+        "inclusive": 9353,
+        "replaceBodyWithStubCoreSavings": 9329
+      },
+      {
+        "name": "rc_f64_eq",
+        "calls": 14,
+        "exclusive": 730,
+        "inclusive": 3514,
+        "replaceBodyWithStubCoreSavings": 3486
+      },
+      {
+        "name": "rc_rsp_get",
+        "calls": 36,
+        "exclusive": 684,
+        "inclusive": 684,
+        "replaceBodyWithStubCoreSavings": 612
+      },
+      {
+        "name": "rc_rsp_set",
+        "calls": 28,
+        "exclusive": 532,
+        "inclusive": 532,
+        "replaceBodyWithStubCoreSavings": 476
+      },
+      {
+        "name": "rc_f64_lt",
+        "calls": 6,
+        "exclusive": 516,
+        "inclusive": 3232,
+        "replaceBodyWithStubCoreSavings": 3220
+      },
+      {
+        "name": "rc_u128_jam",
+        "calls": 8,
+        "exclusive": 476,
+        "inclusive": 3004,
+        "replaceBodyWithStubCoreSavings": 2988
+      },
+      {
+        "name": "rc_f64_to_f32_bits",
+        "calls": 2,
+        "exclusive": 302,
+        "inclusive": 3406,
+        "replaceBodyWithStubCoreSavings": 3402
+      },
+      {
+        "name": "rc_f64_div",
+        "calls": 1,
+        "exclusive": 272,
+        "inclusive": 58311,
+        "replaceBodyWithStubCoreSavings": 58309
+      },
+      {
+        "name": "rc_f64_zero",
+        "calls": 18,
+        "exclusive": 144,
+        "inclusive": 144,
+        "replaceBodyWithStubCoreSavings": 108
+      },
+      {
+        "name": "rc_rsp_int",
+        "calls": 4,
+        "exclusive": 140,
+        "inclusive": 536,
+        "replaceBodyWithStubCoreSavings": 528
+      },
+      {
+        "name": "rc_f64_sub",
+        "calls": 6,
+        "exclusive": 114,
+        "inclusive": 10951,
+        "replaceBodyWithStubCoreSavings": 10939
+      },
+      {
+        "name": "rc_f64_from_u32",
+        "calls": 5,
+        "exclusive": 110,
+        "inclusive": 894,
+        "replaceBodyWithStubCoreSavings": 884
+      },
+      {
+        "name": "rc_f64_neg",
+        "calls": 6,
+        "exclusive": 66,
+        "inclusive": 66,
+        "replaceBodyWithStubCoreSavings": 54
+      },
+      {
+        "name": "rc_f64_le",
+        "calls": 2,
+        "exclusive": 50,
+        "inclusive": 1648,
+        "replaceBodyWithStubCoreSavings": 1644
+      }
+    ]
+  },
+  "memoryInstructionCategories": {
+    "moveAndSet": {
+      "count": 2737069,
+      "share": 0.5810246834800824
+    },
+    "sourceLoadAndStore": {
+      "count": 285109,
+      "share": 0.06052290478695379
+    },
+    "dynamicLocalLoadAndStore": {
+      "count": 14551
+    },
+    "note": "VM slot reads/writes for every opcode are not included in source LOAD/STORE; these instruction counts are not measured bandwidth or GPU time."
+  },
+  "rankedExclusiveFunctions": [
+    {
+      "name": "rc_pc_guard",
+      "calls": 2484,
+      "exclusive": 342994,
+      "inclusive": 342994,
+      "replaceBodyWithStubCoreSavings": 338026
+    },
+    {
+      "name": "rc_gn_prepare_rc_world_cue_geometry_pose",
+      "calls": 112,
+      "exclusive": 276130,
+      "inclusive": 282730,
+      "replaceBodyWithStubCoreSavings": 282506
+    },
+    {
+      "name": "rc_geometry_numeric_prepare",
+      "calls": 432,
+      "exclusive": 216854,
+      "inclusive": 570130,
+      "replaceBodyWithStubCoreSavings": 569266
+    },
+    {
+      "name": "rc_journal_prepare_bvh",
+      "calls": 2,
+      "exclusive": 207884,
+      "inclusive": 775648,
+      "replaceBodyWithStubCoreSavings": 775644
+    },
+    {
+      "name": "rc_pc_advance",
+      "calls": 1140,
+      "exclusive": 203049,
+      "inclusive": 519714,
+      "replaceBodyWithStubCoreSavings": 517434
+    },
+    {
+      "name": "rc_micro_world_run",
+      "calls": 1,
+      "exclusive": 188613,
+      "inclusive": 4704426,
+      "replaceBodyWithStubCoreSavings": 4704424
+    },
+    {
+      "name": "rc_jeligible",
+      "calls": 1408,
+      "exclusive": 156342,
+      "inclusive": 236402,
+      "replaceBodyWithStubCoreSavings": 233586
+    },
+    {
+      "name": "rc_world_solver_gather",
+      "calls": 2,
+      "exclusive": 154115,
+      "inclusive": 171525,
+      "replaceBodyWithStubCoreSavings": 171521
+    },
+    {
+      "name": "rc_gn_address",
+      "calls": 1852,
+      "exclusive": 150012,
+      "inclusive": 174088,
+      "replaceBodyWithStubCoreSavings": 170384
+    },
+    {
+      "name": "rc_jr",
+      "calls": 21468,
+      "exclusive": 128808,
+      "inclusive": 128808,
+      "replaceBodyWithStubCoreSavings": 85872
+    },
+    {
+      "name": "rc_micro_reset_private",
+      "calls": 1139,
+      "exclusive": 108205,
+      "inclusive": 108205,
+      "replaceBodyWithStubCoreSavings": 105927
+    },
+    {
+      "name": "rc_world_cue_geometry_gather",
+      "calls": 112,
+      "exclusive": 105858,
+      "inclusive": 166958,
+      "replaceBodyWithStubCoreSavings": 166734
+    },
+    {
+      "name": "rc_bvh_node",
+      "calls": 1494,
+      "exclusive": 100098,
+      "inclusive": 100098,
+      "replaceBodyWithStubCoreSavings": 97110
+    },
+    {
+      "name": "rc_world_broad_begin_post",
+      "calls": 2,
+      "exclusive": 95200,
+      "inclusive": 122604,
+      "replaceBodyWithStubCoreSavings": 122600
+    },
+    {
+      "name": "rc_micro_original_owner_7",
+      "calls": 463,
+      "exclusive": 91757,
+      "inclusive": 1373674,
+      "replaceBodyWithStubCoreSavings": 1372748
+    },
+    {
+      "name": "rc_world_scene_capture_entry",
+      "calls": 2,
+      "exclusive": 83823,
+      "inclusive": 95503,
+      "replaceBodyWithStubCoreSavings": 95499
+    },
+    {
+      "name": "rc_micro_original_owner_6",
+      "calls": 572,
+      "exclusive": 81329,
+      "inclusive": 784346,
+      "replaceBodyWithStubCoreSavings": 783202
+    },
+    {
+      "name": "rc_gn_identity",
+      "calls": 926,
+      "exclusive": 79636,
+      "inclusive": 166680,
+      "replaceBodyWithStubCoreSavings": 164828
+    },
+    {
+      "name": "rc_world_geometry_begin",
+      "calls": 2,
+      "exclusive": 79138,
+      "inclusive": 79138,
+      "replaceBodyWithStubCoreSavings": 79134
+    },
+    {
+      "name": "rc_geometry_gather",
+      "calls": 52,
+      "exclusive": 75624,
+      "inclusive": 75988,
+      "replaceBodyWithStubCoreSavings": 75884
+    },
+    {
+      "name": "rc_world_geometry_stage_owner_phase_18",
+      "calls": 52,
+      "exclusive": 70684,
+      "inclusive": 149576,
+      "replaceBodyWithStubCoreSavings": 149472
+    },
+    {
+      "name": "rc_jc",
+      "calls": 10016,
+      "exclusive": 70112,
+      "inclusive": 70112,
+      "replaceBodyWithStubCoreSavings": 50080
+    },
+    {
+      "name": "rc_bvh_merge",
+      "calls": 230,
+      "exclusive": 67160,
+      "inclusive": 92000,
+      "replaceBodyWithStubCoreSavings": 91540
+    },
+    {
+      "name": "rc_bvh_mem_put",
+      "calls": 488,
+      "exclusive": 66368,
+      "inclusive": 66368,
+      "replaceBodyWithStubCoreSavings": 65392
+    },
+    {
+      "name": "rc_bvh_rebuild_binned",
+      "calls": 1,
+      "exclusive": 66124,
+      "inclusive": 222027,
+      "replaceBodyWithStubCoreSavings": 222025
+    },
+    {
+      "name": "rc_world_shared_graph_owner",
+      "calls": 463,
+      "exclusive": 60430,
+      "inclusive": 999441,
+      "replaceBodyWithStubCoreSavings": 998515
+    },
+    {
+      "name": "rc_owner_complete",
+      "calls": 1139,
+      "exclusive": 60367,
+      "inclusive": 579997,
+      "replaceBodyWithStubCoreSavings": 577719
+    },
+    {
+      "name": "rc_bvh_full_refit",
+      "calls": 3,
+      "exclusive": 57171,
+      "inclusive": 204393,
+      "replaceBodyWithStubCoreSavings": 204387
+    },
+    {
+      "name": "rc_wcg_reset",
+      "calls": 112,
+      "exclusive": 54880,
+      "inclusive": 54880,
+      "replaceBodyWithStubCoreSavings": 54656
+    },
+    {
+      "name": "rc_gn_finish_rc_world_cue_geometry_pose",
+      "calls": 110,
+      "exclusive": 46970,
+      "inclusive": 46970,
+      "replaceBodyWithStubCoreSavings": 46750
+    },
+    {
+      "name": "rc_scene_incidence_from_journal",
+      "calls": 2,
+      "exclusive": 44480,
+      "inclusive": 51528,
+      "replaceBodyWithStubCoreSavings": 51524
+    },
+    {
+      "name": "rc_bvh_bvtt",
+      "calls": 2,
+      "exclusive": 44052,
+      "inclusive": 98742,
+      "replaceBodyWithStubCoreSavings": 98738
+    },
+    {
+      "name": "rc_u128_shl",
+      "calls": 146,
+      "exclusive": 40714,
+      "inclusive": 40714,
+      "replaceBodyWithStubCoreSavings": 40422
+    },
+    {
+      "name": "rc_bvh_s",
+      "calls": 4956,
+      "exclusive": 39648,
+      "inclusive": 39648,
+      "replaceBodyWithStubCoreSavings": 29736
+    },
+    {
+      "name": "rc_bvh_mem_node",
+      "calls": 646,
+      "exclusive": 38114,
+      "inclusive": 38114,
+      "replaceBodyWithStubCoreSavings": 36822
+    },
+    {
+      "name": "rc_bvh_put",
+      "calls": 250,
+      "exclusive": 36000,
+      "inclusive": 36000,
+      "replaceBodyWithStubCoreSavings": 35500
+    },
+    {
+      "name": "rc_pc_skip",
+      "calls": 571,
+      "exclusive": 35007,
+      "inclusive": 35007,
+      "replaceBodyWithStubCoreSavings": 33865
+    },
+    {
+      "name": "rc_bvh_volume",
+      "calls": 342,
+      "exclusive": 29412,
+      "inclusive": 55062,
+      "replaceBodyWithStubCoreSavings": 54378
+    },
+    {
+      "name": "rc_wb_c",
+      "calls": 3051,
+      "exclusive": 27459,
+      "inclusive": 27459,
+      "replaceBodyWithStubCoreSavings": 21357
+    },
+    {
+      "name": "rc_jleaf",
+      "calls": 504,
+      "exclusive": 27216,
+      "inclusive": 36792,
+      "replaceBodyWithStubCoreSavings": 35784
+    },
+    {
+      "name": "rc_gn_span",
+      "calls": 1852,
+      "exclusive": 24076,
+      "inclusive": 24076,
+      "replaceBodyWithStubCoreSavings": 20372
+    },
+    {
+      "name": "rc_gn_request_valid",
+      "calls": 220,
+      "exclusive": 21340,
+      "inclusive": 21340,
+      "replaceBodyWithStubCoreSavings": 20900
+    },
+    {
+      "name": "rc_jfind",
+      "calls": 150,
+      "exclusive": 19684,
+      "inclusive": 31720,
+      "replaceBodyWithStubCoreSavings": 31420
+    },
+    {
+      "name": "rc_numeric_request_evaluate",
+      "calls": 463,
+      "exclusive": 19285,
+      "inclusive": 119290,
+      "replaceBodyWithStubCoreSavings": 118364
+    },
+    {
+      "name": "rc_geometry_numeric_finish",
+      "calls": 432,
+      "exclusive": 19238,
+      "inclusive": 157168,
+      "replaceBodyWithStubCoreSavings": 156304
+    },
+    {
+      "name": "rc_bvh_mul",
+      "calls": 1204,
+      "exclusive": 18060,
+      "inclusive": 18060,
+      "replaceBodyWithStubCoreSavings": 15652
+    },
+    {
+      "name": "rc_bvh_count",
+      "calls": 1492,
+      "exclusive": 17904,
+      "inclusive": 17904,
+      "replaceBodyWithStubCoreSavings": 14920
+    },
+    {
+      "name": "rc_remaining_numeric_prepare",
+      "calls": 31,
+      "exclusive": 17645,
+      "inclusive": 35959,
+      "replaceBodyWithStubCoreSavings": 35897
+    },
+    {
+      "name": "rc_body",
+      "calls": 44,
+      "exclusive": 17472,
+      "inclusive": 24312,
+      "replaceBodyWithStubCoreSavings": 24224
+    },
+    {
+      "name": "rc_bvh_score",
+      "calls": 171,
+      "exclusive": 17442,
+      "inclusive": 84303,
+      "replaceBodyWithStubCoreSavings": 83961
+    },
+    {
+      "name": "rc_bvh_sub",
+      "calls": 1150,
+      "exclusive": 17250,
+      "inclusive": 17250,
+      "replaceBodyWithStubCoreSavings": 14950
+    },
+    {
+      "name": "rc_cue_bridge_copy",
+      "calls": 156,
+      "exclusive": 15916,
+      "inclusive": 15916,
+      "replaceBodyWithStubCoreSavings": 15604
+    },
+    {
+      "name": "rc_scene_bp",
+      "calls": 1766,
+      "exclusive": 15894,
+      "inclusive": 15894,
+      "replaceBodyWithStubCoreSavings": 12362
+    },
+    {
+      "name": "rc_bvh_hit",
+      "calls": 376,
+      "exclusive": 15432,
+      "inclusive": 15432,
+      "replaceBodyWithStubCoreSavings": 14680
+    },
+    {
+      "name": "rc_scene_capacity",
+      "calls": 3,
+      "exclusive": 14661,
+      "inclusive": 18207,
+      "replaceBodyWithStubCoreSavings": 18201
+    },
+    {
+      "name": "rc_rn_cue_prepare",
+      "calls": 8,
+      "exclusive": 14232,
+      "inclusive": 14568,
+      "replaceBodyWithStubCoreSavings": 14552
+    },
+    {
+      "name": "rc_narrow_zero",
+      "calls": 132,
+      "exclusive": 13596,
+      "inclusive": 13596,
+      "replaceBodyWithStubCoreSavings": 13332
+    },
+    {
+      "name": "rc_bvh_leaf",
+      "calls": 604,
+      "exclusive": 13288,
+      "inclusive": 20536,
+      "replaceBodyWithStubCoreSavings": 19328
+    },
+    {
+      "name": "rc_bvh_max",
+      "calls": 816,
+      "exclusive": 11604,
+      "inclusive": 11604,
+      "replaceBodyWithStubCoreSavings": 9972
+    },
+    {
+      "name": "rc_bvh_min",
+      "calls": 816,
+      "exclusive": 11508,
+      "inclusive": 11508,
+      "replaceBodyWithStubCoreSavings": 9876
+    },
+    {
+      "name": "rc_u128_lt",
+      "calls": 113,
+      "exclusive": 11437,
+      "inclusive": 11437,
+      "replaceBodyWithStubCoreSavings": 11211
+    },
+    {
+      "name": "rc_bvh_prepare_update",
+      "calls": 2,
+      "exclusive": 11378,
+      "inclusive": 266191,
+      "replaceBodyWithStubCoreSavings": 266187
+    },
+    {
+      "name": "rc_world_cue_geometry_finish_row",
+      "calls": 112,
+      "exclusive": 10176,
+      "inclusive": 11520,
+      "replaceBodyWithStubCoreSavings": 11296
+    },
+    {
+      "name": "rc_roster_finish",
+      "calls": 2,
+      "exclusive": 9944,
+      "inclusive": 22064,
+      "replaceBodyWithStubCoreSavings": 22060
+    },
+    {
+      "name": "rc_r",
+      "calls": 1542,
+      "exclusive": 9252,
+      "inclusive": 9252,
+      "replaceBodyWithStubCoreSavings": 6168
+    },
+    {
+      "name": "rc_jw",
+      "calls": 1496,
+      "exclusive": 8976,
+      "inclusive": 8976,
+      "replaceBodyWithStubCoreSavings": 5984
+    },
+    {
+      "name": "rc_bvh_rotate",
+      "calls": 16,
+      "exclusive": 8562,
+      "inclusive": 68390,
+      "replaceBodyWithStubCoreSavings": 68358
+    },
+    {
+      "name": "rc_world_cue_geometry_after_query",
+      "calls": 112,
+      "exclusive": 8280,
+      "inclusive": 11580,
+      "replaceBodyWithStubCoreSavings": 11356
+    },
+    {
+      "name": "rc_wcg_descriptor",
+      "calls": 442,
+      "exclusive": 7956,
+      "inclusive": 7956,
+      "replaceBodyWithStubCoreSavings": 7072
+    },
+    {
+      "name": "rc_jcue",
+      "calls": 252,
+      "exclusive": 7812,
+      "inclusive": 14364,
+      "replaceBodyWithStubCoreSavings": 13860
+    },
+    {
+      "name": "rc_u128_div",
+      "calls": 1,
+      "exclusive": 7795,
+      "inclusive": 56216,
+      "replaceBodyWithStubCoreSavings": 56214
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_45",
+      "calls": 112,
+      "exclusive": 7504,
+      "inclusive": 20368,
+      "replaceBodyWithStubCoreSavings": 20144
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_40",
+      "calls": 112,
+      "exclusive": 7504,
+      "inclusive": 19756,
+      "replaceBodyWithStubCoreSavings": 19532
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_35",
+      "calls": 112,
+      "exclusive": 7504,
+      "inclusive": 19422,
+      "replaceBodyWithStubCoreSavings": 19198
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_33",
+      "calls": 112,
+      "exclusive": 7504,
+      "inclusive": 175358,
+      "replaceBodyWithStubCoreSavings": 175134
+    },
+    {
+      "name": "rc_world_geometry_ready",
+      "calls": 208,
+      "exclusive": 7488,
+      "inclusive": 9568,
+      "replaceBodyWithStubCoreSavings": 9152
+    },
+    {
+      "name": "rc_remaining_numeric_request_valid",
+      "calls": 54,
+      "exclusive": 7332,
+      "inclusive": 7332,
+      "replaceBodyWithStubCoreSavings": 7224
+    },
+    {
+      "name": "rc_bvh_insert",
+      "calls": 3,
+      "exclusive": 7010,
+      "inclusive": 117871,
+      "replaceBodyWithStubCoreSavings": 117865
+    },
+    {
+      "name": "rc_world_broad_gather",
+      "calls": 9,
+      "exclusive": 6783,
+      "inclusive": 8259,
+      "replaceBodyWithStubCoreSavings": 8241
+    },
+    {
+      "name": "rc_world_cue_geometry_query_input",
+      "calls": 112,
+      "exclusive": 6630,
+      "inclusive": 11470,
+      "replaceBodyWithStubCoreSavings": 11246
+    },
+    {
+      "name": "rc_ccd_copy",
+      "calls": 64,
+      "exclusive": 6568,
+      "inclusive": 6568,
+      "replaceBodyWithStubCoreSavings": 6440
+    },
+    {
+      "name": "rc_wcg_collider",
+      "calls": 494,
+      "exclusive": 6422,
+      "inclusive": 6422,
+      "replaceBodyWithStubCoreSavings": 5434
+    },
+    {
+      "name": "rc_f64_decode",
+      "calls": 68,
+      "exclusive": 6376,
+      "inclusive": 6616,
+      "replaceBodyWithStubCoreSavings": 6480
+    },
+    {
+      "name": "rc_jslot",
+      "calls": 8,
+      "exclusive": 6328,
+      "inclusive": 10328,
+      "replaceBodyWithStubCoreSavings": 10312
+    },
+    {
+      "name": "rc_scene_created_initialize",
+      "calls": 1,
+      "exclusive": 6273,
+      "inclusive": 20844,
+      "replaceBodyWithStubCoreSavings": 20842
+    },
+    {
+      "name": "rc_cue_to_canonical",
+      "calls": 7,
+      "exclusive": 6175,
+      "inclusive": 17725,
+      "replaceBodyWithStubCoreSavings": 17711
+    },
+    {
+      "name": "rc_gn_mark",
+      "calls": 137,
+      "exclusive": 5754,
+      "inclusive": 5754,
+      "replaceBodyWithStubCoreSavings": 5480
+    },
+    {
+      "name": "rc_u128_shr",
+      "calls": 22,
+      "exclusive": 5666,
+      "inclusive": 5666,
+      "replaceBodyWithStubCoreSavings": 5622
+    },
+    {
+      "name": "rc_world_ccd_inactive_begin",
+      "calls": 2,
+      "exclusive": 5424,
+      "inclusive": 11926,
+      "replaceBodyWithStubCoreSavings": 11922
+    },
+    {
+      "name": "rc_source_program_init",
+      "calls": 2,
+      "exclusive": 5350,
+      "inclusive": 5540,
+      "replaceBodyWithStubCoreSavings": 5536
+    },
+    {
+      "name": "rc_bvh_changed",
+      "calls": 382,
+      "exclusive": 5348,
+      "inclusive": 5348,
+      "replaceBodyWithStubCoreSavings": 4584
+    },
+    {
+      "name": "rc_u128_sub",
+      "calls": 18,
+      "exclusive": 4860,
+      "inclusive": 4860,
+      "replaceBodyWithStubCoreSavings": 4824
+    },
+    {
+      "name": "rc_bvh_add",
+      "calls": 306,
+      "exclusive": 4590,
+      "inclusive": 4590,
+      "replaceBodyWithStubCoreSavings": 3978
+    },
+    {
+      "name": "rc_sw_clear_input",
+      "calls": 10,
+      "exclusive": 4550,
+      "inclusive": 4550,
+      "replaceBodyWithStubCoreSavings": 4530
+    },
+    {
+      "name": "rc_bvh_zero",
+      "calls": 136,
+      "exclusive": 4488,
+      "inclusive": 4488,
+      "replaceBodyWithStubCoreSavings": 4216
+    },
+    {
+      "name": "rc_scene_alloc_persistent",
+      "calls": 2,
+      "exclusive": 4486,
+      "inclusive": 4486,
+      "replaceBodyWithStubCoreSavings": 4482
+    },
+    {
+      "name": "rc_w",
+      "calls": 744,
+      "exclusive": 4464,
+      "inclusive": 4464,
+      "replaceBodyWithStubCoreSavings": 2976
+    },
+    {
+      "name": "rc_je",
+      "calls": 592,
+      "exclusive": 4144,
+      "inclusive": 4144,
+      "replaceBodyWithStubCoreSavings": 2960
+    },
+    {
+      "name": "rc_wcg_cache",
+      "calls": 334,
+      "exclusive": 4008,
+      "inclusive": 4008,
+      "replaceBodyWithStubCoreSavings": 3340
+    },
+    {
+      "name": "rc_bvh_resolve",
+      "calls": 54,
+      "exclusive": 3996,
+      "inclusive": 5400,
+      "replaceBodyWithStubCoreSavings": 5292
+    },
+    {
+      "name": "rc_gn_source_result",
+      "calls": 164,
+      "exclusive": 3980,
+      "inclusive": 3980,
+      "replaceBodyWithStubCoreSavings": 3652
+    },
+    {
+      "name": "rc_scene_world_first_collision",
+      "calls": 1,
+      "exclusive": 3949,
+      "inclusive": 4759,
+      "replaceBodyWithStubCoreSavings": 4757
+    },
+    {
+      "name": "rc_world_cue_geometry_begin",
+      "calls": 2,
+      "exclusive": 3808,
+      "inclusive": 4510,
+      "replaceBodyWithStubCoreSavings": 4506
+    },
+    {
+      "name": "rc_wb_check_collider",
+      "calls": 63,
+      "exclusive": 3717,
+      "inclusive": 5859,
+      "replaceBodyWithStubCoreSavings": 5733
+    },
+    {
+      "name": "rc_world_geometry_stage_owner_phase_27",
+      "calls": 52,
+      "exclusive": 3520,
+      "inclusive": 7176,
+      "replaceBodyWithStubCoreSavings": 7072
+    },
+    {
+      "name": "rc_bvh_optimize",
+      "calls": 1,
+      "exclusive": 3485,
+      "inclusive": 235229,
+      "replaceBodyWithStubCoreSavings": 235227
+    },
+    {
+      "name": "rc_world_broad_begin_collision",
+      "calls": 2,
+      "exclusive": 3322,
+      "inclusive": 10122,
+      "replaceBodyWithStubCoreSavings": 10118
+    },
+    {
+      "name": "rc_sw_energy_input",
+      "calls": 6,
+      "exclusive": 3132,
+      "inclusive": 6276,
+      "replaceBodyWithStubCoreSavings": 6264
+    },
+    {
+      "name": "rc_world_geometry_row",
+      "calls": 312,
+      "exclusive": 3120,
+      "inclusive": 3120,
+      "replaceBodyWithStubCoreSavings": 2496
+    },
+    {
+      "name": "rc_micro_original_owner_4",
+      "calls": 26,
+      "exclusive": 3098,
+      "inclusive": 41696,
+      "replaceBodyWithStubCoreSavings": 41644
+    },
+    {
+      "name": "rc_f64_add",
+      "calls": 10,
+      "exclusive": 3045,
+      "inclusive": 24371,
+      "replaceBodyWithStubCoreSavings": 24351
+    },
+    {
+      "name": "rc_world_scene_prepare_roster",
+      "calls": 2,
+      "exclusive": 2962,
+      "inclusive": 40072,
+      "replaceBodyWithStubCoreSavings": 40068
+    },
+    {
+      "name": "rc_roster_begin_awake",
+      "calls": 2,
+      "exclusive": 2884,
+      "inclusive": 4608,
+      "replaceBodyWithStubCoreSavings": 4604
+    },
+    {
+      "name": "rc_micro_original_owner_13",
+      "calls": 18,
+      "exclusive": 2838,
+      "inclusive": 56228,
+      "replaceBodyWithStubCoreSavings": 56192
+    },
+    {
+      "name": "rc_scene_valid_body",
+      "calls": 125,
+      "exclusive": 2750,
+      "inclusive": 3875,
+      "replaceBodyWithStubCoreSavings": 3625
+    },
+    {
+      "name": "rc_raw_program_step",
+      "calls": 2,
+      "exclusive": 2630,
+      "inclusive": 22800,
+      "replaceBodyWithStubCoreSavings": 22796
+    },
+    {
+      "name": "rc_cloth_clear",
+      "calls": 2,
+      "exclusive": 2624,
+      "inclusive": 2624,
+      "replaceBodyWithStubCoreSavings": 2620
+    },
+    {
+      "name": "rc_world_scene_geometry_visited",
+      "calls": 62,
+      "exclusive": 2604,
+      "inclusive": 2604,
+      "replaceBodyWithStubCoreSavings": 2480
+    },
+    {
+      "name": "rc_sw_output",
+      "calls": 104,
+      "exclusive": 2600,
+      "inclusive": 2600,
+      "replaceBodyWithStubCoreSavings": 2392
+    },
+    {
+      "name": "rc_remaining_numeric_finish",
+      "calls": 31,
+      "exclusive": 2597,
+      "inclusive": 12942,
+      "replaceBodyWithStubCoreSavings": 12880
+    },
+    {
+      "name": "rc_u128_add",
+      "calls": 10,
+      "exclusive": 2540,
+      "inclusive": 2540,
+      "replaceBodyWithStubCoreSavings": 2520
+    },
+    {
+      "name": "$module",
+      "calls": 0,
+      "exclusive": 2474,
+      "inclusive": 0,
+      "replaceBodyWithStubCoreSavings": 0
+    },
+    {
+      "name": "rc_micro_original_owner_11",
+      "calls": 16,
+      "exclusive": 2440,
+      "inclusive": 14392,
+      "replaceBodyWithStubCoreSavings": 14360
+    },
+    {
+      "name": "rc_u128_bit",
+      "calls": 116,
+      "exclusive": 2436,
+      "inclusive": 2436,
+      "replaceBodyWithStubCoreSavings": 2204
+    },
+    {
+      "name": "rc_cloth_prepare",
+      "calls": 2,
+      "exclusive": 2386,
+      "inclusive": 8044,
+      "replaceBodyWithStubCoreSavings": 8040
+    },
+    {
+      "name": "rc_gn_prepare_rc_narrow_convex_prepare",
+      "calls": 32,
+      "exclusive": 2368,
+      "inclusive": 12896,
+      "replaceBodyWithStubCoreSavings": 12832
+    },
+    {
+      "name": "rc_cloth_begin",
+      "calls": 2,
+      "exclusive": 2322,
+      "inclusive": 5090,
+      "replaceBodyWithStubCoreSavings": 5086
+    },
+    {
+      "name": "rc_wh_cloth_visit",
+      "calls": 2,
+      "exclusive": 2294,
+      "inclusive": 2378,
+      "replaceBodyWithStubCoreSavings": 2374
+    },
+    {
+      "name": "rc_bvh_set_aabbs",
+      "calls": 2,
+      "exclusive": 2252,
+      "inclusive": 8013,
+      "replaceBodyWithStubCoreSavings": 8009
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_27",
+      "calls": 52,
+      "exclusive": 2236,
+      "inclusive": 9412,
+      "replaceBodyWithStubCoreSavings": 9308
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_18",
+      "calls": 52,
+      "exclusive": 2236,
+      "inclusive": 151812,
+      "replaceBodyWithStubCoreSavings": 151708
+    },
+    {
+      "name": "rc_world_ccd_scene_body",
+      "calls": 24,
+      "exclusive": 2136,
+      "inclusive": 2136,
+      "replaceBodyWithStubCoreSavings": 2088
+    },
+    {
+      "name": "rc_application_stage_gather",
+      "calls": 4,
+      "exclusive": 2080,
+      "inclusive": 10648,
+      "replaceBodyWithStubCoreSavings": 10640
+    },
+    {
+      "name": "rc_numeric_request_validate_owner",
+      "calls": 137,
+      "exclusive": 2055,
+      "inclusive": 16391,
+      "replaceBodyWithStubCoreSavings": 16117
+    },
+    {
+      "name": "rc_scene_adopt_energy",
+      "calls": 4,
+      "exclusive": 2016,
+      "inclusive": 2210,
+      "replaceBodyWithStubCoreSavings": 2202
+    },
+    {
+      "name": "rc_scene_world_scatter",
+      "calls": 10,
+      "exclusive": 2002,
+      "inclusive": 9994,
+      "replaceBodyWithStubCoreSavings": 9974
+    },
+    {
+      "name": "rc_geometry_publish_edge",
+      "calls": 8,
+      "exclusive": 1992,
+      "inclusive": 3136,
+      "replaceBodyWithStubCoreSavings": 3120
+    },
+    {
+      "name": "rc_bvh_update_leaf",
+      "calls": 6,
+      "exclusive": 1951,
+      "inclusive": 4830,
+      "replaceBodyWithStubCoreSavings": 4818
+    },
+    {
+      "name": "rc_micro_original_owner_1",
+      "calls": 16,
+      "exclusive": 1912,
+      "inclusive": 148467,
+      "replaceBodyWithStubCoreSavings": 148435
+    },
+    {
+      "name": "rc_u128_blen",
+      "calls": 23,
+      "exclusive": 1909,
+      "inclusive": 1909,
+      "replaceBodyWithStubCoreSavings": 1863
+    },
+    {
+      "name": "rc_scene_incidence_begin",
+      "calls": 2,
+      "exclusive": 1894,
+      "inclusive": 1894,
+      "replaceBodyWithStubCoreSavings": 1890
+    },
+    {
+      "name": "rc_sw_gather_activation",
+      "calls": 6,
+      "exclusive": 1734,
+      "inclusive": 3534,
+      "replaceBodyWithStubCoreSavings": 3522
+    },
+    {
+      "name": "rc_wh_check",
+      "calls": 22,
+      "exclusive": 1716,
+      "inclusive": 1716,
+      "replaceBodyWithStubCoreSavings": 1672
+    },
+    {
+      "name": "rc_world_scene_hint",
+      "calls": 8,
+      "exclusive": 1704,
+      "inclusive": 1704,
+      "replaceBodyWithStubCoreSavings": 1688
+    },
+    {
+      "name": "rc_source_program_finish",
+      "calls": 2,
+      "exclusive": 1636,
+      "inclusive": 2324,
+      "replaceBodyWithStubCoreSavings": 2320
+    },
+    {
+      "name": "rc_scene_find_body",
+      "calls": 8,
+      "exclusive": 1536,
+      "inclusive": 1896,
+      "replaceBodyWithStubCoreSavings": 1880
+    },
+    {
+      "name": "rc_scene_world_gather",
+      "calls": 12,
+      "exclusive": 1470,
+      "inclusive": 14932,
+      "replaceBodyWithStubCoreSavings": 14908
+    },
+    {
+      "name": "rc_scene_jp",
+      "calls": 159,
+      "exclusive": 1431,
+      "inclusive": 1431,
+      "replaceBodyWithStubCoreSavings": 1113
+    },
+    {
+      "name": "rc_ws_body",
+      "calls": 16,
+      "exclusive": 1376,
+      "inclusive": 1376,
+      "replaceBodyWithStubCoreSavings": 1344
+    },
+    {
+      "name": "rc_ws_edge",
+      "calls": 8,
+      "exclusive": 1360,
+      "inclusive": 1360,
+      "replaceBodyWithStubCoreSavings": 1344
+    },
+    {
+      "name": "rc_world_cue_geometry_stage_owner_phase_45",
+      "calls": 112,
+      "exclusive": 1344,
+      "inclusive": 12864,
+      "replaceBodyWithStubCoreSavings": 12640
+    },
+    {
+      "name": "rc_f64_pack",
+      "calls": 14,
+      "exclusive": 1292,
+      "inclusive": 10232,
+      "replaceBodyWithStubCoreSavings": 10204
+    },
+    {
+      "name": "rc_scene_incidence_append",
+      "calls": 8,
+      "exclusive": 1216,
+      "inclusive": 1784,
+      "replaceBodyWithStubCoreSavings": 1768
+    },
+    {
+      "name": "rc_sw_force_input",
+      "calls": 4,
+      "exclusive": 1212,
+      "inclusive": 3308,
+      "replaceBodyWithStubCoreSavings": 3300
+    },
+    {
+      "name": "rc_micro_host_source_begin",
+      "calls": 1,
+      "exclusive": 1191,
+      "inclusive": 1275,
+      "replaceBodyWithStubCoreSavings": 1273
+    },
+    {
+      "name": "rc_micro_original_owner_2",
+      "calls": 10,
+      "exclusive": 1174,
+      "inclusive": 175605,
+      "replaceBodyWithStubCoreSavings": 175585
+    },
+    {
+      "name": "rc_reconcile",
+      "calls": 8,
+      "exclusive": 1160,
+      "inclusive": 8676,
+      "replaceBodyWithStubCoreSavings": 8660
+    },
+    {
+      "name": "rc_u128_zero",
+      "calls": 45,
+      "exclusive": 1080,
+      "inclusive": 1080,
+      "replaceBodyWithStubCoreSavings": 990
+    },
+    {
+      "name": "rc_roster_metadata",
+      "calls": 8,
+      "exclusive": 1080,
+      "inclusive": 1568,
+      "replaceBodyWithStubCoreSavings": 1552
+    },
+    {
+      "name": "rc_sw_finish_continuation",
+      "calls": 2,
+      "exclusive": 1076,
+      "inclusive": 2520,
+      "replaceBodyWithStubCoreSavings": 2516
+    },
+    {
+      "name": "rc_journal_narrow",
+      "calls": 2,
+      "exclusive": 1030,
+      "inclusive": 1446,
+      "replaceBodyWithStubCoreSavings": 1442
+    },
+    {
+      "name": "rc_world_broad_scatter",
+      "calls": 9,
+      "exclusive": 1017,
+      "inclusive": 1098,
+      "replaceBodyWithStubCoreSavings": 1080
+    },
+    {
+      "name": "rc_scene_world_orders",
+      "calls": 2,
+      "exclusive": 1000,
+      "inclusive": 1144,
+      "replaceBodyWithStubCoreSavings": 1140
+    },
+    {
+      "name": "rc_micro_original_owner_5",
+      "calls": 8,
+      "exclusive": 962,
+      "inclusive": 82123,
+      "replaceBodyWithStubCoreSavings": 82107
+    },
+    {
+      "name": "rc_u128_round",
+      "calls": 12,
+      "exclusive": 954,
+      "inclusive": 9353,
+      "replaceBodyWithStubCoreSavings": 9329
+    },
+    {
+      "name": "rc_geometry_find",
+      "calls": 8,
+      "exclusive": 948,
+      "inclusive": 1088,
+      "replaceBodyWithStubCoreSavings": 1072
+    },
+    {
+      "name": "rc_world_cue_geometry_stage_owner_phase_33",
+      "calls": 112,
+      "exclusive": 896,
+      "inclusive": 167854,
+      "replaceBodyWithStubCoreSavings": 167630
+    },
+    {
+      "name": "rc_scene_created_joint_link",
+      "calls": 9,
+      "exclusive": 889,
+      "inclusive": 1935,
+      "replaceBodyWithStubCoreSavings": 1917
+    },
+    {
+      "name": "rc_gn_prepare_rc_narrow_pair",
+      "calls": 12,
+      "exclusive": 888,
+      "inclusive": 4896,
+      "replaceBodyWithStubCoreSavings": 4872
+    },
+    {
+      "name": "rc_bvh_pending",
+      "calls": 63,
+      "exclusive": 882,
+      "inclusive": 882,
+      "replaceBodyWithStubCoreSavings": 756
+    },
+    {
+      "name": "rc_scene_pp",
+      "calls": 59,
+      "exclusive": 826,
+      "inclusive": 826,
+      "replaceBodyWithStubCoreSavings": 708
+    },
+    {
+      "name": "rc_scene_select_sleep",
+      "calls": 2,
+      "exclusive": 820,
+      "inclusive": 966,
+      "replaceBodyWithStubCoreSavings": 962
+    },
+    {
+      "name": "rc_world_ccd_inactive_post_begin",
+      "calls": 2,
+      "exclusive": 750,
+      "inclusive": 2712,
+      "replaceBodyWithStubCoreSavings": 2708
+    },
+    {
+      "name": "rc_world_geometry_point_ready",
+      "calls": 52,
+      "exclusive": 744,
+      "inclusive": 3136,
+      "replaceBodyWithStubCoreSavings": 3032
+    },
+    {
+      "name": "rc_sw_adopt_reset",
+      "calls": 2,
+      "exclusive": 740,
+      "inclusive": 758,
+      "replaceBodyWithStubCoreSavings": 754
+    },
+    {
+      "name": "rc_bvh_valid_box",
+      "calls": 12,
+      "exclusive": 732,
+      "inclusive": 732,
+      "replaceBodyWithStubCoreSavings": 708
+    },
+    {
+      "name": "rc_f64_eq",
+      "calls": 14,
+      "exclusive": 730,
+      "inclusive": 3514,
+      "replaceBodyWithStubCoreSavings": 3486
+    },
+    {
+      "name": "rc_cloth_bind_cue",
+      "calls": 2,
+      "exclusive": 710,
+      "inclusive": 710,
+      "replaceBodyWithStubCoreSavings": 706
+    },
+    {
+      "name": "rc_world_geometry_complete",
+      "calls": 2,
+      "exclusive": 698,
+      "inclusive": 698,
+      "replaceBodyWithStubCoreSavings": 694
+    },
+    {
+      "name": "rc_rsp_get",
+      "calls": 36,
+      "exclusive": 684,
+      "inclusive": 684,
+      "replaceBodyWithStubCoreSavings": 612
+    },
+    {
+      "name": "rc_world_cue_geometry_stage_owner_phase_40",
+      "calls": 112,
+      "exclusive": 672,
+      "inclusive": 12252,
+      "replaceBodyWithStubCoreSavings": 12028
+    },
+    {
+      "name": "rc_world_scene_energy_gather",
+      "calls": 12,
+      "exclusive": 660,
+      "inclusive": 15592,
+      "replaceBodyWithStubCoreSavings": 15568
+    },
+    {
+      "name": "rc_bvh_relocate",
+      "calls": 19,
+      "exclusive": 652,
+      "inclusive": 1298,
+      "replaceBodyWithStubCoreSavings": 1260
+    },
+    {
+      "name": "rc_world_ccd_inactive_next",
+      "calls": 6,
+      "exclusive": 642,
+      "inclusive": 672,
+      "replaceBodyWithStubCoreSavings": 660
+    },
+    {
+      "name": "rc_narrow_convex_clear",
+      "calls": 32,
+      "exclusive": 640,
+      "inclusive": 8768,
+      "replaceBodyWithStubCoreSavings": 8704
+    },
+    {
+      "name": "rc_application_cue_obstructions",
+      "calls": 2,
+      "exclusive": 622,
+      "inclusive": 832,
+      "replaceBodyWithStubCoreSavings": 828
+    },
+    {
+      "name": "rc_owner_cue_guard",
+      "calls": 16,
+      "exclusive": 604,
+      "inclusive": 604,
+      "replaceBodyWithStubCoreSavings": 572
+    },
+    {
+      "name": "rc_scene_created_register_body",
+      "calls": 3,
+      "exclusive": 602,
+      "inclusive": 5295,
+      "replaceBodyWithStubCoreSavings": 5289
+    },
+    {
+      "name": "rc_roster_awake",
+      "calls": 4,
+      "exclusive": 600,
+      "inclusive": 4728,
+      "replaceBodyWithStubCoreSavings": 4720
+    },
+    {
+      "name": "rc_wb_binding",
+      "calls": 4,
+      "exclusive": 600,
+      "inclusive": 798,
+      "replaceBodyWithStubCoreSavings": 790
+    },
+    {
+      "name": "rc_owner_application",
+      "calls": 18,
+      "exclusive": 594,
+      "inclusive": 40625,
+      "replaceBodyWithStubCoreSavings": 40589
+    },
+    {
+      "name": "rc_cue_flat_begin",
+      "calls": 4,
+      "exclusive": 584,
+      "inclusive": 1262,
+      "replaceBodyWithStubCoreSavings": 1254
+    },
+    {
+      "name": "rc_roster_begin",
+      "calls": 2,
+      "exclusive": 566,
+      "inclusive": 990,
+      "replaceBodyWithStubCoreSavings": 986
+    },
+    {
+      "name": "rc_geo_row",
+      "calls": 80,
+      "exclusive": 560,
+      "inclusive": 560,
+      "replaceBodyWithStubCoreSavings": 400
+    },
+    {
+      "name": "rc_world_application_begin_h",
+      "calls": 2,
+      "exclusive": 558,
+      "inclusive": 7519,
+      "replaceBodyWithStubCoreSavings": 7515
+    },
+    {
+      "name": "rc_micro_original_owner_12",
+      "calls": 4,
+      "exclusive": 556,
+      "inclusive": 184823,
+      "replaceBodyWithStubCoreSavings": 184815
+    },
+    {
+      "name": "rc_world_ccd_inactive_newly_awake_begin",
+      "calls": 2,
+      "exclusive": 542,
+      "inclusive": 1484,
+      "replaceBodyWithStubCoreSavings": 1480
+    },
+    {
+      "name": "rc_rsp_set",
+      "calls": 28,
+      "exclusive": 532,
+      "inclusive": 532,
+      "replaceBodyWithStubCoreSavings": 476
+    },
+    {
+      "name": "rc_world_scene_live",
+      "calls": 16,
+      "exclusive": 528,
+      "inclusive": 528,
+      "replaceBodyWithStubCoreSavings": 496
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_53",
+      "calls": 12,
+      "exclusive": 528,
+      "inclusive": 10950,
+      "replaceBodyWithStubCoreSavings": 10926
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_51",
+      "calls": 12,
+      "exclusive": 528,
+      "inclusive": 16120,
+      "replaceBodyWithStubCoreSavings": 16096
+    },
+    {
+      "name": "rc_rn_source_result",
+      "calls": 29,
+      "exclusive": 525,
+      "inclusive": 525,
+      "replaceBodyWithStubCoreSavings": 467
+    },
+    {
+      "name": "rc_f64_lt",
+      "calls": 6,
+      "exclusive": 516,
+      "inclusive": 3232,
+      "replaceBodyWithStubCoreSavings": 3220
+    },
+    {
+      "name": "rc_world_application_live",
+      "calls": 13,
+      "exclusive": 507,
+      "inclusive": 507,
+      "replaceBodyWithStubCoreSavings": 481
+    },
+    {
+      "name": "rc_scene_created_event",
+      "calls": 13,
+      "exclusive": 507,
+      "inclusive": 507,
+      "replaceBodyWithStubCoreSavings": 481
+    },
+    {
+      "name": "rc_bvh_update_node",
+      "calls": 9,
+      "exclusive": 504,
+      "inclusive": 504,
+      "replaceBodyWithStubCoreSavings": 486
+    },
+    {
+      "name": "rc_scene_created_joint_unlink",
+      "calls": 4,
+      "exclusive": 500,
+      "inclusive": 610,
+      "replaceBodyWithStubCoreSavings": 602
+    },
+    {
+      "name": "rc_ws_epoch",
+      "calls": 4,
+      "exclusive": 480,
+      "inclusive": 480,
+      "replaceBodyWithStubCoreSavings": 472
+    },
+    {
+      "name": "rc_ws_scene_body",
+      "calls": 8,
+      "exclusive": 480,
+      "inclusive": 800,
+      "replaceBodyWithStubCoreSavings": 784
+    },
+    {
+      "name": "rc_u128_jam",
+      "calls": 8,
+      "exclusive": 476,
+      "inclusive": 3004,
+      "replaceBodyWithStubCoreSavings": 2988
+    },
+    {
+      "name": "rc_app_sleeping",
+      "calls": 8,
+      "exclusive": 472,
+      "inclusive": 864,
+      "replaceBodyWithStubCoreSavings": 848
+    },
+    {
+      "name": "rc_owner_cue",
+      "calls": 16,
+      "exclusive": 466,
+      "inclusive": 2838,
+      "replaceBodyWithStubCoreSavings": 2806
+    },
+    {
+      "name": "rc_micro_original_owner_3",
+      "calls": 4,
+      "exclusive": 466,
+      "inclusive": 116852,
+      "replaceBodyWithStubCoreSavings": 116844
+    },
+    {
+      "name": "rc_world_scene_after_cue_pre",
+      "calls": 2,
+      "exclusive": 453,
+      "inclusive": 122809,
+      "replaceBodyWithStubCoreSavings": 122805
+    },
+    {
+      "name": "rc_scene_ok",
+      "calls": 56,
+      "exclusive": 448,
+      "inclusive": 448,
+      "replaceBodyWithStubCoreSavings": 336
+    },
+    {
+      "name": "rc_world_cue_geometry_stage_owner_phase_35",
+      "calls": 112,
+      "exclusive": 448,
+      "inclusive": 11918,
+      "replaceBodyWithStubCoreSavings": 11694
+    },
+    {
+      "name": "rc_owner_application_guard",
+      "calls": 18,
+      "exclusive": 432,
+      "inclusive": 432,
+      "replaceBodyWithStubCoreSavings": 396
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_12",
+      "calls": 8,
+      "exclusive": 430,
+      "inclusive": 430,
+      "replaceBodyWithStubCoreSavings": 414
+    },
+    {
+      "name": "rc_app_number",
+      "calls": 39,
+      "exclusive": 429,
+      "inclusive": 429,
+      "replaceBodyWithStubCoreSavings": 351
+    },
+    {
+      "name": "rc_world_scene_energy_scatter",
+      "calls": 12,
+      "exclusive": 428,
+      "inclusive": 10422,
+      "replaceBodyWithStubCoreSavings": 10398
+    },
+    {
+      "name": "rc_cue_begin",
+      "calls": 4,
+      "exclusive": 414,
+      "inclusive": 678,
+      "replaceBodyWithStubCoreSavings": 670
+    },
+    {
+      "name": "rc_bvh_contains",
+      "calls": 10,
+      "exclusive": 414,
+      "inclusive": 414,
+      "replaceBodyWithStubCoreSavings": 394
+    },
+    {
+      "name": "rc_rn_cue_finish",
+      "calls": 8,
+      "exclusive": 408,
+      "inclusive": 408,
+      "replaceBodyWithStubCoreSavings": 392
+    },
+    {
+      "name": "rc_sw_body",
+      "calls": 14,
+      "exclusive": 406,
+      "inclusive": 840,
+      "replaceBodyWithStubCoreSavings": 812
+    },
+    {
+      "name": "rc_app_next_phase",
+      "calls": 12,
+      "exclusive": 396,
+      "inclusive": 396,
+      "replaceBodyWithStubCoreSavings": 372
+    },
+    {
+      "name": "rc_gn_prepare_rc_narrow_floor",
+      "calls": 8,
+      "exclusive": 384,
+      "inclusive": 384,
+      "replaceBodyWithStubCoreSavings": 368
+    },
+    {
+      "name": "rc_owner_cue_body_1",
+      "calls": 8,
+      "exclusive": 360,
+      "inclusive": 376,
+      "replaceBodyWithStubCoreSavings": 360
+    },
+    {
+      "name": "rc_scene_incidence_body",
+      "calls": 12,
+      "exclusive": 360,
+      "inclusive": 732,
+      "replaceBodyWithStubCoreSavings": 708
+    },
+    {
+      "name": "rc_world_solver_scatter",
+      "calls": 2,
+      "exclusive": 358,
+      "inclusive": 736,
+      "replaceBodyWithStubCoreSavings": 732
+    },
+    {
+      "name": "rc_application_stage_scatter",
+      "calls": 4,
+      "exclusive": 346,
+      "inclusive": 412,
+      "replaceBodyWithStubCoreSavings": 404
+    },
+    {
+      "name": "rc_world_application_begin_post_h",
+      "calls": 2,
+      "exclusive": 344,
+      "inclusive": 639,
+      "replaceBodyWithStubCoreSavings": 635
+    },
+    {
+      "name": "rc_world_application_after_cue_pre",
+      "calls": 2,
+      "exclusive": 336,
+      "inclusive": 7800,
+      "replaceBodyWithStubCoreSavings": 7796
+    },
+    {
+      "name": "rc_journal_apply_roster",
+      "calls": 2,
+      "exclusive": 328,
+      "inclusive": 1684,
+      "replaceBodyWithStubCoreSavings": 1680
+    },
+    {
+      "name": "rc_journal_begin",
+      "calls": 2,
+      "exclusive": 326,
+      "inclusive": 506,
+      "replaceBodyWithStubCoreSavings": 502
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_72",
+      "calls": 6,
+      "exclusive": 318,
+      "inclusive": 5838,
+      "replaceBodyWithStubCoreSavings": 5826
+    },
+    {
+      "name": "rc_wb_body",
+      "calls": 35,
+      "exclusive": 315,
+      "inclusive": 315,
+      "replaceBodyWithStubCoreSavings": 245
+    },
+    {
+      "name": "rc_f64_to_f32_bits",
+      "calls": 2,
+      "exclusive": 302,
+      "inclusive": 3406,
+      "replaceBodyWithStubCoreSavings": 3402
+    },
+    {
+      "name": "rc_narrow_pair_clear",
+      "calls": 12,
+      "exclusive": 300,
+      "inclusive": 3348,
+      "replaceBodyWithStubCoreSavings": 3324
+    },
+    {
+      "name": "rc_scene_world_roster",
+      "calls": 2,
+      "exclusive": 300,
+      "inclusive": 31752,
+      "replaceBodyWithStubCoreSavings": 31748
+    },
+    {
+      "name": "rc_scene_begin",
+      "calls": 2,
+      "exclusive": 299,
+      "inclusive": 435,
+      "replaceBodyWithStubCoreSavings": 431
+    },
+    {
+      "name": "rc_cloth_ownership",
+      "calls": 2,
+      "exclusive": 298,
+      "inclusive": 298,
+      "replaceBodyWithStubCoreSavings": 294
+    },
+    {
+      "name": "rc_scene_force_fact",
+      "calls": 4,
+      "exclusive": 292,
+      "inclusive": 450,
+      "replaceBodyWithStubCoreSavings": 442
+    },
+    {
+      "name": "rc_wb_ready",
+      "calls": 12,
+      "exclusive": 288,
+      "inclusive": 288,
+      "replaceBodyWithStubCoreSavings": 264
+    },
+    {
+      "name": "rc_world_application_check",
+      "calls": 15,
+      "exclusive": 285,
+      "inclusive": 285,
+      "replaceBodyWithStubCoreSavings": 255
+    },
+    {
+      "name": "rc_edge",
+      "calls": 40,
+      "exclusive": 280,
+      "inclusive": 280,
+      "replaceBodyWithStubCoreSavings": 200
+    },
+    {
+      "name": "rc_num_eval",
+      "calls": 137,
+      "exclusive": 274,
+      "inclusive": 274,
+      "replaceBodyWithStubCoreSavings": 0
+    },
+    {
+      "name": "rc_f64_div",
+      "calls": 1,
+      "exclusive": 272,
+      "inclusive": 58311,
+      "replaceBodyWithStubCoreSavings": 58309
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_74",
+      "calls": 6,
+      "exclusive": 270,
+      "inclusive": 1002,
+      "replaceBodyWithStubCoreSavings": 990
+    },
+    {
+      "name": "rc_scene_begin_energy",
+      "calls": 2,
+      "exclusive": 268,
+      "inclusive": 312,
+      "replaceBodyWithStubCoreSavings": 308
+    },
+    {
+      "name": "rc_world_application_capture_events",
+      "calls": 2,
+      "exclusive": 268,
+      "inclusive": 346,
+      "replaceBodyWithStubCoreSavings": 342
+    },
+    {
+      "name": "rc_world_application_work",
+      "calls": 12,
+      "exclusive": 264,
+      "inclusive": 264,
+      "replaceBodyWithStubCoreSavings": 240
+    },
+    {
+      "name": "rc_cue_valid",
+      "calls": 4,
+      "exclusive": 264,
+      "inclusive": 264,
+      "replaceBodyWithStubCoreSavings": 256
+    },
+    {
+      "name": "rc_world_application_scatter",
+      "calls": 4,
+      "exclusive": 260,
+      "inclusive": 836,
+      "replaceBodyWithStubCoreSavings": 828
+    },
+    {
+      "name": "rc_world_application_gather",
+      "calls": 4,
+      "exclusive": 260,
+      "inclusive": 11072,
+      "replaceBodyWithStubCoreSavings": 11064
+    },
+    {
+      "name": "rc_scene_active_member",
+      "calls": 8,
+      "exclusive": 252,
+      "inclusive": 252,
+      "replaceBodyWithStubCoreSavings": 236
+    },
+    {
+      "name": "rc_scene_journal_body",
+      "calls": 8,
+      "exclusive": 248,
+      "inclusive": 2144,
+      "replaceBodyWithStubCoreSavings": 2128
+    },
+    {
+      "name": "rc_scene_drain_modified",
+      "calls": 1,
+      "exclusive": 247,
+      "inclusive": 345,
+      "replaceBodyWithStubCoreSavings": 343
+    },
+    {
+      "name": "rc_bvh_div",
+      "calls": 10,
+      "exclusive": 240,
+      "inclusive": 240,
+      "replaceBodyWithStubCoreSavings": 220
+    },
+    {
+      "name": "rc_world_application_finish_h",
+      "calls": 2,
+      "exclusive": 238,
+      "inclusive": 316,
+      "replaceBodyWithStubCoreSavings": 312
+    },
+    {
+      "name": "rc_scene_before_energy_updates",
+      "calls": 2,
+      "exclusive": 238,
+      "inclusive": 296,
+      "replaceBodyWithStubCoreSavings": 292
+    },
+    {
+      "name": "rc_micro_original_owner_0",
+      "calls": 2,
+      "exclusive": 230,
+      "inclusive": 1429402,
+      "replaceBodyWithStubCoreSavings": 1429398
+    },
+    {
+      "name": "rc_scene_merge",
+      "calls": 1,
+      "exclusive": 219,
+      "inclusive": 365,
+      "replaceBodyWithStubCoreSavings": 363
+    },
+    {
+      "name": "rc_scene_world_prepare",
+      "calls": 2,
+      "exclusive": 203,
+      "inclusive": 69070,
+      "replaceBodyWithStubCoreSavings": 69066
+    },
+    {
+      "name": "rc_rn_scene_result",
+      "calls": 10,
+      "exclusive": 200,
+      "inclusive": 200,
+      "replaceBodyWithStubCoreSavings": 180
+    },
+    {
+      "name": "rc_world_scene_geometry_dynamic_awake",
+      "calls": 8,
+      "exclusive": 200,
+      "inclusive": 200,
+      "replaceBodyWithStubCoreSavings": 184
+    },
+    {
+      "name": "rc_world_scene_finish",
+      "calls": 2,
+      "exclusive": 194,
+      "inclusive": 260,
+      "replaceBodyWithStubCoreSavings": 256
+    },
+    {
+      "name": "rc_application_stage_evaluate",
+      "calls": 4,
+      "exclusive": 194,
+      "inclusive": 25338,
+      "replaceBodyWithStubCoreSavings": 25330
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_57",
+      "calls": 2,
+      "exclusive": 190,
+      "inclusive": 5588,
+      "replaceBodyWithStubCoreSavings": 5584
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_54",
+      "calls": 2,
+      "exclusive": 190,
+      "inclusive": 42200,
+      "replaceBodyWithStubCoreSavings": 42196
+    },
+    {
+      "name": "rc_scene_collisions_done",
+      "calls": 2,
+      "exclusive": 188,
+      "inclusive": 12422,
+      "replaceBodyWithStubCoreSavings": 12418
+    },
+    {
+      "name": "rc_world_broad_commit_collision",
+      "calls": 2,
+      "exclusive": 182,
+      "inclusive": 1042095,
+      "replaceBodyWithStubCoreSavings": 1042091
+    },
+    {
+      "name": "rc_scene_ep",
+      "calls": 20,
+      "exclusive": 180,
+      "inclusive": 180,
+      "replaceBodyWithStubCoreSavings": 140
+    },
+    {
+      "name": "rc_world_application_evaluate",
+      "calls": 4,
+      "exclusive": 180,
+      "inclusive": 25606,
+      "replaceBodyWithStubCoreSavings": 25598
+    },
+    {
+      "name": "rc_scene_api_call",
+      "calls": 2,
+      "exclusive": 180,
+      "inclusive": 398,
+      "replaceBodyWithStubCoreSavings": 394
+    },
+    {
+      "name": "rc_application_stage_begin",
+      "calls": 2,
+      "exclusive": 179,
+      "inclusive": 179,
+      "replaceBodyWithStubCoreSavings": 175
+    },
+    {
+      "name": "rc_owner_coupled_body_2",
+      "calls": 2,
+      "exclusive": 166,
+      "inclusive": 9036,
+      "replaceBodyWithStubCoreSavings": 9032
+    },
+    {
+      "name": "rc_cue_capture_pre_solve",
+      "calls": 2,
+      "exclusive": 166,
+      "inclusive": 4532,
+      "replaceBodyWithStubCoreSavings": 4528
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_71",
+      "calls": 2,
+      "exclusive": 166,
+      "inclusive": 122926,
+      "replaceBodyWithStubCoreSavings": 122922
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_46",
+      "calls": 2,
+      "exclusive": 164,
+      "inclusive": 71792,
+      "replaceBodyWithStubCoreSavings": 71788
+    },
+    {
+      "name": "rc_app_object",
+      "calls": 18,
+      "exclusive": 162,
+      "inclusive": 162,
+      "replaceBodyWithStubCoreSavings": 126
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_14",
+      "calls": 3,
+      "exclusive": 159,
+      "inclusive": 2898,
+      "replaceBodyWithStubCoreSavings": 2892
+    },
+    {
+      "name": "rc_app_input",
+      "calls": 8,
+      "exclusive": 152,
+      "inclusive": 536,
+      "replaceBodyWithStubCoreSavings": 520
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_75",
+      "calls": 2,
+      "exclusive": 150,
+      "inclusive": 8909,
+      "replaceBodyWithStubCoreSavings": 8905
+    },
+    {
+      "name": "rc_scene_world_begin_observe",
+      "calls": 2,
+      "exclusive": 148,
+      "inclusive": 460,
+      "replaceBodyWithStubCoreSavings": 456
+    },
+    {
+      "name": "rc_source_program_input",
+      "calls": 8,
+      "exclusive": 144,
+      "inclusive": 296,
+      "replaceBodyWithStubCoreSavings": 280
+    },
+    {
+      "name": "rc_f64_zero",
+      "calls": 18,
+      "exclusive": 144,
+      "inclusive": 144,
+      "replaceBodyWithStubCoreSavings": 108
+    },
+    {
+      "name": "rc_cloth_transition",
+      "calls": 2,
+      "exclusive": 144,
+      "inclusive": 2768,
+      "replaceBodyWithStubCoreSavings": 2764
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_32",
+      "calls": 2,
+      "exclusive": 142,
+      "inclusive": 4852,
+      "replaceBodyWithStubCoreSavings": 4848
+    },
+    {
+      "name": "rc_rsp_int",
+      "calls": 4,
+      "exclusive": 140,
+      "inclusive": 536,
+      "replaceBodyWithStubCoreSavings": 528
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_17",
+      "calls": 2,
+      "exclusive": 140,
+      "inclusive": 1428436,
+      "replaceBodyWithStubCoreSavings": 1428432
+    },
+    {
+      "name": "rc_world_scene_after_solve",
+      "calls": 2,
+      "exclusive": 138,
+      "inclusive": 5266,
+      "replaceBodyWithStubCoreSavings": 5262
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_1",
+      "calls": 2,
+      "exclusive": 138,
+      "inclusive": 7657,
+      "replaceBodyWithStubCoreSavings": 7653
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_16",
+      "calls": 3,
+      "exclusive": 135,
+      "inclusive": 501,
+      "replaceBodyWithStubCoreSavings": 495
+    },
+    {
+      "name": "rc_world_application_finish_post_h",
+      "calls": 2,
+      "exclusive": 134,
+      "inclusive": 444,
+      "replaceBodyWithStubCoreSavings": 440
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_8",
+      "calls": 2,
+      "exclusive": 134,
+      "inclusive": 12216,
+      "replaceBodyWithStubCoreSavings": 12212
+    },
+    {
+      "name": "rc_scene_world_apply_operations",
+      "calls": 3,
+      "exclusive": 129,
+      "inclusive": 237,
+      "replaceBodyWithStubCoreSavings": 231
+    },
+    {
+      "name": "rc_ws_local",
+      "calls": 8,
+      "exclusive": 128,
+      "inclusive": 128,
+      "replaceBodyWithStubCoreSavings": 112
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_61",
+      "calls": 2,
+      "exclusive": 126,
+      "inclusive": 5394,
+      "replaceBodyWithStubCoreSavings": 5390
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_28",
+      "calls": 2,
+      "exclusive": 126,
+      "inclusive": 10548,
+      "replaceBodyWithStubCoreSavings": 10544
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_13",
+      "calls": 2,
+      "exclusive": 124,
+      "inclusive": 10402,
+      "replaceBodyWithStubCoreSavings": 10398
+    },
+    {
+      "name": "rc_scene_finish_energy",
+      "calls": 2,
+      "exclusive": 124,
+      "inclusive": 140,
+      "replaceBodyWithStubCoreSavings": 136
+    },
+    {
+      "name": "rc_bvh_join",
+      "calls": 6,
+      "exclusive": 121,
+      "inclusive": 306649,
+      "replaceBodyWithStubCoreSavings": 306637
+    },
+    {
+      "name": "rc_f64_sub",
+      "calls": 6,
+      "exclusive": 114,
+      "inclusive": 10951,
+      "replaceBodyWithStubCoreSavings": 10939
+    },
+    {
+      "name": "rc_scene_cp",
+      "calls": 8,
+      "exclusive": 112,
+      "inclusive": 112,
+      "replaceBodyWithStubCoreSavings": 96
+    },
+    {
+      "name": "rc_f64_from_u32",
+      "calls": 5,
+      "exclusive": 110,
+      "inclusive": 894,
+      "replaceBodyWithStubCoreSavings": 884
+    },
+    {
+      "name": "rc_scene_apply_journal",
+      "calls": 3,
+      "exclusive": 108,
+      "inclusive": 108,
+      "replaceBodyWithStubCoreSavings": 102
+    },
+    {
+      "name": "rc_world_scene_after_broad",
+      "calls": 2,
+      "exclusive": 105,
+      "inclusive": 250,
+      "replaceBodyWithStubCoreSavings": 246
+    },
+    {
+      "name": "rc_scene_enqueue",
+      "calls": 2,
+      "exclusive": 104,
+      "inclusive": 122,
+      "replaceBodyWithStubCoreSavings": 118
+    },
+    {
+      "name": "rc_owner_coupled_guard",
+      "calls": 4,
+      "exclusive": 104,
+      "inclusive": 104,
+      "replaceBodyWithStubCoreSavings": 96
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_50",
+      "calls": 2,
+      "exclusive": 102,
+      "inclusive": 694,
+      "replaceBodyWithStubCoreSavings": 690
+    },
+    {
+      "name": "rc_owner_coupled",
+      "calls": 4,
+      "exclusive": 100,
+      "inclusive": 180851,
+      "replaceBodyWithStubCoreSavings": 180843
+    },
+    {
+      "name": "rc_world_broad_commit_post",
+      "calls": 2,
+      "exclusive": 96,
+      "inclusive": 8171,
+      "replaceBodyWithStubCoreSavings": 8167
+    },
+    {
+      "name": "rc_journal_finish",
+      "calls": 2,
+      "exclusive": 92,
+      "inclusive": 152,
+      "replaceBodyWithStubCoreSavings": 148
+    },
+    {
+      "name": "rc_world_application_begin_outer",
+      "calls": 1,
+      "exclusive": 92,
+      "inclusive": 59175,
+      "replaceBodyWithStubCoreSavings": 59173
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_31",
+      "calls": 2,
+      "exclusive": 90,
+      "inclusive": 120,
+      "replaceBodyWithStubCoreSavings": 116
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_29",
+      "calls": 2,
+      "exclusive": 90,
+      "inclusive": 120,
+      "replaceBodyWithStubCoreSavings": 116
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_11",
+      "calls": 2,
+      "exclusive": 90,
+      "inclusive": 90,
+      "replaceBodyWithStubCoreSavings": 86
+    },
+    {
+      "name": "rc_roster_finish_transitions",
+      "calls": 2,
+      "exclusive": 90,
+      "inclusive": 138,
+      "replaceBodyWithStubCoreSavings": 134
+    },
+    {
+      "name": "rc_owner_coupled_body_0",
+      "calls": 2,
+      "exclusive": 86,
+      "inclusive": 171611,
+      "replaceBodyWithStubCoreSavings": 171607
+    },
+    {
+      "name": "rc_cloth_finish",
+      "calls": 2,
+      "exclusive": 86,
+      "inclusive": 86,
+      "replaceBodyWithStubCoreSavings": 82
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_0",
+      "calls": 2,
+      "exclusive": 85,
+      "inclusive": 59260,
+      "replaceBodyWithStubCoreSavings": 59256
+    },
+    {
+      "name": "rc_pc_source_stage_owner_phase_5",
+      "calls": 2,
+      "exclusive": 78,
+      "inclusive": 130687,
+      "replaceBodyWithStubCoreSavings": 130683
+    },
+    {
+      "name": "rc_world_scene_after_application",
+      "calls": 2,
+      "exclusive": 72,
+      "inclusive": 138,
+      "replaceBodyWithStubCoreSavings": 134
+    },
+    {
+      "name": "rc_app_job",
+      "calls": 2,
+      "exclusive": 72,
+      "inclusive": 5612,
+      "replaceBodyWithStubCoreSavings": 5608
+    },
+    {
+      "name": "rc_world_scene_after_narrow",
+      "calls": 2,
+      "exclusive": 72,
+      "inclusive": 69208,
+      "replaceBodyWithStubCoreSavings": 69204
+    },
+    {
+      "name": "rc_f64_neg",
+      "calls": 6,
+      "exclusive": 66,
+      "inclusive": 66,
+      "replaceBodyWithStubCoreSavings": 54
+    },
+    {
+      "name": "rc_world_scene_begin_energy",
+      "calls": 2,
+      "exclusive": 66,
+      "inclusive": 592,
+      "replaceBodyWithStubCoreSavings": 588
+    },
+    {
+      "name": "rc_scene_free_persistent",
+      "calls": 1,
+      "exclusive": 62,
+      "inclusive": 76,
+      "replaceBodyWithStubCoreSavings": 74
+    },
+    {
+      "name": "rc_world_broad_before_queries",
+      "calls": 2,
+      "exclusive": 62,
+      "inclusive": 306657,
+      "replaceBodyWithStubCoreSavings": 306653
+    },
+    {
+      "name": "rc_world_ccd_adapter",
+      "calls": 12,
+      "exclusive": 60,
+      "inclusive": 60,
+      "replaceBodyWithStubCoreSavings": 36
+    },
+    {
+      "name": "rc_owner_application_body_4",
+      "calls": 2,
+      "exclusive": 60,
+      "inclusive": 1344,
+      "replaceBodyWithStubCoreSavings": 1340
+    },
+    {
+      "name": "rc_world_broad_narrow",
+      "calls": 2,
+      "exclusive": 60,
+      "inclusive": 1566,
+      "replaceBodyWithStubCoreSavings": 1562
+    },
+    {
+      "name": "rc_world_application_expire_cue",
+      "calls": 2,
+      "exclusive": 56,
+      "inclusive": 56,
+      "replaceBodyWithStubCoreSavings": 52
+    },
+    {
+      "name": "rc_scene_finish_application",
+      "calls": 2,
+      "exclusive": 56,
+      "inclusive": 72,
+      "replaceBodyWithStubCoreSavings": 68
+    },
+    {
+      "name": "rc_bvh_sat_add",
+      "calls": 5,
+      "exclusive": 55,
+      "inclusive": 55,
+      "replaceBodyWithStubCoreSavings": 45
+    },
+    {
+      "name": "rc_application_begin_outer",
+      "calls": 1,
+      "exclusive": 54,
+      "inclusive": 59025,
+      "replaceBodyWithStubCoreSavings": 59023
+    },
+    {
+      "name": "rc_world_broad_finish",
+      "calls": 2,
+      "exclusive": 52,
+      "inclusive": 264,
+      "replaceBodyWithStubCoreSavings": 260
+    },
+    {
+      "name": "rc_f64_le",
+      "calls": 2,
+      "exclusive": 50,
+      "inclusive": 1648,
+      "replaceBodyWithStubCoreSavings": 1644
+    },
+    {
+      "name": "rc_cloth_complete",
+      "calls": 2,
+      "exclusive": 50,
+      "inclusive": 50,
+      "replaceBodyWithStubCoreSavings": 46
+    },
+    {
+      "name": "rc_micro_host_created_run",
+      "calls": 1,
+      "exclusive": 48,
+      "inclusive": 4708288,
+      "replaceBodyWithStubCoreSavings": 4708286
+    },
+    {
+      "name": "rc_cloth_publish",
+      "calls": 2,
+      "exclusive": 44,
+      "inclusive": 44,
+      "replaceBodyWithStubCoreSavings": 40
+    },
+    {
+      "name": "rc_owner_cue_body_4",
+      "calls": 2,
+      "exclusive": 42,
+      "inclusive": 42,
+      "replaceBodyWithStubCoreSavings": 38
+    },
+    {
+      "name": "rc_scene_global_split",
+      "calls": 2,
+      "exclusive": 42,
+      "inclusive": 42,
+      "replaceBodyWithStubCoreSavings": 38
+    },
+    {
+      "name": "rc_wb_bvh_error",
+      "calls": 6,
+      "exclusive": 42,
+      "inclusive": 42,
+      "replaceBodyWithStubCoreSavings": 30
+    },
+    {
+      "name": "rc_scene_add",
+      "calls": 8,
+      "exclusive": 40,
+      "inclusive": 40,
+      "replaceBodyWithStubCoreSavings": 24
+    },
+    {
+      "name": "rc_scene_world_begin_pass",
+      "calls": 1,
+      "exclusive": 37,
+      "inclusive": 45,
+      "replaceBodyWithStubCoreSavings": 43
+    },
+    {
+      "name": "rc_owner_cue_body_3",
+      "calls": 2,
+      "exclusive": 34,
+      "inclusive": 654,
+      "replaceBodyWithStubCoreSavings": 650
+    },
+    {
+      "name": "rc_owner_cue_body_0",
+      "calls": 2,
+      "exclusive": 34,
+      "inclusive": 676,
+      "replaceBodyWithStubCoreSavings": 672
+    },
+    {
+      "name": "rc_cloth_scatter",
+      "calls": 2,
+      "exclusive": 30,
+      "inclusive": 30,
+      "replaceBodyWithStubCoreSavings": 26
+    },
+    {
+      "name": "rc_cloth_gather",
+      "calls": 2,
+      "exclusive": 30,
+      "inclusive": 30,
+      "replaceBodyWithStubCoreSavings": 26
+    },
+    {
+      "name": "rc_owner_application_body_3",
+      "calls": 4,
+      "exclusive": 24,
+      "inclusive": 860,
+      "replaceBodyWithStubCoreSavings": 852
+    },
+    {
+      "name": "rc_owner_application_body_2",
+      "calls": 4,
+      "exclusive": 24,
+      "inclusive": 25630,
+      "replaceBodyWithStubCoreSavings": 25622
+    },
+    {
+      "name": "rc_owner_application_body_1",
+      "calls": 4,
+      "exclusive": 24,
+      "inclusive": 11096,
+      "replaceBodyWithStubCoreSavings": 11088
+    },
+    {
+      "name": "rc_owner_application_body_5",
+      "calls": 2,
+      "exclusive": 20,
+      "inclusive": 20,
+      "replaceBodyWithStubCoreSavings": 16
+    },
+    {
+      "name": "rc_source_program_step",
+      "calls": 2,
+      "exclusive": 20,
+      "inclusive": 22820,
+      "replaceBodyWithStubCoreSavings": 22816
+    },
+    {
+      "name": "rc_world_solver_roster",
+      "calls": 4,
+      "exclusive": 20,
+      "inclusive": 20,
+      "replaceBodyWithStubCoreSavings": 12
+    },
+    {
+      "name": "rc_owner_cue_body_2",
+      "calls": 2,
+      "exclusive": 20,
+      "inclusive": 20,
+      "replaceBodyWithStubCoreSavings": 16
+    },
+    {
+      "name": "rc_cue_flat_advance",
+      "calls": 8,
+      "exclusive": 16,
+      "inclusive": 16,
+      "replaceBodyWithStubCoreSavings": 0
+    },
+    {
+      "name": "rc_scene_incidence_end",
+      "calls": 2,
+      "exclusive": 16,
+      "inclusive": 16,
+      "replaceBodyWithStubCoreSavings": 12
+    },
+    {
+      "name": "rc_bvh_optimizer_subtree",
+      "calls": 1,
+      "exclusive": 12,
+      "inclusive": 12,
+      "replaceBodyWithStubCoreSavings": 10
+    },
+    {
+      "name": "rc_app_put_number",
+      "calls": 1,
+      "exclusive": 11,
+      "inclusive": 11,
+      "replaceBodyWithStubCoreSavings": 9
+    },
+    {
+      "name": "rc_owner_application_body_0",
+      "calls": 2,
+      "exclusive": 10,
+      "inclusive": 649,
+      "replaceBodyWithStubCoreSavings": 645
+    },
+    {
+      "name": "rc_bvh_optimizer_target",
+      "calls": 1,
+      "exclusive": 8,
+      "inclusive": 8,
+      "replaceBodyWithStubCoreSavings": 6
+    }
+  ],
+  "opcodes": [
+    {
+      "name": "MOV",
+      "count": 1914249
+    },
+    {
+      "name": "SET",
+      "count": 822820
+    },
+    {
+      "name": "UADD",
+      "count": 475938
+    },
+    {
+      "name": "BRANCH",
+      "count": 412559
+    },
+    {
+      "name": "EQ",
+      "count": 206675
+    },
+    {
+      "name": "LOAD",
+      "count": 191850
+    },
+    {
+      "name": "ULT",
+      "count": 110769
+    },
+    {
+      "name": "JUMP",
+      "count": 101651
+    },
+    {
+      "name": "STORE",
+      "count": 93259
+    },
+    {
+      "name": "CALL",
+      "count": 80857
+    },
+    {
+      "name": "RET",
+      "count": 80857
+    },
+    {
+      "name": "UMUL",
+      "count": 50786
+    },
+    {
+      "name": "NE",
+      "count": 40636
+    },
+    {
+      "name": "UGE",
+      "count": 20184
+    },
+    {
+      "name": "GUARD",
+      "count": 14059
+    },
+    {
+      "name": "LOCAL_LOAD",
+      "count": 11503
+    },
+    {
+      "name": "LENGTH",
+      "count": 11187
+    },
+    {
+      "name": "LNOT",
+      "count": 10359
+    },
+    {
+      "name": "USUB",
+      "count": 10163
+    },
+    {
+      "name": "AND",
+      "count": 8984
+    },
+    {
+      "name": "UGT",
+      "count": 8052
+    },
+    {
+      "name": "UDIV",
+      "count": 5976
+    },
+    {
+      "name": "ULE",
+      "count": 4109
+    },
+    {
+      "name": "SELECT",
+      "count": 3061
+    },
+    {
+      "name": "LOCAL_STORE",
+      "count": 3048
+    },
+    {
+      "name": "USHR",
+      "count": 3023
+    },
+    {
+      "name": "UREM",
+      "count": 2256
+    },
+    {
+      "name": "FEQ",
+      "count": 1705
+    },
+    {
+      "name": "OR",
+      "count": 1444
+    },
+    {
+      "name": "FLE",
+      "count": 1284
+    },
+    {
+      "name": "FMUL",
+      "count": 1204
+    },
+    {
+      "name": "SHL",
+      "count": 1184
+    },
+    {
+      "name": "FSUB",
+      "count": 1150
+    },
+    {
+      "name": "FLT",
+      "count": 942
+    },
+    {
+      "name": "FGT",
+      "count": 836
+    },
+    {
+      "name": "FGE",
+      "count": 684
+    },
+    {
+      "name": "UTOF",
+      "count": 342
+    },
+    {
+      "name": "FADD",
+      "count": 306
+    },
+    {
+      "name": "EXTERNAL_CALL",
+      "count": 145
+    },
+    {
+      "name": "ISUB",
+      "count": 133
+    },
+    {
+      "name": "INEG",
+      "count": 97
+    },
+    {
+      "name": "FABS",
+      "count": 72
+    },
+    {
+      "name": "FNE",
+      "count": 68
+    },
+    {
+      "name": "FMAX",
+      "count": 42
+    },
+    {
+      "name": "FMIN",
+      "count": 42
+    },
+    {
+      "name": "FTOU",
+      "count": 42
+    },
+    {
+      "name": "IADD",
+      "count": 36
+    },
+    {
+      "name": "IGT",
+      "count": 31
+    },
+    {
+      "name": "FNEG",
+      "count": 30
+    },
+    {
+      "name": "UCLZ",
+      "count": 23
+    },
+    {
+      "name": "ILT",
+      "count": 20
+    },
+    {
+      "name": "ILE",
+      "count": 12
+    },
+    {
+      "name": "FDIV",
+      "count": 10
+    },
+    {
+      "name": "XOR",
+      "count": 7
+    },
+    {
+      "name": "HALT",
+      "count": 1
+    }
+  ],
+  "closureAudit": {
+    "method": "Transitive parsed function-call and unshadowed global-name references; not native compiler feasibility or general WGSL alias proof",
+    "roots": [
+      {
+        "name": "rc_world_broad_commit_collision",
+        "calls": 2,
+        "exclusive": 182,
+        "inclusive": 1042095,
+        "replaceBodyWithStubCoreSavings": 1042091,
+        "coreShare": 0.22121580330315987,
+        "params": [
+          {
+            "name": "b",
+            "type": "u32"
+          },
+          {
+            "name": "v",
+            "type": "u32"
+          },
+          {
+            "name": "j",
+            "type": "u32"
+          }
+        ],
+        "returnType": "void",
+        "transitiveFunctions": 64,
+        "privateGlobals": [],
+        "storage": [
+          "rc_state"
+        ],
+        "numericInterpreterRoots": [],
+        "number64Functions": 0
+      },
+      {
+        "name": "rc_journal_prepare_bvh",
+        "calls": 2,
+        "exclusive": 207884,
+        "inclusive": 775648,
+        "replaceBodyWithStubCoreSavings": 775644,
+        "coreShare": 0.164654465668187,
+        "params": [
+          {
+            "name": "b",
+            "type": "u32"
+          },
+          {
+            "name": "v",
+            "type": "u32"
+          }
+        ],
+        "returnType": "void",
+        "transitiveFunctions": 27,
+        "privateGlobals": [],
+        "storage": [
+          "rc_state"
+        ],
+        "numericInterpreterRoots": [],
+        "number64Functions": 0
+      },
+      {
+        "name": "rc_world_broad_before_queries",
+        "calls": 2,
+        "exclusive": 62,
+        "inclusive": 306657,
+        "replaceBodyWithStubCoreSavings": 306653,
+        "coreShare": 0.06509711167747384,
+        "params": [
+          {
+            "name": "b",
+            "type": "u32"
+          },
+          {
+            "name": "v",
+            "type": "u32"
+          }
+        ],
+        "returnType": "void",
+        "transitiveFunctions": 31,
+        "privateGlobals": [],
+        "storage": [
+          "rc_state"
+        ],
+        "numericInterpreterRoots": [],
+        "number64Functions": 0
+      },
+      {
+        "name": "rc_world_shared_graph_owner",
+        "calls": 463,
+        "exclusive": 60430,
+        "inclusive": 999441,
+        "replaceBodyWithStubCoreSavings": 998515,
+        "coreShare": 0.21216121722982398,
+        "params": [
+          {
+            "name": "bank",
+            "type": "u32"
+          },
+          {
+            "name": "scratch",
+            "type": "u32"
+          },
+          {
+            "name": "request",
+            "type": "u32"
+          },
+          {
+            "name": "originalPC",
+            "type": "u32"
+          },
+          {
+            "name": "originalPipeline",
+            "type": "u32"
+          }
+        ],
+        "returnType": "u32",
+        "transitiveFunctions": 87,
+        "privateGlobals": [],
+        "storage": [
+          "rc_geometry",
+          "rc_program",
+          "rc_scratch",
+          "rc_state"
+        ],
+        "numericInterpreterRoots": [
+          "rc_num_eval"
+        ],
+        "number64Functions": 22
+      },
+      {
+        "name": "rc_geometry_numeric_prepare",
+        "calls": 432,
+        "exclusive": 216854,
+        "inclusive": 570130,
+        "replaceBodyWithStubCoreSavings": 569266,
+        "coreShare": 0.12102712894431941,
+        "params": [
+          {
+            "name": "bank",
+            "type": "u32"
+          },
+          {
+            "name": "scratch",
+            "type": "u32"
+          },
+          {
+            "name": "request",
+            "type": "u32"
+          },
+          {
+            "name": "originalPC",
+            "type": "u32"
+          },
+          {
+            "name": "originalPipeline",
+            "type": "u32"
+          },
+          {
+            "name": "kind",
+            "type": "u32"
+          }
+        ],
+        "returnType": "u32",
+        "transitiveFunctions": 27,
+        "privateGlobals": [],
+        "storage": [
+          "rc_geometry",
+          "rc_program",
+          "rc_scratch",
+          "rc_state"
+        ],
+        "numericInterpreterRoots": [],
+        "number64Functions": 0
+      },
+      {
+        "name": "rc_gn_prepare_rc_world_cue_geometry_pose",
+        "calls": 112,
+        "exclusive": 276130,
+        "inclusive": 282730,
+        "replaceBodyWithStubCoreSavings": 282506,
+        "coreShare": 0.0600178909484283,
+        "params": [
+          {
+            "name": "g",
+            "type": "u32"
+          },
+          {
+            "name": "bundle",
+            "type": "u32"
+          },
+          {
+            "name": "scratch",
+            "type": "u32"
+          },
+          {
+            "name": "request",
+            "type": "u32"
+          }
+        ],
+        "returnType": "void",
+        "transitiveFunctions": 3,
+        "privateGlobals": [],
+        "storage": [
+          "rc_geometry",
+          "rc_program",
+          "rc_scratch",
+          "rc_state"
+        ],
+        "numericInterpreterRoots": [],
+        "number64Functions": 0
+      },
+      {
+        "name": "rc_world_solver_gather",
+        "calls": 2,
+        "exclusive": 154115,
+        "inclusive": 171525,
+        "replaceBodyWithStubCoreSavings": 171521,
+        "coreShare": 0.036411306705794094,
+        "params": [
+          {
+            "name": "w",
+            "type": "u32"
+          },
+          {
+            "name": "j",
+            "type": "u32"
+          },
+          {
+            "name": "r",
+            "type": "u32"
+          },
+          {
+            "name": "s",
+            "type": "u32"
+          },
+          {
+            "name": "bodies",
+            "type": "u32"
+          },
+          {
+            "name": "catalog",
+            "type": "u32"
+          },
+          {
+            "name": "caches",
+            "type": "u32"
+          },
+          {
+            "name": "c",
+            "type": "u32"
+          },
+          {
+            "name": "solveDt",
+            "type": "u32"
+          },
+          {
+            "name": "cueClothView",
+            "type": "u32"
+          }
+        ],
+        "returnType": "void",
+        "transitiveFunctions": 17,
+        "privateGlobals": [],
+        "storage": [
+          "rc_geometry",
+          "rc_state"
+        ],
+        "numericInterpreterRoots": [],
+        "number64Functions": 0
+      },
+      {
+        "name": "rc_pc_source_stage_owner_phase_17",
+        "calls": 2,
+        "exclusive": 140,
+        "inclusive": 1428436,
+        "replaceBodyWithStubCoreSavings": 1428432,
+        "coreShare": 0.30322822507271646,
+        "params": [
+          {
+            "name": "gid",
+            "type": "vec3<u32>"
+          }
+        ],
+        "returnType": "void",
+        "transitiveFunctions": 96,
+        "privateGlobals": [],
+        "storage": [
+          "rc_state"
+        ],
+        "numericInterpreterRoots": [],
+        "number64Functions": 0
+      },
+      {
+        "name": "rc_pc_advance",
+        "calls": 1140,
+        "exclusive": 203049,
+        "inclusive": 519714,
+        "replaceBodyWithStubCoreSavings": 517434,
+        "coreShare": 0.11032482642935475,
+        "params": [
+          {
+            "name": "bank",
+            "type": "u32"
+          },
+          {
+            "name": "scratch",
+            "type": "u32"
+          },
+          {
+            "name": "cb",
+            "type": "u32"
+          }
+        ],
+        "returnType": "void",
+        "transitiveFunctions": 5,
+        "privateGlobals": [],
+        "storage": [
+          "rc_geometry",
+          "rc_program",
+          "rc_scratch",
+          "rc_state"
+        ],
+        "numericInterpreterRoots": [],
+        "number64Functions": 0
+      },
+      {
+        "name": "rc_pc_guard",
+        "calls": 2484,
+        "exclusive": 342994,
+        "inclusive": 342994,
+        "replaceBodyWithStubCoreSavings": 338026,
+        "coreShare": 0.0728107257382139,
+        "params": [
+          {
+            "name": "bank",
+            "type": "u32"
+          },
+          {
+            "name": "scratch",
+            "type": "u32"
+          },
+          {
+            "name": "id",
+            "type": "u32"
+          }
+        ],
+        "returnType": "bool",
+        "transitiveFunctions": 1,
+        "privateGlobals": [],
+        "storage": [
+          "rc_geometry",
+          "rc_state"
+        ],
+        "numericInterpreterRoots": [],
+        "number64Functions": 0
+      },
+      {
+        "name": "rc_world_scene_capture_entry",
+        "calls": 2,
+        "exclusive": 83823,
+        "inclusive": 95503,
+        "replaceBodyWithStubCoreSavings": 95499,
+        "coreShare": 0.02027336554043698,
+        "params": [
+          {
+            "name": "bank",
+            "type": "u32"
+          }
+        ],
+        "returnType": "bool",
+        "transitiveFunctions": 4,
+        "privateGlobals": [],
+        "storage": [
+          "rc_state"
+        ],
+        "numericInterpreterRoots": [],
+        "number64Functions": 0
+      },
+      {
+        "name": "rc_world_geometry_begin",
+        "calls": 2,
+        "exclusive": 79138,
+        "inclusive": 79138,
+        "replaceBodyWithStubCoreSavings": 79134,
+        "coreShare": 0.016799405276683475,
+        "params": [
+          {
+            "name": "bank",
+            "type": "u32"
+          }
+        ],
+        "returnType": "void",
+        "transitiveFunctions": 2,
+        "privateGlobals": [],
+        "storage": [
+          "rc_state"
+        ],
+        "numericInterpreterRoots": [],
+        "number64Functions": 0
+      }
+    ]
+  }
+}

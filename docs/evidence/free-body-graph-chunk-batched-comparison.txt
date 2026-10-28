@@ -1,0 +1,14 @@
+{"nativeGpuLifetime":"free-body-graph-chunk","phase":"retained","memory":{"rss":52002816,"heapTotal":12898304,"heapUsed":9557344,"external":4336383,"arrayBuffers":146791}}
+{"nativeGpuLifetime":"free-body-graph-chunk","phase":"released","memory":{"rss":183177216,"heapTotal":95473664,"heapUsed":36141816,"external":4592131,"arrayBuffers":370699}}
+✔ chunk matches sequential original CPU component and original GPU component exactly (502.009766ms)
+ℹ {"substeps":1,"rows":2,"steps":8,"chunkSubmits":1,"chunkMaps":1,"sequentialOriginalGpuSubmits":16,"sequentialOriginalGpuMaps":16,"batchedPerStepSubmits":8,"batchedPerStepMaps":8,"batchedMs":3.802919000000003,"batchedRunAllocatedBytes":6608,"chunkMs":4.786267000000009,"sequentialCpuAndGpuMs":18.208169999999996,"chunkAllocatedBytes":19716,"peakLiveBytes":46608,"processMemory":{"rss":119648256,"heapTotal":57462784,"heapUsed":29216352,"external":4434803,"arrayBuffers":213371},"claim":"transport reduction only; no hardware speedup claim"}
+ℹ {"substeps":3,"rows":2,"steps":8,"chunkSubmits":1,"chunkMaps":1,"sequentialOriginalGpuSubmits":16,"sequentialOriginalGpuMaps":16,"batchedPerStepSubmits":8,"batchedPerStepMaps":8,"batchedMs":3.7776640000000157,"batchedRunAllocatedBytes":11696,"chunkMs":5.283294999999953,"sequentialCpuAndGpuMs":19.64889500000004,"chunkAllocatedBytes":37164,"peakLiveBytes":88032,"processMemory":{"rss":142147584,"heapTotal":59035648,"heapUsed":33916416,"external":4464395,"arrayBuffers":242963},"claim":"transport reduction only; no hardware speedup claim"}
+ℹ {"substeps":12,"rows":2,"steps":8,"chunkSubmits":1,"chunkMaps":1,"sequentialOriginalGpuSubmits":16,"sequentialOriginalGpuMaps":16,"batchedPerStepSubmits":8,"batchedPerStepMaps":8,"batchedMs":7.584621999999968,"batchedRunAllocatedBytes":34592,"chunkMs":7.388185000000021,"sequentialCpuAndGpuMs":44.02962499999995,"chunkAllocatedBytes":115680,"peakLiveBytes":274440,"processMemory":{"rss":192335872,"heapTotal":95473664,"heapUsed":36122008,"external":4592131,"arrayBuffers":370699},"claim":"transport reduction only; no hardware speedup claim"}
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 627.174329

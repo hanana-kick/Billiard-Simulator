@@ -1,0 +1,1095 @@
+{
+  "preparedOnly": true,
+  "fullShot": false,
+  "cacheIdentityClaim": false,
+  "receipts": [
+    {
+      "mode": "forward-slip",
+      "counters": {
+        "requestedFrames": 96,
+        "analyticFrames": 81,
+        "axialFrames": 81,
+        "originalFrames": 15,
+        "actualWorldStepCalls": 15,
+        "eventPredictions": 3,
+        "pairRootCalls": 6,
+        "geometryBoundEvaluations": 12,
+        "geometryStaticTests": 90,
+        "axialAttempts": 3,
+        "prefixPairBoundTests": 3,
+        "prefixStaticBoundTests": 45,
+        "chunks": 3
+      },
+      "wallMs": 20.354638999999963,
+      "referenceMs": 17.07081199999999,
+      "beforeEnergy": 0.10667999999799728,
+      "afterEnergy": 0.0734926368513419,
+      "finiteStepEndpointDelta": {
+        "position": 0.00002876164102950352,
+        "velocity": 0.001952577382326126,
+        "angular": 0.16335201263427734,
+        "orientationComponent": 0.00024324655532836914
+      },
+      "windowContacts": {
+        "candidate": [
+          {
+            "time": 0.0875,
+            "a": 1,
+            "b": 2,
+            "kindA": "ball",
+            "kindB": "ball"
+          }
+        ],
+        "reference": [
+          {
+            "time": 0.0875,
+            "a": 1,
+            "b": 2,
+            "kindA": "ball",
+            "kindB": "ball"
+          }
+        ]
+      },
+      "windowPhases": {
+        "candidate": [
+          {
+            "id": 1,
+            "velocity": [
+              0.047635581344366074,
+              0,
+              -7.761418420997565e-22
+            ],
+            "angular": [
+              -8.127142576152409e-20,
+              6.699516726825967e-23,
+              -16.07589340209961
+            ],
+            "slip": [
+              -0.4466981407701969,
+              1.7229545000671094e-21
+            ]
+          },
+          {
+            "id": 2,
+            "velocity": [
+              0.7742612361907959,
+              0,
+              2.111907452667163e-24
+            ],
+            "angular": [
+              -5.852815378830898e-21,
+              -2.465190328815662e-32,
+              -1.0711150169372559
+            ],
+            "slip": [
+              0.7413244494199753,
+              1.8208598035171727e-22
+            ]
+          },
+          {
+            "id": 3,
+            "velocity": [
+              0,
+              0,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              0
+            ],
+            "slip": [
+              0,
+              0
+            ]
+          }
+        ],
+        "reference": [
+          {
+            "id": 1,
+            "velocity": [
+              0.0495881587266922,
+              0,
+              2.479071756392655e-22
+            ],
+            "angular": [
+              1.395310229239468e-19,
+              0,
+              -15.912541389465332
+            ],
+            "slip": [
+              -0.4397224889993668,
+              -4.042671779272098e-21
+            ]
+          },
+          {
+            "id": 2,
+            "velocity": [
+              0.7741095423698425,
+              0,
+              5.72016598161551e-21
+            ],
+            "angular": [
+              1.4776498036657395e-18,
+              -1.5407439555097887e-33,
+              -1.0711801052093506
+            ],
+            "slip": [
+              0.741170754134655,
+              -3.971756548110598e-20
+            ]
+          },
+          {
+            "id": 3,
+            "velocity": [
+              0,
+              -2.9103830456733704e-11,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              0
+            ],
+            "slip": [
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      "firstPositivePairImpulses": {
+        "candidate": [
+          {
+            "time": 0.08750000005432715,
+            "i": 0,
+            "j": 1,
+            "normalImpulse": 0.16887421905994415
+          }
+        ],
+        "reference": [
+          {
+            "time": 0.08750000005432715,
+            "i": 0,
+            "j": 1,
+            "normalImpulse": 0.16884487867355347
+          }
+        ]
+      },
+      "timingIncludesContactObserver": true,
+      "after24OriginalFallbackSteps": {
+        "position": 0.00006518408089819399,
+        "velocity": 0.0019525811076164246,
+        "angular": 0.1624288558959961,
+        "orientationComponent": 0.0017585158348083496
+      },
+      "prefixes": [
+        {
+          "path": "axial-analytic",
+          "advanced": true,
+          "frames": 81,
+          "duration": 0.084375,
+          "beforeEnergy": 0.10667999999799728,
+          "afterEnergy": 0.08741691727672284,
+          "packedEnergy": 0.08741691995817369,
+          "boundEvaluations": 6,
+          "pairBoundTests": 3,
+          "staticBoundTests": 45,
+          "trajectorySamples": 39,
+          "maxPositionPackingError": 2.3189764691844417e-9,
+          "maxVelocityPackingError": 1.7439480859415823e-8,
+          "maxAngularPackingError": 2.4849137503224483e-7,
+          "maxQuaternionPackingError": 2.1887153422994743e-8,
+          "contactResolved": false,
+          "preparedOnly": true,
+          "cacheIdentityClaim": false,
+          "nextEvent": {
+            "time": 0.08570594748503743,
+            "kind": "pair",
+            "i": 0,
+            "j": 1,
+            "ambiguous": false
+          }
+        }
+      ]
+    },
+    {
+      "mode": "draw",
+      "counters": {
+        "requestedFrames": 96,
+        "analyticFrames": 81,
+        "axialFrames": 81,
+        "originalFrames": 15,
+        "actualWorldStepCalls": 15,
+        "eventPredictions": 3,
+        "pairRootCalls": 6,
+        "geometryBoundEvaluations": 12,
+        "geometryStaticTests": 90,
+        "axialAttempts": 3,
+        "prefixPairBoundTests": 3,
+        "prefixStaticBoundTests": 45,
+        "chunks": 3
+      },
+      "wallMs": 8.146199999999965,
+      "referenceMs": 13.221023000000002,
+      "beforeEnergy": 0.14699999871826172,
+      "afterEnergy": 0.07116303822991386,
+      "finiteStepEndpointDelta": {
+        "position": 0.00010647069886934762,
+        "velocity": 0.0006825327873229987,
+        "angular": 0.1192770004272461,
+        "orientationComponent": 0.005664229393005371
+      },
+      "windowContacts": {
+        "candidate": [
+          {
+            "time": 0.0875,
+            "a": 1,
+            "b": 2,
+            "kindA": "ball",
+            "kindB": "ball"
+          }
+        ],
+        "reference": [
+          {
+            "time": 0.0875,
+            "a": 1,
+            "b": 2,
+            "kindA": "ball",
+            "kindB": "ball"
+          }
+        ]
+      },
+      "windowPhases": {
+        "candidate": [
+          {
+            "id": 1,
+            "velocity": [
+              0.0018469438655301929,
+              0,
+              -2.5645661267358066e-13
+            ],
+            "angular": [
+              -1.150368971088167e-12,
+              1.2924697071141057e-26,
+              13.806900978088379
+            ],
+            "slip": [
+              0.42640914894174786,
+              -2.2108276681261953e-13
+            ]
+          },
+          {
+            "id": 2,
+            "velocity": [
+              0.7759467363357544,
+              0,
+              2.625889414763216e-13
+            ],
+            "angular": [
+              6.379338246889632e-13,
+              2.0194839173657902e-28,
+              -3.0615973472595215
+            ],
+            "slip": [
+              0.6818026179075241,
+              2.4297247636713597e-13
+            ]
+          },
+          {
+            "id": 3,
+            "velocity": [
+              0,
+              0,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              0
+            ],
+            "slip": [
+              0,
+              0
+            ]
+          }
+        ],
+        "reference": [
+          {
+            "id": 1,
+            "velocity": [
+              0.0018856419483199716,
+              0,
+              -1.2827481860998996e-13
+            ],
+            "angular": [
+              -5.733409623800978e-13,
+              4.024750667953325e-23,
+              13.926177978515625
+            ],
+            "slip": [
+              0.43011561478767546,
+              -1.1064458401680196e-13
+            ]
+          },
+          {
+            "id": 2,
+            "velocity": [
+              0.7766292691230774,
+              -2.9103830456733704e-11,
+              1.312064877318636e-13
+            ],
+            "angular": [
+              3.261206138038125e-13,
+              3.350727715693319e-24,
+              -3.085557699203491
+            ],
+            "slip": [
+              0.68174836987257,
+              1.2117827885739637e-13
+            ]
+          },
+          {
+            "id": 3,
+            "velocity": [
+              0,
+              -2.9103830456733704e-11,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              0
+            ],
+            "slip": [
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      "firstPositivePairImpulses": null,
+      "timingIncludesContactObserver": false,
+      "after24OriginalFallbackSteps": {
+        "position": 0.00010595102846696867,
+        "velocity": 0.0006825327873229987,
+        "angular": 0.12111473083496094,
+        "orientationComponent": 0.007396772503852844
+      },
+      "prefixes": [
+        {
+          "path": "axial-analytic",
+          "advanced": true,
+          "frames": 81,
+          "duration": 0.084375,
+          "beforeEnergy": 0.14699999871826172,
+          "afterEnergy": 0.08609039974732668,
+          "packedEnergy": 0.08609040410786332,
+          "boundEvaluations": 6,
+          "pairBoundTests": 3,
+          "staticBoundTests": 45,
+          "trajectorySamples": 39,
+          "maxPositionPackingError": 2.3189764691844417e-9,
+          "maxVelocityPackingError": 1.7439480859415823e-8,
+          "maxAngularPackingError": 9.085747052495208e-7,
+          "maxQuaternionPackingError": 1.1031298208230567e-8,
+          "contactResolved": false,
+          "preparedOnly": true,
+          "cacheIdentityClaim": false,
+          "nextEvent": {
+            "time": 0.08570594748503743,
+            "kind": "pair",
+            "i": 0,
+            "j": 1,
+            "ambiguous": false
+          }
+        }
+      ]
+    },
+    {
+      "mode": "near-rail",
+      "counters": {
+        "requestedFrames": 96,
+        "analyticFrames": 93,
+        "axialFrames": 93,
+        "originalFrames": 3,
+        "actualWorldStepCalls": 3,
+        "eventPredictions": 9,
+        "pairRootCalls": 24,
+        "geometryBoundEvaluations": 90,
+        "geometryStaticTests": 632,
+        "axialAttempts": 9,
+        "prefixPairBoundTests": 21,
+        "prefixStaticBoundTests": 315,
+        "chunks": 9
+      },
+      "wallMs": 15.92695900000001,
+      "referenceMs": 9.796575000000018,
+      "beforeEnergy": 0.10667999999799728,
+      "afterEnergy": 0.08586190891939445,
+      "finiteStepEndpointDelta": {
+        "position": 0.000034691765904426575,
+        "velocity": 0.000863902559166359,
+        "angular": 0.0008563995361328125,
+        "orientationComponent": 0.0005248188972473145
+      },
+      "windowContacts": {
+        "candidate": [],
+        "reference": []
+      },
+      "windowPhases": {
+        "candidate": [
+          {
+            "id": 1,
+            "velocity": [
+              0.8039708733558655,
+              -0.0008515625959262252,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              -21.285451889038086
+            ],
+            "slip": [
+              0.1494432277679444,
+              0
+            ]
+          },
+          {
+            "id": 2,
+            "velocity": [
+              0,
+              0,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              0
+            ],
+            "slip": [
+              0,
+              0
+            ]
+          },
+          {
+            "id": 3,
+            "velocity": [
+              0,
+              0,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              0
+            ],
+            "slip": [
+              0,
+              0
+            ]
+          }
+        ],
+        "reference": [
+          {
+            "id": 1,
+            "velocity": [
+              0.8038253784179688,
+              0,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              -21.28630828857422
+            ],
+            "slip": [
+              0.14927139854431148,
+              0
+            ]
+          },
+          {
+            "id": 2,
+            "velocity": [
+              0,
+              -2.9103830456733704e-11,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              0
+            ],
+            "slip": [
+              0,
+              0
+            ]
+          },
+          {
+            "id": 3,
+            "velocity": [
+              0,
+              -2.9103830456733704e-11,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              0
+            ],
+            "slip": [
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      "firstPositivePairImpulses": null,
+      "timingIncludesContactObserver": false,
+      "after24OriginalFallbackSteps": {
+        "position": 0.000028800219297409058,
+        "velocity": 0.000337481498724836,
+        "angular": 0.0018872022639440575,
+        "orientationComponent": 0.00047284364700317383
+      },
+      "prefixes": [
+        {
+          "path": "axial-analytic",
+          "advanced": true,
+          "frames": 47,
+          "duration": 0.04895833333333333,
+          "beforeEnergy": 0.10667999999799728,
+          "afterEnergy": 0.09329672596309845,
+          "packedEnergy": 0.09329673134731346,
+          "boundEvaluations": 6,
+          "pairBoundTests": 3,
+          "staticBoundTests": 45,
+          "trajectorySamples": 21,
+          "maxPositionPackingError": 5.803736979892449e-8,
+          "maxVelocityPackingError": 2.851570024553496e-8,
+          "maxAngularPackingError": 2.6448784495869404e-8,
+          "maxQuaternionPackingError": 2.3495896228631352e-8,
+          "contactResolved": false,
+          "preparedOnly": true,
+          "cacheIdentityClaim": false,
+          "nextEvent": {
+            "time": 0.05,
+            "kind": "geometry-horizon"
+          }
+        },
+        {
+          "path": "axial-analytic",
+          "advanced": true,
+          "frames": 23,
+          "duration": 0.02395833333333333,
+          "beforeEnergy": 0.09329673134731346,
+          "afterEnergy": 0.08896996421598771,
+          "packedEnergy": 0.08896996497043362,
+          "boundEvaluations": 6,
+          "pairBoundTests": 3,
+          "staticBoundTests": 45,
+          "trajectorySamples": 12,
+          "maxPositionPackingError": 4.524703189900947e-8,
+          "maxVelocityPackingError": 1.2726523168637982e-9,
+          "maxAngularPackingError": 3.8273036295777274e-7,
+          "maxQuaternionPackingError": 7.249997602265523e-9,
+          "contactResolved": false,
+          "preparedOnly": true,
+          "cacheIdentityClaim": false,
+          "nextEvent": {
+            "time": 0.025520833333333333,
+            "kind": "geometry-horizon"
+          }
+        },
+        {
+          "path": "axial-analytic",
+          "advanced": true,
+          "frames": 12,
+          "duration": 0.0125,
+          "beforeEnergy": 0.08896996497043362,
+          "afterEnergy": 0.0872923025826771,
+          "packedEnergy": 0.08729230501521679,
+          "boundEvaluations": 6,
+          "pairBoundTests": 3,
+          "staticBoundTests": 45,
+          "trajectorySamples": 6,
+          "maxPositionPackingError": 4.8141379327404366e-8,
+          "maxVelocityPackingError": 1.3621524019846731e-8,
+          "maxAngularPackingError": 3.382900359838459e-8,
+          "maxQuaternionPackingError": 1.4584694896235817e-8,
+          "contactResolved": false,
+          "preparedOnly": true,
+          "cacheIdentityClaim": false,
+          "nextEvent": {
+            "time": 0.013541666666666667,
+            "kind": "geometry-horizon"
+          }
+        },
+        {
+          "path": "axial-analytic",
+          "advanced": true,
+          "frames": 6,
+          "duration": 0.00625,
+          "beforeEnergy": 0.08729230501521679,
+          "afterEnergy": 0.08660256040445288,
+          "packedEnergy": 0.08660255647152665,
+          "boundEvaluations": 6,
+          "pairBoundTests": 3,
+          "staticBoundTests": 45,
+          "trajectorySamples": 3,
+          "maxPositionPackingError": 7.564996407083413e-9,
+          "maxVelocityPackingError": 2.2991560433283098e-8,
+          "maxAngularPackingError": 1.6914501799192294e-8,
+          "maxQuaternionPackingError": 2.4944117882341743e-8,
+          "contactResolved": false,
+          "preparedOnly": true,
+          "cacheIdentityClaim": false,
+          "nextEvent": {
+            "time": 0.007291666666666667,
+            "kind": "geometry-horizon"
+          }
+        },
+        {
+          "path": "axial-analytic",
+          "advanced": true,
+          "frames": 3,
+          "duration": 0.003125,
+          "beforeEnergy": 0.08660255647152665,
+          "afterEnergy": 0.08629495585029565,
+          "packedEnergy": 0.0862949589934709,
+          "boundEvaluations": 6,
+          "pairBoundTests": 3,
+          "staticBoundTests": 45,
+          "trajectorySamples": 3,
+          "maxPositionPackingError": 4.4954276301467644e-8,
+          "maxVelocityPackingError": 1.8306542171053763e-8,
+          "maxAngularPackingError": 8.457252675952986e-9,
+          "maxQuaternionPackingError": 2.304683188736334e-8,
+          "contactResolved": false,
+          "preparedOnly": true,
+          "cacheIdentityClaim": false,
+          "nextEvent": {
+            "time": 0.004166666666666667,
+            "kind": "geometry-horizon"
+          }
+        },
+        {
+          "path": "axial-analytic",
+          "advanced": true,
+          "frames": 1,
+          "duration": 0.0010416666666666667,
+          "beforeEnergy": 0.0862949589934709,
+          "afterEnergy": 0.08619794717181482,
+          "packedEnergy": 0.08619795264869012,
+          "boundEvaluations": 6,
+          "pairBoundTests": 3,
+          "staticBoundTests": 45,
+          "trajectorySamples": 0,
+          "maxPositionPackingError": 8.989258448721671e-9,
+          "maxVelocityPackingError": 2.5970395611807362e-8,
+          "maxAngularPackingError": 6.386019606452464e-7,
+          "maxQuaternionPackingError": 2.295381640315952e-8,
+          "contactResolved": false,
+          "preparedOnly": true,
+          "cacheIdentityClaim": false,
+          "nextEvent": {
+            "time": 0.0026041666666666665,
+            "kind": "geometry-horizon"
+          }
+        },
+        {
+          "path": "axial-analytic",
+          "advanced": true,
+          "frames": 1,
+          "duration": 0.0010416666666666667,
+          "beforeEnergy": 0.08619795264869012,
+          "afterEnergy": 0.08610370168695301,
+          "packedEnergy": 0.0861037071604936,
+          "boundEvaluations": 6,
+          "pairBoundTests": 3,
+          "staticBoundTests": 45,
+          "trajectorySamples": 0,
+          "maxPositionPackingError": 2.5877241238703164e-8,
+          "maxVelocityPackingError": 2.5970395611807362e-8,
+          "maxAngularPackingError": 6.386019606452464e-7,
+          "maxQuaternionPackingError": 9.837289116632064e-8,
+          "contactResolved": false,
+          "preparedOnly": true,
+          "cacheIdentityClaim": false,
+          "nextEvent": {
+            "time": 0.0020833333333333333,
+            "kind": "geometry-horizon"
+          }
+        }
+      ]
+    },
+    {
+      "mode": "moving-pair",
+      "counters": {
+        "requestedFrames": 96,
+        "analyticFrames": 53,
+        "axialFrames": 53,
+        "originalFrames": 43,
+        "actualWorldStepCalls": 43,
+        "eventPredictions": 3,
+        "pairRootCalls": 6,
+        "geometryBoundEvaluations": 12,
+        "geometryStaticTests": 90,
+        "axialAttempts": 3,
+        "prefixPairBoundTests": 3,
+        "prefixStaticBoundTests": 45,
+        "chunks": 3
+      },
+      "wallMs": 7.328588000000025,
+      "referenceMs": 9.52998500000001,
+      "beforeEnergy": 0.1333499999974966,
+      "afterEnergy": 0.07089105295091941,
+      "finiteStepEndpointDelta": {
+        "position": 0.0000527261710259368,
+        "velocity": 0.0013913512229919434,
+        "angular": 0.1266336441040039,
+        "orientationComponent": 0.0018801689147949219
+      },
+      "windowContacts": {
+        "candidate": [
+          {
+            "time": 0.05833333333333334,
+            "a": 1,
+            "b": 2,
+            "kindA": "ball",
+            "kindB": "ball"
+          }
+        ],
+        "reference": [
+          {
+            "time": 0.05833333333333341,
+            "a": 1,
+            "b": 2,
+            "kindA": "ball",
+            "kindB": "ball"
+          }
+        ]
+      },
+      "windowPhases": {
+        "candidate": [
+          {
+            "id": 1,
+            "velocity": [
+              -0.2659260928630829,
+              0,
+              -1.5148482240736477e-13
+            ],
+            "angular": [
+              -1.4000328674157458e-12,
+              -2.217380403948792e-23,
+              -6.8849897384643555
+            ],
+            "slip": [
+              -0.4776395273208618,
+              -1.0843381173433059e-13
+            ]
+          },
+          {
+            "id": 2,
+            "velocity": [
+              0.7587524652481079,
+              5.820766091346741e-11,
+              1.5666696997866658e-13
+            ],
+            "angular": [
+              9.799110307906478e-13,
+              1.34416849539867e-23,
+              5.344095706939697
+            ],
+            "slip": [
+              0.9230834082365036,
+              1.2653470578185415e-13
+            ]
+          },
+          {
+            "id": 3,
+            "velocity": [
+              0,
+              5.820766091346741e-11,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              0
+            ],
+            "slip": [
+              0,
+              0
+            ]
+          }
+        ],
+        "reference": [
+          {
+            "id": 1,
+            "velocity": [
+              -0.26453474164009094,
+              0,
+              2.267444858174844e-14
+            ],
+            "angular": [
+              2.1359296438743652e-13,
+              1.154498565879675e-23,
+              -6.758356094360352
+            ],
+            "slip": [
+              -0.47235419154167174,
+              1.6106464926834766e-14
+            ]
+          },
+          {
+            "id": 2,
+            "velocity": [
+              0.7587645053863525,
+              0,
+              -2.3517849451724915e-14
+            ],
+            "angular": [
+              -1.456103981964038e-13,
+              3.352343302827212e-24,
+              5.339919567108154
+            ],
+            "slip": [
+              0.9229670320749283,
+              -1.9040329707185498e-14
+            ]
+          },
+          {
+            "id": 3,
+            "velocity": [
+              0,
+              -2.9103830456733704e-11,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              0
+            ],
+            "slip": [
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      "firstPositivePairImpulses": null,
+      "timingIncludesContactObserver": false,
+      "after24OriginalFallbackSteps": {
+        "position": 0.00008698238403191624,
+        "velocity": 0.0013912320137023928,
+        "angular": 0.1260814666748047,
+        "orientationComponent": 0.003124535083770752
+      },
+      "prefixes": [
+        {
+          "path": "axial-analytic",
+          "advanced": true,
+          "frames": 53,
+          "duration": 0.05520833333333333,
+          "beforeEnergy": 0.1333499999974966,
+          "afterEnergy": 0.11330961644879467,
+          "packedEnergy": 0.11330961813398152,
+          "boundEvaluations": 6,
+          "pairBoundTests": 3,
+          "staticBoundTests": 45,
+          "trajectorySamples": 24,
+          "maxPositionPackingError": 3.722559149821336e-9,
+          "maxVelocityPackingError": 5.5241398677630116e-9,
+          "maxAngularPackingError": 2.288842964048854e-7,
+          "maxQuaternionPackingError": 1.0039457232213778e-7,
+          "contactResolved": false,
+          "preparedOnly": true,
+          "cacheIdentityClaim": false,
+          "nextEvent": {
+            "time": 0.0565103242486448,
+            "kind": "pair",
+            "i": 0,
+            "j": 1,
+            "ambiguous": false
+          }
+        }
+      ]
+    },
+    {
+      "mode": "reversal",
+      "counters": {
+        "requestedFrames": 96,
+        "analyticFrames": 96,
+        "axialFrames": 96,
+        "originalFrames": 0,
+        "actualWorldStepCalls": 0,
+        "eventPredictions": 1,
+        "pairRootCalls": 3,
+        "geometryBoundEvaluations": 9,
+        "geometryStaticTests": 45,
+        "axialAttempts": 1,
+        "prefixPairBoundTests": 3,
+        "prefixStaticBoundTests": 45,
+        "chunks": 1
+      },
+      "wallMs": 2.101015000000018,
+      "referenceMs": 7.555060000000026,
+      "beforeEnergy": 0.04201049871779235,
+      "afterEnergy": 0.01306125568414674,
+      "finiteStepEndpointDelta": {
+        "position": 0.00012410700419441335,
+        "velocity": 0.0012626200914382935,
+        "angular": 0.1318502426147461,
+        "orientationComponent": 0.005805402994155884
+      },
+      "windowContacts": {
+        "candidate": [],
+        "reference": []
+      },
+      "windowPhases": {
+        "candidate": [
+          {
+            "id": 1,
+            "velocity": [
+              -0.18620000779628754,
+              0,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              15.401942253112793
+            ],
+            "slip": [
+              0.28740971648693087,
+              0
+            ]
+          },
+          {
+            "id": 2,
+            "velocity": [
+              0,
+              0,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              0
+            ],
+            "slip": [
+              0,
+              0
+            ]
+          },
+          {
+            "id": 3,
+            "velocity": [
+              0,
+              0,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              0
+            ],
+            "slip": [
+              0,
+              0
+            ]
+          }
+        ],
+        "reference": [
+          {
+            "id": 1,
+            "velocity": [
+              -0.18493738770484924,
+              0,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              15.533792495727539
+            ],
+            "slip": [
+              0.2927267315387726,
+              0
+            ]
+          },
+          {
+            "id": 2,
+            "velocity": [
+              0,
+              -2.9103830456733704e-11,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              0
+            ],
+            "slip": [
+              0,
+              0
+            ]
+          },
+          {
+            "id": 3,
+            "velocity": [
+              0,
+              -2.9103830456733704e-11,
+              0
+            ],
+            "angular": [
+              0,
+              0,
+              0
+            ],
+            "slip": [
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      "firstPositivePairImpulses": null,
+      "timingIncludesContactObserver": false,
+      "after24OriginalFallbackSteps": {
+        "position": 0.00015118048876314915,
+        "velocity": 0.0012626498937606812,
+        "angular": 0.12559795379638672,
+        "orientationComponent": 0.0075962841510772705
+      },
+      "prefixes": [
+        {
+          "path": "axial-analytic",
+          "advanced": true,
+          "frames": 96,
+          "duration": 0.1,
+          "beforeEnergy": 0.04201049871779235,
+          "afterEnergy": 0.013061255870212058,
+          "packedEnergy": 0.01306125568414674,
+          "boundEvaluations": 6,
+          "pairBoundTests": 3,
+          "staticBoundTests": 45,
+          "trajectorySamples": 48,
+          "maxPositionPackingError": 1.537054761246992e-9,
+          "maxVelocityPackingError": 4.649162277381436e-9,
+          "maxAngularPackingError": 3.0070028955719863e-7,
+          "maxQuaternionPackingError": 9.387274935157564e-8,
+          "contactResolved": false,
+          "preparedOnly": true,
+          "cacheIdentityClaim": false,
+          "nextEvent": {
+            "time": 0.1,
+            "kind": "geometry-horizon"
+          }
+        }
+      ]
+    }
+  ]
+}

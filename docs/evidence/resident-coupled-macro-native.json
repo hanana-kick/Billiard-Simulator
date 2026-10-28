@@ -1,0 +1,237 @@
+{
+  "kind": "resident-coupled-native-component-assertion-v1",
+  "status": "pass",
+  "sourceHead": "e63791570d2fc0c68efe52bf265105357a4c3485",
+  "inputSha256": "c15b0eebed74cb7a2ea2799f399131aa19b5802cf3d2cda6045a9a109d2c439d",
+  "assertionSha256": "d634320aeb00cca8de397f45495042cdc91c76b93587a2e5f15581878647b408",
+  "actualSha256": "5308eada2e813af1af2e504ca3c62f3363711d849bec53fef872c4ae4a784165",
+  "approval": {
+    "id": 3,
+    "name": "rc_coupled_transport_advance",
+    "parameterWords": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "resultWords": 1,
+    "sourceBudget": "original argument6; default32768 and maximum1000000 unchanged; no budget substitution",
+    "signatureSha256": "c81c76839fef9fc3597b905ec5da394f208db1b11352d49e1ccea886bc31d045",
+    "bodySha256": "489de183316fa5e0e2742b32921853a89a83983809e3a31b74b15275138bb758",
+    "dependencies": {
+      "rc_coupled_transport_advance": "cab742db76294c952a96dc55253ed13e6baf9d8846e614849a2cee4f106a1a3d",
+      "rc_ct_fail": "56892b57fd3c3624ea5f5460b5402dda67942f9ecfac41287a594d525401538d",
+      "rc_ct_base": "c3e58bf8c189e695017334020671b2747430f6b8a700ae3279e4bfa1f4990362",
+      "rc_num_cont_instruction": "d8ab1ae2ed4f769cd6de879bac7c596f36983adc134b6d5d84344a83461aa088",
+      "rc_num_cont_instruction_inner": "580c5a35d7bb47655d3f967363664b4254de4729b63b20785bb22490beb8581a",
+      "rc_num_fail": "2bebfd292bc0dc6e2cfca47c5c8127e644dfc49c0a1353a34189c005e7f573ff",
+      "rc_num_finite": "ba2bd9cd4c5b786649dedf2ac3e9d31e98046214b919baa1a49ce0c8ab3e4df1",
+      "rc_num_lt_bits": "b98d37f3a05a7f985ec03f45956b868f527d36c3bc999a29af542533f38f666e",
+      "rc_num_eq_bits": "ee018224d1e54e0dc104a069e263c6569dd2acf58e7a53aa30888cd88d72df3c",
+      "rc_num_zero": "1e0240e9d60d2c158fdd186a36f4cc02fae68e911355f375d89e22eebb60302b",
+      "rc_num_soft_arithmetic": "0c0727023ef3f430d382929a42b410264882886d71ddbe36ad8abf8eaa3924bb",
+      "rc_f64_to_f32_bits": "ad15cb7b098be3395fbc49e9ce68a8fe7e2afe840d5dbfcdaedd4dfb4ec69e8f",
+      "rc_u128_shr": "7ca91dac478b57b2ea23fd946edfc9d30284df43c3e918c12835eabc206ebffc",
+      "rc_u128_blen": "1fd13321e2875514f3f93623a7488619c1a61b179cb917fb9f429f12efd33c91",
+      "rc_u128_zero": "9f9aa1c48b8546c61a67ffeee582ce68dd0b7d662c0b032d7a24673050cb64bf",
+      "rc_u128_round": "6e79153f742db451cf07bf5f6968272cac0c862fde2fb175724b1df93807c5b4",
+      "rc_u128_add": "0a33c8984196fae28bbdf3404c8b70c3073669898f40c34df3e05e0845a638f2",
+      "rc_u128_shl": "b06b0844798c65bc518d202535d52cd766da0599c3c5db6235d4afc5728d3ee7",
+      "rc_u128_bit": "2239fad3f0d9fd953c654f104531c0d530935c7e458cc86e41ef26d9fe339a2f",
+      "rc_f64_decode": "6507bc0eabef8bbf6703d022a71d5a184301647fe8ca056c16700e0ce4121736",
+      "rc_f64_div": "0da719f39f8b07de82b9acf9cac1d73114fb21ffc006f531f1e06011674fa510",
+      "rc_f64_pack": "ee7ad0265d482c0a51d2df8318d187bd7e2bb6a86c5907dcbd53145280909ea3",
+      "rc_u128_div": "da2539adb4e9563925fb82614d59d7c7f2764e90f1f6e5fb35cda3b3d0d60181",
+      "rc_u128_sub": "5e027ed877ca4cfc877c72f8fc6e0e954de17d22468ee571a4d1d741b7f31cdd",
+      "rc_u128_lt": "640cbbb0750266ecfba85d94b59967ee1cd337c8816dbe4afcf4630dfaac7dac",
+      "rc_f64_nan": "5ad74b15610fb8f42bc8eeb9b742c2d231f0327b726f614f0637f69afc3a15f9",
+      "rc_f64_sqrt": "d432df52533877dac2247e6c3b3714470a470a8684a6dd6c1bb3b8a32fe3db78",
+      "rc_f64_mul": "3c2b692ae53091e9bac56386e8db5606b597c6b0d50f6266a4175315cc5d04c4",
+      "rc_u128_mul": "1b278de4b38446ae3e7b99ea4a4a698480b48f46c449f8ea394a643921e87a4a",
+      "rc_f64_sub": "e0b82c758df56510288a30b8105471e1c0e931d2b727e3e04b961dbb7c337f1d",
+      "rc_f64_neg": "f6fc2e6957059d951dd0dfc55c51e4b7bd97b1118352d15bfabc7af7c1aa6d64",
+      "rc_f64_add": "2b2de6c4aa4a99868955297d75f4e66dba4151938db1c2abb1f9bc81ed14df2e",
+      "rc_u128_jam": "0683c757f5db9d671c18a257e81bc6897c7a8751f9e2a9ba866ef0bb56feb6a8",
+      "rc_num_widen": "c0e52f49c611c8b654e74f7df694aaaa04310377cfa4b6738a65de72ba9d98cd",
+      "rc_num_soft_required": "4ce61352c236e7eb71496b23de61921fa3bfb047127f00ed9459b8b296f83aa6",
+      "rc_num_subnormal": "6552e154f137a61c9def649cbbdf9a1fe4e27b91e4ab10004600ef3143899746",
+      "rc_ct_num_begin": "ac64e518133d8a7a55da6c0b0baf12d6155d84cc1b520360799d24782b16b348",
+      "rc_ct_substep_word": "a06c67cc34b0c84e89956b57f83a1c720c0d13de43e62971d13d5b1d8b994f00",
+      "rc_ct_select": "c9f5cfda2945d111b25edb23fa79360f5e18bb415653b39318f3499339a335cb",
+      "rc_ct_initialize": "3bcbe56783ee2d3fcef550be88d0be8019b4bd975e0c80dbc36fc7537f453a53",
+      "rc_ct_overlap": "4a3f63f973160556c4c124d8e2eab48616068f1f6f963f8b6505e318cddffaa4"
+    },
+    "closureSha256": "a0f505125ff256e4d0ef12493ca9770e54ffa9d26260b631b771edaeef204742",
+    "nativeSourceSha256": "8ec1d2d84fdf6d574e48bda2e27e9a14788d51605a9bef1611062dd9d425e1dc",
+    "numericProfile": "source-f32-preserved-v1",
+    "declarationsSha256": "c2322330851fffcc9b1f009bdb9a79c6ad6931de926238b59fd68352c6d5256b",
+    "numericProfileDeclarationSha256": "422d7e44802abc453a35931abc9ea064e1aae2782bafb4ce0debf5b0788f68c0"
+  },
+  "adapter": {
+    "vendor": "google",
+    "architecture": "swiftshader",
+    "device": "swiftshader-device-subzero-",
+    "description": "SwiftShader driver 5.0.0",
+    "isFallbackAdapter": true
+  },
+  "precompile": {
+    "wallMs": 32950.429383999995,
+    "cache": {
+      "requests": 3,
+      "coldCompiles": 3,
+      "warmHits": 0,
+      "inflightHits": 0,
+      "failures": 0,
+      "compileWallMs": 32932.30426599999,
+      "validationRequests": 3,
+      "validationCold": 3,
+      "validationWarm": 0,
+      "validationFailures": 0,
+      "entries": 3
+    },
+    "order": [
+      "coupled complete exact source macro",
+      "coupled call VM begin",
+      "coupled call VM core"
+    ],
+    "allBeforeSourceBuffers": true
+  },
+  "cases": 3,
+  "passes": 2,
+  "sourceReturns": [
+    0,
+    0,
+    1
+  ],
+  "originalSourceBudget": 32768,
+  "entireSourceAndDirtyScratchExact": true,
+  "entireVmProtocolExact": true,
+  "readOnlyWordsExact": true,
+  "expectedFilesOpenedByGpu": false,
+  "sourceCallsOnly": true,
+  "independentCases": true,
+  "rawToImpact": false,
+  "fullRest": false,
+  "native1024": false,
+  "hardwarePerformance": false,
+  "timingKind": "host wall / queue drain, not GPU timestamp or calibrated ratio",
+  "runs": [
+    {
+      "pass": 0,
+      "index": 0,
+      "stats": {
+        "dispatches": 6,
+        "submissions": 1,
+        "initialWrites": 6,
+        "copies": 7,
+        "mappings": 1,
+        "encodeWallMs": 0.14740200000233017,
+        "submitWallMs": 0.09292000000277767,
+        "queueDrainWallMs": 635.0916199999992,
+        "mapWallMs": 0.05729599999904167
+      },
+      "wallMs": 673.5885960000014
+    },
+    {
+      "pass": 0,
+      "index": 1,
+      "stats": {
+        "dispatches": 6,
+        "submissions": 1,
+        "initialWrites": 6,
+        "copies": 7,
+        "mappings": 1,
+        "encodeWallMs": 0.12631099999998696,
+        "submitWallMs": 0.09675599999900442,
+        "queueDrainWallMs": 628.8055109999987,
+        "mapWallMs": 0.046450000001641456
+      },
+      "wallMs": 634.9799809999968
+    },
+    {
+      "pass": 0,
+      "index": 2,
+      "stats": {
+        "dispatches": 6,
+        "submissions": 1,
+        "initialWrites": 6,
+        "copies": 7,
+        "mappings": 1,
+        "encodeWallMs": 0.11067699999694014,
+        "submitWallMs": 0.06376599999930477,
+        "queueDrainWallMs": 431.2257660000032,
+        "mapWallMs": 0.035412999997788575
+      },
+      "wallMs": 435.5838999999978
+    },
+    {
+      "pass": 1,
+      "index": 0,
+      "stats": {
+        "dispatches": 6,
+        "submissions": 1,
+        "initialWrites": 6,
+        "copies": 7,
+        "mappings": 1,
+        "encodeWallMs": 0.10809300000255462,
+        "submitWallMs": 0.06655999999929918,
+        "queueDrainWallMs": 609.2847000000038,
+        "mapWallMs": 0.0287529999986873
+      },
+      "wallMs": 629.659308000002
+    },
+    {
+      "pass": 1,
+      "index": 1,
+      "stats": {
+        "dispatches": 6,
+        "submissions": 1,
+        "initialWrites": 6,
+        "copies": 7,
+        "mappings": 1,
+        "encodeWallMs": 0.1722799999988638,
+        "submitWallMs": 0.07868900000175927,
+        "queueDrainWallMs": 608.7045769999968,
+        "mapWallMs": 0.02746100000513252
+      },
+      "wallMs": 639.9549270000061
+    },
+    {
+      "pass": 1,
+      "index": 2,
+      "stats": {
+        "dispatches": 6,
+        "submissions": 1,
+        "initialWrites": 6,
+        "copies": 7,
+        "mappings": 1,
+        "encodeWallMs": 0.21696700000029523,
+        "submitWallMs": 0.07547400000476046,
+        "queueDrainWallMs": 436.69059800000105,
+        "mapWallMs": 0.03700599999865517
+      },
+      "wallMs": 441.68016299999726
+    }
+  ],
+  "supervisor": {
+    "stage": "owned-native-child-terminal",
+    "returncode": 0,
+    "signal": null,
+    "wallSeconds": 36.77743064399692,
+    "maxRssKiB": 548444,
+    "userSeconds": 75.800962,
+    "systemSeconds": 1.3659409999999998
+  },
+  "launcherFailure": {
+    "exit": 127,
+    "gpuStarted": false,
+    "reason": "/usr/bin/time executable unavailable; retried supervisor only",
+    "unchangedSourceAndSchedule": true
+  },
+  "timingHold": {
+    "onlyActiveChildAcknowledgedQuiet": true,
+    "noConcurrentNumericalJob": true
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "cases": 67,
+  "words": 56816,
+  "admitted": 64,
+  "exactWords": true,
+  "actualSourceStatics": 16,
+  "ownedCloth": {
+    "staticSlot": 4,
+    "canonicalOwner": "scene-static-slot:4",
+    "kind": "cloth",
+    "shape": "box",
+    "representation": "persistent support law plus finite footprint guards"
+  },
+  "staticObstacleCount": 15,
+  "otherSphereObstacleCount": 3,
+  "supportExclusionCount": 4,
+  "obstacles": 22,
+  "residentRawToPreparedWorld": true,
+  "residentInitializerConsumed": 67,
+  "intermediateReadbacks": 0,
+  "hostPhysicsBetweenPhases": false,
+  "parseMs": 22.580311000000165,
+  "rawCompileMs": 6228.677055,
+  "handoffCompileMs": 58.97411900000043,
+  "handoffShaderBytes": 5833,
+  "submitToReadMs": 1830.8956550000003,
+  "dispatches": 8262,
+  "syntheticHandoffGateProbes": {
+    "cases": 19,
+    "words": 3952,
+    "authoritativePhysics": false
+  }
+}

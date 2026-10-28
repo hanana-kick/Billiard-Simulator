@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Original floor cuboid / head Ball-tip source geometry and cache recurrence.
 // No analytic shortcut, host-forward fallback, or contact-as-empty admission.
-import Source from '../experimental-cue-cloth-cache.js';
+import * as importedSource from '../experimental-cue-cloth-cache.js';
+const Source=importedSource.default??globalThis.LabCueClothCacheExperimental;
 import {compileGraph} from './numeric-program.mjs';
 import {CONTACT_JOURNAL_LAYOUT as J} from './contact-journal.mjs';
 import {CONTACT_ROSTER_LAYOUT as R} from './contact-roster.mjs';

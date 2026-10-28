@@ -1,0 +1,22 @@
+{
+  "kind": "resident-initial-microcode-runtime-host-evidence-v1",
+  "scope": "Production initial-only source construction, not browser submission or GPU qualification",
+  "baseSource": "8a1509d1c570dc2ae8da3512cf2be8f0dfdf6da3",
+  "api": "createInitialMicrocodeRuntime(initializationPlan, rows, {experimental:true,maxHSteps,dispatchChunks,instructionBudget:65536})",
+  "ownership": "Same-realm private brand, detached owned arrays, frozen metadata, complete content seal and authenticated initialization revalidation",
+  "hostTests": {"fullDifferentialAdmissionGroupsPassed":6,"additionalArbitraryRowGroupPassed":1,"failed":0,"nativeStepCountDuringInitialAuthentication":0},
+  "frozenComparison": {
+    "runtimeFileSha256":"780872cc0105e20375dcbd2f84a2e1962176133feefb23fdaa0a0778b312b4de",
+    "sourceSha256":"c2aded677c03f8db550530c39df80a5591057f892a2f44aa4f6fe99d956baa20",
+    "bytecodeSha256":"30f7e7aae2258d01bdcb98811024f314592351f83ced1ffadfde2cda36c825e4",
+    "candidateCount":6,"maxHSteps":2,"dispatchChunks":512,"instructionBudget":65536,
+    "initializerExact":true,"originalPcExact":true,"rawWordsExact":true,"sourceProgramExact":true,"geometryExact":true,"completeWgslExact":true,"completeVmExceptNewProfileExact":true,"fourHandlerStringsExact":true,"artifactWrites":0
+  },
+  "logicalViewsWords":{"sourceState":379496,"sourceProgram":874992,"sourceGeometry":25408,"sourceScratch":81792,"sourceInputs":96,"microcode":1048896,"vmState":46884},
+  "newEnvelopeDifferences":["kind and locally owned brand","originalGeneration from real initial source instead of test file/sourceHead provenance","source source-code/entry field","logicalViews digest","explicit source-budget proof and unqualified capability","new vm.macroProfile"],
+  "coupledBudget":{"sourceInstructionBudget":32768,"sourceMaximumInstructionBudget":1000000,"coupledCallPc":40072,"fullCallerAstAndCodePinned":true,"onlyNormalization":"cap initializer candidate guard literal in one AST path and one compiled SET","stateWords":62976,"scratchWords":13632,"literalArgumentSubstitution":false},
+  "negativeCoverage":["unbranded initialization and cloned runtime","unknown options and qualification overrides","audit/observer requests","invalid independent h/work budgets","every reachable nonempty typed payload mutation","nested metadata writes","owned runtime detachment","changed source/compiled cap guards","changed descriptor/layout/count guard","future/expected row fields","duplicate IDs"],
+  "additionalRawRowProof":{"sameCount":6,"idsStartAt":1000,"signedZeroPreserved":true,"nonfiniteInputTransportPreserved":true,"maxHSteps":43,"dispatchChunks":3,"physicalStepsExecuted":0,"ambientDeviceAccessRejectedByTest":true},
+  "counts8And9Generated":false,
+  "actualBrowserWorkerTested":false,"gpuExecuted":false,"defaultExecutorChanged":false,"compactQualificationChanged":false,"fullRestQualified":false,"hardwarePerformanceMeasured":false
+}

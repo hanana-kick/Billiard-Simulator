@@ -1,0 +1,119 @@
+{
+  "spin": {
+    "counters": {
+      "requestedFrames": 240,
+      "analyticFrames": 240,
+      "originalFrames": 0,
+      "actualWorldStepCalls": 0,
+      "eventPredictions": 0,
+      "pairRootCalls": 0,
+      "geometryBoundEvaluations": 0,
+      "chunks": 1
+    },
+    "wallMs": 6.129816000000005,
+    "referenceMs": 29.270122999999984,
+    "finiteStepEndpointDelta": {
+      "position": 0.000058284029364585876,
+      "velocity": 0,
+      "angular": 3.2734332126627727e-42,
+      "orientationComponent": 0.0002650506794452667
+    },
+    "after24OriginalFallbackSteps": {
+      "position": 0.0000483635812997818,
+      "velocity": 0,
+      "angular": 3.2734332126627727e-42,
+      "orientationComponent": 0.0002650506794452667
+    }
+  },
+  "translationCases": [
+    {
+      "mode": "forward-slip",
+      "counters": {
+        "requestedFrames": 96,
+        "analyticFrames": 0,
+        "originalFrames": 96,
+        "actualWorldStepCalls": 96,
+        "eventPredictions": 2,
+        "pairRootCalls": 3,
+        "geometryBoundEvaluations": 3,
+        "chunks": 2
+      },
+      "wallMs": 20.680273999999997,
+      "referenceMs": 10.637950999999987,
+      "endpointDelta": {
+        "position": 0,
+        "velocity": 0,
+        "angular": 0,
+        "orientationComponent": 0
+      }
+    },
+    {
+      "mode": "draw",
+      "counters": {
+        "requestedFrames": 96,
+        "analyticFrames": 0,
+        "originalFrames": 96,
+        "actualWorldStepCalls": 96,
+        "eventPredictions": 2,
+        "pairRootCalls": 3,
+        "geometryBoundEvaluations": 3,
+        "chunks": 2
+      },
+      "wallMs": 13.455882000000031,
+      "referenceMs": 8.758020999999985,
+      "endpointDelta": {
+        "position": 0,
+        "velocity": 0,
+        "angular": 0,
+        "orientationComponent": 0
+      }
+    },
+    {
+      "mode": "near-rail",
+      "counters": {
+        "requestedFrames": 96,
+        "analyticFrames": 0,
+        "originalFrames": 96,
+        "actualWorldStepCalls": 96,
+        "eventPredictions": 2,
+        "pairRootCalls": 3,
+        "geometryBoundEvaluations": 6,
+        "chunks": 2
+      },
+      "wallMs": 11.082480000000032,
+      "referenceMs": 7.852248000000031,
+      "endpointDelta": {
+        "position": 0,
+        "velocity": 0,
+        "angular": 0,
+        "orientationComponent": 0
+      }
+    },
+    {
+      "mode": "moving-pair",
+      "counters": {
+        "requestedFrames": 96,
+        "analyticFrames": 0,
+        "originalFrames": 96,
+        "actualWorldStepCalls": 96,
+        "eventPredictions": 2,
+        "pairRootCalls": 3,
+        "geometryBoundEvaluations": 3,
+        "chunks": 2
+      },
+      "wallMs": 10.265850999999998,
+      "referenceMs": 8.865663999999981,
+      "endpointDelta": {
+        "position": 0,
+        "velocity": 0,
+        "angular": 0,
+        "orientationComponent": 0
+      }
+    }
+  ],
+  "translatingOriginalStateAgreement": "exact in these fixtures",
+  "translatingPhysicalAccuracyClaim": false,
+  "cacheEquivalenceClaim": false,
+  "rawShot": false,
+  "fullShot": false
+}

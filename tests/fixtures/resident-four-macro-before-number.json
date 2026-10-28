@@ -1,0 +1,40 @@
+{
+  "kind": "source-owned-four-macro-identity-before-optional-number-v1",
+  "sourceCommit": "8d67f4fc034dfc9806992b282e44a01164667284",
+  "registrySha256": "6c303fac166c0899a93bff1c586dc977599f7908561c5a3aa6c2fc1b6a556f06",
+  "launchAuditSha256": "1da8da86a1d03a100b6d347a6944743b5a5b5577f97a2750dcc941cc5aa9ccbe",
+  "rows": [
+    {
+      "id": 0,
+      "name": "rc_cue_flat_advance",
+      "nativeSourceSha256": "76c63dfeb531eb33ba19585890664149e250ddd192b3cd7d6f191973e4642c31",
+      "approvalSha256": "fee6674b0d739ccd50d8ffff238970026db35cddc46a8ec1bf811e30003fa9ba",
+      "coreSha256": "3fb55e44510e9960772dda2967f0e5b409ddd98359b2e62c19f6ce6ec2b1328d",
+      "handlerSha256": "30b413f5eecf94142ff933489e2c2956e1c75e589708f8ced86c96621f70594a"
+    },
+    {
+      "id": 1,
+      "name": "rc_num_eval",
+      "nativeSourceSha256": "3d0ef416360ff29f80dcbc898ea7223ac10af420e3e9343434812ebfa3b89178",
+      "approvalSha256": "3b46185407d06cc7f4297e02542f826e9100787d45fbd5e6350f97f6c4ce4b48",
+      "coreSha256": "003298e16c2a6b3009ee63d66b70bf8c59f03ad46b9a3fedd80dbef488c50987",
+      "handlerSha256": "4e6bffa49cafb25ca56e98ee5c0dd25381f645b82e6ce3da6f7c01e2b399b32a"
+    },
+    {
+      "id": 2,
+      "name": "rc_world_broad_commit_collision",
+      "nativeSourceSha256": "0de60543033b9627f40338422489f4fa57b6e96263af8b8f32b482c160802417",
+      "approvalSha256": "79f4a99c086816a6815e54f69e6d3b0ab621f1f3501b250dd5c079fe8af4ebe2",
+      "coreSha256": "6f490024906e966d4cc69fc00564ab065766c902551d5846507b03da22f34b48",
+      "handlerSha256": "5f4c00ee563ad48bc064dd3c947e9ea80fcc466014e1cb876ae46461471976ba"
+    },
+    {
+      "id": 3,
+      "name": "rc_coupled_transport_advance",
+      "nativeSourceSha256": "8ec1d2d84fdf6d574e48bda2e27e9a14788d51605a9bef1611062dd9d425e1dc",
+      "approvalSha256": "b74df271b1b056e25c5335151e5f81e4692c45f728cc36263fdd5978d22bb369",
+      "coreSha256": "65e82c8d4ecc53e703908e8ba9441ab4d5bddd7e39d96899a35f2feddfa6a6ca",
+      "handlerSha256": "b6d467b7c976d89eb8bd39a904a0e4348ed0b3d585a927b60c2b2a31971432ad"
+    }
+  ]
+}

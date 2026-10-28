@@ -1,0 +1,132 @@
+{
+  "profile": "prepared-physical-to-rule-v1",
+  "cases": 140,
+  "comparedWords": 30800,
+  "compactMetrics": {
+    "count": 35,
+    "maxEvents": 128,
+    "dispatches": 1161,
+    "ruleProducer": true,
+    "residentCopies": 128,
+    "intermediateReadbacks": 0,
+    "hostPhysicsBetweenPhases": 0,
+    "finalReadbacks": 1,
+    "finalReadbackBytes": 560,
+    "diagnostics": false,
+    "allocatedBytes": 103648,
+    "submitToDoneMs": 146.34918900000048,
+    "fullShot": false,
+    "hardwareSpeedClaim": false
+  },
+  "exactWords": true,
+  "compileMs": 4864.6167510000005,
+  "shaderBytes": [
+    4116,
+    8418,
+    5991,
+    7082,
+    8565,
+    8752,
+    8644,
+    1760,
+    1760,
+    1760,
+    8961,
+    6326,
+    4126,
+    4257,
+    4257,
+    1248
+  ],
+  "runs": [
+    {
+      "noKiss": false,
+      "budget": 128,
+      "gameplayPass": 30,
+      "searchPass": 30,
+      "metrics": {
+        "count": 35,
+        "maxEvents": 128,
+        "dispatches": 1161,
+        "ruleProducer": true,
+        "residentCopies": 128,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "finalReadbacks": 1,
+        "finalReadbackBytes": 30800,
+        "diagnostics": true,
+        "allocatedBytes": 133888,
+        "submitToDoneMs": 129.65651799999978,
+        "fullShot": false,
+        "hardwareSpeedClaim": false
+      }
+    },
+    {
+      "noKiss": true,
+      "budget": 128,
+      "gameplayPass": 30,
+      "searchPass": 0,
+      "metrics": {
+        "count": 35,
+        "maxEvents": 128,
+        "dispatches": 1161,
+        "ruleProducer": true,
+        "residentCopies": 128,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "finalReadbacks": 1,
+        "finalReadbackBytes": 30800,
+        "diagnostics": true,
+        "allocatedBytes": 133888,
+        "submitToDoneMs": 139.85007899999982,
+        "fullShot": false,
+        "hardwareSpeedClaim": false
+      }
+    },
+    {
+      "noKiss": false,
+      "budget": 2,
+      "gameplayPass": 0,
+      "searchPass": 0,
+      "metrics": {
+        "count": 35,
+        "maxEvents": 2,
+        "dispatches": 27,
+        "ruleProducer": true,
+        "residentCopies": 2,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "finalReadbacks": 1,
+        "finalReadbackBytes": 30800,
+        "diagnostics": true,
+        "allocatedBytes": 133888,
+        "submitToDoneMs": 5.52435400000013,
+        "fullShot": false,
+        "hardwareSpeedClaim": false
+      }
+    },
+    {
+      "noKiss": true,
+      "budget": 128,
+      "gameplayPass": 0,
+      "searchPass": 0,
+      "metrics": {
+        "count": 35,
+        "maxEvents": 128,
+        "dispatches": 1161,
+        "ruleProducer": true,
+        "residentCopies": 128,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "finalReadbacks": 1,
+        "finalReadbackBytes": 30800,
+        "diagnostics": true,
+        "allocatedBytes": 133888,
+        "submitToDoneMs": 146.39559399999962,
+        "fullShot": false,
+        "hardwareSpeedClaim": false
+      }
+    }
+  ],
+  "rawShot": false
+}

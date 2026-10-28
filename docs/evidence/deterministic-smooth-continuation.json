@@ -1,0 +1,46 @@
+{
+  "profile": "SMT2",
+  "sameBudgetsQuanta": [
+    2000,
+    2000,
+    20000,
+    20000,
+    20000,
+    20000,
+    20000
+  ],
+  "targetSeconds": 0.1,
+  "reachedTicks": 104858,
+  "acceptedSegments": 2,
+  "pointRHS": 4,
+  "intervalRHS": 16,
+  "intervalNormalizedDerivatives": 16,
+  "finalRadiiQuanta": [
+    183,
+    295,
+    2501,
+    2501,
+    3955,
+    3955,
+    2
+  ],
+  "oneSecondRequest": {
+    "reachedTicks": 162339,
+    "acceptedSegments": 13,
+    "pointRHS": 240,
+    "intervalRHS": 960,
+    "intervalNormalizedDerivatives": 960,
+    "stopReason": "possible slip-zero in budget tube; not exact transition",
+    "lastAttemptTicks": 1,
+    "finalRadiiQuanta": [
+      520,
+      698,
+      10088,
+      10088,
+      15951,
+      15951,
+      13
+    ]
+  },
+  "physicalScope": "conditional constant-material supported ODE; no scene clearance or collision uncertainty propagation"
+}

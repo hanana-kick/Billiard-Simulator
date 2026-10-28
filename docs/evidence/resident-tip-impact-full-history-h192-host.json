@@ -1,0 +1,1224 @@
+{
+  "kind": "resident-tip-impact-full-history-created-host-h192-evidence-v1",
+  "status": "failed-strict-numeric-parity",
+  "scope": "HOST created-t0 recurrence, not rawGPU or fullrest",
+  "initialSha256": "c500a622817129cfa240aa6ac2a49582dd2391398a6e391b1692563cf34d7b53",
+  "sourceSha256": "5a18bbbbd646454f2e00f7b1422773b2851b64d5ff165626f2a9f835ff86c0e7",
+  "continuationSha256": "c1013531a239adb273544bbf39e2840821131c89fb555f059416c67c2a0f051c",
+  "requestedH": 192,
+  "finalH": 192,
+  "totalPumps": 21457,
+  "coreSteps": [
+    "690143272",
+    "2511"
+  ],
+  "macroCalls": {
+    "rc_cue_flat_advance": 768,
+    "rc_num_eval": 13309,
+    "rc_world_broad_commit_collision": 192
+  },
+  "hostWallMs": 1887434.6129299998,
+  "retainedBound191": {
+    "historyProfile": "source-full-application-history-v1",
+    "kind": "resident-tip-impact-created-host-result-v1",
+    "noGpuAdmission": true,
+    "createdInput": true,
+    "rawInput": false,
+    "gpuExecuted": false,
+    "sourceSha256": "5a18bbbbd646454f2e00f7b1422773b2851b64d5ff165626f2a9f835ff86c0e7",
+    "initialSha256": "c500a622817129cfa240aa6ac2a49582dd2391398a6e391b1692563cf34d7b53",
+    "status": "incomplete",
+    "error": null,
+    "worldH": 191,
+    "totalPumps": 21213,
+    "hostWallMs": 1861410.2956959999,
+    "completedComparisons": [
+      {
+        "h": 8,
+        "requestedHUnchanged": 192,
+        "boundary": "after original source-owner returns with original PC.completedH8",
+        "all11SourceGroups": true,
+        "nativeT0History": true,
+        "history": {
+          "profile": "source-full-application-history-v1",
+          "initialEventCount": 9,
+          "initialContactCount": 7,
+          "ringCount": 8,
+          "ringHead": 0,
+          "eventSha256": "9d7b309e3ce81ca04a88a2a71d93822809462dbe094d3866283006315f27dd88",
+          "preStrikeEventSha256": "e8f3386e627e4efd6b57bc2841fb9fe1bd5028f5f0d25c1eba3ca23ae717a389"
+        },
+        "actualPostT0Events": 0,
+        "nativeH8BodyProjection": false,
+        "gpuExecuted": false,
+        "captureSha256": "7d43ef3fbaa1412bf8e23c4da4c481497ec0ca3a35f021a7400fa647952c8a45"
+      },
+      {
+        "h": 128,
+        "all11SourceGroups": true,
+        "nativeOuter": true,
+        "events": 0
+      }
+    ],
+    "calls": {
+      "rc_cue_flat_advance": 766,
+      "rc_num_eval": 13300,
+      "rc_world_broad_commit_collision": 192
+    },
+    "coreSteps": [
+      "674724316",
+      "2511"
+    ],
+    "fullRest": false,
+    "native1024": false,
+    "hardwarePerformance": false,
+    "hostContinuationSha256": "49d3cb3a9c1d2c84b429848e9b48a6b74b840b24c8a50ae84444c3da96b98da6"
+  },
+  "recorded128": {
+    "exact": {
+      "stage": "created-host-exact-boundary",
+      "h": 128,
+      "all11SourceGroups": true,
+      "nativeOuter": true,
+      "events": 0,
+      "pumps": 10566,
+      "elapsedMs": 795020.4316680001
+    },
+    "adjacentBefore": {
+      "stage": "created-host-progress",
+      "pumps": 10496,
+      "worldH": 127,
+      "worldPc": 46,
+      "vmStatus": 1,
+      "vmError": 0,
+      "vmPc": 31309,
+      "steps": "218943279",
+      "auditRows": 0,
+      "checkpoints": [
+        0,
+        0
+      ],
+      "elapsedMs": 787980.411547,
+      "rss": 284651520
+    },
+    "adjacentAfter": {
+      "stage": "created-host-progress",
+      "pumps": 10624,
+      "worldH": 128,
+      "worldPc": 46,
+      "vmStatus": 1,
+      "vmError": 0,
+      "vmPc": 31309,
+      "steps": "223269671",
+      "auditRows": 0,
+      "checkpoints": [
+        1,
+        0
+      ],
+      "elapsedMs": 797638.6195,
+      "rss": 289456128
+    },
+    "macroCounts": "not recorded at this fresh boundary"
+  },
+  "recorded165": [
+    {
+      "stage": "created-host-progress",
+      "pumps": 13824,
+      "worldH": 165,
+      "worldPc": 46,
+      "vmStatus": 1,
+      "vmError": 0,
+      "vmPc": 31309,
+      "steps": "298119160",
+      "auditRows": 1,
+      "checkpoints": [
+        1,
+        0
+      ],
+      "elapsedMs": 1068803.66221,
+      "rss": 330289152
+    },
+    {
+      "stage": "created-host-progress",
+      "pumps": 13952,
+      "worldH": 165,
+      "worldPc": 91,
+      "vmStatus": 1,
+      "vmError": 0,
+      "vmPc": 31325,
+      "steps": "303569982",
+      "auditRows": 1,
+      "checkpoints": [
+        1,
+        0
+      ],
+      "elapsedMs": 1080741.946169,
+      "rss": 291241984
+    },
+    {
+      "stage": "created-host-progress",
+      "pumps": 14080,
+      "worldH": 165,
+      "worldPc": 113,
+      "vmStatus": 1,
+      "vmError": 0,
+      "vmPc": 29512,
+      "steps": "311684131",
+      "auditRows": 1,
+      "checkpoints": [
+        1,
+        0
+      ],
+      "elapsedMs": 1094144.8314309998,
+      "rss": 291041280
+    }
+  ],
+  "boundaries": [
+    {
+      "h": 128,
+      "sourceGroups": {
+        "balls": {
+          "pass": true,
+          "mismatch": null
+        },
+        "cue": {
+          "pass": true,
+          "mismatch": null
+        },
+        "caches": {
+          "pass": true,
+          "mismatch": null
+        },
+        "cueCloth": {
+          "pass": true,
+          "mismatch": null
+        },
+        "journal": {
+          "pass": true,
+          "mismatch": null
+        },
+        "roster": {
+          "pass": true,
+          "mismatch": null
+        },
+        "scene": {
+          "pass": true,
+          "mismatch": null
+        },
+        "bvh": {
+          "pass": true,
+          "mismatch": null
+        },
+        "clock": {
+          "pass": true,
+          "mismatch": null
+        },
+        "rules": {
+          "pass": true,
+          "mismatch": null
+        },
+        "game": {
+          "pass": true,
+          "mismatch": null
+        }
+      },
+      "nativeGroups": {
+        "balls": {
+          "pass": true,
+          "mismatch": null
+        },
+        "cue": {
+          "pass": true,
+          "mismatch": null
+        },
+        "clock": {
+          "pass": true,
+          "mismatch": null
+        },
+        "rules": {
+          "pass": true,
+          "mismatch": null
+        },
+        "history": {
+          "pass": true,
+          "mismatch": null
+        },
+        "game": {
+          "pass": true,
+          "mismatch": null
+        }
+      },
+      "cueActual": {
+        "present": true,
+        "active": false,
+        "contacted": false,
+        "frame": 128,
+        "outerSubstep": 0,
+        "contactEpisodes": 0,
+        "time": [
+          1717986615,
+          1075218022
+        ],
+        "elapsed": [
+          286331147,
+          1063325969
+        ],
+        "firstContact": null,
+        "lastContact": null,
+        "tangent": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "shaft": {
+          "linear": [
+            1048646529,
+            3230626747,
+            3197752249
+          ],
+          "angular": [
+            2970794673,
+            2920522478,
+            2991875752
+          ],
+          "translation": [
+            1068080112,
+            1032625352,
+            3200406839
+          ],
+          "rotation": [
+            3208899509,
+            2876236342,
+            3206833570,
+            1026730558
+          ],
+          "localCom": [
+            0,
+            3208491565,
+            0
+          ],
+          "invMass": [
+            1072852123,
+            1072852123,
+            1072852123
+          ],
+          "invInertia": [
+            1122136587,
+            3302639735,
+            3270119916,
+            1190311477,
+            1157763551,
+            1125809888
+          ],
+          "principalFrame": [
+            0,
+            0,
+            0,
+            1065353216
+          ],
+          "invPrincipalInertia": [
+            1097878700,
+            1190433169,
+            1097878700
+          ],
+          "userForce": [
+            0,
+            0,
+            0
+          ],
+          "userTorque": [
+            0,
+            0,
+            0
+          ],
+          "canonical": {
+            "linear": [
+              1048646529,
+              3230626747,
+              3197752249
+            ],
+            "angular": [
+              2970794673,
+              2920522478,
+              2991875752
+            ],
+            "translation": [
+              1068080112,
+              1032625352,
+              3200406839
+            ],
+            "rotation": [
+              3208899509,
+              2876236342,
+              3206833570,
+              1026730558
+            ]
+          }
+        },
+        "head": {
+          "linear": [
+            1048558846,
+            3230627231,
+            3197703055
+          ],
+          "angular": [
+            837672377,
+            2941124135,
+            842975933
+          ],
+          "translation": [
+            1068080315,
+            1032625668,
+            3200407343
+          ],
+          "rotation": [
+            3208899509,
+            2876235872,
+            3206833570,
+            1026730558
+          ],
+          "localCom": [
+            0,
+            0,
+            0
+          ],
+          "invMass": [
+            1118218923,
+            1118218923,
+            1118218923
+          ],
+          "invInertia": [
+            1253088061,
+            1060634624,
+            3203465216,
+            1253088061,
+            1057488896,
+            1253088062
+          ],
+          "principalFrame": [
+            1060439284,
+            0,
+            0,
+            3207922932
+          ],
+          "invPrincipalInertia": [
+            1253088059,
+            1253088059,
+            1253088059
+          ],
+          "userForce": [
+            0,
+            0,
+            0
+          ],
+          "userTorque": [
+            0,
+            0,
+            0
+          ],
+          "canonical": {
+            "linear": [
+              1048558846,
+              3230627231,
+              3197703055
+            ],
+            "angular": [
+              837672377,
+              2941124135,
+              842975933
+            ],
+            "translation": [
+              1068080315,
+              1032625668,
+              3200407343
+            ],
+            "rotation": [
+              3208899509,
+              2876235872,
+              3206833570,
+              1026730558
+            ]
+          }
+        },
+        "jointImpulses": [
+          504932033,
+          556427366,
+          2693245168,
+          834355200,
+          2824400043,
+          2951527028,
+          751256320,
+          855179264,
+          852492288,
+          0
+        ]
+      },
+      "cueExpected": {
+        "present": true,
+        "active": false,
+        "contacted": false,
+        "frame": 128,
+        "outerSubstep": 0,
+        "contactEpisodes": 0,
+        "time": [
+          1717986615,
+          1075218022
+        ],
+        "elapsed": [
+          286331147,
+          1063325969
+        ],
+        "firstContact": null,
+        "lastContact": null,
+        "tangent": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "shaft": {
+          "linear": [
+            1048646529,
+            3230626747,
+            3197752249
+          ],
+          "angular": [
+            2970794673,
+            2920522478,
+            2991875752
+          ],
+          "translation": [
+            1068080112,
+            1032625352,
+            3200406839
+          ],
+          "rotation": [
+            3208899509,
+            2876236342,
+            3206833570,
+            1026730558
+          ],
+          "localCom": [
+            0,
+            3208491565,
+            0
+          ],
+          "invMass": [
+            1072852123,
+            1072852123,
+            1072852123
+          ],
+          "invInertia": [
+            1122136587,
+            3302639735,
+            3270119916,
+            1190311477,
+            1157763551,
+            1125809888
+          ],
+          "principalFrame": [
+            0,
+            0,
+            0,
+            1065353216
+          ],
+          "invPrincipalInertia": [
+            1097878700,
+            1190433169,
+            1097878700
+          ],
+          "userForce": [
+            0,
+            0,
+            0
+          ],
+          "userTorque": [
+            0,
+            0,
+            0
+          ],
+          "canonical": {
+            "linear": [
+              1048646529,
+              3230626747,
+              3197752249
+            ],
+            "angular": [
+              2970794673,
+              2920522478,
+              2991875752
+            ],
+            "translation": [
+              1068080112,
+              1032625352,
+              3200406839
+            ],
+            "rotation": [
+              3208899509,
+              2876236342,
+              3206833570,
+              1026730558
+            ]
+          }
+        },
+        "head": {
+          "linear": [
+            1048558846,
+            3230627231,
+            3197703055
+          ],
+          "angular": [
+            837672377,
+            2941124135,
+            842975933
+          ],
+          "translation": [
+            1068080315,
+            1032625668,
+            3200407343
+          ],
+          "rotation": [
+            3208899509,
+            2876235872,
+            3206833570,
+            1026730558
+          ],
+          "localCom": [
+            0,
+            0,
+            0
+          ],
+          "invMass": [
+            1118218923,
+            1118218923,
+            1118218923
+          ],
+          "invInertia": [
+            1253088061,
+            1060634624,
+            3203465216,
+            1253088061,
+            1057488896,
+            1253088062
+          ],
+          "principalFrame": [
+            1060439284,
+            0,
+            0,
+            3207922932
+          ],
+          "invPrincipalInertia": [
+            1253088059,
+            1253088059,
+            1253088059
+          ],
+          "userForce": [
+            0,
+            0,
+            0
+          ],
+          "userTorque": [
+            0,
+            0,
+            0
+          ],
+          "canonical": {
+            "linear": [
+              1048558846,
+              3230627231,
+              3197703055
+            ],
+            "angular": [
+              837672377,
+              2941124135,
+              842975933
+            ],
+            "translation": [
+              1068080315,
+              1032625668,
+              3200407343
+            ],
+            "rotation": [
+              3208899509,
+              2876235872,
+              3206833570,
+              1026730558
+            ]
+          }
+        },
+        "jointImpulses": [
+          504932033,
+          556427366,
+          2693245168,
+          834355200,
+          2824400043,
+          2951527028,
+          751256320,
+          855179264,
+          852492288,
+          0
+        ]
+      }
+    },
+    {
+      "h": 192,
+      "sourceGroups": {
+        "balls": {
+          "pass": true,
+          "mismatch": null
+        },
+        "cue": {
+          "pass": false,
+          "mismatch": {
+            "path": "$.tangent[0]",
+            "actual": 3610802870,
+            "expected": 3610802880
+          }
+        },
+        "caches": {
+          "pass": true,
+          "mismatch": null
+        },
+        "cueCloth": {
+          "pass": true,
+          "mismatch": null
+        },
+        "journal": {
+          "pass": true,
+          "mismatch": null
+        },
+        "roster": {
+          "pass": true,
+          "mismatch": null
+        },
+        "scene": {
+          "pass": true,
+          "mismatch": null
+        },
+        "bvh": {
+          "pass": true,
+          "mismatch": null
+        },
+        "clock": {
+          "pass": true,
+          "mismatch": null
+        },
+        "rules": {
+          "pass": true,
+          "mismatch": null
+        },
+        "game": {
+          "pass": true,
+          "mismatch": null
+        }
+      },
+      "nativeGroups": {
+        "balls": {
+          "pass": true,
+          "mismatch": null
+        },
+        "cue": {
+          "pass": true,
+          "mismatch": null
+        },
+        "clock": {
+          "pass": true,
+          "mismatch": null
+        },
+        "rules": {
+          "pass": true,
+          "mismatch": null
+        },
+        "history": {
+          "pass": true,
+          "mismatch": null
+        },
+        "game": {
+          "pass": true,
+          "mismatch": null
+        }
+      },
+      "cueActual": {
+        "present": true,
+        "active": true,
+        "contacted": true,
+        "frame": 192,
+        "outerSubstep": 0,
+        "contactEpisodes": 1,
+        "time": [
+          2004317751,
+          1075218295
+        ],
+        "elapsed": [
+          2576980363,
+          1063885209
+        ],
+        "firstContact": [
+          4294966983,
+          1075218175
+        ],
+        "lastContact": [
+          858993139,
+          1075218291
+        ],
+        "tangent": [
+          3610802870,
+          3208481677,
+          2545628303,
+          1060557805,
+          3902929616,
+          3209759694
+        ],
+        "shaft": {
+          "linear": [
+            1044718997,
+            3227196068,
+            3194680146
+          ],
+          "angular": [
+            2963436832,
+            2913174297,
+            2984552030
+          ],
+          "translation": [
+            1068082220,
+            1032025728,
+            3200416886
+          ],
+          "rotation": [
+            3208899509,
+            2896181949,
+            3206833570,
+            1026730558
+          ],
+          "localCom": [
+            0,
+            3208491565,
+            0
+          ],
+          "invMass": [
+            1072852123,
+            1072852123,
+            1072852123
+          ],
+          "invInertia": [
+            1122136587,
+            3302639735,
+            3270119916,
+            1190311477,
+            1157763551,
+            1125809888
+          ],
+          "principalFrame": [
+            0,
+            0,
+            0,
+            1065353216
+          ],
+          "invPrincipalInertia": [
+            1097878700,
+            1190433169,
+            1097878700
+          ],
+          "userForce": [
+            0,
+            0,
+            0
+          ],
+          "userTorque": [
+            0,
+            0,
+            0
+          ],
+          "canonical": {
+            "linear": [
+              1044718997,
+              3227196068,
+              3194680146
+            ],
+            "angular": [
+              2963436832,
+              2913174297,
+              2984552030
+            ],
+            "translation": [
+              1068082220,
+              1032025728,
+              3200416886
+            ],
+            "rotation": [
+              3208899509,
+              2896181949,
+              3206833570,
+              1026730558
+            ]
+          }
+        },
+        "head": {
+          "linear": [
+            1068878535,
+            3227557845,
+            1074109775
+          ],
+          "angular": [
+            899321596,
+            870402622,
+            3038930844
+          ],
+          "translation": [
+            1068085415,
+            1032022128,
+            3200392731
+          ],
+          "rotation": [
+            3208899509,
+            857831634,
+            3206833570,
+            1026730556
+          ],
+          "localCom": [
+            0,
+            0,
+            0
+          ],
+          "invMass": [
+            1118218923,
+            1118218923,
+            1118218923
+          ],
+          "invInertia": [
+            1253088061,
+            1056964608,
+            3202220032,
+            1253088061,
+            1056964608,
+            1253088062
+          ],
+          "principalFrame": [
+            1060439284,
+            0,
+            0,
+            3207922932
+          ],
+          "invPrincipalInertia": [
+            1253088059,
+            1253088059,
+            1253088059
+          ],
+          "userForce": [
+            0,
+            0,
+            0
+          ],
+          "userTorque": [
+            0,
+            0,
+            0
+          ],
+          "canonical": {
+            "linear": [
+              1068878535,
+              3227557845,
+              1074109775
+            ],
+            "angular": [
+              899321596,
+              870402622,
+              3038930844
+            ],
+            "translation": [
+              1068085415,
+              1032022128,
+              3200392731
+            ],
+            "rotation": [
+              3208899509,
+              857831634,
+              3206833570,
+              1026730556
+            ]
+          }
+        },
+        "jointImpulses": [
+          2771990673,
+          2851732313,
+          2864894140,
+          2974384128,
+          2846229770,
+          2972897584,
+          2898755584,
+          838336512,
+          2969567232,
+          0
+        ]
+      },
+      "cueExpected": {
+        "present": true,
+        "active": true,
+        "contacted": true,
+        "frame": 192,
+        "outerSubstep": 0,
+        "contactEpisodes": 1,
+        "time": [
+          2004317751,
+          1075218295
+        ],
+        "elapsed": [
+          2576980363,
+          1063885209
+        ],
+        "firstContact": [
+          4294966983,
+          1075218175
+        ],
+        "lastContact": [
+          858993139,
+          1075218291
+        ],
+        "tangent": [
+          3610802880,
+          3208481677,
+          2545628320,
+          1060557805,
+          3902929632,
+          3209759694
+        ],
+        "shaft": {
+          "linear": [
+            1044718997,
+            3227196068,
+            3194680146
+          ],
+          "angular": [
+            2963436832,
+            2913174297,
+            2984552030
+          ],
+          "translation": [
+            1068082220,
+            1032025728,
+            3200416886
+          ],
+          "rotation": [
+            3208899509,
+            2896181949,
+            3206833570,
+            1026730558
+          ],
+          "localCom": [
+            0,
+            3208491565,
+            0
+          ],
+          "invMass": [
+            1072852123,
+            1072852123,
+            1072852123
+          ],
+          "invInertia": [
+            1122136587,
+            3302639735,
+            3270119916,
+            1190311477,
+            1157763551,
+            1125809888
+          ],
+          "principalFrame": [
+            0,
+            0,
+            0,
+            1065353216
+          ],
+          "invPrincipalInertia": [
+            1097878700,
+            1190433169,
+            1097878700
+          ],
+          "userForce": [
+            0,
+            0,
+            0
+          ],
+          "userTorque": [
+            0,
+            0,
+            0
+          ],
+          "canonical": {
+            "linear": [
+              1044718997,
+              3227196068,
+              3194680146
+            ],
+            "angular": [
+              2963436832,
+              2913174297,
+              2984552030
+            ],
+            "translation": [
+              1068082220,
+              1032025728,
+              3200416886
+            ],
+            "rotation": [
+              3208899509,
+              2896181949,
+              3206833570,
+              1026730558
+            ]
+          }
+        },
+        "head": {
+          "linear": [
+            1068878535,
+            3227557845,
+            1074109775
+          ],
+          "angular": [
+            899321596,
+            870402622,
+            3038930844
+          ],
+          "translation": [
+            1068085415,
+            1032022128,
+            3200392731
+          ],
+          "rotation": [
+            3208899509,
+            857831634,
+            3206833570,
+            1026730556
+          ],
+          "localCom": [
+            0,
+            0,
+            0
+          ],
+          "invMass": [
+            1118218923,
+            1118218923,
+            1118218923
+          ],
+          "invInertia": [
+            1253088061,
+            1056964608,
+            3202220032,
+            1253088061,
+            1056964608,
+            1253088062
+          ],
+          "principalFrame": [
+            1060439284,
+            0,
+            0,
+            3207922932
+          ],
+          "invPrincipalInertia": [
+            1253088059,
+            1253088059,
+            1253088059
+          ],
+          "userForce": [
+            0,
+            0,
+            0
+          ],
+          "userTorque": [
+            0,
+            0,
+            0
+          ],
+          "canonical": {
+            "linear": [
+              1068878535,
+              3227557845,
+              1074109775
+            ],
+            "angular": [
+              899321596,
+              870402622,
+              3038930844
+            ],
+            "translation": [
+              1068085415,
+              1032022128,
+              3200392731
+            ],
+            "rotation": [
+              3208899509,
+              857831634,
+              3206833570,
+              1026730556
+            ]
+          }
+        },
+        "jointImpulses": [
+          2771990673,
+          2851732313,
+          2864894140,
+          2974384128,
+          2846229770,
+          2972897584,
+          2898755584,
+          838336512,
+          2969567232,
+          0
+        ]
+      }
+    }
+  ],
+  "actualTape": [
+    {
+      "keyed": 0,
+      "pairId": 0,
+      "timeLo": 4294966983,
+      "timeHi": 1075218175,
+      "hCommitted": 164,
+      "outerCompleted": 2,
+      "substepAtEntry": 36,
+      "subdivisions": 64,
+      "worldPhase": 2,
+      "applicationMode": 15,
+      "applicationPhase": 7,
+      "nativeHCompleted": 164,
+      "outerOrdinal": 3,
+      "substepCompleted": 36,
+      "order": 0,
+      "reserved": 0
+    }
+  ],
+  "tapeComparison": {
+    "pass": true,
+    "events": 1,
+    "initialPrefixNotReemitted": 1
+  },
+  "workloadScenario": {
+    "reference": "docs/evidence/resident-full-history-small-strike-probe-native-v1.json",
+    "referenceFixedCycles": 2048,
+    "referencePumpHostWallMs": 321382.379984,
+    "requiredHostPumpRatio": 10.47705078125,
+    "cycleScaledSoftwarePumpMs": 3367139.5152913514,
+    "notMeasuredCoreRate": true,
+    "notMeasuredPostImpactNativeTime": true,
+    "limitations": [
+      "different active/inactive cycle proportions",
+      "post-impact native macro costs uncalibrated",
+      "HOST reference and GPU execute different numeric substrates",
+      "concurrent correctness execution; host wall not GPU timestamp",
+      "fixed GPU budget still requires independent native completion gate"
+    ],
+    "hardwareRatio": false
+  },
+  "historyCheckUnchanged": true,
+  "numericalToleranceRelaxed": false,
+  "physicalImpactQualified": false,
+  "gpuExecuted": false,
+  "fullRest": false,
+  "native1024": false
+}

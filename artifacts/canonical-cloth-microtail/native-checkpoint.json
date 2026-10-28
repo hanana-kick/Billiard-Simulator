@@ -1,0 +1,41 @@
+{
+  "profile": "canonical-cloth-microtail-v1",
+  "date": "2026-10-27",
+  "nativeBackend": "SwiftShader software Vulkan; not hardware GPU performance",
+  "testsPassed": 11,
+  "testsFailed": 0,
+  "nativeMicrotailRows": 393,
+  "nativeMicrotailWords": 37728,
+  "nativeLandingRegressionRows": 29,
+  "nativeLandingRegressionWords": 4640,
+  "exactCPUAndGPU": true,
+  "independentBigIntCases": 635,
+  "quantumRefinement": {
+    "scales": [
+      1,
+      2,
+      4
+    ],
+    "worstEndpointVelocityOrQComponentError": [
+      6.793609599320405e-07,
+      4.4783945790660695e-07,
+      2.239197287035033e-07
+    ]
+  },
+  "worldCommitted": false,
+  "geometryPending": true,
+  "integerClockHandoffPending": true,
+  "boundedProcess": {
+    "seconds": 3.42,
+    "sampledAggregateRSSMiB": 278.93,
+    "maxChildRSSMiB": 238.45,
+    "limitSeconds": 110,
+    "limitRSSMiB": 1500,
+    "stopReason": null
+  },
+  "sha256": {
+    "src/direct-candidate/deterministic-cloth-microtail.mjs": "4fedda41cce5e9899b3cfc9090207da9686966ad5a57dad29b57d82df3ed1f8f",
+    "tests/deterministic-cloth-microtail.mjs": "7f48535a02382cf3a0a586937d4a5b58f1f6761d820f7425443fbabb2dfdbed0",
+    "docs/canonical-cloth-microtail.md": "44a85c4e1ead103695e1196966f598b8d52c56bdef0624b2ba49dadda41055c8"
+  }
+}

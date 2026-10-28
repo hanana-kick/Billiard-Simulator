@@ -1,0 +1,237 @@
+{
+  "kind": "resident-tip-impact-created-host-h128-failure-evidence-v1",
+  "scope": "HOST created-t0; not rawGPU or fullrest",
+  "sourceSha256": "5a18bbbbd646454f2e00f7b1422773b2851b64d5ff165626f2a9f835ff86c0e7",
+  "initialSha256": "2f48a232bd4db77c1b574687d0238a62dd10e5969b325512501ee5c50e62e4c2",
+  "continuationSha256": "3cf0e22aa43d20eb1a2c59ecb18c396af4168fd74f71592fea46fc84e46bf787",
+  "frames": 128,
+  "totalPumps": 10566,
+  "coreSteps": [
+    "222039775",
+    "2511"
+  ],
+  "hostWallMs": 884063.5492039999,
+  "macroCalls": {
+    "rc_cue_flat_advance": 512,
+    "rc_num_eval": 8705,
+    "rc_world_broad_commit_collision": 128
+  },
+  "sourceAll11": {
+    "pass": true,
+    "groups": [
+      "balls",
+      "cue",
+      "caches",
+      "cueCloth",
+      "journal",
+      "roster",
+      "scene",
+      "bvh",
+      "clock",
+      "rules",
+      "game"
+    ]
+  },
+  "nativeGroups": {
+    "balls": {
+      "pass": true,
+      "mismatch": null
+    },
+    "cue": {
+      "pass": true,
+      "mismatch": null
+    },
+    "clock": {
+      "pass": true,
+      "mismatch": null
+    },
+    "rules": {
+      "pass": true,
+      "mismatch": null
+    },
+    "history": {
+      "pass": false,
+      "mismatch": {
+        "path": "$.count",
+        "actual": 7,
+        "expected": 8
+      }
+    },
+    "game": {
+      "pass": true,
+      "mismatch": null
+    }
+  },
+  "actualHistory": {
+    "count": 7,
+    "head": 7,
+    "rows": [
+      {
+        "pairId": null,
+        "time": [
+          572662288,
+          1064837666
+        ]
+      },
+      {
+        "pairId": 478,
+        "time": [
+          2290649205,
+          1071220872
+        ]
+      },
+      {
+        "pairId": 232,
+        "time": [
+          286331157,
+          1073107217
+        ]
+      },
+      {
+        "pairId": 124,
+        "time": [
+          3149642637,
+          1073314747
+        ]
+      },
+      {
+        "pairId": 288,
+        "time": [
+          2863311437,
+          1073506986
+        ]
+      },
+      {
+        "pairId": 126,
+        "time": [
+          572662057,
+          1074455074
+        ]
+      },
+      {
+        "pairId": 482,
+        "time": [
+          4008635962,
+          1074855662
+        ]
+      }
+    ]
+  },
+  "expectedNativeHistory": {
+    "count": 8,
+    "head": 0,
+    "rows": [
+      {
+        "pairId": null,
+        "time": [
+          572662288,
+          1064837666
+        ]
+      },
+      {
+        "pairId": 478,
+        "time": [
+          2290649205,
+          1071220872
+        ]
+      },
+      {
+        "pairId": 232,
+        "time": [
+          286331157,
+          1073107217
+        ]
+      },
+      {
+        "pairId": 124,
+        "time": [
+          3149642637,
+          1073314747
+        ]
+      },
+      {
+        "pairId": 288,
+        "time": [
+          2863311437,
+          1073506986
+        ]
+      },
+      {
+        "pairId": 126,
+        "time": [
+          572662057,
+          1074455074
+        ]
+      },
+      {
+        "pairId": 482,
+        "time": [
+          4008635962,
+          1074855662
+        ]
+      },
+      {
+        "pairId": null,
+        "time": [
+          1145324343,
+          1075217476
+        ]
+      }
+    ]
+  },
+  "seedInitialContactCount": 7,
+  "nativeInitialEvents": [
+    {
+      "kind": "stroke",
+      "time": 0,
+      "key": null
+    },
+    {
+      "kind": "contact",
+      "time": 0.005891927083333318,
+      "key": null
+    },
+    {
+      "kind": "contact",
+      "time": 0.39895833333333225,
+      "key": "8.4e-323:9.4e-323"
+    },
+    {
+      "kind": "contact",
+      "time": 1.3947916666666675,
+      "key": "4e-323:8e-323"
+    },
+    {
+      "kind": "contact",
+      "time": 1.592708333333323,
+      "key": "2e-323:8e-323"
+    },
+    {
+      "kind": "contact",
+      "time": 1.7760416666666459,
+      "key": "5e-323:9e-323"
+    },
+    {
+      "kind": "contact",
+      "time": 3.360416666666556,
+      "key": "2e-323:9e-323"
+    },
+    {
+      "kind": "contact",
+      "time": 4.248958333333173,
+      "key": "1.14e-322:8.4e-323"
+    },
+    {
+      "kind": "stroke",
+      "time": 5.6291666666664275,
+      "key": null
+    }
+  ],
+  "auditRows": 0,
+  "historyCheckUnchanged": true,
+  "h192Attempted": false,
+  "physicalImpactQualified": false,
+  "gpuExecuted": false,
+  "fullRest": false,
+  "native1024": false
+}

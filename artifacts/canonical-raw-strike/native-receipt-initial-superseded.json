@@ -1,0 +1,17 @@
+{
+  "cases": 67,
+  "words": 8576,
+  "exactWords": true,
+  "accepted": 63,
+  "compileMs": 8160.3542640000005,
+  "shaderBytes": 12838,
+  "adapter": {
+    "subgroupMatrixConfigs": []
+  },
+  "candidates": 67,
+  "submitToReadMs": 601.3382399999991,
+  "exactInteger": true,
+  "hostPhysicsBetweenPhases": false,
+  "rawInputUploads": 1,
+  "sceneUploads": 1
+}

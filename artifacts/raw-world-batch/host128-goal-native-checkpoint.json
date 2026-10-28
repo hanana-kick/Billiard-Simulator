@@ -1,0 +1,54 @@
+{
+  "pipelineRevision": "0850a4d+host128-v1",
+  "native": {
+    "pipelineRevision": "0850a4d+host128-v1",
+    "actualRawGoal": true,
+    "comparedWords": 2916,
+    "compactOnly": true,
+    "compileMs": 95366.050351,
+    "metrics": {
+      "candidateCount": 1,
+      "allocatedBytes": 226296,
+      "readbackBytes": 11680,
+      "submissions": 1,
+      "intermediateReadbacks": 0,
+      "hostPhysicsBetweenPhases": 0,
+      "dispatches": 24802,
+      "submitToDoneMs": 5485.512910000005
+    },
+    "softwareVulkanOnly": true
+  },
+  "watchdog": {
+    "boundedNativeProcess": true,
+    "exitCode": 0,
+    "stopReason": null,
+    "sampledAggregateRSSMiB": 1103.07,
+    "maxChildRSSMiB": 1065.05,
+    "rssCoverage": "PPid status-table ancestry; sampled aggregate, RUSAGE_CHILDREN maximum separately",
+    "elapsedSeconds": 107.811,
+    "limitRSSMiB": 1500,
+    "limitSeconds": 500.0
+  },
+  "compact": [
+    100,
+    1,
+    0,
+    1
+  ],
+  "referenceState": [
+    100,
+    9,
+    0,
+    4,
+    408,
+    3343649,
+    4294967295,
+    0
+  ],
+  "reference": "host128-goal-cpu-reference.json; exact two archived host guard replacements; shader pins unchanged",
+  "logs": [
+    "/tmp/raw-world-batch-host128-goal-native.log",
+    "/tmp/raw-world-batch-host128-goal-native-receipt.log"
+  ],
+  "scope": "Actual raw goal through full frozen REST, N1 only; no goal at scale or newer pipeline claim"
+}

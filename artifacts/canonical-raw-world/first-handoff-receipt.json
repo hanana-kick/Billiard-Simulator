@@ -1,0 +1,17 @@
+{
+  "cases": 67,
+  "words": 23024,
+  "admitted": 64,
+  "exactWords": true,
+  "actualSourceStatics": 16,
+  "obstacles": 22,
+  "residentRawToPreparedWorld": true,
+  "residentInitializerConsumed": true,
+  "intermediateReadbacks": 0,
+  "hostPhysicsBetweenPhases": false,
+  "rawCompileMs": 6478.659323,
+  "handoffCompileMs": 63.5444460000017,
+  "handoffShaderBytes": 5833,
+  "submitToReadMs": 1998.107195999999,
+  "dispatches": 8196
+}

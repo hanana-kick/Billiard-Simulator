@@ -1,0 +1,48 @@
+{
+  "kind": "resident-tip-impact-source-compiler-proof-v1",
+  "scope": "host authentic source lowering and transport only",
+  "sourcePayloadSha256": "0100d54ceeffc33c7aa46c2da705d7fd6d036b9a3b1b977206df64dffbc03c5c",
+  "compiledArtifactSha256": "fb10570c2364a53c30bf623a638b8a561ee3a6ebddc8318d4fda8ebc42e763fc",
+  "compiledArtifactBytes": 5229359,
+  "sourceSha256": "5a18bbbbd646454f2e00f7b1422773b2851b64d5ff165626f2a9f835ff86c0e7",
+  "originalDispatcherSha256": "052d436d3ed85a366e98044ba943bfa51124de08395b8dd50b9d89013f4592e4",
+  "count": 2,
+  "requestedH": 192,
+  "sourceStateWords": 127176,
+  "instructions": 135571,
+  "unpackedLocalWords": 95665,
+  "packedLocalWords": 7786,
+  "callDepth": 15,
+  "auditStores": 46,
+  "auditReads": 10,
+  "externalStubs": 3,
+  "coreShaderBytes": 37454,
+  "coreShaderSha256": "db59be1a923fb589d2310a22ed72f04c9da4f8525aa7b31424044f1b08f9f1a4",
+  "handlers": [
+    {
+      "id": 1,
+      "name": "rc_num_eval",
+      "shaderBytes": 17153,
+      "shaderSha256": "76eb6b634325fb9fd5ca897da228ed4b8f1d503cf0360ee00942107c4f54bb28",
+      "closureSha256": "6a60bc2629e30add603ffdf23a77585291e5155d06f836bff456695da73c5fea"
+    },
+    {
+      "id": 0,
+      "name": "rc_cue_flat_advance",
+      "shaderBytes": 32733,
+      "shaderSha256": "a7d02936846e8c2e488c3344291602599024cfd3a6fbbe11ce95e077e89395e2",
+      "closureSha256": "890b9e5eb0909822826fd6dd9480dd66f40807d76795513cca45bd91c0d956bd"
+    },
+    {
+      "id": 2,
+      "name": "rc_world_broad_commit_collision",
+      "shaderBytes": 42230,
+      "shaderSha256": "b86d7ad13e734dac90366b494a4eb3878699055f9ee9cf0e85317da55a84d75b",
+      "closureSha256": "b28ac207e5826239c9b8d6e16e83bc9534d70efa2cfbbf85e90496d547b972c3"
+    }
+  ],
+  "compileHostWallMs": 451.69991899999997,
+  "native": false,
+  "physicalStrikeQualified": false,
+  "hardwarePerformance": false
+}

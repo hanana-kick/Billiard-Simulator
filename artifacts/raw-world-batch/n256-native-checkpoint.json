@@ -1,0 +1,56 @@
+{
+  "pipelineRevision": "0850a4d",
+  "native": {
+    "checkpoint": "0850a4d",
+    "candidateCount": 256,
+    "comparedWords": 746496,
+    "compileMs": 104299.569558,
+    "diagnosticMetrics": {
+      "candidateCount": 256,
+      "allocatedBytes": 48820052,
+      "readbackBytes": 2990080,
+      "submissions": 1,
+      "intermediateReadbacks": 0,
+      "hostPhysicsBetweenPhases": 0,
+      "dispatches": 12514,
+      "hostPrepareMs": 16.894318000006024,
+      "encodeMs": 306.94308199999796,
+      "submitToQueueDoneMs": 95934.901988,
+      "readbackMs": 1.1555489999882411,
+      "submitToDoneMs": 95936.058709
+    },
+    "compactReversedMetrics": {
+      "candidateCount": 256,
+      "allocatedBytes": 42848084,
+      "readbackBytes": 4096,
+      "submissions": 1,
+      "intermediateReadbacks": 0,
+      "hostPhysicsBetweenPhases": 0,
+      "dispatches": 12506,
+      "hostPrepareMs": 9.221856000018306,
+      "encodeMs": 279.4887469999958,
+      "submitToQueueDoneMs": 90380.564507,
+      "readbackMs": 5.4481899999664165,
+      "submitToDoneMs": 90386.01336800001
+    },
+    "softwareVulkanOnly": true,
+    "scope": "actual raw hit/REST and honest pending, 3 repeated parameter classes with unique candidate IDs; not goal or physical GPU throughput"
+  },
+  "watchdog": {
+    "boundedNativeProcess": true,
+    "exitCode": 0,
+    "stopReason": null,
+    "sampledAggregateRSSMiB": 1081.28,
+    "maxChildRSSMiB": 1042.3,
+    "rssCoverage": "PPid status-table ancestry; sampled aggregate, RUSAGE_CHILDREN maximum separately",
+    "elapsedSeconds": 292.082,
+    "limitRSSMiB": 1500,
+    "limitSeconds": 420.0
+  },
+  "logs": [
+    "/tmp/raw-world-batch-n256-native.log",
+    "/tmp/raw-world-batch-n256-native-receipt.log"
+  ],
+  "reference": "scale-cpu-reference.json; recovered0850a4d CPU; unique IDs1000..1255;3 repeated parameter classes",
+  "scope": "N256 full-word and reverse compact-only parity, actual raw hit/REST plus honest pending; no goal-at-scale or hardware throughput claim"
+}

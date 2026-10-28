@@ -1,0 +1,220 @@
+{
+  "kind": "resident-control-cache-abba-precompile-interruption-v1",
+  "status": "native-preparation-interrupted-no-physics-submitted",
+  "sourceHead": "f0cd90a3e1c395ed1b4d06043f81872c5ecbe695",
+  "resources": {
+    "stage": "native-child-terminal",
+    "returncode": -9,
+    "signal": 9,
+    "startUtc": "2026-10-25T23:20:08.593223+00:00",
+    "endUtc": "2026-10-25T23:21:13.600226+00:00",
+    "wallSeconds": 65.0070321969979,
+    "maxRssKiB": 1685476,
+    "noSubprocessTimeout": true
+  },
+  "phase": "unchanged external macro2 rc_world_broad_commit_collision native pipeline creation",
+  "preflight": {
+    "stage": "shader-preflight-complete",
+    "descriptors": 50,
+    "newPipelineCompiles": 0
+  },
+  "completedPipelines": [
+    {
+      "stage": "pipeline-ready",
+      "name": "external macro 0 rc_cue_flat_advance",
+      "compileWallMs": 47112.353477000004,
+      "timingKind": "host-wall-not-gpu-timestamp",
+      "cached": false
+    },
+    {
+      "stage": "pipeline-ready",
+      "name": "external macro 1 rc_num_eval",
+      "compileWallMs": 3117.6004909999974,
+      "timingKind": "host-wall-not-gpu-timestamp",
+      "cached": false
+    }
+  ],
+  "sourceVmAllocated": false,
+  "numericalDispatches": 0,
+  "oracleLoaded": false,
+  "newCacheCoreCompiled": false,
+  "artifacts": [
+    {
+      "mode": "storage-v1",
+      "runtimeSha256": "df080d33c6aa537e651756be1a5e0917a9aea9bae69c9e7af6e4a03a6e2c4f97",
+      "bytecodeSha256": "958a525cb73faef1c369e9b4c99bad5155c32fa4d4f307a7a5ae27ef8fea01c3",
+      "vmShaderSha256": "5db2e6c921b656f5ff36f0f6f0d3d4e3529581667218433fb37606eee1df078c",
+      "handlers": [
+        {
+          "id": 0,
+          "name": "rc_cue_flat_advance",
+          "workgroupSize": 1,
+          "shaderBytes": 32661,
+          "shaderSha256": "8597f7cc84513bb43f47e1700334c60a776d7e408b4a9518d8fbe6fffd22dd23"
+        },
+        {
+          "id": 1,
+          "name": "rc_num_eval",
+          "workgroupSize": 1,
+          "shaderBytes": 17081,
+          "shaderSha256": "770f132f98d86fe7d4d169a632336cf9f70599d9609a4c04c3e8fdb52f47c221"
+        },
+        {
+          "id": 2,
+          "name": "rc_world_broad_commit_collision",
+          "workgroupSize": 1,
+          "shaderBytes": 42158,
+          "shaderSha256": "bcc6accd7fc989e046847fc754c2a1d21e4810adc47018df20a248b415e2154c"
+        }
+      ],
+      "actualReceiptPresent": false
+    },
+    {
+      "mode": "invocation-cache-v1",
+      "runtimeSha256": "05de29cab18f9743717769cb1b9a7c5a456ca1660ee553fd6251161d420ed356",
+      "bytecodeSha256": "958a525cb73faef1c369e9b4c99bad5155c32fa4d4f307a7a5ae27ef8fea01c3",
+      "vmShaderSha256": "a61172ff26cbdbfeeb1dd9e831a1015ea40fd47485260167ea99029907226bed",
+      "handlers": [
+        {
+          "id": 0,
+          "name": "rc_cue_flat_advance",
+          "workgroupSize": 1,
+          "shaderBytes": 32661,
+          "shaderSha256": "8597f7cc84513bb43f47e1700334c60a776d7e408b4a9518d8fbe6fffd22dd23"
+        },
+        {
+          "id": 1,
+          "name": "rc_num_eval",
+          "workgroupSize": 1,
+          "shaderBytes": 17081,
+          "shaderSha256": "770f132f98d86fe7d4d169a632336cf9f70599d9609a4c04c3e8fdb52f47c221"
+        },
+        {
+          "id": 2,
+          "name": "rc_world_broad_commit_collision",
+          "workgroupSize": 1,
+          "shaderBytes": 42158,
+          "shaderSha256": "bcc6accd7fc989e046847fc754c2a1d21e4810adc47018df20a248b415e2154c"
+        }
+      ],
+      "actualReceiptPresent": false
+    }
+  ],
+  "cause": {
+    "signal9Confirmed": true,
+    "oomConfirmed": false,
+    "testTimeoutConfigured": false,
+    "childRlimitsCaptured": false,
+    "cgroupCountersAvailable": false,
+    "freshPsCannotDescribeOtherExecNamespaces": true,
+    "knownOwnSessionsTerminal": [
+      {
+        "session": 29923,
+        "childReturncode": 0
+      },
+      {
+        "session": 86134,
+        "childReturncode": 0
+      },
+      {
+        "session": 82699,
+        "childReturncode": -9
+      }
+    ]
+  },
+  "safeRetryChanges": {
+    "preparationOrder": "unchanged heavy broad macro first, then both small core variants",
+    "duplicateInspectionDeserializationsRemoved": true,
+    "identicalReadOnlyHostInputsSharedOnlyAfterExactPairEquality": true,
+    "shaderBytesChanged": false,
+    "physicalBoundsChanged": false,
+    "abbaExecutionOrderChanged": false
+  },
+  "tmpfsRelocation": {
+    "kind": "owned-diagnostic-tmpfs-to-disk-relocation-v1",
+    "atUtc": "2026-10-25T23:25:28.319876+00:00",
+    "originalPathsStillReadable": true,
+    "unrelatedFilesChanged": false,
+    "files": [
+      {
+        "original": "/tmp/resident-microcode-broad-pair-external.v8",
+        "diskArchive": "/workspace/scratch/f887f82f638e/resident-microcode-diagnostic-archive/resident-microcode-broad-pair-external.v8",
+        "bytes": 48830332,
+        "sha256": "ef3a4fa767926d50ad8583eaad6ef33045f0cffaa4feb2c61206d7c16853f3e1"
+      },
+      {
+        "original": "/tmp/resident-microcode-broad-pair-source.v8",
+        "diskArchive": "/workspace/scratch/f887f82f638e/resident-microcode-diagnostic-archive/resident-microcode-broad-pair-source.v8",
+        "bytes": 48830332,
+        "sha256": "33a0f13e33e22a4d4457aeec426951a2d04031818f5314d893e7d363148d714f"
+      },
+      {
+        "original": "/tmp/resident-microcode-external-pair-external.v8",
+        "diskArchive": "/workspace/scratch/f887f82f638e/resident-microcode-diagnostic-archive/resident-microcode-external-pair-external.v8",
+        "bytes": 47586346,
+        "sha256": "8f5b351e2dd08740fcc44729f77d7f041c653af8e97153d12df97fe0eb079567"
+      },
+      {
+        "original": "/tmp/resident-microcode-external-pair-source.v8",
+        "diskArchive": "/workspace/scratch/f887f82f638e/resident-microcode-diagnostic-archive/resident-microcode-external-pair-source.v8",
+        "bytes": 47586346,
+        "sha256": "14ccd7992330e36b74a9e56c382402799fa1d2578d64f7cbc81a1fad15c0d535"
+      },
+      {
+        "original": "/tmp/resident-microcode-world-broad-v1/actual.v8",
+        "diskArchive": "/workspace/scratch/f887f82f638e/resident-microcode-diagnostic-archive/resident-microcode-world-broad-v1/actual.v8",
+        "bytes": 3414137,
+        "sha256": "b3d36047ac4659c84fabafd25f2deded9c25ae2cb25b14183d7cec152032c571"
+      },
+      {
+        "original": "/tmp/resident-microcode-world-broad-v1/runtime.v8",
+        "diskArchive": "/workspace/scratch/f887f82f638e/resident-microcode-diagnostic-archive/resident-microcode-world-broad-v1/runtime.v8",
+        "bytes": 13723513,
+        "sha256": "e883cca5569191dff72f3feec7bc8949ebc8e6fcb4f8181dcd4f2e9b9227f65f"
+      },
+      {
+        "original": "/tmp/resident-microcode-world-external-v1/runtime.v8",
+        "diskArchive": "/workspace/scratch/f887f82f638e/resident-microcode-diagnostic-archive/resident-microcode-world-external-v1/runtime.v8",
+        "bytes": 13845754,
+        "sha256": "6aa5b97797902ace3aae0822b08fc4a2945b9ed941baaa5a91bfe83c5c36deb5"
+      },
+      {
+        "original": "/tmp/resident-microcode-world-external-v2/actual.v8",
+        "diskArchive": "/workspace/scratch/f887f82f638e/resident-microcode-diagnostic-archive/resident-microcode-world-external-v2/actual.v8",
+        "bytes": 3413970,
+        "sha256": "ede21bafff473e9b64ac49b58ad0ad8efb47127699da8bf0f461b70277f213a5"
+      },
+      {
+        "original": "/tmp/resident-microcode-world-external-v2/runtime.v8",
+        "diskArchive": "/workspace/scratch/f887f82f638e/resident-microcode-diagnostic-archive/resident-microcode-world-external-v2/runtime.v8",
+        "bytes": 13845754,
+        "sha256": "6aa5b97797902ace3aae0822b08fc4a2945b9ed941baaa5a91bfe83c5c36deb5"
+      },
+      {
+        "original": "/tmp/resident-microcode-world-host-costs.v8",
+        "diskArchive": "/workspace/scratch/f887f82f638e/resident-microcode-diagnostic-archive/resident-microcode-world-host-costs.v8",
+        "bytes": 6022895,
+        "sha256": "c8a1d6e6483ca9e35e3df51e36644b0a7a7669b19bf30cc3f7c8cce74828a42c"
+      },
+      {
+        "original": "/tmp/resident-microcode-world-opcode-loads-v1/actual.v8",
+        "diskArchive": "/workspace/scratch/f887f82f638e/resident-microcode-diagnostic-archive/resident-microcode-world-opcode-loads-v1/actual.v8",
+        "bytes": 3414137,
+        "sha256": "8cd0db5b823f1a840741624577f6af50e8bd08f80ed0103fcebff47feefee3b4"
+      },
+      {
+        "original": "/tmp/resident-microcode-world-opcode-loads-v1/runtime.v8",
+        "diskArchive": "/workspace/scratch/f887f82f638e/resident-microcode-diagnostic-archive/resident-microcode-world-opcode-loads-v1/runtime.v8",
+        "bytes": 13725999,
+        "sha256": "00653ee51a1d16694b41cf9195e0cdf68a14bb950264632f50b08c3c25d197fb"
+      },
+      {
+        "original": "/tmp/resident-microcode-world-v1/runtime.v8",
+        "diskArchive": "/workspace/scratch/f887f82f638e/resident-microcode-diagnostic-archive/resident-microcode-world-v1/runtime.v8",
+        "bytes": 13913085,
+        "sha256": "dedcbffe9ec7257c13e039a3357014195bb46d0b12ffc4310d31ec0e2bec8c78"
+      }
+    ],
+    "totalBytes": 278152600
+  }
+}

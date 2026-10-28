@@ -1,0 +1,68 @@
+{
+  "sourceCommit": "7512e3a",
+  "scope": "Original selected-2 authentic t0. Old files read verbatim from source commit; source/stages plus complete fixed h2 physical initial/program/geometry/layout. No source continuation runs.",
+  "signature": {
+    "initial": {
+      "source": "edb9f1c0f1ebcd5724cc920e6d9963d5ebb313c1dbdd90ad2b2cf143c0882ef8",
+      "stages": [
+        "805009c237e7ac8626a5890643e1a23b7247d719e588cc7555278ffd5b395502",
+        "1c3710fec8bb4f82054ccda847a8acf8bacf016d9c54737fdf5bda64fa1870be",
+        "1ea98c463fabedf2f34b59b708fbee40b88cde8f98e673e9b915bd857950b815",
+        "e58244c0c5d5d9c7cf05c23b6749a9b72df34cc6633656f2d748228612be752e",
+        "ef7c5db509b39f377fd44f8136e1e6c02e1b15b0d5b3a43582f49986ddca7f70",
+        "a55395b0687e76659ec0054b26641186e6e6898bc78d0eb7f23a0adc53de88b2",
+        "077242043e426c467f61ee641b0cc8e93793d54129352ba18400456429cc1f1d",
+        "73093b8db349cbf3a04efedd44612333e765b62987228ab274a88cd874d44418",
+        "17f2331ac1707104980464476475e01a4d38d8d7ccff9d924590c8ff2d759956",
+        "bdb544be9a517a4351e4e83d6275ea322ea357769bf9b987aee1fbb360a282f0",
+        "c3305315e1532992058ec50d851b0690b0089d8d6c07234c462fc7ac87407ff5",
+        "440badda65827aba31b1b32809b18914782e2448786400c67bb8e400679a3b50"
+      ]
+    },
+    "current": {
+      "source": "c9c44beedea32d4f46125be3f244a0eaf7be819a13465d3311f0dd6b5ae3773d",
+      "stages": [
+        "41b93f62f80ed5024f40817c16d37581854af22c6d52ce24d70c9d9dfb919d7c",
+        "1c3710fec8bb4f82054ccda847a8acf8bacf016d9c54737fdf5bda64fa1870be",
+        "1ea98c463fabedf2f34b59b708fbee40b88cde8f98e673e9b915bd857950b815",
+        "e58244c0c5d5d9c7cf05c23b6749a9b72df34cc6633656f2d748228612be752e",
+        "ef7c5db509b39f377fd44f8136e1e6c02e1b15b0d5b3a43582f49986ddca7f70",
+        "a55395b0687e76659ec0054b26641186e6e6898bc78d0eb7f23a0adc53de88b2",
+        "077242043e426c467f61ee641b0cc8e93793d54129352ba18400456429cc1f1d",
+        "73093b8db349cbf3a04efedd44612333e765b62987228ab274a88cd874d44418",
+        "17f2331ac1707104980464476475e01a4d38d8d7ccff9d924590c8ff2d759956",
+        "bdb544be9a517a4351e4e83d6275ea322ea357769bf9b987aee1fbb360a282f0",
+        "c3305315e1532992058ec50d851b0690b0089d8d6c07234c462fc7ac87407ff5",
+        "440badda65827aba31b1b32809b18914782e2448786400c67bb8e400679a3b50"
+      ]
+    },
+    "empty": {
+      "source": "72397dc8e430152fec7a3d1ee94c70ba3338b5ad461237662c4994090b7cfed8",
+      "stages": [
+        "35c99781d895b5ecfb45c2d25b2aef28425eab5b2d3aebf2204076552c0887e7",
+        "078cefbc8fb857f220f2e4a353f54d6b4bee0f3e5d41007fd057f94740d3152b",
+        "c3c44ab2ba7fb5789d4b1ebe09cf3ca4e0c7015da849dbc682b0ab56dcb7bee6",
+        "29563bfe4fcbdbe356b027b6ca042f166b30d8247aafeb4498ac5aaef67362bb",
+        "febd6ebd5d02e3f89776411f4c984da6db112a0293dc1eec002d7230d883ae63",
+        "05ffce1a54f2f8817a6194df7ffbbc3001462a1cab6b55a52d8de17dbde75e03"
+      ]
+    },
+    "physical": {
+      "source": "fc3c0d2db9b7156ba46f7ebbdde88b013e05863f20c0226507121f566e871f51",
+      "stages": [
+        "7d8b32cf4d40970c11a97bdb006df1d261c1f689610d9d72864577beae7ee033",
+        "40ebe26a14feab6ce8c421673a764299a0fdc6a35ae5e3fe2ea226f8df39eaaa",
+        "ab1e9abec9930fdb6d08dcbd2185917b03e66a8c39fdbc186e5cf21cc9f8dc04",
+        "86d0db3cadf3f860e35c4affd7f93e4f855057ff65ba626b9a3744f70d869c38",
+        "092d975c9a133e06a4af751ad92c5628a7999d74630d0cacb2b7302d59516681",
+        "ad083fd998988cd11ed1c3840b98579478b95b43513805c067651e6b1ba4dc5f",
+        "bd6d6ac667f0b0e90f88bcc01143a341689530bccfae27f200ea5f361d9d9fa8",
+        "da80a620c4976eba04d77bede2db68e451e02ab2d52897618b694926098cc850"
+      ]
+    },
+    "initialWords": "69086622f287041db8058e924a7b1b8b4bf22f0ad6fe08034ec5b38dcbc08306",
+    "program": "8f3f25666f6f6e506c5d68c71d18dce2686ebd726a52ecaa6b68d0cf50d7b432",
+    "geometry": "5fd24b20bfa4190bcb088c045f9c3122e3690190039b1d13ccf77df3ae001707",
+    "layout": "{\"scene\":0,\"initialization\":4066,\"journal\":7872,\"bridge\":55360,\"words\":73696,\"firstBridge\":55360,\"energy\":55424,\"solver\":55616,\"coupled\":55936,\"bodies\":4864,\"roster\":23680,\"caches\":37632,\"control\":61376,\"input\":71744,\"saved\":71888,\"output\":72016,\"ccdInput\":72512,\"ccdOutput\":72640,\"cueControl\":71680,\"sphereControl\":72704,\"ccdInputs\":72768,\"sphereCcdOutputs\":73008,\"postControl\":73088,\"fatInputs\":73152,\"fatOutputs\":73224,\"fatBounds\":73248,\"patchOutputs\":73280,\"broad\":36544,\"bvh\":30208,\"bvhScratch\":32448,\"initialBroadControl\":54528,\"physical\":true,\"finalMass\":true,\"massState\":73440,\"physicalControl\":73408,\"applicationControl\":61248,\"helperTorque\":61280,\"clockOutput\":61312,\"cue\":5184,\"prefixControl\":61408,\"others\":61440,\"floorBase\":61504,\"guardBase\":62208,\"rosterBase\":63552,\"preCcd\":63616,\"tape\":64128,\"numberInput\":64704,\"numberRegisters\":64800,\"numberControl\":65560,\"applicationConstants\":65572,\"secondControl\":65600,\"control2\":65664,\"currentFloor\":65728,\"currentGuard\":66432,\"currentEmpty\":67776,\"currentPre\":69952,\"currentRoster\":70464,\"numericalControl\":71616}"
+  }
+}

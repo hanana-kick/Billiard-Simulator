@@ -29,9 +29,9 @@ export async function createWholeHOracle({rule=DEFAULT_WHOLE_H_RULE}={}){return 
 /** Test-only variant: `source.seed` must be an independently admitted original
  * created seed with its original native hull ownership brands intact. Never
  * reconstruct it from resident outputs or feed its future snapshots to GPU. */
-export async function createWholeHOracleFromSource(source,{rule=DEFAULT_WHOLE_H_RULE}={}){
+export async function createWholeHOracleFromSource(source,{rule=DEFAULT_WHOLE_H_RULE,cueNumberProfile}={}){
  assert.ok(source?.seed,'independently created original source seed required');
- const seed=source.seed,world=await World.createReferenceStepper(seed),initial=world.snapshot();
+ const seed=source.seed,world=await World.createReferenceStepper(seed,cueNumberProfile===undefined?undefined:{cueNumberProfile}),initial=world.snapshot();
  // World.snapshot intentionally omits these owners until the first step. Read
  // their UNCHANGED original factories at frame0; no step, hand-written default,
  // resident encoder/decoder, or later reference receipt supplies expectations.
@@ -43,7 +43,7 @@ export async function createWholeHOracleFromSource(source,{rule=DEFAULT_WHOLE_H_
  const game=new globalThis.FourBallGame();game.restore(initial.game);let lastGamePending=clone(initial.game.pending),restObserved=false;
  let current=initial,cursor=initial.contactEvents.length,stopped=false,disposed=false;
  const scoring=()=>({accumulator:clone(accumulator),game:{pending:clone(lastGamePending),finished:restObserved,firstId:rule.firstId,secondId:rule.secondId},stopped,status:stopped?(accumulator.verificationIncomplete?'incomplete':accumulator.success&&!accumulator.invalid?'pass':'miss'):'running'});
- return Object.freeze({seed,initial:clone(initial),rule:clone(rule),artifactSha256:source.artifactSha256,scoring,
+ return Object.freeze({...(cueNumberProfile===undefined?{}:{cueNumberProfile}),seed,initial:clone(initial),rule:clone(rule),artifactSha256:source.artifactSha256,scoring,
   async step(){assert.equal(disposed,false);assert.equal(stopped,false,'Do not continue an already-terminal physical query');const previous=current,next=await world.step();assert.equal(next.frame,previous.frame+1);assert.ok(next.time>previous.time);assert.equal(next.outerSubstep,(previous.outerSubstep+1)%previous.subdivisions);
    assert.ok(next.contactEvents.length>=cursor);for(let i=0;i<cursor;i++)assert.deepEqual(next.contactEvents[i],previous.contactEvents[i],'original append-only history');
    for(;cursor<next.contactEvents.length;cursor++){Core.observePhysicalEvent(request,accumulator,next.contactEvents[cursor]);game.contact(next.contactEvents[cursor]);}

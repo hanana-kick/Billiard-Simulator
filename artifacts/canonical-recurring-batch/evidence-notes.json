@@ -1,0 +1,118 @@
+{
+  "sourceCommit": "8e55403",
+  "sourceFreezeScope": "Static transitive deterministic-module imports of tests/deterministic-recurring-batch.mjs; hashes captured before native run. Unrelated concurrently edited qt/world modules excluded because not imported.",
+  "nativeProcess": {
+    "boundedNativeProcess": true,
+    "exitCode": 0,
+    "stopReason": null,
+    "sampledAggregateRSSMiB": 1107.86,
+    "maxChildRSSMiB": 1071.91,
+    "rssCoverage": "PPid status-table ancestry; sampled aggregate, RUSAGE_CHILDREN maximum separately",
+    "elapsedSeconds": 39.471,
+    "limitRSSMiB": 1500,
+    "limitSeconds": 230.0
+  },
+  "physicsOnly": true,
+  "gameplayVerdict": "not-evaluated",
+  "realHardwareThroughputMeasured": false,
+  "postNativeHardening": "Preflight rejects non-1D workgroup, original non-x global IDs, extra entry args and unclassified storage. Generated shaders for all34 variants at3+4bodies byte-identical to native8e55403; see guard-hardening-code-identity.json.",
+  "cpuRegression": {
+    "tests": 16,
+    "pass": 13,
+    "gpuSkipped": 3
+  },
+  "scaleNative": {
+    "sourceCommit": "e46df05",
+    "sourceHashes": "scale-source-sha256.txt",
+    "nativeReceipt": "scale-receipt.json",
+    "nativeProcess": "scale-process.json",
+    "allFrozenHashesVerifiedAfterRun": true,
+    "boundedPrefixesOnly": true,
+    "maxPrefixes": 1,
+    "diagnosticCandidates": 1024,
+    "compactCandidates": 2048,
+    "fullRestThousandCandidateThroughput": false,
+    "realHardwareThroughputMeasured": false
+  },
+  "independentReview": {
+    "checkpoint": "e46df05",
+    "actualPhaseStorageAndOwnershipAudit": "pass",
+    "n1ScheduleBodies": [
+      3,
+      4
+    ],
+    "n1SchedulePrefixes": [
+      1,
+      3
+    ],
+    "productionScope": "SHA-256-pinned prepared recurrence kernels only; internal raw lift requires audited bounded local indices"
+  },
+  "p40MixedOutcomes": [
+    {
+      "profile": "canonical-local-v1",
+      "tailMaxNodes": 256,
+      "candidateCount": 3,
+      "physicsStatusReasonFlags": [
+        [
+          9,
+          0,
+          1
+        ],
+        [
+          7,
+          1,
+          0
+        ],
+        [
+          5,
+          1,
+          0
+        ]
+      ]
+    },
+    {
+      "profile": "strict-carried-v1",
+      "tailMaxNodes": 256,
+      "candidateCount": 3,
+      "physicsStatusReasonFlags": [
+        [
+          5,
+          42,
+          0
+        ],
+        [
+          7,
+          1,
+          0
+        ],
+        [
+          5,
+          1,
+          0
+        ]
+      ]
+    },
+    {
+      "profile": "canonical-local-v1",
+      "tailMaxNodes": 1,
+      "candidateCount": 3,
+      "physicsStatusReasonFlags": [
+        [
+          5,
+          46,
+          0
+        ],
+        [
+          7,
+          1,
+          0
+        ],
+        [
+          5,
+          1,
+          0
+        ]
+      ]
+    }
+  ]
+}

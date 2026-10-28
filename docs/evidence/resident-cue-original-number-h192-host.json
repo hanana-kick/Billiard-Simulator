@@ -1,0 +1,87 @@
+{
+  "kind": "resident-created-original-number-profile-h192-v1",
+  "status": "pass-under-explicit-original-number-reference",
+  "referenceAuthority": "original-js-number-v1",
+  "referenceAuthorityScope": "cue lateral and compliant tip only; other CPU owners unchanged, including legacy double-single angular patch",
+  "cueNumberProfileOnly": true,
+  "legacyReferenceDefaultUnchanged": true,
+  "historicalApproximateReferenceStillFails": true,
+  "immutableArtifacts": {
+    "initial": "c500a622817129cfa240aa6ac2a49582dd2391398a6e391b1692563cf34d7b53",
+    "expected": "eefa6069514ae4ae0c7cf4ae593fa1591a8551c4b0d172d0b51691b85f329226",
+    "continuation": "c1013531a239adb273544bbf39e2840821131c89fb555f059416c67c2a0f051c"
+  },
+  "newExpectedSha256": "cb7141060e09646967e6a990d7172e9869a0faf1f956c7cd01ec7d6e224da4a6",
+  "sourceSha256": "5a18bbbbd646454f2e00f7b1422773b2851b64d5ff165626f2a9f835ff86c0e7",
+  "bytecodeSha256": "f69fed561bc145fb685f59b78fc5891314030cacf82d66e6bdc67e1a09cd438a",
+  "compiledInstructionsAndSignaturesUnchanged": true,
+  "originalPhysicsSha256": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d",
+  "actualBanksUnchanged": true,
+  "expectedFutureRuntimeInputs": false,
+  "newVmEvolution": false,
+  "newGpuExecution": false,
+  "newNativeH192Execution": false,
+  "comparison": {
+    "kind": "resident-tip-impact-created-host-comparison-v1",
+    "createdInput": true,
+    "rawInput": false,
+    "gpuExecuted": false,
+    "frames": 192,
+    "checkpoints": [
+      128,
+      192
+    ],
+    "all11SourceGroups": true,
+    "nativePhysicsLabOuter": true,
+    "fullAcceptedEmissionTapeQualified": true,
+    "events": 1,
+    "coverage": [
+      {
+        "source": "unchanged original PhysicsLab.step(1) completed outer checkpoints",
+        "exact": [
+          "four native ball canonical pose/rotation/velocity/inverse mass/inertia words and scene sleeping",
+          "live shaft/head canonical pose/rotation/velocity words",
+          "compliant contact flags, counts, tangent, stats and binary64 timestamps",
+          "committed h/outer/substep, latched subdivisions and binary64 clock",
+          "represented original optimizer/game counters and debounce history",
+          "all post-creation accepted emission key/time/h/outer/substep receipts"
+        ],
+        "omitted": [
+          "native contact caches, BVH, complete scene/journal allocator and solver warmstarts require the independent all11 source-owner gate",
+          "presentation labels/event positions, paths and ranking diagnostics",
+          "cue native joint impulses are not projected here"
+        ],
+        "wholeOwnerEquality": false,
+        "fullRest": false,
+        "hardwarePerformance": false,
+        "productionReadback": false
+      },
+      {
+        "source": "unchanged original PhysicsLab.step(1) completed outer checkpoints",
+        "exact": [
+          "four native ball canonical pose/rotation/velocity/inverse mass/inertia words and scene sleeping",
+          "live shaft/head canonical pose/rotation/velocity words",
+          "compliant contact flags, counts, tangent, stats and binary64 timestamps",
+          "committed h/outer/substep, latched subdivisions and binary64 clock",
+          "represented original optimizer/game counters and debounce history",
+          "all post-creation accepted emission key/time/h/outer/substep receipts"
+        ],
+        "omitted": [
+          "native contact caches, BVH, complete scene/journal allocator and solver warmstarts require the independent all11 source-owner gate",
+          "presentation labels/event positions, paths and ranking diagnostics",
+          "cue native joint impulses are not projected here"
+        ],
+        "wholeOwnerEquality": false,
+        "fullRest": false,
+        "hardwarePerformance": false,
+        "productionReadback": false
+      }
+    ],
+    "rawToStrikeQualified": false,
+    "fullRest": false,
+    "native1024": false
+  },
+  "fullRest": false,
+  "native1024": false,
+  "hardwarePerformance": false
+}

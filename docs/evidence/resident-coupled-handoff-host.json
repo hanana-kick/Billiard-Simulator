@@ -1,0 +1,428 @@
+{
+  "kind": "resident-coupled-h191-h192-handoff-host-v1",
+  "status": "pass",
+  "diagnosticOnly": true,
+  "rawWorldInput": false,
+  "gpuExecuted": false,
+  "sourceSha256": "5a18bbbbd646454f2e00f7b1422773b2851b64d5ff165626f2a9f835ff86c0e7",
+  "bytecodeSha256": "f69fed561bc145fb685f59b78fc5891314030cacf82d66e6bdc67e1a09cd438a",
+  "inputHashes": {
+    "initial": "c500a622817129cfa240aa6ac2a49582dd2391398a6e391b1692563cf34d7b53",
+    "continuation": "7d5f264cb6e73ebb4c437d0582bbf34407ea91901ba4cf7884ce2eb73c637efa",
+    "receipt": "150a4df0550aadaa88fb64943ea45ed23c81f7896b873228fdd55f20dce55125",
+    "expected": "c04be6c729651540a1993f0f4addbc7f4c1338851a5d141e5e107688e65e2b23",
+    "final": "c1013531a239adb273544bbf39e2840821131c89fb555f059416c67c2a0f051c"
+  },
+  "canonicalSourceSha256": "f1596e5536ea3ef393c639428a6ee15d29298db1ed7454446a3c8066f319d33b",
+  "canonicalBytecodeSha256": "a516927c9121dc0182f52529d01a2bf03c80ba37cabcd5aeb2545021200a458b",
+  "canonicalFunctions": 41,
+  "sharedCompilerAndVm": true,
+  "independentOriginalPhysicsComparison": {
+    "kind": "resident-tip-impact-created-host-comparison-v1",
+    "createdInput": true,
+    "rawInput": false,
+    "gpuExecuted": false,
+    "frames": 192,
+    "checkpoints": [
+      128,
+      192
+    ],
+    "all11SourceGroups": true,
+    "nativePhysicsLabOuter": true,
+    "fullAcceptedEmissionTapeQualified": true,
+    "events": 1,
+    "coverage": [
+      {
+        "source": "unchanged original PhysicsLab.step(1) completed outer checkpoints",
+        "exact": [
+          "four native ball canonical pose/rotation/velocity/inverse mass/inertia words and scene sleeping",
+          "live shaft/head canonical pose/rotation/velocity words",
+          "compliant contact flags, counts, tangent, stats and binary64 timestamps",
+          "committed h/outer/substep, latched subdivisions and binary64 clock",
+          "represented original optimizer/game counters and debounce history",
+          "all post-creation accepted emission key/time/h/outer/substep receipts"
+        ],
+        "omitted": [
+          "native contact caches, BVH, complete scene/journal allocator and solver warmstarts require the independent all11 source-owner gate",
+          "presentation labels/event positions, paths and ranking diagnostics",
+          "cue native joint impulses are not projected here"
+        ],
+        "wholeOwnerEquality": false,
+        "fullRest": false,
+        "hardwarePerformance": false,
+        "productionReadback": false
+      },
+      {
+        "source": "unchanged original PhysicsLab.step(1) completed outer checkpoints",
+        "exact": [
+          "four native ball canonical pose/rotation/velocity/inverse mass/inertia words and scene sleeping",
+          "live shaft/head canonical pose/rotation/velocity words",
+          "compliant contact flags, counts, tangent, stats and binary64 timestamps",
+          "committed h/outer/substep, latched subdivisions and binary64 clock",
+          "represented original optimizer/game counters and debounce history",
+          "all post-creation accepted emission key/time/h/outer/substep receipts"
+        ],
+        "omitted": [
+          "native contact caches, BVH, complete scene/journal allocator and solver warmstarts require the independent all11 source-owner gate",
+          "presentation labels/event positions, paths and ranking diagnostics",
+          "cue native joint impulses are not projected here"
+        ],
+        "wholeOwnerEquality": false,
+        "fullRest": false,
+        "hardwarePerformance": false,
+        "productionReadback": false
+      }
+    ],
+    "rawToStrikeQualified": false,
+    "fullRest": false,
+    "native1024": false
+  },
+  "segmentPumps": 244,
+  "segmentCoreSteps": 15418956,
+  "externalCalls": {
+    "rc_cue_flat_advance": 2,
+    "rc_num_eval": 9
+  },
+  "callReports": [
+    {
+      "index": 0,
+      "args": [
+        49728,
+        50912,
+        54368,
+        793032,
+        0,
+        32768
+      ],
+      "result": 0,
+      "worldCoreSteps": 4405862,
+      "canonicalCoreSteps": 4405866,
+      "canonicalChunks": 68,
+      "beforeControl": {
+        "worldH": 191,
+        "commonBase": 49728,
+        "roster": 54368,
+        "rosterStatus": 0,
+        "commonControl": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "scratchSha256": "cb3375705e7ee8a8ed8bd9f71e927ccc832b9062e753913d10eb4ab4443ec134"
+      },
+      "afterControl": {
+        "worldH": 191,
+        "commonBase": 49728,
+        "roster": 54368,
+        "rosterStatus": 0,
+        "commonControl": [
+          37,
+          4,
+          4,
+          1,
+          0,
+          1380139860,
+          804587,
+          4294967295,
+          49792,
+          49856,
+          50912,
+          805290,
+          12,
+          353,
+          1,
+          1380142659,
+          804587,
+          0,
+          107,
+          352,
+          1,
+          0,
+          0,
+          3,
+          45,
+          805146,
+          48
+        ],
+        "scratchSha256": "1050130a3851cf191be1c35baf4dc6f35eda545db59400da1fcded7a45313fb6"
+      },
+      "allStateAndDirtyScratchWordsExact": true
+    },
+    {
+      "index": 1,
+      "args": [
+        49728,
+        50912,
+        54368,
+        793032,
+        0,
+        32768
+      ],
+      "result": 0,
+      "worldCoreSteps": 4314181,
+      "canonicalCoreSteps": 4314185,
+      "canonicalChunks": 66,
+      "beforeControl": {
+        "worldH": 191,
+        "commonBase": 49728,
+        "roster": 54368,
+        "rosterStatus": 0,
+        "commonControl": [
+          37,
+          4,
+          4,
+          1,
+          0,
+          1380139860,
+          804587,
+          4294967295,
+          49792,
+          49856,
+          50912,
+          805290,
+          12,
+          353,
+          1,
+          1380142659,
+          804587,
+          0,
+          107,
+          352,
+          1,
+          0,
+          0,
+          3,
+          45,
+          805146,
+          48
+        ],
+        "scratchSha256": "1050130a3851cf191be1c35baf4dc6f35eda545db59400da1fcded7a45313fb6"
+      },
+      "afterControl": {
+        "worldH": 191,
+        "commonBase": 49728,
+        "roster": 54368,
+        "rosterStatus": 0,
+        "commonControl": [
+          74,
+          2,
+          9,
+          0,
+          0,
+          1380139860,
+          800512,
+          4294967295,
+          49792,
+          4294967295,
+          4294967295,
+          801437,
+          6,
+          353,
+          1,
+          1380142659,
+          807515,
+          0,
+          151,
+          352,
+          1,
+          0,
+          0,
+          3,
+          316,
+          801350,
+          29
+        ],
+        "scratchSha256": "738d5d139f514100a08cbc6e8ef412885ebf5d7196b1ab07093621a051dd1437"
+      },
+      "allStateAndDirtyScratchWordsExact": true
+    },
+    {
+      "index": 2,
+      "args": [
+        49728,
+        50912,
+        54368,
+        793032,
+        0,
+        32768
+      ],
+      "result": 1,
+      "worldCoreSteps": 3028574,
+      "canonicalCoreSteps": 3028578,
+      "canonicalChunks": 47,
+      "beforeControl": {
+        "worldH": 191,
+        "commonBase": 49728,
+        "roster": 54368,
+        "rosterStatus": 0,
+        "commonControl": [
+          74,
+          2,
+          9,
+          0,
+          0,
+          1380139860,
+          800512,
+          4294967295,
+          49792,
+          4294967295,
+          4294967295,
+          801437,
+          6,
+          353,
+          1,
+          1380142659,
+          807515,
+          0,
+          151,
+          352,
+          1,
+          0,
+          0,
+          3,
+          316,
+          801350,
+          29
+        ],
+        "scratchSha256": "738d5d139f514100a08cbc6e8ef412885ebf5d7196b1ab07093621a051dd1437"
+      },
+      "afterControl": {
+        "worldH": 191,
+        "commonBase": 49728,
+        "roster": 54368,
+        "rosterStatus": 1,
+        "commonControl": [
+          101,
+          10,
+          12,
+          0,
+          0,
+          1380139860,
+          809558,
+          4294967295,
+          49792,
+          4294967295,
+          4294967295,
+          810233,
+          15,
+          353,
+          0,
+          1380142659,
+          809558,
+          0,
+          117,
+          352,
+          1,
+          0,
+          0,
+          2,
+          0,
+          810170,
+          21
+        ],
+        "scratchSha256": "e35208770ed91a172526c22484bf3c5c388c734b721abece209dc078044a8219"
+      },
+      "allStateAndDirtyScratchWordsExact": true
+    }
+  ],
+  "gaps": [
+    {
+      "from": 0,
+      "to": 1,
+      "stateDifferences": [
+        {
+          "word": 126976,
+          "after": 109814,
+          "nextBefore": 109815
+        },
+        {
+          "word": 126979,
+          "after": 246741,
+          "nextBefore": 246743
+        },
+        {
+          "word": 126980,
+          "after": 64,
+          "nextBefore": 65
+        },
+        {
+          "word": 126982,
+          "after": 109815,
+          "nextBefore": 109816
+        },
+        {
+          "word": 126991,
+          "after": 65,
+          "nextBefore": 64
+        }
+      ],
+      "scratchDifferences": []
+    },
+    {
+      "from": 1,
+      "to": 2,
+      "stateDifferences": [
+        {
+          "word": 126976,
+          "after": 109815,
+          "nextBefore": 109816
+        },
+        {
+          "word": 126979,
+          "after": 246743,
+          "nextBefore": 246745
+        },
+        {
+          "word": 126982,
+          "after": 109816,
+          "nextBefore": 109817
+        },
+        {
+          "word": 126991,
+          "after": 64,
+          "nextBefore": 63
+        }
+      ],
+      "scratchDifferences": []
+    }
+  ],
+  "callInputSha256": "c15b0eebed74cb7a2ea2799f399131aa19b5802cf3d2cda6045a9a109d2c439d",
+  "assertionSha256": "d634320aeb00cca8de397f45495042cdc91c76b93587a2e5f15581878647b408",
+  "totalHostWallMs": 43102.954609,
+  "retention": {
+    "calls": 3,
+    "fullStatePerInstruction": false,
+    "arbitraryCallTrace": false
+  },
+  "nativeQualification": false,
+  "schemaEnvelopeOnly": {
+    "priorAssertionSha256": "19a48e3e7d3158149112b19580ef143174890a7a35fd0db1844d64d99d8ead9e",
+    "beforeAfterStateAndArgumentsUnchanged": true,
+    "inputFileUnchanged": true,
+    "newPhysicsExecution": false
+  }
+}

@@ -1,0 +1,6 @@
+import {runClothMicrotailsCPU} from '../../src/direct-candidate/deterministic-cloth-microtail.mjs';
+import {runRollingPartialCPU} from '../../src/direct-candidate/deterministic-rolling-partial.mjs';
+import fs from 'node:fs';import v8 from 'node:v8';import assert from 'node:assert/strict';
+import {fixture} from './canonical-selected-source.mjs';
+import {hydrateCanonicalSelectedGPUTrace} from '../../src/direct-candidate/canonical-selected-world-trace-hydrate.mjs';
+assert.throws(()=>runClothMicrotailsCPU(),/CPU_PHYSICS_FORBIDDEN_DURING_GPU_HYDRATION/);assert.throws(()=>runRollingPartialCPU(),/CPU_PHYSICS_FORBIDDEN_DURING_GPU_HYDRATION/);const name=process.argv[2]??'goal',positions=[[-.5,.03075,-.1],[-.42,.03075,-.08],[-.38645598584933644,.03075,-.1441006472903296],[-.4386177474789169,.03075,-.18698344749310994]],p=name==='late'?fixture(positions):fixture(undefined,name==='high'),dump=v8.deserialize(fs.readFileSync('/tmp/canonical-selected-world-gpu-'+name+'.v8')),receipt=hydrateCanonicalSelectedGPUTrace({...p,gpuCapture:dump.gpuCapture,result:dump.result});assert.deepEqual(receipt.adapterErrors,[]);assert.equal(receipt.captureComplete,true);assert.equal(receipt.backend,'webgpu');console.log(JSON.stringify({name,CPUPhysicsFunctionsForbidden:true,hydratedSourceRecords:receipt.trace.recordCount,compact:receipt.trace.compactResult}));

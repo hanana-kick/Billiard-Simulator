@@ -1,0 +1,58 @@
+{
+  "residentSecondPhaseVerified": true,
+  "cases": 67,
+  "words": 8576,
+  "extraNonemptySceneCases": 3,
+  "extraNonemptySceneWords": 384,
+  "extraTranslatedCases": 2,
+  "extraTranslatedWords": 256,
+  "sceneBytes": 96,
+  "allocatedDiagnosticBytes": 81568,
+  "exactWords": true,
+  "accepted": 63,
+  "compileMs": 7416.180984,
+  "compileStages": [
+    {
+      "name": "initialize",
+      "compileMs": 697.7264570000001,
+      "shaderBytes": 10632
+    },
+    {
+      "name": "clearance_pre",
+      "compileMs": 688.94777,
+      "shaderBytes": 10497
+    },
+    {
+      "name": "cue_contact",
+      "compileMs": 4418.023102,
+      "shaderBytes": 12298
+    },
+    {
+      "name": "cloth_advance",
+      "compileMs": 764.7335499999999,
+      "shaderBytes": 11764
+    },
+    {
+      "name": "clearance_post",
+      "compileMs": 649.4557960000002,
+      "shaderBytes": 10574
+    },
+    {
+      "name": "finalize",
+      "compileMs": 153.8437559999993,
+      "shaderBytes": 10333
+    }
+  ],
+  "shaderBytes": 66098,
+  "adapter": {
+    "subgroupMatrixConfigs": []
+  },
+  "candidates": 67,
+  "dispatches": 16386,
+  "scratchBytes": 8576,
+  "submitToReadMs": 2690.019561000001,
+  "exactInteger": true,
+  "hostPhysicsBetweenPhases": false,
+  "rawInputUploads": 1,
+  "sceneUploads": 1
+}

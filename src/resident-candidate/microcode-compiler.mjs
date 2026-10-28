@@ -4,10 +4,10 @@
  * compact GPU runtime consumes the result without importing this compiler.
  * Unknown constructs/types/builtins reject rather than select an approximation.
  */
-import {createHash} from 'node:crypto';
+import {createHash} from './source-sha256.mjs';
 import {parseMicrocodeWGSL} from './microcode-parser.mjs';
 import {MICROCODE_ISA as ISA} from './microcode-isa.mjs';
-import {approveSourceIntrinsics,MICROCODE_SOURCE_INTRINSICS} from './microcode-source-intrinsics.mjs';
+import {approveSourceIntrinsics,MICROCODE_SOURCE_INTRINSICS,sourceIntrinsicProfileAllows} from './microcode-source-intrinsics.mjs';
 import {approveSourceMacros} from './microcode-source-macros.mjs';
 const SCALARS=new Set(['u32','i32','f32','bool']);
 const scalar=name=>({kind:'scalar',name,scalar:name,words:1});
@@ -39,7 +39,7 @@ export function compileMicrocodeWGSL(code,{entry='main',storageBindings=ISA.bind
  if(typeof allocationMetadata!=='boolean')fail('Explicit allocationMetadata boolean required');
  if(intrinsicFunctions!==undefined){
   if(!Array.isArray(intrinsicFunctions)||intrinsicFunctions.some(x=>typeof x!=='string')||new Set(intrinsicFunctions).size!==intrinsicFunctions.length)fail('Explicit unique intrinsicFunctions source-name array required');
-  const allowed=new Set(MICROCODE_SOURCE_INTRINSICS.filter(x=>intrinsics==='source-continuations-v1'||intrinsics==='source-numeric-v1'&&['f64','numeric'].includes(x.family)||intrinsics==='source-f64-v1'&&x.family==='f64').map(x=>x.name));
+  const allowed=new Set(MICROCODE_SOURCE_INTRINSICS.filter(x=>sourceIntrinsicProfileAllows(intrinsics,x)).map(x=>x.name));
   for(const name of intrinsicFunctions)if(!allowed.has(name))fail('Intrinsic function outside explicit profile: '+name);
  }
  const intrinsicApproval=approveSourceIntrinsics(code,{profile:intrinsics,storageBindings,functionNames:intrinsicFunctions}),intrinsicEntries=new Map(intrinsicApproval.entries.map(x=>[x.name,x]));

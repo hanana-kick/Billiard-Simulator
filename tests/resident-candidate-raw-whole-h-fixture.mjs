@@ -35,7 +35,8 @@ function restoreController(raw){
 /** Real capture invokes original fork/controller.fire/PhysicsLab.strike, the
  * unchanged 13-call creation observer and byte-verifying initial importer.
  * Original expected evolution begins only AFTER that independent admission. */
-export async function createRawFirstHFixture({cases=RAW_FIRST_H_CASES,rule=DEFAULT_WHOLE_H_RULE,frames=1}={}){
+export async function createRawFirstHFixture({cases=RAW_FIRST_H_CASES,rule=DEFAULT_WHOLE_H_RULE,frames=1,cueNumberProfile}={}){
+ assert.ok(cueNumberProfile===undefined||['legacy-double-single-v1','original-js-number-v1'].includes(cueNumberProfile),'Known explicit CPU cueNumberProfile required');
  assert.ok(Number.isSafeInteger(frames)&&frames>=1&&frames<=8,'Explicit bounded source-oracle diagnostic frames required');
  await R.init();const source=await originalRegisteredFixture(),plan=await createWorldInitializationPlan({decoder:source.decoder,input:source.raw,rule}),controller=restoreController(source.raw),before=controller.lab.snapshot({trails:false}),results=[];
  try{
@@ -51,11 +52,11 @@ export async function createRawFirstHFixture({cases=RAW_FIRST_H_CASES,rule=DEFAU
    assert.deepEqual(seed.sourceOrigin.settings,row.settings,'no expected candidate normalization');
    assert.deepEqual(seed.cueInitial.sourceCreation.roles,source.seed.cueInitial.sourceCreation.roles,'original allocator handle order unchanged');
    assert.equal(prepared.candidateProvenance.captureNativeSteps,0);
-   const oracle=await createWholeHOracleFromSource({seed,artifactSha256:source.artifactSha256},{rule});
-   try{const initial=oracle.snapshot(),steps=[];assert.equal(initial.frame,0);for(let frame=1;frame<=frames;frame++){const step=await oracle.step();assert.equal(step.snapshot.frame,frame);steps.push(step);}const next=steps[0],final=steps.at(-1);results.push({row,status:STATUS.RUNNING,reason:REASON.NONE,kind:c.kind,seed,initial,next,...(frames===1?{}:{steps,final}),admission:prepared.admission});}
+   const oracle=await createWholeHOracleFromSource({seed,artifactSha256:source.artifactSha256},{rule,...(cueNumberProfile===undefined?{}:{cueNumberProfile})});
+   try{const initial=oracle.snapshot(),steps=[];if(cueNumberProfile!==undefined)assert.equal(initial.cue.referenceNumberProfile,cueNumberProfile);assert.equal(initial.frame,0);for(let frame=1;frame<=frames;frame++){const step=await oracle.step();assert.equal(step.snapshot.frame,frame);if(cueNumberProfile!==undefined)assert.equal(step.snapshot.cue.referenceNumberProfile,cueNumberProfile);steps.push(step);}const next=steps[0],final=steps.at(-1);results.push({row,status:STATUS.RUNNING,reason:REASON.NONE,kind:c.kind,seed,initial,next,...(frames===1?{}:{steps,final}),admission:prepared.admission});}
    finally{oracle.dispose();}
    assert.deepEqual(controller.lab.snapshot({trails:false}),before,'expected candidate capture/evolution never changes common original source');
   }
  }finally{clearTimeout(controller.noticeTimer);clearTimeout(controller.predictionTimer);controller.lab.dispose();}
- return{plan,source,rows:results.map(r=>r.row),results,rule,...(frames===1?{}:{frames})};
+ return{plan,source,rows:results.map(r=>r.row),results,rule,...(cueNumberProfile===undefined?{}:{cueNumberProfile}),...(frames===1?{}:{frames})};
 }

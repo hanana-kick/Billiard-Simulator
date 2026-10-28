@@ -1,0 +1,426 @@
+{
+  "profile": "prepared-source-law-cost-gate-cpu-v1",
+  "thresholdFrames": 16,
+  "thresholdOptimalityClaim": false,
+  "defaultThresholdFrames": 0,
+  "productionEnabled": false,
+  "freshConstructionExcludedFromTimer": true,
+  "snapshotRestoredAdmission": false,
+  "diagnosticRecordsDisabled": true,
+  "originalFallbackUnchanged": true,
+  "hybridEndpointIdentityClaim": false,
+  "results": [
+    {
+      "mode": "near-rail",
+      "frames": 96,
+      "warmupPerVariant": 3,
+      "samplesPerVariant": 7,
+      "samplesMs": {
+        "original": [
+          5.045940999999971,
+          5.248215000000016,
+          5.423789999999997,
+          5.505763000000002,
+          6.156353000000024,
+          6.370396000000028,
+          5.269836999999995
+        ],
+        "ungated": [
+          8.454535000000021,
+          8.560254000000043,
+          7.105553999999984,
+          8.111538999999993,
+          7.929303000000004,
+          6.075351999999953,
+          6.441853000000037
+        ],
+        "gate16": [
+          4.614160000000027,
+          4.130561999999998,
+          3.82626300000004,
+          3.670838999999944,
+          4.1843319999999835,
+          4.204122999999981,
+          3.9756190000000515
+        ]
+      },
+      "medianMs": {
+        "original": 5.423789999999997,
+        "ungated": 7.929303000000004,
+        "gate16": 4.130561999999998
+      },
+      "counters": {
+        "original": {
+          "requestedFrames": 96,
+          "analyticFrames": 0,
+          "axialFrames": 0,
+          "originalFrames": 96,
+          "actualWorldStepCalls": 96,
+          "eventPredictions": 0,
+          "pairRootCalls": 0,
+          "geometryBoundEvaluations": 0,
+          "geometryStaticTests": 0,
+          "axialAttempts": 0,
+          "costGateFallbacks": 0,
+          "prefixPairBoundTests": 0,
+          "prefixStaticBoundTests": 0,
+          "chunks": 1
+        },
+        "ungated": {
+          "requestedFrames": 96,
+          "analyticFrames": 93,
+          "axialFrames": 93,
+          "originalFrames": 3,
+          "actualWorldStepCalls": 3,
+          "eventPredictions": 9,
+          "pairRootCalls": 24,
+          "geometryBoundEvaluations": 90,
+          "geometryStaticTests": 632,
+          "axialAttempts": 9,
+          "costGateFallbacks": 0,
+          "prefixPairBoundTests": 21,
+          "prefixStaticBoundTests": 315,
+          "chunks": 9
+        },
+        "gate16": {
+          "requestedFrames": 96,
+          "analyticFrames": 70,
+          "axialFrames": 70,
+          "originalFrames": 26,
+          "actualWorldStepCalls": 26,
+          "eventPredictions": 3,
+          "pairRootCalls": 9,
+          "geometryBoundEvaluations": 30,
+          "geometryStaticTests": 237,
+          "axialAttempts": 3,
+          "costGateFallbacks": 1,
+          "prefixPairBoundTests": 6,
+          "prefixStaticBoundTests": 90,
+          "chunks": 3
+        }
+      },
+      "gateVsUngatedEndpointDelta": {
+        "position": 0.000011032447218894958,
+        "velocity": 0.0008672282881264099,
+        "angular": 0.013584136962890625,
+        "quaternionComponent": 0.00022166967391967773
+      },
+      "gateVsOriginalEndpointDelta": {
+        "position": 0.000023659318685531616,
+        "velocity": 0.000018596649169921875,
+        "angular": 0.012727737426757812,
+        "quaternionComponent": 0.0003031492233276367
+      },
+      "gateVsUngatedEventTraceIdentical": true
+    },
+    {
+      "mode": "forward-slip",
+      "frames": 96,
+      "warmupPerVariant": 3,
+      "samplesPerVariant": 7,
+      "samplesMs": {
+        "original": [
+          4.651285999999914,
+          5.24826500000006,
+          4.904398000000015,
+          5.207232999999974,
+          4.439086999999972,
+          4.416051999999922,
+          7.477363000000082
+        ],
+        "ungated": [
+          3.045327000000043,
+          2.4030290000000605,
+          2.5532160000000204,
+          2.804724999999962,
+          2.6787349999999606,
+          4.53420600000004,
+          3.5974479999999858
+        ],
+        "gate16": [
+          2.2957380000000285,
+          2.7339680000000044,
+          2.1039489999999432,
+          2.271431000000007,
+          2.3129129999999805,
+          3.215553,
+          3.184426999999914
+        ]
+      },
+      "medianMs": {
+        "original": 4.904398000000015,
+        "ungated": 2.804724999999962,
+        "gate16": 2.3129129999999805
+      },
+      "counters": {
+        "original": {
+          "requestedFrames": 96,
+          "analyticFrames": 0,
+          "axialFrames": 0,
+          "originalFrames": 96,
+          "actualWorldStepCalls": 96,
+          "eventPredictions": 0,
+          "pairRootCalls": 0,
+          "geometryBoundEvaluations": 0,
+          "geometryStaticTests": 0,
+          "axialAttempts": 0,
+          "costGateFallbacks": 0,
+          "prefixPairBoundTests": 0,
+          "prefixStaticBoundTests": 0,
+          "chunks": 1
+        },
+        "ungated": {
+          "requestedFrames": 96,
+          "analyticFrames": 81,
+          "axialFrames": 81,
+          "originalFrames": 15,
+          "actualWorldStepCalls": 15,
+          "eventPredictions": 3,
+          "pairRootCalls": 6,
+          "geometryBoundEvaluations": 12,
+          "geometryStaticTests": 90,
+          "axialAttempts": 3,
+          "costGateFallbacks": 0,
+          "prefixPairBoundTests": 3,
+          "prefixStaticBoundTests": 45,
+          "chunks": 3
+        },
+        "gate16": {
+          "requestedFrames": 96,
+          "analyticFrames": 81,
+          "axialFrames": 81,
+          "originalFrames": 15,
+          "actualWorldStepCalls": 15,
+          "eventPredictions": 2,
+          "pairRootCalls": 6,
+          "geometryBoundEvaluations": 12,
+          "geometryStaticTests": 90,
+          "axialAttempts": 2,
+          "costGateFallbacks": 1,
+          "prefixPairBoundTests": 3,
+          "prefixStaticBoundTests": 45,
+          "chunks": 2
+        }
+      },
+      "gateVsUngatedEndpointDelta": {
+        "position": 0,
+        "velocity": 0,
+        "angular": 0,
+        "quaternionComponent": 0
+      },
+      "gateVsOriginalEndpointDelta": {
+        "position": 0.00002876164102950352,
+        "velocity": 0.001952577382326126,
+        "angular": 0.16335201263427734,
+        "quaternionComponent": 0.00024324655532836914
+      },
+      "gateVsUngatedEventTraceIdentical": true
+    },
+    {
+      "mode": "moving-pair",
+      "frames": 96,
+      "warmupPerVariant": 3,
+      "samplesPerVariant": 7,
+      "samplesMs": {
+        "original": [
+          4.969996000000037,
+          4.537743999999975,
+          3.96826800000008,
+          5.138198999999986,
+          3.9053120000000945,
+          4.636923999999908,
+          4.737686999999937
+        ],
+        "ungated": [
+          4.514960999999971,
+          4.639617999999928,
+          4.668562000000065,
+          4.003371000000016,
+          3.4231869999999844,
+          5.358520999999996,
+          3.4246080000000347
+        ],
+        "gate16": [
+          4.15334699999994,
+          3.1920479999999998,
+          3.5231569999999692,
+          3.4950549999999794,
+          3.7279849999999897,
+          3.480301999999938,
+          3.4181489999999712
+        ]
+      },
+      "medianMs": {
+        "original": 4.636923999999908,
+        "ungated": 4.514960999999971,
+        "gate16": 3.4950549999999794
+      },
+      "counters": {
+        "original": {
+          "requestedFrames": 96,
+          "analyticFrames": 0,
+          "axialFrames": 0,
+          "originalFrames": 96,
+          "actualWorldStepCalls": 96,
+          "eventPredictions": 0,
+          "pairRootCalls": 0,
+          "geometryBoundEvaluations": 0,
+          "geometryStaticTests": 0,
+          "axialAttempts": 0,
+          "costGateFallbacks": 0,
+          "prefixPairBoundTests": 0,
+          "prefixStaticBoundTests": 0,
+          "chunks": 1
+        },
+        "ungated": {
+          "requestedFrames": 96,
+          "analyticFrames": 53,
+          "axialFrames": 53,
+          "originalFrames": 43,
+          "actualWorldStepCalls": 43,
+          "eventPredictions": 3,
+          "pairRootCalls": 6,
+          "geometryBoundEvaluations": 12,
+          "geometryStaticTests": 90,
+          "axialAttempts": 3,
+          "costGateFallbacks": 0,
+          "prefixPairBoundTests": 3,
+          "prefixStaticBoundTests": 45,
+          "chunks": 3
+        },
+        "gate16": {
+          "requestedFrames": 96,
+          "analyticFrames": 53,
+          "axialFrames": 53,
+          "originalFrames": 43,
+          "actualWorldStepCalls": 43,
+          "eventPredictions": 2,
+          "pairRootCalls": 6,
+          "geometryBoundEvaluations": 12,
+          "geometryStaticTests": 90,
+          "axialAttempts": 2,
+          "costGateFallbacks": 1,
+          "prefixPairBoundTests": 3,
+          "prefixStaticBoundTests": 45,
+          "chunks": 2
+        }
+      },
+      "gateVsUngatedEndpointDelta": {
+        "position": 0,
+        "velocity": 0,
+        "angular": 0,
+        "quaternionComponent": 0
+      },
+      "gateVsOriginalEndpointDelta": {
+        "position": 0.0000527261710259368,
+        "velocity": 0.0013913512229919434,
+        "angular": 0.1266336441040039,
+        "quaternionComponent": 0.0018801689147949219
+      },
+      "gateVsUngatedEventTraceIdentical": true
+    },
+    {
+      "mode": "reversal",
+      "frames": 96,
+      "warmupPerVariant": 3,
+      "samplesPerVariant": 7,
+      "samplesMs": {
+        "original": [
+          3.8727830000000267,
+          4.593368000000055,
+          4.428961000000072,
+          3.9111010000001443,
+          3.696138000000019,
+          4.234077999999954,
+          4.006235000000061
+        ],
+        "ungated": [
+          1.2525369999999612,
+          0.7541759999999158,
+          1.0490800000000036,
+          0.8797560000000431,
+          1.1043030000000726,
+          0.9086990000000696,
+          1.3420510000000831
+        ],
+        "gate16": [
+          0.8520629999999301,
+          0.6411659999998847,
+          0.8271760000000086,
+          0.7460939999998573,
+          0.719284000000016,
+          0.7001239999999598,
+          0.6983319999999367
+        ]
+      },
+      "medianMs": {
+        "original": 4.006235000000061,
+        "ungated": 1.0490800000000036,
+        "gate16": 0.719284000000016
+      },
+      "counters": {
+        "original": {
+          "requestedFrames": 96,
+          "analyticFrames": 0,
+          "axialFrames": 0,
+          "originalFrames": 96,
+          "actualWorldStepCalls": 96,
+          "eventPredictions": 0,
+          "pairRootCalls": 0,
+          "geometryBoundEvaluations": 0,
+          "geometryStaticTests": 0,
+          "axialAttempts": 0,
+          "costGateFallbacks": 0,
+          "prefixPairBoundTests": 0,
+          "prefixStaticBoundTests": 0,
+          "chunks": 1
+        },
+        "ungated": {
+          "requestedFrames": 96,
+          "analyticFrames": 96,
+          "axialFrames": 96,
+          "originalFrames": 0,
+          "actualWorldStepCalls": 0,
+          "eventPredictions": 1,
+          "pairRootCalls": 3,
+          "geometryBoundEvaluations": 9,
+          "geometryStaticTests": 45,
+          "axialAttempts": 1,
+          "costGateFallbacks": 0,
+          "prefixPairBoundTests": 3,
+          "prefixStaticBoundTests": 45,
+          "chunks": 1
+        },
+        "gate16": {
+          "requestedFrames": 96,
+          "analyticFrames": 96,
+          "axialFrames": 96,
+          "originalFrames": 0,
+          "actualWorldStepCalls": 0,
+          "eventPredictions": 1,
+          "pairRootCalls": 3,
+          "geometryBoundEvaluations": 9,
+          "geometryStaticTests": 45,
+          "axialAttempts": 1,
+          "costGateFallbacks": 0,
+          "prefixPairBoundTests": 3,
+          "prefixStaticBoundTests": 45,
+          "chunks": 1
+        }
+      },
+      "gateVsUngatedEndpointDelta": {
+        "position": 0,
+        "velocity": 0,
+        "angular": 0,
+        "quaternionComponent": 0
+      },
+      "gateVsOriginalEndpointDelta": {
+        "position": 0.00012410700419441335,
+        "velocity": 0.0012626200914382935,
+        "angular": 0.1318502426147461,
+        "quaternionComponent": 0.005805402994155884
+      },
+      "gateVsUngatedEventTraceIdentical": true
+    }
+  ]
+}

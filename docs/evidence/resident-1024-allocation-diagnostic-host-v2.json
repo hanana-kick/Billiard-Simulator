@@ -1,0 +1,71 @@
+{
+  "kind": "resident-1024-allocation-compact-host-v2",
+  "scope": "TEST-only historical25-buffer API allocation and compact ABI; native NOT RUN",
+  "sourceBase": "b6b5eba7cfa24b9c27756386508e81b2d76b8cd8",
+  "sourceSha256": {
+    "tests/resident-candidate-1024-allocation-plan.mjs": "a520f76a4fac21b112db8c2fba58ce7848e5e27c4348fac8897b5e6a472b20ef",
+    "tests/resident-candidate-1024-allocation-owner.mjs": "c5c5fa34220d3d4e6f2acf3022ece657393fe8026abe8142d2caf6659249acfc",
+    "tests/resident-candidate-1024-allocation-native.mjs": "940441f0a5b5dc44263e52e68c1b583ae068198d1ad7f95cee91063a6a07cb8b",
+    "tests/resident-candidate-1024-allocation-tests.mjs": "1f9fb0bb6fd4d27c9bb3074aac6cb8241659ffaff1efb4f7c1eb5c84c697e44b"
+  },
+  "prepared": {
+    "manifestSha256": "60d2c946911d0a087cad4811ad503e9d186700f7629f59932dea1f67b0b80f79",
+    "payloadSha256": "6bccb2666973cb4c155136ab4d5a5e88425dff83a814be9b062a1f94a1364a02",
+    "inputFileSha256": "b1ab2e331dc61e501a9421250f9ddc6e72d13103dcf770ddb58cce292fbfb8af",
+    "inputBytes": 130689,
+    "expectedFileSha256": "d418c115f12f0bb09162a07023d1b85a89b3fba9e7e1120879fb9bb17f7e6d5f",
+    "expectedBytes": 20873,
+    "shaderSha256": "db08dadde00cb78a8315a01f0bd25eb2ca1c49ea786b57e7a241b1d2570cf2c4",
+    "shaderBytes": 1308,
+    "decisionTimeoutMs": 900000,
+    "privatePathsOmitted": true
+  },
+  "host": {
+    "tests": 10,
+    "passed": 10,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 945.226568,
+    "logSha256": "9536ae72949e5dabc34c7ef05fa5f58e0f85df90111ff9b2e5e4e76f4277e11f",
+    "fakeDeviceNoncomputing": true,
+    "maximumFakePayloadBytesPerWave": 98304
+  },
+  "plannedNative": {
+    "banks": 2,
+    "count": 1024,
+    "rowsPerBank": 512,
+    "peakBuffers": 25,
+    "peakLogicalBufferBytes": 370787688,
+    "pipelines": 1,
+    "bufferCreations": 75,
+    "clearCommands": 60,
+    "writes": 12,
+    "guardDispatches": 4,
+    "copies": 4,
+    "submissions": 3,
+    "maps": 2,
+    "compactMapBytesPerFullWave": 16384,
+    "physicsDispatches": 0
+  },
+  "capability": {
+    "nativeExecuted": false,
+    "browserExecuted": false,
+    "productionClassifierExecuted": false,
+    "currentPhysicsRuntimeConstructed": false,
+    "sourceRowsAdmitted": false,
+    "physicalResidencyProven": false,
+    "physicsQualified": false,
+    "releaseQualified": false
+  },
+  "previousHostEvidence": "docs/evidence/resident-1024-allocation-diagnostic-host-v1.json",
+  "profileLabel": "historical-four-macro-512-h2-resources/current-mask0-compact-ABI",
+  "resourceReporting": {
+    "perBufferIdentityAndAccessCounters": true,
+    "expectedCreateDestroyBalance": [
+      75,
+      75
+    ],
+    "peakLiveBuffers": 25,
+    "cancelledWaveReadbackAccessed": false
+  }
+}

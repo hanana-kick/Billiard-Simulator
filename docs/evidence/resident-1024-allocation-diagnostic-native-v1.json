@@ -1,0 +1,235 @@
+{
+  "kind": "resident-1024-allocation-compact-native-evidence-v1",
+  "scope": "Historical four-macro 2x512 resource allocation/access/lifetime plus current mask0 integer compact ABI only; no physics runtime or production classifier",
+  "status": "native-and-independent-assertion-pass",
+  "sourceCommit": "ae076ced2d3a35402e736527b736fcbb7b9a6aa4",
+  "profileLabel": "historical-four-macro-512-h2-resources/current-mask0-compact-ABI",
+  "previousHostEvidence": "docs/evidence/resident-1024-allocation-diagnostic-host-v2.json",
+  "historicalLayoutEvidence": "docs/evidence/resident-1024-allocation-diagnostic-proposal-v1.json",
+  "sourceSha256": {
+    "src/resident-candidate/abi.mjs": "703a91112592c14d32dab16b278bb0f1d9ddc0bcb76ad6adeb3361146057df90",
+    "src/resident-candidate/numeric-profile.mjs": "90170db77099e64a910832c522dd8df989563e993db995e3ff113687ace401b5",
+    "src/resident-candidate/batch-protocol.mjs": "ffefaf1ccfab5df5797d3e3bbe34a7a730237ed81b9688a63e108c07182fef89",
+    "src/resident-candidate/initial-microcode-runtime.mjs": "01cd9caff226eb580ec6a56f1e9574996bf2814a104ca69c8384f96dd13d63c3",
+    "src/resident-candidate/initial-microcode-launch.mjs": "c20e54762ebda17a295b80bdc0fee609912403cdc3a8306b396f7455df9526c6",
+    "src/resident-candidate/initial-microcode-batch-plan.mjs": "7cfee00d0281a9189b4932351307465b9427ebb044f66d49ff0a0ec53adf4f75",
+    "src/resident-candidate/initial-microcode-batch-executor.mjs": "7ec06fc4a6ce5731162912ddb87dc21d7e39920b1404dc5323ef59e999478fda",
+    "src/resident-candidate/initial-microcode-publication.mjs": "4a9d5265e466872c5e1930d9ed8755fb311899b7fd23637da7f8f562e260f8e1",
+    "src/resident-candidate/microcode-resources.mjs": "d1b9f02995dc7cc3a17edbf3b571d6d27d141953f1b79170f3ee8e9f0df21269",
+    "tests/resident-candidate-1024-allocation-plan.mjs": "a520f76a4fac21b112db8c2fba58ce7848e5e27c4348fac8897b5e6a472b20ef",
+    "tests/resident-candidate-1024-allocation-owner.mjs": "c5c5fa34220d3d4e6f2acf3022ece657393fe8026abe8142d2caf6659249acfc",
+    "tests/resident-candidate-1024-allocation-native.mjs": "940441f0a5b5dc44263e52e68c1b583ae068198d1ad7f95cee91063a6a07cb8b",
+    "docs/evidence/resident-1024-allocation-diagnostic-proposal-v1.json": "bd33dfd0c14b29cb01124982487574dd641b97a47ec90a05ffdd960f8ce3a4aa"
+  },
+  "identity": {
+    "manifestFileSha256": "60d2c946911d0a087cad4811ad503e9d186700f7629f59932dea1f67b0b80f79",
+    "payloadCanonicalSha256": "6bccb2666973cb4c155136ab4d5a5e88425dff83a814be9b062a1f94a1364a02",
+    "shaderSha256": "db08dadde00cb78a8315a01f0bd25eb2ca1c49ea786b57e7a241b1d2570cf2c4",
+    "actualFileSha256": "2b4535187f8383253fefa1339e0a964537602fa470d2112bbd01e241bb22c98b",
+    "expectedFileSha256": "d418c115f12f0bb09162a07023d1b85a89b3fba9e7e1120879fb9bb17f7e6d5f",
+    "compileReceiptFileSha256": "b190ed33beac546ef85e505dac328a8dcb721c5076f1c6a3f8c9a1f5619fade6",
+    "compileReceiptCanonicalSha256": "cb8b7aa81031d304dd4afe5fcf8c4aa1f1759391afb9a084b0eabb807dacdbe9",
+    "decisionFileSha256": "c40f3e717b3524a29ad8b4ef261d035a4142eca3f0f86d90b31459e9c72cf84e",
+    "independentAssertionFileSha256": "0b45a2394136bf81a52f51b0bcdca531885aee6469549cfb1c61deff92ebfe84"
+  },
+  "adapter": {
+    "vendor": "google",
+    "architecture": "swiftshader",
+    "device": "swiftshader-device-subzero-",
+    "description": "SwiftShader driver 5.0.0",
+    "isFallbackAdapter": true
+  },
+  "grantedDeviceLimits": {
+    "maxStorageBufferBindingSize": 134217728,
+    "maxBufferSize": 268435456,
+    "maxStorageBuffersPerShaderStage": 8,
+    "maxBindingsPerBindGroup": 1000,
+    "maxBindGroups": 4,
+    "maxComputeInvocationsPerWorkgroup": 256,
+    "maxComputeWorkgroupSizeX": 256,
+    "maxComputeWorkgroupsPerDimension": 65535
+  },
+  "compileBarrier": {
+    "shaderBytes": 1308,
+    "shaderModules": 1,
+    "pipelines": 1,
+    "buffersBeforeDecision": 0,
+    "dispatchesBeforeDecision": 0,
+    "decisionTimeoutMs": 900000,
+    "decision": "run-fixed-three-waves",
+    "expectedOpenedByNative": false,
+    "hostWallMs": 29.89179800000001
+  },
+  "allocation": {
+    "banks": 2,
+    "rowsPerBank": 512,
+    "count": 1024,
+    "buffersCreated": 75,
+    "buffersDestroyed": 75,
+    "peakLiveBuffers": 25,
+    "peakLogicalBufferBytes": 370787688,
+    "largestBufferBytes": 129191904,
+    "storageBindingHeadroomBytes": 5025824,
+    "rowCountReduced": false,
+    "sourceBufferContents": "diagnostic zeros, not original initialization or future states"
+  },
+  "waves": [
+    {
+      "name": "complete",
+      "hostWallMs": 151.77567600000475,
+      "controlledTrigger": false,
+      "metrics": {
+        "peakLiveBuffers": 25,
+        "peakLiveBytes": 370787688,
+        "buffersCreated": 25,
+        "buffersDestroyed": 25,
+        "allocatedBytes": 370787688,
+        "clearCommands": 20,
+        "clearBytes": 370689384,
+        "writes": 4,
+        "writeBytes": 81920,
+        "dispatches": 2,
+        "copies": 2,
+        "copyBytes": 16384,
+        "submissions": 1,
+        "maps": 1,
+        "mapBytes": 16384,
+        "queueDrained": true,
+        "committed": true
+      },
+      "publicStatusCounts": {
+        "unsupported": 384,
+        "incomplete": 128,
+        "cancelled": 128,
+        "failed": 256,
+        "rejected": 128
+      },
+      "allPublicPassNull": true,
+      "all1024IdsAndOrderCheckedByIndependentAssertion": true,
+      "perResourceIdentitiesAndFullAccessCountersChecked": 25
+    },
+    {
+      "name": "cancel-after-clear",
+      "hostWallMs": 180.81693599999562,
+      "controlledTrigger": true,
+      "metrics": {
+        "peakLiveBuffers": 25,
+        "peakLiveBytes": 370787688,
+        "buffersCreated": 25,
+        "buffersDestroyed": 25,
+        "allocatedBytes": 370787688,
+        "clearCommands": 20,
+        "clearBytes": 370689384,
+        "writes": 4,
+        "writeBytes": 81920,
+        "dispatches": 0,
+        "copies": 0,
+        "copyBytes": 0,
+        "submissions": 1,
+        "maps": 0,
+        "mapBytes": 0,
+        "queueDrained": true,
+        "committed": false
+      },
+      "publicStatusCounts": {
+        "cancelled": 1024
+      },
+      "allPublicPassNull": true,
+      "all1024IdsAndOrderCheckedByIndependentAssertion": true,
+      "perResourceIdentitiesAndFullAccessCountersChecked": 25
+    },
+    {
+      "name": "stale-after-bank0",
+      "hostWallMs": 146.35801399999764,
+      "controlledTrigger": true,
+      "metrics": {
+        "peakLiveBuffers": 25,
+        "peakLiveBytes": 370787688,
+        "buffersCreated": 25,
+        "buffersDestroyed": 25,
+        "allocatedBytes": 370787688,
+        "clearCommands": 20,
+        "clearBytes": 370689384,
+        "writes": 4,
+        "writeBytes": 81920,
+        "dispatches": 2,
+        "copies": 2,
+        "copyBytes": 16384,
+        "submissions": 1,
+        "maps": 1,
+        "mapBytes": 16384,
+        "queueDrained": true,
+        "committed": false
+      },
+      "publicStatusCounts": {
+        "failed": 1024
+      },
+      "allPublicPassNull": true,
+      "all1024IdsAndOrderCheckedByIndependentAssertion": true,
+      "perResourceIdentitiesAndFullAccessCountersChecked": 25
+    }
+  ],
+  "aggregate": {
+    "clearCommands": 60,
+    "writes": 12,
+    "guardDispatches": 4,
+    "copies": 4,
+    "submissions": 3,
+    "maps": 2,
+    "compactBytesPerMap": 16384,
+    "mappedBytes": 32768,
+    "physicsDispatches": 0
+  },
+  "terminal": {
+    "returncode": 0,
+    "signal": null,
+    "supervisorWallSecondsIncludingDecisionWait": 36.00924506399315,
+    "deviceReleaseLogged": true
+  },
+  "memoryObservations": {
+    "supervisorSampleIntervalSeconds": 2,
+    "maximumSampledVmHwmKiB": 75540,
+    "maximumSampledVmRssKiB": 74584,
+    "nativeMaximumLoggedRssBytes": 837795840,
+    "nativeMaximumLoggedAt": {
+      "wave": "stale-after-bank0",
+      "phase": "uploaded"
+    },
+    "trueProcessPeakKnown": false,
+    "physicalGpuResidencyProven": false,
+    "caveat": "The supervisor missed the subsecond allocation waves; its terminal peakOwnedChildRssKiB is a maximum sampled VmHWM, not the true run peak. Event-log RSS is another discrete observation, not VRAM or a continuous peak measurement."
+  },
+  "measurementScope": "Single SwiftShader fallback run. Compile and wave durations are host wall time, not GPU timestamps, physical trajectory timings, calibrated throughput, or speedup.",
+  "negativeCoverage": {
+    "nativeControlledCancellationAfterClearAndDrain": true,
+    "nativeControlledStaleIdentityAfterBank0Staging": true,
+    "nativeDeviceLossInduced": false,
+    "nativeAllocationFailureInduced": false,
+    "lossAndAllocationFailureEvidence": "Earlier noncomputing HOST contracts only; synthetic device-lost ABI rows do not demonstrate real native device loss."
+  },
+  "capability": {
+    "nativeIntegerDiagnosticExecuted": true,
+    "browserExecuted": false,
+    "productionClassifierExecuted": false,
+    "physicsRuntimeConstructed": false,
+    "sourceRowsAdmitted": false,
+    "qualifiedMask": 0,
+    "publicPhysicalPassOrMissPublished": false,
+    "physicalResidencyProven": false,
+    "physicsQualified": false,
+    "releaseQualified": false,
+    "defaultBackendChanged": false
+  },
+  "auditDigests": {
+    "nativeLogSha256": "43ebd79e9067353f06c554d44a00c45ef41d42c7068315301b52193cef2eccd0",
+    "supervisorSamplesSha256": "0fb124cf9c609439196c267be16f6ee2755e516cad0e95a1f44c52ed25a48179",
+    "supervisorTerminalSha256": "afbae90b5882d6bf705eb35552ca8a0494003b9409cbd612e49cf6466d0597a4"
+  },
+  "curation": {
+    "existingTerminalArtifactsOnly": true,
+    "nativeRerun": false,
+    "testSuiteRerun": false,
+    "rawLogsAndCompactRowsCommitted": false,
+    "privateArtifactPathsCommitted": false
+  }
+}

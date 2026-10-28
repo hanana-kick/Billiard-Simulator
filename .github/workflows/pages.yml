@@ -22,10 +22,14 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
       - run: npm run prepare:engine
+      - name: TypeScript application contracts
+        run: npm run typecheck
       - name: Build bundled UI and WASM with Pretendard CDN font
         run: npm run build
       - name: Physics, search and feature regressions
         run: npm test
+      - name: Resident HOST contracts only (not GPU qualification)
+        run: npm run test:resident:host
       - name: Official component provenance
         run: npm run test:provenance
       - name: Verify preinstalled sandboxed Google Chrome

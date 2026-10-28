@@ -1,0 +1,20 @@
+{
+  "kind": "source-query-finalization-policy-host-v1",
+  "baseCommit": "688c4cf63931aff729b580800516f1d16aec1de1",
+  "separateDirectCodecRepair": "0b086b89b9b6a62b5d1e1b5b3d6e72201e39b656",
+  "policy": "source-gameplay-finalization-v1",
+  "legacyNamedPolicy": "source-route-query-v1",
+  "scope": "pure opt-in HOST policy and actual-source discrete semantic witnesses only",
+  "sourceClassesUnmodified": ["ThreeBallGame", "FourBallGame", "ShotSearchCore", "LabController"],
+  "intermediatePurposes": "delegate unchanged source query",
+  "positiveRequires": ["verify purpose", "explicit original source-game binding", "original route and constraint success", "no cue", "every original world object asleep", "actual original game.finish delta > 0"],
+  "earlyFoul": "irreversible query failure without fabricated finished delta or turn",
+  "incompleteStatusesRemainDistinct": true,
+  "hostTests": {"newPolicyPassed": 8, "allPassed": 82, "failed": 0, "nativeForwardSkipped": 6},
+  "nativeWorldInstantiated": false,
+  "gpuExecuted": false,
+  "physicalTrajectoryOrReachabilityClaim": false,
+  "runtimeActivation": false,
+  "observationV1GameplayCompatibility": false,
+  "nextGate": "reviewed versioned policy/binding propagation and actual CPU continuation before eventual GPU producer"
+}

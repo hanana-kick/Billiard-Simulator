@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {deserialize} from 'node:v8';
+import {compileMicrocodeWGSL} from '../src/resident-candidate/microcode-compiler.mjs';
+import {normalizeSourceMicrocode,createCoupledProfileReport} from './resident-candidate-coupled-profile-report.mjs';
+const compile=code=>compileMicrocodeWGSL(code,{entry:'main',allocationMetadata:true}),body='fn leaf(a:u32)->u32 {var v=array<u32,2>(a,3u);let p=&v;return (*p)[1u]+v[0u];}',main='fn main(){let x=leaf(7u);if(x>4u){let y=leaf(x);}}';
+test('normalized source transport is invariant to function/slot/branch relocation, including authorized local pointers',()=>{const a=normalizeSourceMicrocode(compile(body+main)),b=normalizeSourceMicrocode(compile(main+body));for(const name of a.keys()){assert.deepEqual(a.get(name).rows,b.get(name).rows);assert.deepEqual(a.get(name).signature,b.get(name).signature);}});
+test('normalization does not hide changed arithmetic immediates or source branch operations',()=>{const a=normalizeSourceMicrocode(compile(body+main)),b=normalizeSourceMicrocode(compile(body.replace('3u','4u')+main)),c=normalizeSourceMicrocode(compile(body+main.replace('>4u','>=4u')));assert.notDeepEqual(a.get('leaf').rows,b.get('leaf').rows);assert.notDeepEqual(a.get('main').rows,c.get('main').rows);});
+const reportPath=process.env.RESIDENT_COUPLED_PROFILE_REPORT;
+test('actual fixed source report proves optional-only delta without importing any evolved state',{skip:!reportPath},()=>{const r=JSON.parse(readFileSync(reportPath));assert.equal(r.status,'source-only-proof-pass');assert.equal(r.defaultProfileUnchanged,true);assert.equal(r.oldVmWordsLoaded,false);assert.equal(r.physicsExecuted,false);assert.equal(r.gpuExecuted,false);assert.equal(r.transportProof.allRetainedInstructionsSourceEquivalent,true);assert.equal(r.knownSegment.conditionalSavedCoreInstructions,11748611);assert.equal(r.knownSegment.conditionalRemainingCoreInstructions,3670345);assert.equal(r.commands.same244PumpComparison.addedHandlerDispatches,244);assert.equal(r.commands.same244PumpComparison.newHandlerInertCalls,241);assert.equal(r.optional.handlers.length,4);assert.equal(r.baseline.handlers.length,3);assert.equal(r.breakEven.noNumericalTimePrediction,true);});

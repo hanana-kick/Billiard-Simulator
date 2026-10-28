@@ -1,0 +1,299 @@
+{
+  "kind": "resident-initial-microcode-batch-host-evidence-v1",
+  "scope": "HOST source construction and noncomputing lifecycle only",
+  "sourceCheckpoints": [
+    "3b878ee",
+    "612924b",
+    "71c6818"
+  ],
+  "planGroups": {
+    "pass": 3,
+    "scope": "two genuine2-row banks, distinct rules/horizon negatives, exact source seals"
+  },
+  "lifecycleGroups": {
+    "pass": 6,
+    "processExit": 0,
+    "maxRssKiB": 511160,
+    "nodeOldSpaceMiB": 512,
+    "runner": "single-process TAP; attempted name filter did not exclude first case"
+  },
+  "phaseMatrix": {
+    "groupsPassed": 3,
+    "casesPassed": 30,
+    "modes": [
+      "cancel",
+      "stale",
+      "loss"
+    ],
+    "phases": [
+      "preflight",
+      "pipeline",
+      "allocation",
+      "upload",
+      "initialization",
+      "continuation",
+      "publication",
+      "copy",
+      "map",
+      "cleanup"
+    ],
+    "processExit": 0,
+    "maxRssKiB": 520016
+  },
+  "historicalFailure": {
+    "scope": "first combined HOST lifecycle run",
+    "outerExitCode": 1,
+    "elapsedMilliseconds": 212651.118504,
+    "reported": "file-level test failed only",
+    "signal": null,
+    "cause": "unproven; not labelled GPU failure or OOM",
+    "preservedLocalLog": "/workspace/scratch/f887f82f638e/resident-native-artifacts/host-tmp/initial-microcode-batch-executor.log"
+  },
+  "sourceOnly1024": {
+    "kind": "source-only-exact1024-bank-plan",
+    "planSha256": "652cfb9841eaae09090f9c14cbad923b1d12fd9a2225cd78695ab30ab1492216",
+    "count": 1024,
+    "totalBytes": 370787688,
+    "compactBytes": 16384,
+    "initializationDispatches": 136630,
+    "continuationDispatches": 20,
+    "banks": [
+      {
+        "first": 0,
+        "count": 512,
+        "sourceSha256": "86c0a2ce9ca618e89397ca50409a351c2fd1a7bd43bb0db99b278f5f27dc26a2",
+        "bytecodeSha256": "44c0bfeedd9e0abcd144980198d4ba88c55d6e218341e9aed170425dd292714e",
+        "vmStride": 7814,
+        "worldWords": 32297976,
+        "workCycles": 2
+      },
+      {
+        "first": 512,
+        "count": 512,
+        "sourceSha256": "86c0a2ce9ca618e89397ca50409a351c2fd1a7bd43bb0db99b278f5f27dc26a2",
+        "bytecodeSha256": "44c0bfeedd9e0abcd144980198d4ba88c55d6e218341e9aed170425dd292714e",
+        "vmStride": 7814,
+        "worldWords": 32297976,
+        "workCycles": 2
+      }
+    ],
+    "allocations": [
+      {
+        "bank": 0,
+        "name": "rawProgram",
+        "words": 5071,
+        "bytes": 20284,
+        "access": "read-only",
+        "usage": 136
+      },
+      {
+        "bank": 0,
+        "name": "rawGeometry",
+        "words": 11368,
+        "bytes": 45472,
+        "access": "read-only",
+        "usage": 136
+      },
+      {
+        "bank": 0,
+        "name": "worldTemplate",
+        "words": 62990,
+        "bytes": 251960,
+        "access": "read-only",
+        "usage": 136
+      },
+      {
+        "bank": 0,
+        "name": "worldProgram",
+        "words": 874992,
+        "bytes": 3499968,
+        "access": "read-only",
+        "usage": 136
+      },
+      {
+        "bank": 0,
+        "name": "worldGeometry",
+        "words": 25408,
+        "bytes": 101632,
+        "access": "read-only",
+        "usage": 136
+      },
+      {
+        "bank": 0,
+        "name": "worldState",
+        "words": 32297976,
+        "bytes": 129191904,
+        "access": "read-write",
+        "usage": 136
+      },
+      {
+        "bank": 0,
+        "name": "rawState",
+        "words": 1029120,
+        "bytes": 4116480,
+        "access": "read-write",
+        "usage": 136
+      },
+      {
+        "bank": 0,
+        "name": "scratch",
+        "words": 6979584,
+        "bytes": 27918336,
+        "access": "read-write",
+        "usage": 136
+      },
+      {
+        "bank": 0,
+        "name": "inputs",
+        "words": 8192,
+        "bytes": 32768,
+        "access": "read-write",
+        "usage": 136
+      },
+      {
+        "bank": 0,
+        "name": "microcode",
+        "words": 1048896,
+        "bytes": 4195584,
+        "access": "read-only",
+        "usage": 136
+      },
+      {
+        "bank": 0,
+        "name": "vmState",
+        "words": 4000768,
+        "bytes": 16003072,
+        "access": "read-write",
+        "usage": 136
+      },
+      {
+        "bank": 0,
+        "name": "compactResults",
+        "words": 2048,
+        "bytes": 8192,
+        "access": "read-write",
+        "usage": 140
+      },
+      {
+        "bank": 1,
+        "name": "rawProgram",
+        "words": 5071,
+        "bytes": 20284,
+        "access": "read-only",
+        "usage": 136
+      },
+      {
+        "bank": 1,
+        "name": "rawGeometry",
+        "words": 11368,
+        "bytes": 45472,
+        "access": "read-only",
+        "usage": 136
+      },
+      {
+        "bank": 1,
+        "name": "worldTemplate",
+        "words": 62990,
+        "bytes": 251960,
+        "access": "read-only",
+        "usage": 136
+      },
+      {
+        "bank": 1,
+        "name": "worldProgram",
+        "words": 874992,
+        "bytes": 3499968,
+        "access": "read-only",
+        "usage": 136
+      },
+      {
+        "bank": 1,
+        "name": "worldGeometry",
+        "words": 25408,
+        "bytes": 101632,
+        "access": "read-only",
+        "usage": 136
+      },
+      {
+        "bank": 1,
+        "name": "worldState",
+        "words": 32297976,
+        "bytes": 129191904,
+        "access": "read-write",
+        "usage": 136
+      },
+      {
+        "bank": 1,
+        "name": "rawState",
+        "words": 1029120,
+        "bytes": 4116480,
+        "access": "read-write",
+        "usage": 136
+      },
+      {
+        "bank": 1,
+        "name": "scratch",
+        "words": 6979584,
+        "bytes": 27918336,
+        "access": "read-write",
+        "usage": 136
+      },
+      {
+        "bank": 1,
+        "name": "inputs",
+        "words": 8192,
+        "bytes": 32768,
+        "access": "read-write",
+        "usage": 136
+      },
+      {
+        "bank": 1,
+        "name": "microcode",
+        "words": 1048896,
+        "bytes": 4195584,
+        "access": "read-only",
+        "usage": 136
+      },
+      {
+        "bank": 1,
+        "name": "vmState",
+        "words": 4000768,
+        "bytes": 16003072,
+        "access": "read-write",
+        "usage": 136
+      },
+      {
+        "bank": 1,
+        "name": "compactResults",
+        "words": 2048,
+        "bytes": 8192,
+        "access": "read-write",
+        "usage": 140
+      },
+      {
+        "bank": null,
+        "name": "compactReadback",
+        "words": 4096,
+        "bytes": 16384,
+        "access": "map-read",
+        "usage": 9
+      }
+    ],
+    "deviceAllocation": false,
+    "gpuExecution": false
+  },
+  "largePlanProcess": {
+    "exitCode": 0,
+    "maxRssKiB": 470564,
+    "fakeLargeBuffersAllocated": false
+  },
+  "qualification": {
+    "deviceFreeMemoryKnown": false,
+    "nativeExecution": false,
+    "physical1024": false,
+    "hardwarePerformance": false,
+    "fullRest": false,
+    "physicalPassMissPublisher": false,
+    "browserApplicationIntegration": false
+  }
+}

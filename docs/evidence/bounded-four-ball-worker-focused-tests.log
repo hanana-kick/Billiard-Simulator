@@ -1,0 +1,48 @@
+✔ lifecycle double: exact h budget suspends, retains owner, and resumes to original completion only (6.665352ms)
+✔ lifecycle double: wall budget under rendering contention does not claim rest or submit an h (0.7962ms)
+✔ lifecycle double: input and budgets are owned before awaiting, snapshots cannot mutate owner (1.323484ms)
+✔ lifecycle double: already-aborted signal starts no initialization or device work (0.376698ms)
+✔ lifecycle double: abort during an atomic h drains and reports the last committed h (0.993086ms)
+✔ lifecycle double: stale owner cannot overwrite new operation; no overlapping old/new h (2.046944ms)
+✔ lifecycle double: superseding a suspended operation releases it before new initialization (1.111755ms)
+✔ lifecycle double: duplicate resume cannot enqueue concurrent physics slices (0.830771ms)
+✔ lifecycle double: device loss during h reports device-lost, releases after drain, never falls back (0.74333ms)
+✔ lifecycle double: unsupported phase and unexpected errors stay distinct and keep committed state (0.980718ms)
+✔ lifecycle double: forged completion without all physical-rest fields is failed, not complete (0.551581ms)
+✔ lifecycle double: signal abort while suspended settles finished and releases once (0.634426ms)
+✔ configuration limits are exact, bounded and do not rewrite physics time (0.266091ms)
+✔ public production service rejects a device-shaped test double, with no injected backend (35.474773ms)
+✔ lifecycle doubles: null/undefined rejections cannot strand result, finished or owned resources (3.832173ms)
+✔ lifecycle double: user scheduling RangeError is failed rather than physics-unsupported (0.516528ms)
+✔ lifecycle doubles: exact suspension microtask cancellation barrier drains once before replacement (3.120201ms)
+✔ lifecycle doubles: shared-memory capture rejects before replacing an existing owner (3.519172ms)
+✔ lifecycle doubles: cloned shared WebAssembly.Memory and unknown host data cannot hide storage (0.958204ms)
+✔ resource double: repeated h-like transient allocations remove tracking immediately (22.318778ms)
+✔ resource double: partial asynchronous stage construction buffers are still owned and released (0.441365ms)
+✔ resource double: nonextensible native wrappers retain safe weak cleanup fallback (0.267162ms)
+✔ resource double: falsy destruction errors are reported, all other buffers still release (0.300693ms)
+✔ source gate: exact supported generator order, with only one topology authority (37.806215ms)
+✔ source gate: production transport has no input-controlled code, source engine execution or CPU fallback (1.343133ms)
+✔ bootstrap double: real production bootstrap returns unsupported on null adapter without decoder/fetch/device (0.30536ms)
+✔ actual Node worker realm with DOUBLE physics preserves copied inputs, progress and graceful disposal (70.014282ms)
+✔ transport double: copied raw capture, bounded resume, exact rest, and one lifetime owner (13.487088ms)
+✔ transport double: progress snapshots are detached and callbacks cannot poison work (3.229726ms)
+✔ transport double: supersession drains old h and stale progress never overwrites the latest operation (3.880937ms)
+✔ transport double: duplicate, foreign-session and out-of-order messages are ignored (1.636916ms)
+✔ transport double: malformed/shared/accessor inputs reject before replacing existing operation (2.521529ms)
+✔ transport double: pre-abort performs zero initialization; mid-h cancel waits for the committed h (2.679497ms)
+✔ transport double: loss notification does not finalize before atomic h drains (2.001304ms)
+✔ transport double: dispose during initialization and h waits, and never destroys a live owner (2.435999ms)
+✔ transport double: null capability is unsupported and starts no work; dispose while opening drains bootstrap (0.808028ms)
+✔ transport double: abrupt worker failure settles callers but does not claim verified cleanup (1.567081ms)
+✔ transport double: unsupported physics result stays unsupported, never completion or CPU fallback (1.624787ms)
+✔ transport double: early device loss never reports ready or starts initialization (0.845254ms)
+✔ transport double: cross-realm shared buffers reject and typed-array metadata getters are never invoked (4.126847ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 209.759274

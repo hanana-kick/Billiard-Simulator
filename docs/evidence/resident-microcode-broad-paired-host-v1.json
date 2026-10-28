@@ -1,0 +1,55 @@
+{
+  "scope": "HOST-only original-created2h scalar broad versus external broad transport",
+  "status": "pass",
+  "handoffs": 147,
+  "counts": {
+    "rc_cue_flat_advance": 8,
+    "rc_num_eval": 137,
+    "rc_world_broad_commit_collision": 2
+  },
+  "allStateAndDirtyScratchWordsEqual": true,
+  "argumentAndReturnWordsEqual": true,
+  "cueAndBroadBeforeWordsEqual": true,
+  "voidReturnHasZeroWords": true,
+  "broadHandoffs": 2,
+  "arithmeticReferenceShared": true,
+  "independentOriginalCpuComparisons": [
+    "source all11 exact",
+    "external all11 exact"
+  ],
+  "originalDtAndSourceBudgetsUnchanged": true,
+  "expectedFutureRuntimeInput": false,
+  "rawInput": false,
+  "gpuExecuted": false,
+  "fullRest": false,
+  "source": {
+    "steps": "4710762",
+    "pumps": 186,
+    "hostWallMs": 14861.681881
+  },
+  "external": {
+    "steps": "3668671",
+    "pumps": 172,
+    "vmYields": 24,
+    "handoffs": {
+      "rc_cue_flat_advance": 8,
+      "rc_num_eval": 137,
+      "rc_world_broad_commit_collision": 2
+    },
+    "hostWallMs": 13682.335724000004
+  },
+  "traces": [
+    {
+      "path": "/tmp/resident-microcode-broad-pair-source.v8",
+      "bytes": 48830332,
+      "sha256": "33a0f13e33e22a4d4457aeec426951a2d04031818f5314d893e7d363148d714f"
+    },
+    {
+      "path": "/tmp/resident-microcode-broad-pair-external.v8",
+      "bytes": 48830332,
+      "sha256": "ef3a4fa767926d50ad8583eaad6ef33045f0cffaa4feb2c61206d7c16853f3e1"
+    }
+  ],
+  "coreInstructionReduction": 1042091,
+  "coreInstructionReductionShare": 0.22121495418363313
+}

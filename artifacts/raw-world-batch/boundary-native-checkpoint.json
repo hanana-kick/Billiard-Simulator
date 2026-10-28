@@ -1,0 +1,45 @@
+{
+  "pipelineRevision": "0850a4d",
+  "native": {
+    "checkpoint": "0850a4d",
+    "compileMs": 91979.16394500001,
+    "comparedWords": 591948,
+    "candidateWidths": [
+      1,
+      3,
+      31,
+      32,
+      33
+    ],
+    "compactOnlyReadbackChecked": true,
+    "scope": "actual owned raw hit and other trajectories on the same immutable scene, plus raw failure; not a goal claim",
+    "metrics": {
+      "candidateCount": 3,
+      "allocatedBytes": 591168,
+      "readbackBytes": 35040,
+      "submissions": 1,
+      "intermediateReadbacks": 0,
+      "hostPhysicsBetweenPhases": 0,
+      "dispatches": 12514,
+      "submitToDoneMs": 2861.972412999996
+    },
+    "softwareVulkanOnly": true
+  },
+  "watchdog": {
+    "boundedNativeProcess": true,
+    "exitCode": 0,
+    "stopReason": null,
+    "sampledAggregateRSSMiB": 1052.45,
+    "maxChildRSSMiB": 1015.64,
+    "rssCoverage": "PPid status-table ancestry; sampled aggregate, RUSAGE_CHILDREN maximum separately",
+    "elapsedSeconds": 199.477,
+    "limitRSSMiB": 1500,
+    "limitSeconds": 240.0
+  },
+  "logs": [
+    "/tmp/raw-world-batch-boundaries-native.log",
+    "/tmp/raw-world-batch-boundaries-native-receipt.log"
+  ],
+  "reference": "literal0850a4d CPU, same-scene hit0/pending90/hit330,33 rows losslessly compressed; base reference cases unchanged",
+  "typecheck": "npm run typecheck passed"
+}

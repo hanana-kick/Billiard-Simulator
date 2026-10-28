@@ -2,6 +2,7 @@
 // No detached receipt/seed inputs, continuation, GPU dispatch or public switch.
 import {captureLiveRegisteredFourBall} from './live-capture.mjs';
 import {importLiveRegisteredFourBall} from './live-registered-four-ball.mjs';
+import {captureAcceptedEventHistory,validateSeedEventHistory} from '../source-event-history.mjs';
 import {assertOwnedInputData,copy,equalData,equal,requireThat} from './exact-data.mjs';
 const preparedCandidates=new WeakMap();
 const freeze=value=>{if(value&&typeof value==='object'){Object.values(value).forEach(freeze);Object.freeze(value);}return value;};
@@ -56,8 +57,12 @@ export async function prepareLiveFourBallCandidate(options){
  equal(clock.time,admission.time);equal(clock.steps,admission.sourceApplicationSteps);equal(clock.shots,admission.sourceShots);equal(clock.revision,admission.sourceRevision);
  equal(seed.sourceApplicationTime,admission.time);equal(seed.sourceApplicationSteps,admission.sourceApplicationSteps);
  equal(seed.game.pending.threeCushion,admission.rules.fourBallThreeCushion);
- equalData(seed.initialContactEvents,raw.capture.preStrikeApplication.events.filter(e=>e.kind==='contact'));
- equal(seed.initialContactEvents.length,admission.historyContactCount);
+ // The accepted stroke may evict the oldest event at the original120 cap.
+ // Seed contacts describe CREATED history; admission count describes PRESTRIKE.
+ equalData(seed.initialContactEvents,raw.capture.application.events.filter(e=>e.kind==='contact'));
+ equal(raw.capture.preStrikeApplication.events.filter(e=>e.kind==='contact').length,admission.historyContactCount);
+ const history=captureAcceptedEventHistory(raw.capture.preStrikeApplication,raw.capture.application);
+ for(const [key,value]of Object.entries(history))equalData(seed[key],value,'Full application history must retain actual capture '+key);validateSeedEventHistory(seed);
  // The only added hash is supplied by the strict importer after byte checking.
  const result=Object.freeze({seed,admission:freeze({...admission,initialSnapshotSha256:seed.initialSnapshotSha256}),candidateProvenance:freeze(provenance)});
  preparedCandidates.set(result,{sourceRequestSnapshot,seed:ownSeed(seed)});return result;

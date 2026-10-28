@@ -1,0 +1,51 @@
+{
+  "profile": {
+    "name": "native-f32-raw-pose-v1",
+    "maxAbsAngleDegrees": 3600,
+    "absoluteTolerance": 0.00002,
+    "relativeTolerance": 0.00002,
+    "clearanceImplemented": false,
+    "physicalAdmission": false,
+    "rawRowBytes": 32,
+    "stateBytes": 320,
+    "sharedBytes": 64
+  },
+  "count": 296,
+  "checkedScalars": 7400,
+  "maximum": {
+    "error": 0.000011813171554742041,
+    "name": "holdout--89.9999-85",
+    "field": "rotation",
+    "component": 0,
+    "input": {
+      "id": 1215,
+      "angle": -89.9999,
+      "elevation": 85,
+      "tipX": 0.25,
+      "tipY": -0.4,
+      "speed": 0.1
+    }
+  },
+  "metrics": {
+    "count": 296,
+    "shaderBytes": 3515,
+    "allocatedBufferBytes": 198976,
+    "compileAndAllocateMs": 68.110253,
+    "sharedUploads": 1,
+    "rawUploads": 1,
+    "clearanceImplemented": false,
+    "fullShot": false
+  },
+  "submitToDoneMs": 0.7943759999999997,
+  "status": "unsupported-clearance",
+  "referenceProvenance": {
+    "reference": "unmodified-original-PhysicsLab.pose-JS-Number",
+    "physicsSha256": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d",
+    "mathSha256": "ea76455919c3fb22557680c5422902cf631753215492e799b32791993a939046",
+    "rapierSha256": "fca22b2f33d4e88d2992215f42df6312093476db7fea4197816fb8e4ce17cba4",
+    "poseOnly": true,
+    "clearanceObserved": false,
+    "wholeWorld": false
+  },
+  "hardwareSpeedClaim": false
+}

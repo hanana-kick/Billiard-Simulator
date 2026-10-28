@@ -1,0 +1,82 @@
+{
+  "kind": "resident-inverse-audited-storage-host-evidence-v1",
+  "dateUTC": "2026-10-26",
+  "baseCommit": "645a143d82927551939a4eeb3cfed08693d6e263",
+  "command": "node --test --test-concurrency=1 tests/resident-candidate-inverse-observation-storage.mjs tests/resident-candidate-inverse-audited-world.mjs",
+  "hostResult": {
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0,
+    "wallMs": 31438.366797,
+    "timingUse": "correctness duration only, not throughput"
+  },
+  "logicalViews": {
+    "originalBindings0to4Changed": false,
+    "originalAuditArrayLengthsPreserved": true,
+    "observerTailDisjoint": true,
+    "finalAddressSentinelChecked": true,
+    "negativeAndU32WrapTests": true,
+    "sourceRecoveryEveryByte": true,
+    "escapingAliasesRejected": true,
+    "sourceLvalueOrderExact": true,
+    "privatePointParametersOverwrittenBeforeRead": 5
+  },
+  "actualCreatedTwoH": {
+    "framesCompared": [
+      0,
+      1,
+      2
+    ],
+    "all11SourceGroups": true,
+    "wholeOriginalEmissionTape": true,
+    "events": 0,
+    "activeImpactTapeQualified": false,
+    "compiledInstructions": 154250,
+    "coreInstructions": 9430189,
+    "pumps": 260,
+    "wallMs": 23428.671873,
+    "rawCandidateInitializationQualified": false
+  },
+  "diagnosticH192CompositionOnly": {
+    "candidateCount": 2,
+    "requestedH": 192,
+    "h192Executed": false,
+    "originalEventPrefixWords": 2056,
+    "originalAuditAndSnapshotsWords": 254024,
+    "observerBaseWords": 254080,
+    "paddingWords": 56,
+    "observerWords": 4992,
+    "totalWords": 259072,
+    "totalBytes": 1036288,
+    "declaredBindingLimitBytes": 134217728,
+    "physicalStorageBindings": 8,
+    "actualDeviceAllocationMeasured": false,
+    "compactProductionBudget": false
+  },
+  "actualHelperComponents": [
+    "original keyed history/audit append",
+    "original non-key history/audit append",
+    "original audit capacity overflow",
+    "original malformed rule diagnostic",
+    "original complete full-bank checkpoint copy",
+    "original checkpoint physical-state shape rejection"
+  ],
+  "helperComponentScope": "Independent discrete diagnostic inputs only, not physically reached h128/h192 states",
+  "qualification": {
+    "gpuExecuted": false,
+    "nativeCombinedViewQualified": false,
+    "fullRestQualified": false,
+    "rawToTerminalQualified": false,
+    "finalGameplayQualified": false,
+    "solverAdapterImplemented": false,
+    "productionActivated": false
+  },
+  "sourceSha256": {
+    "src/resident-candidate/inverse-observation-storage.mjs": "f04aae594cef81040761b40809b67db93cbc06904b1cb236aa7a8c15c3d98225",
+    "src/resident-candidate/inverse-world-observation.mjs": "f4df7012489e0bd2a20636c9a63410a272e7de2ea6c45cf8fa2a2e0213ebd7c5",
+    "src/resident-candidate/tip-impact-microcode-checkpoints.mjs": "99fff1f858cc235290a8c4f8695623aea64494a9bd91ecf7ac676954c7b093ce",
+    "src/resident-candidate/raw-microcode-source.mjs": "5e952eab41e6302caaddefba2c4a5ad873e7575a6f824328a132735099030f14",
+    "tests/resident-candidate-inverse-observation-storage.mjs": "fc2d19ad12d303520a577a16805d1ee8395ba7d2644dab9a12b21dee7a452f73",
+    "tests/resident-candidate-inverse-audited-world.mjs": "ddf730ec1cb70943355907c96b1650a3239a0df3c629a09569b26ef7df31bd27"
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "kind": "resident-preparation-native-component-failure-v1",
+  "frozenSource": "26be4cd0682b64c413b3e888691036640cd68c8a",
+  "shaderSha256": "f881bcaee17ba61cd09c2f29d3e63767a1d24ce33d5c54068240ddf88114e0bf",
+  "bytecodeSha256": "58cf045ecb691ef5423e15795da74f72e1ef7fde32713d6f9324689632e7e2a7",
+  "inputSha256": "58236191ca257eee9071c2158a1b18a11a13fe4203dee58d710959e83fb479a0",
+  "assertionSha256": "9ba7996d7772ba400b1f9a22756cfdd0867c4761e2ed31aa3119819dc995f66e",
+  "attempts": [
+    {
+      "directory": "/workspace/scratch/f887f82f638e/resident-native-artifacts/preparation-component-native-v2",
+      "lastPhase": "adapter creation",
+      "process": {
+        "stage": "native-child-terminal",
+        "returncode": 1,
+        "signal": null,
+        "elapsedSeconds": 0.26540510199265555,
+        "childMaxRssKiB": 83484
+      },
+      "files": {
+        "native.log": {
+          "bytes": 955,
+          "sha256": "bb1a1ec4168d6c67b030e3f747f23d45783adc1bade0143c69f8f1950baaaf4b"
+        },
+        "process-result.json": {
+          "bytes": 144,
+          "sha256": "8b71f0575c2ac265a909614e6612b6fbf0ef1a448b0644f39ee12473e8dc408f"
+        },
+        "resources.jsonl": {
+          "bytes": 112,
+          "sha256": "95461c64c3bcc9a1c646c87792f94cfd2b3f38644ffbc792541c15887f23a8a2"
+        },
+        "manifest.json": {
+          "bytes": 37366,
+          "sha256": "d46600a409ccf762018425431ced0089efed12e432972b37dbed55dd45e66e15"
+        }
+      }
+    },
+    {
+      "directory": "/workspace/scratch/f887f82f638e/resident-native-artifacts/preparation-component-native-v3",
+      "lastPhase": "main pipeline creation",
+      "process": {
+        "stage": "native-child-terminal",
+        "returncode": -9,
+        "signal": 9,
+        "elapsedSeconds": 27.228383074019803,
+        "childMaxRssKiB": 1845108
+      },
+      "files": {
+        "native.log": {
+          "bytes": 1112,
+          "sha256": "3ff3c614af48a62fa667aaf904e7f8282d24b9196f9e4932caf472060a3ad653"
+        },
+        "process-result.json": {
+          "bytes": 143,
+          "sha256": "bf6220469b5685a0ed7ac5be868f9f117ff10c9c05f1dd598ffcf903a3f2fc20"
+        },
+        "resources.jsonl": {
+          "bytes": 3320,
+          "sha256": "84709b4ff57762bb2a031faefec4786fdd9cafa1db8cd95442e6199ec75a4a23"
+        },
+        "manifest.json": {
+          "bytes": 37365,
+          "sha256": "781a870106bcf6cd6cf6f508887dae8379af5f4f4bebc923f0002d8410fd4b2c"
+        }
+      },
+      "environmentRecovery": {
+        "kind": "process-local-existing-ICD-environment-recovery",
+        "priorRun": "/workspace/scratch/f887f82f638e/resident-native-artifacts/preparation-component-native-v2",
+        "priorResultSha256": "8b71f0575c2ac265a909614e6612b6fbf0ef1a448b0644f39ee12473e8dc408f",
+        "environmentAddition": {
+          "VK_ICD_FILENAMES": "/usr/lib/chromium/vk_swiftshader_icd.json"
+        },
+        "sourceAndAllInputManifestFieldsEqualExceptPreparationInvocation": true,
+        "softwareOnly": true,
+        "installationChanged": false
+      },
+      "preflightsPassed": 2,
+      "beginCompileWallMs": 22.025126999999998
+    }
+  ],
+  "computeSubmissions": 0,
+  "caseMaps": 0,
+  "numericalQualification": false,
+  "oomProven": false,
+  "hardwarePerformance": false
+}

@@ -12,3 +12,6 @@ test-results/
 
 .browser-decoder-build/
 .browser-decoder-evidence/
+
+playwright-canonical-report/
+test-results-canonical/

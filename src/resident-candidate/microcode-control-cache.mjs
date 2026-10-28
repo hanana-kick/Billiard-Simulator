@@ -56,7 +56,7 @@ export function createCachedMicrocodeReferenceForTest(options,createReference,la
  });
  // Diagnostic callbacks may inspect backing-buffer views. Materialize current
  // controls before entry; callbacks must not mutate VM transport authority.
- const callbacks={};for(const name of['onCall','onReturn','intrinsicHandler'])if(typeof options[name]==='function')callbacks[name]=(...args)=>{flush();return options[name](...args);};
+ const callbacks={};for(const name of['onCall','onReturn','intrinsicHandler','numericContinuationHandler'])if(typeof options[name]==='function')callbacks[name]=(...args)=>{flush();return options[name](...args);};
  const reference=createReference({...options,...callbacks,state:proxy});
  const invoke=(name,lane,args)=>{must(Number.isInteger(lane)&&lane>=0&&lane<layout.count,'candidate lane');must(!active,'no reentrant cached invocation');laneBase=lane*layout.stride;cached.clear();for(const{offset}of MICROCODE_CACHED_CONTROL_FIELDS)cached.set(laneBase+offset,backing[laneBase+offset]);active=true;stats.invocations++;stats.controlLoads+=cached.size;
   try{return reference[name](lane,...args);}finally{flush();stats.boundaryFlushes++;active=false;cached.clear();}

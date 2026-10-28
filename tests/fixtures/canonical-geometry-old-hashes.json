@@ -1,0 +1,29 @@
+{
+  "global": [
+    {
+      "state": "bb5a5a22f4556e7a0542ec4d2dd8faa0d3ccb9631fe4265dbae7985aa7a2ffea",
+      "time": "dd6ff37f4a50af91968e498cdabedf0e5b12c259e051e10332042793167cdb7b",
+      "admission": "0886c8f17a5ca047606238b316a9713e157f3d9aa75e57412a7b3c3ab4ed7eec",
+      "records": "b2c2f73651c5986b99ad9971c22f2cc7eddb31ccdb6d451a14f0f547ed83c14d",
+      "response": "30f6618f90a5b0e31c4d02295ef13f33fa0b69c0e87a53695e16db86840f3b3a"
+    },
+    {
+      "state": "2bde6be37866008aca891cf6cae6c4b401361e24af42a38067dce610125fd1f8",
+      "time": "b1cad390932295d583594225ff256eff7192359841f165b10346b49a18bf3072",
+      "admission": "5d1b8858664b289a891edd632fa0487e7dd568dc4de20ea047a416bbd2ed15a9",
+      "records": "b2c2f73651c5986b99ad9971c22f2cc7eddb31ccdb6d451a14f0f547ed83c14d",
+      "response": "a61b05d98adb8c75df1241d1ea027ca60b9a4dd01115f5a940c611983dc1b5a4"
+    },
+    {
+      "state": "fd392f46cee683630f522661b27c75ee4470b4a5b64e42b190530b7dfa9ce3d2",
+      "time": "dd6ff37f4a50af91968e498cdabedf0e5b12c259e051e10332042793167cdb7b",
+      "admission": "0886c8f17a5ca047606238b316a9713e157f3d9aa75e57412a7b3c3ab4ed7eec",
+      "records": "d265fef16e54a37dcc426644d0fe78cbda71663901769ea88616af233edd50ff",
+      "response": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560"
+    }
+  ],
+  "landing": {
+    "roots": "06f00c24029d57852eace90fbc79bb49223238c6f1a72f5763003723e94f1040",
+    "result": "124600126e9ff8e1d27f10089ce27ebf84b68692e6a40c8987e63247370dca67"
+  }
+}

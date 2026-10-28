@@ -1,0 +1,105 @@
+{
+  "provenance": "Actual admitted raw-strike CPU output, fixed encoded physical-state witness; not a normative golden strike solver",
+  "sourceArtifact": "artifacts/canonical-raw-strike/range-probe.json",
+  "sourceSha256": "ddf441685408f7a253c9e1c4f31e3d8452bcc27954386a4bd018174623f4849f",
+  "sourceScene": {
+    "kind": "complete-isolated-sphere-fixed-aabbs",
+    "complete": true,
+    "materialProfile": "physicslab-defaults-v1",
+    "support": "cloth",
+    "center": [
+      0,
+      0.03075,
+      0
+    ],
+    "floorTop": 0,
+    "obstacles": []
+  },
+  "encoding": "Q24 signed integer p/v/q, q=R omega",
+  "cases": [
+    {
+      "label": "velocityComponent",
+      "input": {
+        "id": 772,
+        "angle": 0,
+        "elevation": 30,
+        "speed": 4.5,
+        "tipX": 0,
+        "tipY": 0
+      },
+      "status": 1,
+      "reason": 0,
+      "position": [
+        77084,
+        515899,
+        0
+      ],
+      "velocity": [
+        91949205,
+        0,
+        0
+      ],
+      "q": [
+        0,
+        0,
+        -23315430
+      ]
+    },
+    {
+      "label": "qComponent",
+      "input": {
+        "id": 948,
+        "angle": 33,
+        "elevation": 85,
+        "speed": 4.5,
+        "tipX": -0.3,
+        "tipY": -0.3
+      },
+      "status": 1,
+      "reason": 0,
+      "position": [
+        5125,
+        515899,
+        -22661
+      ],
+      "velocity": [
+        4441968,
+        0,
+        -22010040
+      ],
+      "q": [
+        -129575962,
+        -12847493,
+        23521695
+      ]
+    },
+    {
+      "label": "clothSlipNorm",
+      "input": {
+        "id": 801,
+        "angle": 0,
+        "elevation": 60,
+        "speed": 4.5,
+        "tipX": 0,
+        "tipY": -0.3
+      },
+      "status": 1,
+      "reason": 0,
+      "position": [
+        67205,
+        515899,
+        0
+      ],
+      "velocity": [
+        62424318,
+        0,
+        0
+      ],
+      "q": [
+        0,
+        0,
+        87226318
+      ]
+    }
+  ]
+}

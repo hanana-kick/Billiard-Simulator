@@ -1,0 +1,50 @@
+{
+  "kind": "resident-three-ball-broad-post-legacy-byte-fingerprints-v1",
+  "sourceCommit": "5ecdf91a33afdfabec424a7710cb24611cfd7a3b",
+  "sourceModule": "src/resident-candidate/three-ball-first-broad-post.mjs",
+  "fixture": "selected-2 from original resident-three-ball-initialization-source-fixture.cjs",
+  "algorithm": "sha256",
+  "encoding": "Uint32Array raw byte span; string UTF-8; all other fields JSON.stringify UTF-8",
+  "fields": [
+    "source",
+    "stages",
+    "commands",
+    "program",
+    "initialWords",
+    "layout",
+    "scratchWords",
+    "capability"
+  ],
+  "profiles": {
+    "createThreeBallFirstBroadPostPlan": {
+      "source": "2ccc12483d2037ce05cb88385ff58c15d878fb0b80705d200ca6c7e1d53924b9",
+      "stages": "eb490b76bad2e52f9a47c847451fe242fe697e154fcd8c273433bb3a3b44e11e",
+      "commands": "eb48c342a01c39912579333a9468190a921ff29244a629ed77d05d94f8849603",
+      "program": "6c214738a6c51748ee20e36ac7d9b9c6a553001e2fcfe2aaf92e10f12ed1ed6e",
+      "initialWords": "477865e2e136b526ee4c6384c6e9a5fa053c85a18aec467001d6c228b102712a",
+      "layout": "7d8a9802ce3cac0a4393b4fed0950b97b90bdddb8dcbd418370a2df5812db19d",
+      "scratchWords": "0b918943df0962bc7a1824c0555a389347b4febdc7cf9d1254406d80ce44e3f9",
+      "capability": "17ddecd596f26c472b1c79a421c2839413a477e607ef2edc0c7abcbebd6bf880"
+    },
+    "createThreeBallFirstPhysicalBroadPostPlan": {
+      "source": "223fe9dada9808bb66b617eee3fbaeb52f3f4bf393738f66996d3e3bf329512e",
+      "stages": "37d897b6752eae5f8c2794173dc16b3ac316fef0a4b942d528078e2573b5c505",
+      "commands": "eb48c342a01c39912579333a9468190a921ff29244a629ed77d05d94f8849603",
+      "program": "6c214738a6c51748ee20e36ac7d9b9c6a553001e2fcfe2aaf92e10f12ed1ed6e",
+      "initialWords": "30ad02943677a32e26a910f48fc626a52bba992b9c4684f2fc910b6bb3da8aff",
+      "layout": "c2235904e2e57d49bdcb4abfe4f292ff37a2c1e8e5632dbffb36e5a1697b1b5c",
+      "scratchWords": "0b918943df0962bc7a1824c0555a389347b4febdc7cf9d1254406d80ce44e3f9",
+      "capability": "e745f33d10bfe659570a23ed8495c317d204d0ab42bf311f3ed469036372347b"
+    },
+    "createThreeBallFirstFinalMassBroadPostPlan": {
+      "source": "53ac91440001eabda3a9ce64d190a52d4d146b5521acaf7f3fe92b734f548527",
+      "stages": "6ccb182e816abee8f689a98a2f67b4746dd4630e2fd4f18500825feedf612add",
+      "commands": "3694057980ce4f382be3b8d1013d7b62a3356d6232d2fa1a60f16488489021c9",
+      "program": "ae970449be5a29ece84f1d0a68c1997abfe5bab80f555f76dfbd6fda1aca9c24",
+      "initialWords": "17861ba43770094c622db4dec581314255fd6751ec55e7a4d63bdd850bc801d2",
+      "layout": "7417d9b09cd654b8f34d0004aa8aac74a7cda935d35b3278a5675d1b2282110f",
+      "scratchWords": "3d914f9348c9cc0ff8a79716700b9fcd4d2f3e711608004eb8f138bcba7f14d9",
+      "capability": "c133b03475a8680f6a17689500cd6a7ab3c73ea7aef3ae7abfe93f9b3e2d57b9"
+    }
+  }
+}

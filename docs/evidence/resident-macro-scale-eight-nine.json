@@ -1,0 +1,969 @@
+{
+  "kind": "resident-eight-nine-source-preflight-evidence-v1",
+  "sourceGenerationHead": "470e11d712a6ac2ee6d45e8fa013f16cb8bde691",
+  "bindingHead": "a9314a4f8d8afbc7e817629dcb93193f7967862a",
+  "rosterSha256": "34d36b74699c2ac8bc0e2cc3a878287da7e15df370c661a7b7d4f1bd26fca92f",
+  "admissionReceiptSha256": "dafb59817a8b7d928bd86f9fac132d4b8b6a87c444beb19f39c03fd8ba1a1d3e",
+  "sourceManifestSha256": "b6ef2e3f1dc20ccfb186c6a8a01142bf32e4d5d63fd586f817133268abd10b02",
+  "expectationReceiptSha256": "1897c26820a46ce4c69ded42ee5a081979dd0defc7e093a110b058411272a11a",
+  "bindingManifestSha256": "4259c5ebda677e6f4615a6a67056de9188b532a9d7a4a9383810d739d02f9913",
+  "artifactLocations": {
+    "source": "resident-native-artifacts/macro-scale-source-v1",
+    "independentReference": "resident-native-artifacts/macro-scale-original-expectations-v1",
+    "binding": "resident-native-artifacts/macro-scale-bound-preflight-v1"
+  },
+  "scope": {
+    "cpuReferencePhysicalSteps": 14,
+    "originalCreatedT0": true,
+    "sourceHSteps": 2,
+    "outerSteps": 0,
+    "all11OwnersRetained": true,
+    "referenceAuthority": "original-js-number-v1",
+    "nativeCompileRun": false,
+    "numericalGpuExecuted": false,
+    "nativeParity": false,
+    "fullRestQualified": false,
+    "native1024Qualified": false
+  },
+  "sourceOnlyReuse": {
+    "betweenCount8And9": {
+      "identicalPipelineKeys": 14,
+      "changedPipelineKeys": 12,
+      "identicalNames": [
+        "initial-microcode initialize raw-init",
+        "initial-microcode initialize raw-step",
+        "initial-microcode initialize raw-finish",
+        "initial-microcode initialize contact-init",
+        "initial-microcode initialize contact-gjk",
+        "initial-microcode initialize contact-epa",
+        "initial-microcode initialize contact-finish",
+        "initial-microcode initialize cast-init",
+        "initial-microcode initialize cast-cast",
+        "initial-microcode initialize cast-contact-init",
+        "initial-microcode initialize cast-contact-gjk",
+        "initial-microcode initialize cast-contact-epa",
+        "initial-microcode initialize cast-finish",
+        "initial-microcode initialize world-transfer"
+      ]
+    },
+    "betweenWgs1And8SameCount": {
+      "identicalPipelineKeys": 22,
+      "changedPipelineKeys": 4
+    },
+    "pipelineKeyFields": [
+      "shaderSha256",
+      "entryPoint",
+      "bindingTypes"
+    ],
+    "actualNativeCacheReuse": "not-measured",
+    "readonlyBuffers": [
+      {
+        "name": "rawProgram",
+        "bytes": 20284,
+        "sha256": "d23b4933f398f9fd60f078ce0501b1406108ac362fe29e263404fdd158de9878",
+        "byteIdenticalAcrossCounts": true
+      },
+      {
+        "name": "rawGeometry",
+        "bytes": 45472,
+        "sha256": "ef4037fcc79e2d1e3a1e13acffb8501e28e9722331b4f463b0e2d2f09f940c92",
+        "byteIdenticalAcrossCounts": true
+      },
+      {
+        "name": "worldTemplate",
+        "bytes": 251960,
+        "sha256": "af435f97f08b20920bef21cb437858380cb6bb4ffda37609db4b9efbacdc0fb8",
+        "byteIdenticalAcrossCounts": true
+      },
+      {
+        "name": "worldProgram",
+        "bytes": 3499968,
+        "sha256": "0e9d167032eff0534780b1406f118adb52a99eb82c21f7fad6ef6cee6926b0a5",
+        "byteIdenticalAcrossCounts": true
+      },
+      {
+        "name": "worldGeometry",
+        "bytes": 101632,
+        "sha256": "cc501878c2ad2005b2d49955dfc8d814a11ad992f44949be03345e880b973c05",
+        "byteIdenticalAcrossCounts": true
+      }
+    ],
+    "microcodeShareableAcrossCounts": false,
+    "eightPackedInputIsExactNinePrefix": true
+  },
+  "counts": [
+    {
+      "count": 8,
+      "bindingSha256": "b7485bd283f0110caf9dcde29fdc6ca2e3b528380d1a88af1f91a8cb4cc7b53a",
+      "runtimeSha256": "c60729f0a9956ef377c6f76fd5f61511a12fe5856575c6d68b1ca4296520123f",
+      "expectedSha256": "646e192d7b0394f4f753c0e54318d1e995bd6971fa5c8a8981d238feb4ee6532",
+      "sourceReceiptSha256": "9dfc47076ca1901a853a63b142d1e846d9e12a3afdf054687d9ae6de77a014ea",
+      "sourceSha256": "125fe36f8c3a11f1d2b46d2b854e893dd0ce49f48e76e8b634aee614d854b7d8",
+      "bytecodeSha256": "83e4d333bcbd32a37b8bd8ca71457187c87f2d9d101e9f9c3082520d963dfaec",
+      "coreShaderSha256": "fa2289f8f57ac9db4e130368cb469dbe964ae91a827b96d4372714f0349be2db",
+      "generationIdentity": "e3db44310046f27af4914984c85ae6e6802aa453a67c96a7293f7ee53adaa84c",
+      "orderedIds": [
+        17,
+        118,
+        219,
+        320,
+        421,
+        522,
+        623,
+        724
+      ],
+      "acceptedRows": [
+        17,
+        118,
+        219,
+        320,
+        623,
+        724
+      ],
+      "rejectedRows": [
+        421,
+        522
+      ],
+      "createdBoundaries": [
+        {
+          "id": 17,
+          "createdSnapshotSha256": "a93473fceb1da27bb580a2981d3e536057eb30856e49d64405ad2b96f8b51e0f",
+          "dt": 0.0010416666666666667,
+          "subdivisions": 64,
+          "initialFrame": 0,
+          "finalFrame": 2,
+          "initialOuter": 0,
+          "finalOuter": 0,
+          "finalOuterSubstep": 2
+        },
+        {
+          "id": 118,
+          "createdSnapshotSha256": "4ffc521c98128ae4580f165d30d960e9b0729fce78f7d984a64d03e2da4ebc1a",
+          "dt": 0.0010416666666666667,
+          "subdivisions": 64,
+          "initialFrame": 0,
+          "finalFrame": 2,
+          "initialOuter": 0,
+          "finalOuter": 0,
+          "finalOuterSubstep": 2
+        },
+        {
+          "id": 219,
+          "createdSnapshotSha256": "feb6b6eea9a0d29236df73680e79d3cbedf84dee702f3dae0c1e80a33ef9c2ef",
+          "dt": 0.0010416666666666667,
+          "subdivisions": 64,
+          "initialFrame": 0,
+          "finalFrame": 2,
+          "initialOuter": 0,
+          "finalOuter": 0,
+          "finalOuterSubstep": 2
+        },
+        {
+          "id": 320,
+          "createdSnapshotSha256": "50638231d73f9bdaf4fd7f7c26d95f90d6853c8b065ad42a2704d58223252820",
+          "dt": 0.0010416666666666667,
+          "subdivisions": 64,
+          "initialFrame": 0,
+          "finalFrame": 2,
+          "initialOuter": 0,
+          "finalOuter": 0,
+          "finalOuterSubstep": 2
+        },
+        {
+          "id": 623,
+          "createdSnapshotSha256": "a257068e0efb2393a97ccab2b92d3c88c491fbaca9874cfa00b8ad20a638bd50",
+          "dt": 0.0010416666666666667,
+          "subdivisions": 64,
+          "initialFrame": 0,
+          "finalFrame": 2,
+          "initialOuter": 0,
+          "finalOuter": 0,
+          "finalOuterSubstep": 2
+        },
+        {
+          "id": 724,
+          "createdSnapshotSha256": "41ef4c48522dd402d540988107d9aba90a990b3ae787f96ced0ce3520b7de529",
+          "dt": 0.0010416666666666667,
+          "subdivisions": 64,
+          "initialFrame": 0,
+          "finalFrame": 2,
+          "initialOuter": 0,
+          "finalOuter": 0,
+          "finalOuterSubstep": 2
+        }
+      ],
+      "vm": {
+        "instructionCount": 131112,
+        "localWords": 7783,
+        "stride": 7814,
+        "stackCapacity": 15,
+        "totalWords": 62512,
+        "instructionBudget": 65536,
+        "dispatchChunks": 512,
+        "bytecodeSha256": "83e4d333bcbd32a37b8bd8ca71457187c87f2d9d101e9f9c3082520d963dfaec",
+        "coreShaderSha256": "fa2289f8f57ac9db4e130368cb469dbe964ae91a827b96d4372714f0349be2db"
+      },
+      "sourceCaps": {
+        "cueJobs": 640,
+        "energyJobs": 25,
+        "broadRows": 27,
+        "coupledJobs": 2130,
+        "inactiveCcdJobs": 16,
+        "activeCcdJobs": 4096,
+        "ccdPasses": 4
+      },
+      "sourceSpans": {
+        "world": {
+          "offsetWords": 0,
+          "strideWords": 62976,
+          "count": 8
+        },
+        "fixedCcd": {
+          "offsetWords": 503808,
+          "words": 1016
+        },
+        "pc": {
+          "offsetWords": 504824,
+          "strideWords": 80,
+          "count": 8
+        },
+        "request": {
+          "offsetWords": 505464,
+          "strideWords": 24,
+          "count": 8
+        },
+        "rawInitialization": {
+          "strideWords": 2010,
+          "count": 8
+        },
+        "scratch": {
+          "strideWords": 13632,
+          "count": 8
+        },
+        "inputs": {
+          "strideWords": 16,
+          "count": 8
+        },
+        "vm": {
+          "strideWords": 7814,
+          "count": 8,
+          "controlWords": 16,
+          "localWords": 7783,
+          "stackWords": 15
+        }
+      },
+      "requirements": {
+        "buffers": {
+          "rawProgram": {
+            "words": 5071,
+            "bytes": 20284
+          },
+          "rawGeometry": {
+            "words": 11368,
+            "bytes": 45472
+          },
+          "worldTemplate": {
+            "words": 62990,
+            "bytes": 251960
+          },
+          "worldProgram": {
+            "words": 874992,
+            "bytes": 3499968
+          },
+          "worldGeometry": {
+            "words": 25408,
+            "bytes": 101632
+          },
+          "worldState": {
+            "words": 505656,
+            "bytes": 2022624
+          },
+          "rawState": {
+            "words": 16080,
+            "bytes": 64320
+          },
+          "scratch": {
+            "words": 109056,
+            "bytes": 436224
+          },
+          "inputs": {
+            "words": 128,
+            "bytes": 512
+          },
+          "microcode": {
+            "words": 1048896,
+            "bytes": 4195584
+          },
+          "vmState": {
+            "words": 62512,
+            "bytes": 250048
+          }
+        },
+        "limits": {
+          "maxStorageBuffersPerShaderStage": 7,
+          "maxBindingsPerBindGroup": 7,
+          "maxBindGroups": 1,
+          "maxComputeInvocationsPerWorkgroup": 64,
+          "maxComputeWorkgroupSizeX": 64,
+          "maxComputeWorkgroupsPerDimension": 8
+        },
+        "storageBytes": 10888628,
+        "storageBuffers": 11,
+        "initialWrites": 8
+      },
+      "sourceConstruction": {
+        "builderInvocations": 1,
+        "wallMs": 3249.782869,
+        "processPeakRssKiB": 485884
+      },
+      "preflights": [
+        {
+          "workgroupSize": 1,
+          "preflightSha256": "3b44859781eef8af15f616879753c766e901055d1ee60c58d7f7ac4935df6fa6",
+          "launchSha256": "f4395d293fb3e516f790c9d8129c770306a4788bfffd3956599759f868f05196",
+          "profileSha256": "022f5bbf3267cb085203404748d35a2ab77c3fd2fbaf4831a552b08f3c6a2283",
+          "geometry": {
+            "core": {
+              "workgroupSize": 64,
+              "workgroups": 1,
+              "invocations": 64,
+              "paddingLanes": 56
+            },
+            "macros": {
+              "workgroupSize": 1,
+              "workgroups": 8,
+              "invocations": 8,
+              "paddingLanes": 0
+            }
+          },
+          "diagnosticPlan": {
+            "captureNames": [
+              "worldState",
+              "vmState",
+              "scratch"
+            ],
+            "captureAfterCycles": [
+              0,
+              512
+            ],
+            "captureWords": 677224,
+            "readbackBytes": 5417792,
+            "storageBytes": 10888628,
+            "peakLiveBytes": 16306420
+          }
+        },
+        {
+          "workgroupSize": 8,
+          "preflightSha256": "ba62baa00119a3f9902d03f3e849cf1fd5d9ce8bfa1af8bad3acd768862ee8bc",
+          "launchSha256": "d35cb71badeedb2485ad94749d0370ed26b972f5d3f7c6f34d9e0f8900d91193",
+          "profileSha256": "bcca084a99291ce6d0c49cf5abce461faf9ea9c9fdd61ebc27707aec5e10a6e9",
+          "geometry": {
+            "core": {
+              "workgroupSize": 64,
+              "workgroups": 1,
+              "invocations": 64,
+              "paddingLanes": 56
+            },
+            "macros": {
+              "workgroupSize": 8,
+              "workgroups": 1,
+              "invocations": 8,
+              "paddingLanes": 0
+            }
+          },
+          "diagnosticPlan": {
+            "captureNames": [
+              "worldState",
+              "vmState",
+              "scratch"
+            ],
+            "captureAfterCycles": [
+              0,
+              512
+            ],
+            "captureWords": 677224,
+            "readbackBytes": 5417792,
+            "storageBytes": 10888628,
+            "peakLiveBytes": 16306420
+          }
+        }
+      ],
+      "rawInitDispatches": 68313,
+      "stageCounts": [
+        {
+          "stage": "raw-init",
+          "workgroups": 8,
+          "commandEntries": 1,
+          "dispatches": 1
+        },
+        {
+          "stage": "raw-step",
+          "workgroups": 8,
+          "commandEntries": 1,
+          "dispatches": 79
+        },
+        {
+          "stage": "raw-finish",
+          "workgroups": 8,
+          "commandEntries": 1,
+          "dispatches": 1
+        },
+        {
+          "stage": "contact-init",
+          "workgroups": 8,
+          "commandEntries": 180,
+          "dispatches": 180
+        },
+        {
+          "stage": "contact-gjk",
+          "workgroups": 8,
+          "commandEntries": 180,
+          "dispatches": 46080
+        },
+        {
+          "stage": "contact-epa",
+          "workgroups": 8,
+          "commandEntries": 180,
+          "dispatches": 180
+        },
+        {
+          "stage": "contact-finish",
+          "workgroups": 8,
+          "commandEntries": 180,
+          "dispatches": 180
+        },
+        {
+          "stage": "cast-init",
+          "workgroups": 8,
+          "commandEntries": 60,
+          "dispatches": 60
+        },
+        {
+          "stage": "cast-cast",
+          "workgroups": 8,
+          "commandEntries": 60,
+          "dispatches": 6000
+        },
+        {
+          "stage": "cast-contact-init",
+          "workgroups": 8,
+          "commandEntries": 60,
+          "dispatches": 60
+        },
+        {
+          "stage": "cast-contact-gjk",
+          "workgroups": 8,
+          "commandEntries": 60,
+          "dispatches": 15360
+        },
+        {
+          "stage": "cast-contact-epa",
+          "workgroups": 8,
+          "commandEntries": 60,
+          "dispatches": 60
+        },
+        {
+          "stage": "cast-finish",
+          "workgroups": 8,
+          "commandEntries": 60,
+          "dispatches": 60
+        },
+        {
+          "stage": "world-transfer",
+          "workgroups": 1,
+          "commandEntries": 1,
+          "dispatches": 1
+        },
+        {
+          "stage": "creation-begin",
+          "workgroups": 1,
+          "commandEntries": 1,
+          "dispatches": 1
+        },
+        {
+          "stage": "creation-gather",
+          "workgroups": 1,
+          "commandEntries": 3,
+          "dispatches": 3
+        },
+        {
+          "stage": "creation-evaluate",
+          "workgroups": 1,
+          "commandEntries": 3,
+          "dispatches": 3
+        },
+        {
+          "stage": "creation-scatter",
+          "workgroups": 1,
+          "commandEntries": 3,
+          "dispatches": 3
+        },
+        {
+          "stage": "creation-finish",
+          "workgroups": 1,
+          "commandEntries": 1,
+          "dispatches": 1
+        }
+      ],
+      "sourceOnlyGateResults": [
+        {
+          "workgroupSize": 1,
+          "profileSha256": "022f5bbf3267cb085203404748d35a2ab77c3fd2fbaf4831a552b08f3c6a2283",
+          "brandedAdmission": true,
+          "cloneWrongRuntimeAndLimitRejection": true,
+          "exactDescriptorSchedule": true
+        },
+        {
+          "workgroupSize": 8,
+          "profileSha256": "bcca084a99291ce6d0c49cf5abce461faf9ea9c9fdd61ebc27707aec5e10a6e9",
+          "brandedAdmission": true,
+          "cloneWrongRuntimeAndLimitRejection": true,
+          "exactDescriptorSchedule": true
+        }
+      ]
+    },
+    {
+      "count": 9,
+      "bindingSha256": "a6fd61cb4656894e59d29c069b3b0e9784a7fbb23dd25c3e30b156740a00de47",
+      "runtimeSha256": "cb0e8cb37e09c4b48a58323e806d642e2885b00351ff4e9dde6889d28fe67663",
+      "expectedSha256": "524a49d67cffba378c5c8a65b77076e601351e23a429d66da1c7cb0ad97f815e",
+      "sourceReceiptSha256": "b651794588e3f334b808c3d429c05e9c9d9aede18a4ed335e02e0e37333a7fd4",
+      "sourceSha256": "6ea4df039bdf9eb5d56cee7f55b5de5b38f2939600c16d0bd1b523ef652d6e67",
+      "bytecodeSha256": "7f64d6e5af572fd216ec4af3c92881ae7ec6b9de5d39a098f8ae4982a675dcf9",
+      "coreShaderSha256": "0f00e659805601e79fe44193b7aa3b21ef06d235a5b0cf0292b5e967accc2d36",
+      "generationIdentity": "8102979d238d6743097773590dfc41327d2ad6dc4fe068173ac1b7421e450bdf",
+      "orderedIds": [
+        17,
+        118,
+        219,
+        320,
+        421,
+        522,
+        623,
+        724,
+        825
+      ],
+      "acceptedRows": [
+        17,
+        118,
+        219,
+        320,
+        623,
+        724,
+        825
+      ],
+      "rejectedRows": [
+        421,
+        522
+      ],
+      "createdBoundaries": [
+        {
+          "id": 17,
+          "createdSnapshotSha256": "a93473fceb1da27bb580a2981d3e536057eb30856e49d64405ad2b96f8b51e0f",
+          "dt": 0.0010416666666666667,
+          "subdivisions": 64,
+          "initialFrame": 0,
+          "finalFrame": 2,
+          "initialOuter": 0,
+          "finalOuter": 0,
+          "finalOuterSubstep": 2
+        },
+        {
+          "id": 118,
+          "createdSnapshotSha256": "4ffc521c98128ae4580f165d30d960e9b0729fce78f7d984a64d03e2da4ebc1a",
+          "dt": 0.0010416666666666667,
+          "subdivisions": 64,
+          "initialFrame": 0,
+          "finalFrame": 2,
+          "initialOuter": 0,
+          "finalOuter": 0,
+          "finalOuterSubstep": 2
+        },
+        {
+          "id": 219,
+          "createdSnapshotSha256": "feb6b6eea9a0d29236df73680e79d3cbedf84dee702f3dae0c1e80a33ef9c2ef",
+          "dt": 0.0010416666666666667,
+          "subdivisions": 64,
+          "initialFrame": 0,
+          "finalFrame": 2,
+          "initialOuter": 0,
+          "finalOuter": 0,
+          "finalOuterSubstep": 2
+        },
+        {
+          "id": 320,
+          "createdSnapshotSha256": "50638231d73f9bdaf4fd7f7c26d95f90d6853c8b065ad42a2704d58223252820",
+          "dt": 0.0010416666666666667,
+          "subdivisions": 64,
+          "initialFrame": 0,
+          "finalFrame": 2,
+          "initialOuter": 0,
+          "finalOuter": 0,
+          "finalOuterSubstep": 2
+        },
+        {
+          "id": 623,
+          "createdSnapshotSha256": "a257068e0efb2393a97ccab2b92d3c88c491fbaca9874cfa00b8ad20a638bd50",
+          "dt": 0.0010416666666666667,
+          "subdivisions": 64,
+          "initialFrame": 0,
+          "finalFrame": 2,
+          "initialOuter": 0,
+          "finalOuter": 0,
+          "finalOuterSubstep": 2
+        },
+        {
+          "id": 724,
+          "createdSnapshotSha256": "41ef4c48522dd402d540988107d9aba90a990b3ae787f96ced0ce3520b7de529",
+          "dt": 0.0010416666666666667,
+          "subdivisions": 64,
+          "initialFrame": 0,
+          "finalFrame": 2,
+          "initialOuter": 0,
+          "finalOuter": 0,
+          "finalOuterSubstep": 2
+        },
+        {
+          "id": 825,
+          "createdSnapshotSha256": "a2063e9775e67226f686a2bb6f38a9dbab1601cbfea55ab1df2799d49c6463c1",
+          "dt": 0.0010416666666666667,
+          "subdivisions": 64,
+          "initialFrame": 0,
+          "finalFrame": 2,
+          "initialOuter": 0,
+          "finalOuter": 0,
+          "finalOuterSubstep": 2
+        }
+      ],
+      "vm": {
+        "instructionCount": 131112,
+        "localWords": 7783,
+        "stride": 7814,
+        "stackCapacity": 15,
+        "totalWords": 70326,
+        "instructionBudget": 65536,
+        "dispatchChunks": 512,
+        "bytecodeSha256": "7f64d6e5af572fd216ec4af3c92881ae7ec6b9de5d39a098f8ae4982a675dcf9",
+        "coreShaderSha256": "0f00e659805601e79fe44193b7aa3b21ef06d235a5b0cf0292b5e967accc2d36"
+      },
+      "sourceCaps": {
+        "cueJobs": 640,
+        "energyJobs": 25,
+        "broadRows": 27,
+        "coupledJobs": 2130,
+        "inactiveCcdJobs": 16,
+        "activeCcdJobs": 4096,
+        "ccdPasses": 4
+      },
+      "sourceSpans": {
+        "world": {
+          "offsetWords": 0,
+          "strideWords": 62976,
+          "count": 9
+        },
+        "fixedCcd": {
+          "offsetWords": 566784,
+          "words": 1016
+        },
+        "pc": {
+          "offsetWords": 567800,
+          "strideWords": 80,
+          "count": 9
+        },
+        "request": {
+          "offsetWords": 568520,
+          "strideWords": 24,
+          "count": 9
+        },
+        "rawInitialization": {
+          "strideWords": 2010,
+          "count": 9
+        },
+        "scratch": {
+          "strideWords": 13632,
+          "count": 9
+        },
+        "inputs": {
+          "strideWords": 16,
+          "count": 9
+        },
+        "vm": {
+          "strideWords": 7814,
+          "count": 9,
+          "controlWords": 16,
+          "localWords": 7783,
+          "stackWords": 15
+        }
+      },
+      "requirements": {
+        "buffers": {
+          "rawProgram": {
+            "words": 5071,
+            "bytes": 20284
+          },
+          "rawGeometry": {
+            "words": 11368,
+            "bytes": 45472
+          },
+          "worldTemplate": {
+            "words": 62990,
+            "bytes": 251960
+          },
+          "worldProgram": {
+            "words": 874992,
+            "bytes": 3499968
+          },
+          "worldGeometry": {
+            "words": 25408,
+            "bytes": 101632
+          },
+          "worldState": {
+            "words": 568736,
+            "bytes": 2274944
+          },
+          "rawState": {
+            "words": 18090,
+            "bytes": 72360
+          },
+          "scratch": {
+            "words": 122688,
+            "bytes": 490752
+          },
+          "inputs": {
+            "words": 144,
+            "bytes": 576
+          },
+          "microcode": {
+            "words": 1048896,
+            "bytes": 4195584
+          },
+          "vmState": {
+            "words": 70326,
+            "bytes": 281304
+          }
+        },
+        "limits": {
+          "maxStorageBuffersPerShaderStage": 7,
+          "maxBindingsPerBindGroup": 7,
+          "maxBindGroups": 1,
+          "maxComputeInvocationsPerWorkgroup": 64,
+          "maxComputeWorkgroupSizeX": 64,
+          "maxComputeWorkgroupsPerDimension": 9
+        },
+        "storageBytes": 11234836,
+        "storageBuffers": 11,
+        "initialWrites": 8
+      },
+      "sourceConstruction": {
+        "builderInvocations": 1,
+        "wallMs": 3315.738888,
+        "processPeakRssKiB": 699520
+      },
+      "preflights": [
+        {
+          "workgroupSize": 1,
+          "preflightSha256": "9bf80694f0803cba37238b590b8f0959971309cbcdf5caf2315e0323c2b1f9b3",
+          "launchSha256": "766db4e912b8e868a4a49c1ec3f868dc599614169c93f48717759efe765122d2",
+          "profileSha256": "7a5526c38a39dfa39f3e2eb0421f98ee701beb49e34f84e123d99e899448908c",
+          "geometry": {
+            "core": {
+              "workgroupSize": 64,
+              "workgroups": 1,
+              "invocations": 64,
+              "paddingLanes": 55
+            },
+            "macros": {
+              "workgroupSize": 1,
+              "workgroups": 9,
+              "invocations": 9,
+              "paddingLanes": 0
+            }
+          },
+          "diagnosticPlan": {
+            "captureNames": [
+              "worldState",
+              "vmState",
+              "scratch"
+            ],
+            "captureAfterCycles": [
+              0,
+              512
+            ],
+            "captureWords": 761750,
+            "readbackBytes": 6094000,
+            "storageBytes": 11234836,
+            "peakLiveBytes": 17328836
+          }
+        },
+        {
+          "workgroupSize": 8,
+          "preflightSha256": "5f6dd76d1406074a3ab46dda7342384582fc9b24eb71e434652706c4d751697f",
+          "launchSha256": "cd2d7850f7051e0ba873e4639eb5b44791d85b7eb9d9146c214506f283e64f43",
+          "profileSha256": "80a91a3137b5dd36cc522fda1370dcc8694858c8de7bb2577f18f29949bea5ac",
+          "geometry": {
+            "core": {
+              "workgroupSize": 64,
+              "workgroups": 1,
+              "invocations": 64,
+              "paddingLanes": 55
+            },
+            "macros": {
+              "workgroupSize": 8,
+              "workgroups": 2,
+              "invocations": 16,
+              "paddingLanes": 7
+            }
+          },
+          "diagnosticPlan": {
+            "captureNames": [
+              "worldState",
+              "vmState",
+              "scratch"
+            ],
+            "captureAfterCycles": [
+              0,
+              512
+            ],
+            "captureWords": 761750,
+            "readbackBytes": 6094000,
+            "storageBytes": 11234836,
+            "peakLiveBytes": 17328836
+          }
+        }
+      ],
+      "rawInitDispatches": 68313,
+      "stageCounts": [
+        {
+          "stage": "raw-init",
+          "workgroups": 9,
+          "commandEntries": 1,
+          "dispatches": 1
+        },
+        {
+          "stage": "raw-step",
+          "workgroups": 9,
+          "commandEntries": 1,
+          "dispatches": 79
+        },
+        {
+          "stage": "raw-finish",
+          "workgroups": 9,
+          "commandEntries": 1,
+          "dispatches": 1
+        },
+        {
+          "stage": "contact-init",
+          "workgroups": 9,
+          "commandEntries": 180,
+          "dispatches": 180
+        },
+        {
+          "stage": "contact-gjk",
+          "workgroups": 9,
+          "commandEntries": 180,
+          "dispatches": 46080
+        },
+        {
+          "stage": "contact-epa",
+          "workgroups": 9,
+          "commandEntries": 180,
+          "dispatches": 180
+        },
+        {
+          "stage": "contact-finish",
+          "workgroups": 9,
+          "commandEntries": 180,
+          "dispatches": 180
+        },
+        {
+          "stage": "cast-init",
+          "workgroups": 9,
+          "commandEntries": 60,
+          "dispatches": 60
+        },
+        {
+          "stage": "cast-cast",
+          "workgroups": 9,
+          "commandEntries": 60,
+          "dispatches": 6000
+        },
+        {
+          "stage": "cast-contact-init",
+          "workgroups": 9,
+          "commandEntries": 60,
+          "dispatches": 60
+        },
+        {
+          "stage": "cast-contact-gjk",
+          "workgroups": 9,
+          "commandEntries": 60,
+          "dispatches": 15360
+        },
+        {
+          "stage": "cast-contact-epa",
+          "workgroups": 9,
+          "commandEntries": 60,
+          "dispatches": 60
+        },
+        {
+          "stage": "cast-finish",
+          "workgroups": 9,
+          "commandEntries": 60,
+          "dispatches": 60
+        },
+        {
+          "stage": "world-transfer",
+          "workgroups": 1,
+          "commandEntries": 1,
+          "dispatches": 1
+        },
+        {
+          "stage": "creation-begin",
+          "workgroups": 1,
+          "commandEntries": 1,
+          "dispatches": 1
+        },
+        {
+          "stage": "creation-gather",
+          "workgroups": 1,
+          "commandEntries": 3,
+          "dispatches": 3
+        },
+        {
+          "stage": "creation-evaluate",
+          "workgroups": 1,
+          "commandEntries": 3,
+          "dispatches": 3
+        },
+        {
+          "stage": "creation-scatter",
+          "workgroups": 1,
+          "commandEntries": 3,
+          "dispatches": 3
+        },
+        {
+          "stage": "creation-finish",
+          "workgroups": 1,
+          "commandEntries": 1,
+          "dispatches": 1
+        }
+      ],
+      "sourceOnlyGateResults": [
+        {
+          "workgroupSize": 1,
+          "profileSha256": "7a5526c38a39dfa39f3e2eb0421f98ee701beb49e34f84e123d99e899448908c",
+          "brandedAdmission": true,
+          "cloneWrongRuntimeAndLimitRejection": true,
+          "exactDescriptorSchedule": true
+        },
+        {
+          "workgroupSize": 8,
+          "profileSha256": "80a91a3137b5dd36cc522fda1370dcc8694858c8de7bb2577f18f29949bea5ac",
+          "brandedAdmission": true,
+          "cloneWrongRuntimeAndLimitRejection": true,
+          "exactDescriptorSchedule": true
+        }
+      ]
+    }
+  ]
+}

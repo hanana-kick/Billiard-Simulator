@@ -276,7 +276,8 @@ class LabController{
  scheduleFrame(){if(this.disposed||this.raf!==null||document.hidden)return;this.raf=requestAnimationFrame(t=>{this.raf=null;this.frame(t);});}
  frame(t){
   if(!this.lab||this.disposed||document.hidden)return;const rafEnteredAt=performance.now(),elapsed=this.last?Math.min(.06,(t-this.last)/1000):0;this.last=t;
-  if(!this.state.paused&&!this.drag){this.accumulator+=elapsed*this.state.rate;let n=0;while(this.accumulator>=this.lab.dt&&n<384){this.lab.step();this.accumulator-=this.lab.dt;n++;}if(n===384)this.accumulator=0;this.dirty=true;if(!this.lab.cue&&this.lab.objects.every(o=>o.body.isSleeping())){this.state.paused=true;this.queuePrediction(true);}}
+  if(this.canonicalPlayback)this.canonicalPlayback.advance(elapsed);
+  else if(!this.state.paused&&!this.drag){this.accumulator+=elapsed*this.state.rate;let n=0;while(this.accumulator>=this.lab.dt&&n<384){this.lab.step();this.accumulator-=this.lab.dt;n++;}if(n===384)this.accumulator=0;this.dirty=true;if(!this.lab.cue&&this.lab.objects.every(o=>o.body.isSleeping())){this.state.paused=true;this.queuePrediction(true);}}
   if(this.inputPending){this.inputPending=false;this.notify();}
   this.finishGameShot();
   const visible=!this.game?.pending&&this.state.showCue&&this.state.paused&&!this.lab.cue&&!this.lab.anyMotion()&&t>=(this.cooldownUntil||0);if(visible!==this.state.previewCueVisible)this.notify();
@@ -289,6 +290,7 @@ class LabController{
 
  worldStamp(){return this.lab?JSON.stringify([this.lab.steps,this.lab.revision,this.lab.time,this.state.selectedId,this.lab.params,this.lab.objects.map(o=>[o.id,o.body.translation(),o.body.rotation()])]):'';}
  cancelSearch(reason='검색을 취소했습니다.',invalidate=false){
+  this.finalizationGeneration=(this.finalizationGeneration||0)+1;
   const running=this.state.routeStatus==='searching';
   if(running){this.optimizer?.cancel();this.state.routeStatus='canceled';this.state.routeError=reason;}
   if(invalidate&&this.state.routeResult){this.state.routeResult={...this.state.routeResult,continuable:false};this.state.routeStatus='stale';this.state.routeError=reason;this.state.routeApplied=null;}
@@ -304,28 +306,56 @@ class LabController{
   if(!Object.hasOwn(this.state.routeOptions,key))return;
   this.cancelSearch('검색 조건이 바뀌었습니다.',true);this.state.routeOptions={...this.state.routeOptions,[key]:value};if(key==='targetId')this.repairRouteTargets();this.notify();
  }
- startSearch(){
+ startSearch(options){
+  if(options!==undefined)return this.startFinalizedSearch(options);
+  this.finalizationGeneration=(this.finalizationGeneration||0)+1;
   if(!this.lab||this.lab.cue||this.windup||this.game?.pending||this.lab.anyMotion())return this.announce('모든 물체가 멈춘 뒤 경로를 검색하세요.');
   if(this.game&&!this.game.cueIds.includes(this.state.selectedId)){this.state.routeStatus='error';this.state.routeError='흰 수구 또는 노란 수구를 선택하세요.';this.notify();return;}
   const gameRules=this.state.gameMode==='four'&&this.game?{gameMode:'four',opponentId:this.game.cueIds.find(id=>id!==this.state.selectedId)}:{gameMode:'free',opponentId:null};
   const req={snapshot:this.lab.snapshot({trails:false}),selectedId:this.state.selectedId,settings:{...this.state.settings},options:{...this.state.routeOptions,...gameRules}};
+  return this.startSearchRequest(req);
+ }
+ sourceFinalizationStamp(){return G.LabSourceFinalizationRequest.fingerprint({gameMode:this.state.gameMode,game:this.game?.snapshot()??null,worldObjectIds:this.lab.objects.map(o=>o.id)});}
+ async startFinalizedSearch(options){
+  const keys=options&&typeof options==='object'?Object.keys(options):[];
+  if(keys.length!==1||keys[0]!=='finalizationPolicy'||!['source-gameplay-finalization-v1','source-route-query-v1'].includes(options.finalizationPolicy))throw new RangeError('Explicit known source finalization policy required');
+  const gameplay=options.finalizationPolicy==='source-gameplay-finalization-v1';
+  if(!this.lab||this.lab.cue||this.windup||this.game?.pending||this.lab.anyMotion())return this.announce('모든 물체가 멈춘 뒤 경로를 검색하세요.');
+  if(this.game&&!this.game.cueIds.includes(this.state.selectedId)){this.state.routeStatus='error';this.state.routeError='흰 수구 또는 노란 수구를 선택하세요.';this.notify();return;}
+  this.cancelSearch('새 검색 요청으로 이전 검색을 취소했습니다.');const generation=this.finalizationGeneration;
+  try{
+   const api=G.LabSourceFinalizationRequest;if(!api)throw Error('Explicit source finalization modules unavailable');
+   this.state.paused=true;const stamp=this.worldStamp(),inputStamp=api.fingerprint([this.state.routeOptions,this.state.settings]),gameStamp=gameplay?this.sourceFinalizationStamp():null;
+   const gameRules=this.state.gameMode==='four'&&this.game?{gameMode:'four',opponentId:this.game.cueIds.find(id=>id!==this.state.selectedId)}:{gameMode:'free',opponentId:null};
+   const req={snapshot:this.lab.snapshot({trails:false}),selectedId:this.state.selectedId,settings:{...this.state.settings},options:{...this.state.routeOptions,...gameRules}};
+   this.state.routeStatus='searching';this.state.routeError='';this.state.routeResult=null;this.state.routeApplied=null;this.state.routeProgress={tested:0,evaluated:0,found:0,total:null,phase:'source-binding'};this.notify();let bound;
+   if(gameplay){const gameKind=this.game instanceof G.ThreeBallGame?'three':this.game instanceof G.FourBallGame?'four':null;if(!gameKind)throw Error('Actual ready source game required');bound=await api.bind(req,{gameKind,snapshot:this.game.snapshot(),worldObjectIds:this.lab.objects.map(o=>o.id),shotRules:{threeCushion:gameKind==='three'?true:!!this.state.routeOptions.fourBallThreeCushion}});}
+   else bound=api.route(req);
+   if(this.disposed||generation!==this.finalizationGeneration)return false;
+   if(stamp!==this.worldStamp()||inputStamp!==api.fingerprint([this.state.routeOptions,this.state.settings])||(gameplay&&gameStamp!==this.sourceFinalizationStamp())||this.lab.cue||this.lab.anyMotion()||this.game?.pending){this.state.routeStatus='stale';this.state.routeError='배치나 게임 상태가 바뀌었습니다. 새로 계산하세요.';this.notify();return false;}
+   return this.startSearchRequest(bound,options.finalizationPolicy);
+  }catch(error){if(generation!==this.finalizationGeneration||this.disposed)return false;this.state.routeStatus='error';this.state.routeError=error.message||String(error);this.notify();return false;}
+ }
+ startSearchRequest(req,finalizationPolicy=null){
   try{G.LabInversePlanner.validate(req)}catch(e){this.state.routeError=e.message;this.state.routeStatus='error';this.notify();return;}
+  this.routeFinalizationStamp=finalizationPolicy==='source-gameplay-finalization-v1'?this.sourceFinalizationStamp():null;
+  this.routeFinalizationOptionsStamp=finalizationPolicy?G.LabSourceFinalizationRequest.fingerprint([this.state.routeOptions,this.state.settings]):null;
   this.state.paused=true;this.invalidate();this.routeStamp=this.worldStamp();this.routeRequestStamp=JSON.stringify([this.state.routeOptions,this.state.settings]);this.state.routeStatus='searching';this.state.routeResult=null;this.state.routeError='';this.state.routeApplied=null;this.state.routeProgress={tested:0,evaluated:0,rejected:0,total:null,topologiesResolved:0,rootIterations:0,found:0};
   this.optimizer.request(req);this.notify();
  }
  resumeSearch(){
-  if(!['done','canceled'].includes(this.state.routeStatus)||this.worldStamp()!==this.routeStamp||this.routeRequestStamp!==JSON.stringify([this.state.routeOptions,this.state.settings]))return this.announce('배치나 조건이 바뀌었습니다. 새로 계산하세요.');
+  if(!['done','canceled'].includes(this.state.routeStatus)||this.worldStamp()!==this.routeStamp||this.routeRequestStamp!==JSON.stringify([this.state.routeOptions,this.state.settings])||(this.routeFinalizationStamp&&this.routeFinalizationStamp!==this.sourceFinalizationStamp())||(this.routeFinalizationOptionsStamp&&this.routeFinalizationOptionsStamp!==G.LabSourceFinalizationRequest.fingerprint([this.state.routeOptions,this.state.settings])))return this.announce('배치나 조건이 바뀌었습니다. 새로 계산하세요.');
   if(this.optimizer?.resume()){this.state.routeStatus='searching';this.state.routeError='';this.notify();}
  }
  stopSearch(){
   if(this.state.routeStatus==='searching'){
-   this.optimizer?.cancel();this.state.routeStatus='done';
+   this.finalizationGeneration=(this.finalizationGeneration||0)+1;this.optimizer?.cancel();this.state.routeStatus='done';
    this.state.routeResult=this.state.routeResult||{...this.state.routeProgress,results:[],options:{...this.state.routeOptions}};
    this.state.routeResult={...this.state.routeResult,partial:true};this.state.routeError='';
   }this.queuePrediction();this.notify();
  }
  applyRoute(id){
-  if(!['done','searching'].includes(this.state.routeStatus)||this.worldStamp()!==this.routeStamp)return this.announce('배치나 물리 상태가 바뀌었습니다. 다시 검색하세요.');
+  if(!['done','searching'].includes(this.state.routeStatus)||this.worldStamp()!==this.routeStamp||(this.routeFinalizationStamp&&this.routeFinalizationStamp!==this.sourceFinalizationStamp()))return this.announce('배치나 물리 상태가 바뀌었습니다. 다시 검색하세요.');
   const result=this.state.routeResult?.results.find(r=>r.id===id);if(!result)return;if(this.state.routeStatus==='searching')this.stopSearch();
   this.state.predict=true;this.state.horizon=this.state.routeOptions.horizon;this.state.paused=true;this.changeSettings(result.settings);this.state.routeApplied=id;this.notify();this.announce('후보 '+id+'의 경로와 타격 설정을 적용했습니다. 타격은 직접 실행하세요.');
  }

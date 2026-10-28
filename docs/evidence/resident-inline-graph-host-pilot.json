@@ -1,0 +1,68 @@
+{
+  "kind": "owned-host-post-impact-inline-graph-only-v1",
+  "status": "pass",
+  "resultSha256": "03fc740714b707f749950d78623eac26536bf13f6fe6e1d8a79321a3c98dd323",
+  "initialSha256": "c83e9d8a897d97f7ebb9bb591107e44c4b8c66a606e0691ca66d12381429d2de",
+  "finalSha256": "69a7c58a8a93e6939d761509215806b618816414981ac8b736c0dbd2afb365d1",
+  "pins": {
+    "initial": "05f78ef994c2b69960e8e64c07d03cd17c0947656d573afee82820d764a5ff5e",
+    "sourceFile": "0100d54ceeffc33c7aa46c2da705d7fd6d036b9a3b1b977206df64dffbc03c5c",
+    "source": "5a18bbbbd646454f2e00f7b1422773b2851b64d5ff165626f2a9f835ff86c0e7",
+    "baselineResult": "413e4032cb6a4beb5da01a911f9ac41f4d95e26f57aaf4d6a4f02da8325e0152",
+    "baselineFinal": "893b7ed95bbf2881b4fb518421ef37339ca8857944603c898391237f125996a5"
+  },
+  "sourceClosureSha256": "6a60bc2629e30add603ffdf23a77585291e5155d06f836bff456695da73c5fea",
+  "sourceSha256": "5a18bbbbd646454f2e00f7b1422773b2851b64d5ff165626f2a9f835ff86c0e7",
+  "bytecodeSha256": "6fab6001ef5839ea03d98b0536eca8577acf09d988a8fb17e4bf8be76857c6ff",
+  "core": {
+    "bytes": 52334,
+    "sha256": "d1b84f15ea4ec37630ef1c26c21b6c945ffb684d8314c82977bfbdb51b8da497"
+  },
+  "handlers": [
+    {
+      "id": 0,
+      "name": "rc_cue_flat_advance",
+      "bytes": 32733,
+      "sha256": "868b5ead223047af23b5699160f931f22c23f5e2f3756ad5168f7d08f0e4ccd7"
+    },
+    {
+      "id": 2,
+      "name": "rc_world_broad_commit_collision",
+      "bytes": 42230,
+      "sha256": "57bb444e98aee8687fb5ec38802ac4af3521db2953834ce7745b1dc64816f255"
+    },
+    {
+      "id": 3,
+      "name": "rc_coupled_transport_advance",
+      "bytes": 27683,
+      "sha256": "7342d068f7323068ba698d1a77abb794f6936b624ecc0ba53b114e9eb85c1e14"
+    }
+  ],
+  "pumps": 49,
+  "coreSteps": [
+    2751871,
+    2511
+  ],
+  "calls": {
+    "rc_cue_flat_advance": 4,
+    "rc_num_eval": 77,
+    "rc_world_broad_commit_collision": 1,
+    "rc_coupled_transport_advance": 3
+  },
+  "hostWallMs": 31624.615331,
+  "theoreticalFixedCommands": 196,
+  "baseline": {
+    "pumps": 108,
+    "coreSteps": [
+      2752256,
+      2511
+    ],
+    "theoreticalFixedCommands": 540
+  },
+  "allSixFinalBindingWordsEqual": true,
+  "rawInput": false,
+  "gpuExecuted": false,
+  "fullRestQualified": false,
+  "nativePhysicsLabH193Qualified": false,
+  "hardwarePerformance": false
+}

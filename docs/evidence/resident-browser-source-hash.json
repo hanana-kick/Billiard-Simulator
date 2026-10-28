@@ -1,0 +1,26 @@
+{
+  "kind": "resident-browser-source-hash-host-evidence-v1",
+  "scope": "Synchronous content hashing replacement only; no complete browser runtime or GPU execution",
+  "prerequisite": {"upstream": "808933d", "isolatedTwoFileAdoption": "d3cfab1"},
+  "implementation": {"sourceOwned": true, "standard": "FIPS 180-4 sections 4-6", "reference": "https://csrc.nist.gov/pubs/fips/180-4/upd1/final", "thirdPartyCodeCopied": false, "productionImportReplacements": 8},
+  "hostTests": {"focusedPassed": 44, "staticInventoryPassed": 1, "frozenIdentityPassed": 1, "terminalFailed": 0},
+  "staticImportInventory": {"roots": 11, "modules": 128, "externalImports": 0, "classicCommonJsOrProcessModules": 35, "completeDynamicRequireGraph": false},
+  "initialIdentityAttempt": {"passed": false, "phase": "launch-profile regeneration after source, complete compiled object, core and four handler equality had passed", "error": "Macro launch profile: explicit declared device limits required", "cause": "Test read manifest.deviceLimits rather than each frozen launch profile planningLimits", "repair": "Test-only use of actual expected.planningLimits; production source unchanged", "evidenceType": "curated terminal error, not preserved raw process transcript", "gpuExecuted": false},
+  "frozenIdentity": {
+    "fixture": "mixed-six-macro-launch-v1",
+    "sourceSha256": "c2aded677c03f8db550530c39df80a5591057f892a2f44aa4f6fe99d956baa20",
+    "sourceReceiptSha256": "49de718120fea364dc9bffd099eb7876339018dd00ff4664635684fdea81ec33",
+    "compiledFileSha256": "8c1075bc06dfcb28cb45c27f89ebac98d892fddba806526d8f1c287252d15cf5",
+    "runtimeFileSha256": "780872cc0105e20375dcbd2f84a2e1962176133feefb23fdaa0a0778b312b4de",
+    "runtimeDataSha256": "5a114404df0eb616c8b112b553f484d837171bdfbef9f9b7c138686b30aaf958",
+    "sourceBytes": 542365, "instructions": 131112, "localWords": 7783, "callDepth": 15,
+    "fullCompiledObjectEqual": true, "fullSourceEqual": true, "fullCoreEqual": true,
+    "fullFourHandlersEqual": true, "fullLaunchProfilesEqual": [1,8,32,64],
+    "inputsRereadUnchanged": true, "artifactWrites": 0
+  },
+  "browserLikeRealmOnly": true,
+  "actualBrowserWorkerTested": false,
+  "numericalGpuExecuted": false,
+  "sourcePhysicsChanged": false,
+  "defaultBackendChanged": false
+}

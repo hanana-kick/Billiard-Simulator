@@ -1,0 +1,58 @@
+{
+  "kind": "resident-phased-host-legacy-projection-v1",
+  "sourceBoundary": "bc1258664c2b0f13e792dd9f3cde17c67a54c238",
+  "scope": "TEST-only exact text projection for omitted numericContinuation; not replacement HOST execution or numerical qualification",
+  "currentHostReferenceSha256": "f7d59549c0478e68d594d325c0499bf76bbb4f7dc1e66242cda17c9d6c9f66a6",
+  "beforePhasedHostReferenceSha256": "53d2d0213a2ee5a60c7706c91bb4e8850003220491af7e132c1abfb313309e3a",
+  "patches": [
+    {
+      "label": "optional-helper-callback-admission",
+      "current": "for(const key of['onCall','onReturn','numericContinuationHandler'])",
+      "historical": "for(const key of['onCall','onReturn'])",
+      "currentSha256": "d311ac4780dd5c14c382fc415da47f3ef017c74593a1e4cb887796740019cdfa",
+      "historicalSha256": "1a78bafd7408742a4038a5fc3eba3e29f82b6673709d8ec8c537d50809975703"
+    },
+    {
+      "label": "waiting-macro-tail-guard",
+      "current": "if(p.numericContinuation&&status===S.waiting&&state.subarray(at+p.numericTailOffset,at+p.numericTailOffset+Q.ownedWords).some(x=>x!==0))return fail(at,E.malformedControl);",
+      "historical": "",
+      "currentSha256": "9afcc515dda87e2547c580411245d270e3f40bfe336812db02342ff84929761b",
+      "historicalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "uninvoked-numeric-helper",
+      "current": " const numericAdvance=(at,pc,dst,programBase,scratchBase)=>{\n  const t=at+p.numericTailOffset,F=Q.fields,handler=options.numericContinuationHandler;\n  if(typeof handler!=='function'){fail(at,E.unsupportedPrimitive,S.unsupported);return null;}\n  const phase=state[t+F.phase];if(phase===0){if(state.subarray(t,t+Q.ownedWords).some(x=>x!==0)){fail(at,E.malformedControl);return null;}}\n  else if(state[t+F.ownerPC]!==pc||state[t+F.destination]!==dst||state[t+F.program]!==programBase||state[t+F.scratch]!==scratchBase){fail(at,E.malformedControl);return null;}\n  if(state[t+F.microWorkLow]===0xffffffff&&state[t+F.microWorkHigh]===0xffffffff){fail(at,E.counterOverflow);return null;}\n  const invoke=(operation,args)=>{const r=handler(operation,Object.freeze(args),{state,bindings,configuration:p});if(!Number.isInteger(r)||r<0||r>Q.protocolFault)throw new TypeError('Exact TEST phased numeric transport return required');return r;};\n  const result=phase===0?invoke('start',[at,programBase,scratchBase,pc,dst]):invoke('step',[at]);\n  if(result===Q.protocolFault){fail(at,E.malformedControl);return null;}\n  if(result!==0){if(state[t+F.phase]!==Q.phases.RETURN||state[t+F.sourceResult]!==result||invoke('clear',[at])!==0){fail(at,E.malformedControl);return null;}}\n  state[t+F.microWorkLow]=(state[t+F.microWorkLow]+1)>>>0;if(state[t+F.microWorkLow]===0)state[t+F.microWorkHigh]++;\n  return result===0?null:result;\n };\n",
+      "historical": "",
+      "currentSha256": "98b26467f72c91060cb5b5173298e6311e64fc52cdbacb0e0f88e25a5e683419",
+      "historicalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "inactive-tail-guard-and-original-indentation",
+      "current": "  if(p.numericContinuation&&state[at+p.numericTailOffset+Q.fields.phase]===0&&state.subarray(at+p.numericTailOffset,at+p.numericTailOffset+Q.ownedWords).some(x=>x!==0))return fail(at,E.malformedControl);\n const prior=",
+      "historical": "  const prior=",
+      "currentSha256": "1214fc3b52cd9b4523bd8036a1c97f286b1ceefcb71b4b8dba0b770610f16fc6",
+      "historicalSha256": "9301e15488610ee529a905e387cdda621eb11553bb46781f527df255d186d3d4"
+    },
+    {
+      "label": "active-tail-status-guard",
+      "current": "if(p.numericContinuation&&state[at+p.numericTailOffset+Q.fields.phase]!==0&&![S.ready,S.invalid,S.unsupported].includes(prior))return fail(at,E.malformedControl);",
+      "historical": "",
+      "currentSha256": "269a16f3450d990328e14fbdee9e32b82d8682a9292c8a98bf0c0605350fc82a",
+      "historicalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "active-tail-opcode-guard",
+      "current": "if(p.numericContinuation&&state[at+p.numericTailOffset+Q.fields.phase]!==0&&name!=='NUM_EVAL')return fail(at,E.malformedControl);",
+      "historical": "",
+      "currentSha256": "a694ea6a1025a34e674dd42be943f7cd6c780ae64770bca991a62441ba2713c6",
+      "historicalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "phased-num-eval-branch",
+      "current": "   if(intrinsic&&p.numericContinuation&&name==='NUM_EVAL'){const result=numericAdvance(at,pc,dst,a,b);if(result===null){if(state[at+C.status]!==S.ready)return state[at+C.status];continue;}state[lb+dst]=result;}\n   else if(intrinsic)",
+      "historical": "   if(intrinsic)",
+      "currentSha256": "58a8367c8107d7101480454574ec41318ff77f9fd9425f99ce8bd2742c42cd9c",
+      "historicalSha256": "f738ec862b52337b7a27865d1aea35b15edd6ebe70c2d497bff034ac36a60e01"
+    }
+  ]
+}

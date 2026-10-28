@@ -1,0 +1,87 @@
+{
+  "profile": "prepared-physical-to-rule-v1",
+  "cases": 105,
+  "comparedWords": 22680,
+  "exactWords": true,
+  "compileMs": 5390.75001,
+  "shaderBytes": [
+    4116,
+    8418,
+    5991,
+    7082,
+    8565,
+    8752,
+    8644,
+    1760,
+    1760,
+    1760,
+    8961,
+    6326,
+    4040,
+    4171,
+    4171
+  ],
+  "runs": [
+    {
+      "noKiss": false,
+      "budget": 128,
+      "gameplayPass": 30,
+      "searchPass": 30,
+      "metrics": {
+        "count": 35,
+        "maxEvents": 128,
+        "dispatches": 1160,
+        "ruleProducer": true,
+        "residentCopies": 128,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "finalReadbacks": 1,
+        "allocatedBytes": 132768,
+        "submitToDoneMs": 220.24950900000022,
+        "fullShot": false,
+        "hardwareSpeedClaim": false
+      }
+    },
+    {
+      "noKiss": true,
+      "budget": 128,
+      "gameplayPass": 30,
+      "searchPass": 0,
+      "metrics": {
+        "count": 35,
+        "maxEvents": 128,
+        "dispatches": 1160,
+        "ruleProducer": true,
+        "residentCopies": 128,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "finalReadbacks": 1,
+        "allocatedBytes": 132768,
+        "submitToDoneMs": 141.37834899999962,
+        "fullShot": false,
+        "hardwareSpeedClaim": false
+      }
+    },
+    {
+      "noKiss": false,
+      "budget": 2,
+      "gameplayPass": 0,
+      "searchPass": 0,
+      "metrics": {
+        "count": 35,
+        "maxEvents": 2,
+        "dispatches": 26,
+        "ruleProducer": true,
+        "residentCopies": 2,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "finalReadbacks": 1,
+        "allocatedBytes": 132768,
+        "submitToDoneMs": 11.288645999999972,
+        "fullShot": false,
+        "hardwareSpeedClaim": false
+      }
+    }
+  ],
+  "rawShot": false
+}

@@ -1,0 +1,53 @@
+{
+  "lateFailureProbeWords": 1536,
+  "normalSpinProbeWords": 20,
+  "cases": 6,
+  "words": 28160,
+  "compileMs": 12973.34942,
+  "shaderBytes": [
+    9878,
+    9764,
+    8353,
+    8754,
+    825,
+    7873,
+    10031,
+    10062,
+    11492,
+    8281,
+    630,
+    6609,
+    7359,
+    4267,
+    1189
+  ],
+  "allocatedBytes": 51040,
+  "dispatches": 28,
+  "intermediateReadbacks": 0,
+  "hostPhysicsBetweenPhases": 0,
+  "submitToDoneMs": 7.871114999999918,
+  "timingCase": "upstream-query-budget",
+  "backend": "SwiftShader Vulkan software",
+  "targetedTests": 9,
+  "targetedWallMs": 27129.495954,
+  "priorTubeParityWords": 5632,
+  "totalComparedWordsIncludingProbesAndTube": 35348,
+  "profile": "canonical nominal prepared landing chain; not full-shot acceptance",
+  "observations": {
+    "initialPairTick": 28939,
+    "firstPrefixEndTick": 54965,
+    "firstLandingUpperTick": 54967,
+    "zeroRestitutionObservationEndTick": 56967,
+    "pointTwoRestitutionSecondLandingTick": 60173,
+    "originalShortSlipFixture": "pending before second landing, no reset or threshold"
+  },
+  "unchangedBudgetsQ24": [
+    2000,
+    2000,
+    20000,
+    20000,
+    20000,
+    20000,
+    20000
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "schema": "genuine-three-host-source-checkpoint-v1",
+  "baselineCommit": "ec3c1f5",
+  "scope": "distinct retained outer bookkeeping profile; authentic original continuous t0 through h3 only",
+  "temporaryDirectory": "/workspace/scratch/f887f82f638e/resident-native-artifacts/host-tmp",
+  "checks": [
+    {
+      "test": "tests/resident-three-ball-retained-outer-h.mjs",
+      "log": "/tmp/three-retained-outer-h-host-final.log",
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "wallMillis": 130863.003911,
+      "authority": "unchanged original PhysicsLab continuous h1/h2/h3 with full exact represented native/source state; no full outer step"
+    },
+    {
+      "test": "tests/resident-three-ball-outer-bookkeeping.mjs",
+      "log": "/tmp/three-outer-bookkeeping-identity-final.log",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "wallMillis": 25335.932795,
+      "authority": "unchanged original outer control method with substituted physical methods (component only), sticky negatives, signed-zero and reusable second outer; full bank/program/geometry/emitted-source identity across admission-only tightening"
+    }
+  ],
+  "preservedFailedEvidence": {
+    "log": "/tmp/three-retained-outer-h-host.log",
+    "failure": "HOST exact intrinsic profile declaration absent in new Number-only bootstrap; stopped before physics",
+    "repair": "include unchanged preserved-f32 source library; no equation change"
+  },
+  "resources": {
+    "stateWords": 74016,
+    "additionalOuterWords": 96,
+    "programWords": 1203783,
+    "reusedScratchWords": 13632,
+    "perCandidateTrailPoints": 0,
+    "trailMeaning": "presentation field excluded, not a fabricated empty native trail"
+  },
+  "oldRetainedBytes": "tests/fixtures/three-ball-retained-outer-legacy-fingerprint.json",
+  "qualified": {
+    "hostSourceOnly": true,
+    "originalH3RepresentedStateExact": true,
+    "physicalOuter64": false,
+    "generalActiveContactsOrCcd": false,
+    "realCueWithdrawal": false,
+    "eventfulHistoryOrThreeBallGame": false,
+    "inverseQueryObservationOrTerminal": false,
+    "gpu": false,
+    "runtimeIntegrated": false,
+    "defaultActivated": false,
+    "published": false
+  }
+}

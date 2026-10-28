@@ -3,13 +3,16 @@
 // candidate pose, clearance query and created world-mass calculation executes
 // on device. No host continuation, physical stepping or future-state import.
 import {authenticateCreationTemplate,assertCreationTemplate} from './creation-template.mjs';
-import {packCreatedWorldTemplate,generateWorldCloneWGSL,packWorldCloneTemplate} from './world-state.mjs';
+import {packCreatedWorldTemplate,generateWorldCloneWGSL} from './world-state.mjs';
+import {packRawWorldHistoryClone,generateInitialStrokeHistoryWGSL} from './world-initial-history.mjs';
 import {buildRawPreparationPlan} from './raw-strike.mjs';
 import {generateConvexPointWGSL} from './convex-point.mjs';
 import {generateWorldCreationWGSL} from './world-creation.mjs';
 import {packCandidates} from './abi.mjs';
-import Query from '../experimental-cue-obstacle-contact.js';
-import Point from '../experimental-convex-point.js';
+import * as importedQuery from '../experimental-cue-obstacle-contact.js';
+const Query=importedQuery.default??globalThis.LabCueObstacleContactExperimental;
+import * as importedPoint from '../experimental-convex-point.js';
+const Point=importedPoint.default??globalThis.LabConvexPointExperimental;
 const owned=new WeakMap(),U=0xffffffff,key=h=>h.index+':'+h.generation,need=(v,m)=>{if(!v)throw new RangeError('World initialization: '+m);};
 export const WORLD_INITIALIZATION_CAPABILITY=Object.freeze({fixedAuthenticatedPrestrike:true,arbitraryFiveParameterRows:true,deviceRawPose:true,deviceSampledAndContinuousClearance:true,deviceCreatedWorldMass:true,hostForwardFallback:false,nativeAllocation:false,nativeWholeH:false,defaultBackend:false});
 /** Static source roster only: exactly [...lab.statics,...lab.objects], primary
@@ -63,7 +66,7 @@ function assertPlanViews(views){
 export async function createWorldInitializationPlan({decoder,input,rule,ruleId=0,storageLoops=false}={}){
  need(typeof storageLoops==='boolean','explicit source loop transport');need(Number.isInteger(ruleId)&&ruleId>=0&&ruleId<U,'unsigned common rule identity');const {receipt,seed}=await authenticateCreationTemplate(decoder,input);assertCreationTemplate(receipt);
  const template=await packCreatedWorldTemplate(seed,{rule}),roster=originalClearanceRoster(seed);need(template.sourceIdentity===receipt.createdSnapshotSha256&&template.selectedIndex===seed.sourceOrigin.selectedIndex,'creation/template identity');for(const name of['rawPose','rawClearance','rawCreation'])need(Number.isInteger(template.segments[name]?.offset),'world '+name+' segment');need(template.segments.rawPose.words===128&&template.segments.rawClearance.words===16&&template.segments.rawCreation.words===16,'complete raw transport widths');
- const raw=buildRawPreparationPlan({query:Query,pointQuery:Point,pointStageGenerator:generateConvexPointWGSL,...roster,storageLoops}),clone=packWorldCloneTemplate(template);
+ const raw=buildRawPreparationPlan({query:Query,pointQuery:Point,pointStageGenerator:generateConvexPointWGSL,...roster,storageLoops}),clone=packRawWorldHistoryClone(template);
  const plan=Object.freeze({kind:'resident-source-world-initialization',version:1,receipt,template,raw,roster,clone,capability:WORLD_INITIALIZATION_CAPABILITY,sourceIdentity:template.sourceIdentity,preStrikeIdentity:receipt.preStrikeSnapshotSha256,selectedIndex:template.selectedIndex,ruleId});
  owned.set(plan,{views:sealPlanData(plan)});return plan;
 }
@@ -92,8 +95,9 @@ function creationShader(plan,stage){const t=plan.template,o=t.segments,q=o.cue.o
 @group(0) @binding(1) var<storage,read> rc_program:array<u32>;
 @group(0) @binding(2) var<storage,read_write> rc_scratch:array<u32>;
 ${generateWorldCreationWGSL(t,stage)}
+${finish?generateInitialStrokeHistoryWGSL(t):''}
 @compute @workgroup_size(32) fn main(@builtin(global_invocation_id) gid:vec3<u32>){let row=gid.x;if(row>=RC_INIT_COUNT){return;}let bank=row*${t.state.length}u;let c=bank+${c}u;let q=bank+${q}u;if(rc_state[bank+2u]!=0u){return;}if(rc_state[c+5u]!=${begin?1:2}u){rc_state[bank+2u]=4u;rc_state[bank+3u]=11u;return;}rc_world_creation_stage(bank,bank+${o.rawClearance.offset}u,row*${t.numericScratchWords}u);if(rc_state[c]!=0u){rc_state[bank+2u]=4u;rc_state[bank+3u]=5u;return;}${begin?'rc_state[c+5u]=2u;':''}
- ${finish?`if(rc_state[c+4u]!=1u||rc_state[c+1u]!=3u||rc_state[q+2u]!=1u||rc_state[q+4u]!=1u||rc_state[q+5u]!=0u||rc_state[q+6u]!=0u||rc_state[q+7u]!=0u||rc_state[q+13u]!=0u||rc_state[q+47u]!=0u){rc_state[bank+2u]=4u;rc_state[bank+3u]=11u;return;}rc_state[c+5u]=3u;rc_state[bank+2u]=1u;rc_state[bank+3u]=0u;`:''}
+ ${finish?`if(rc_state[c+4u]!=1u||rc_state[c+1u]!=3u||rc_state[q+2u]!=1u||rc_state[q+4u]!=1u||rc_state[q+5u]!=0u||rc_state[q+6u]!=0u||rc_state[q+7u]!=0u||rc_state[q+13u]!=0u||rc_state[q+47u]!=0u){rc_state[bank+2u]=4u;rc_state[bank+3u]=11u;return;}if(!rc_world_initial_history_commit(bank)){rc_state[bank+2u]=4u;rc_state[bank+3u]=11u;return;}rc_state[c+5u]=3u;rc_state[bank+2u]=1u;rc_state[bank+3u]=0u;`:''}
 }
 `;}
 /** Ordered fixed dispatch descriptors, no GPU execution. Bind each named

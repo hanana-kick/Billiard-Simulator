@@ -1,0 +1,14 @@
+{
+  "sourceCommit": "ec3c1f5",
+  "scope": "original selected-2 immutable created t0; old retained h profile before additive outer bookkeeping; UTF8 source/JSON and exact Uint32 byte SHA256",
+  "signature": {
+    "initial": "81b299b839638682e9b15bcbaf899f33c1ad2e1307c009cfc4199400ddb3dc0b",
+    "program": "8f3f25666f6f6e506c5d68c71d18dce2686ebd726a52ecaa6b68d0cf50d7b432",
+    "geometry": "5fd24b20bfa4190bcb088c045f9c3122e3690190039b1d13ccf77df3ae001707",
+    "layout": "e03f566d80f210b526a906d5c9a01844c3b7f35a51a69259bf9f831a0f524376",
+    "capability": "7d6bf9822e4126110ffd49634cecc639fea5d936181198eff65ea258e7413cd5",
+    "first": "09b72e31a8d978f48493002093016abbe098ee74cbaf4c7f1c9d067e4f9b0063",
+    "bootstrap": "bf17e8b5355d8220458cf6d1d1eeb57266cfc7c25f0275c530c2a1a272ad210d",
+    "advance": "48a05bf75fd1be9d6953366cf5eec5f1c3e2c5db933c4746a6a51e6ed0be7ca2"
+  }
+}

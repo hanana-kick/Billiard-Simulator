@@ -3,12 +3,18 @@
  * Source numerical builders and the original proxy-distance WGSL are reused;
  * no CPU numerical continuation and no independent substitute collision model.
  */
-import Checker from '../experimental-ccd-inactive.js';
-import Schedule from '../experimental-ccd-substep.js';
-import MathStage from '../experimental-ccd-sweep-math.js';
-import Fixed from '../experimental-ccd-fixed-sphere.js';
-import Proxy from '../experimental-ccd-proxy-distance-kernel.js';
-import Reducers from '../experimental-ccd-proxy-distance-reducers.js';
+import * as importedChecker from '../experimental-ccd-inactive.js';
+const Checker=importedChecker.default??globalThis.LabCcdInactiveExperimental;
+import * as importedSchedule from '../experimental-ccd-substep.js';
+const Schedule=importedSchedule.default??globalThis.LabCcdSubstepExperimental;
+import * as importedMathStage from '../experimental-ccd-sweep-math.js';
+const MathStage=importedMathStage.default??globalThis.LabCcdSweepMathExperimental;
+import * as importedFixed from '../experimental-ccd-fixed-sphere.js';
+const Fixed=importedFixed.default??globalThis.LabCcdFixedSphereExperimental;
+import * as importedProxy from '../experimental-ccd-proxy-distance-kernel.js';
+const Proxy=importedProxy.default??globalThis.LabCcdProxyDistanceKernelExperimental;
+import * as importedReducers from '../experimental-ccd-proxy-distance-reducers.js';
+const Reducers=importedReducers.default??globalThis.LabCcdProxyDistanceReducersExperimental;
 import {compileGraph} from './numeric-program.mjs';
 
 export const CCD_LAYOUT=Object.freeze({words:1280,gjk:1024,gjkWords:152,continuation:896,continuationWords:64,bodyContinuation:976,bodyContinuationWords:48,header:0,body:32,bodyWords:80,result:352,resultWords:24,work:448,workWords:256,out:704,query:768});

@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { CanonicalRoutePlanner } from '@/components/canonical-route-planner'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Field, FieldLabel, FieldGroup, FieldDescription, FieldSet, FieldLegend } from '@/components/ui/field'
@@ -14,7 +15,10 @@ const G=globalThis as any
 const resultPages=new WeakMap<object,number>()
 const fmt=(v:number,n=2)=>Number(v||0).toFixed(n)
 type Method={id:string;label:string;short:string;description:string;rule:string}
-export function RoutePlanner({state:s,controller:c}:{state:any;controller:any}){
+export function RoutePlanner(props:{state:any;controller:any}){
+ return props.state.canonicalPlayback?<CanonicalRoutePlanner {...props}/>:<LegacyRoutePlanner {...props}/>
+}
+function LegacyRoutePlanner({state:s,controller:c}:{state:any;controller:any}){
  const o=s.routeOptions,busy=s.routeStatus==='searching',result=s.routeResult,p=s.routeProgress
  const [detailsOpen,setDetailsOpen]=React.useState(false)
  const detailsTrigger=React.useRef<HTMLButtonElement>(null)

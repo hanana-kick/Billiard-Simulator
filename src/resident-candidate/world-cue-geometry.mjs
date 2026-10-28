@@ -8,10 +8,13 @@ import {compileGraph} from './numeric-program.mjs';
 import {createEmptyCueCachePrograms,initializeEmptyCueCache,generateEmptyCueCacheWGSL,generateEmptyConvexQueryWGSL} from './cue-empty-caches.mjs';
 import {packSharedConvexHull,generateConvexPointWGSL} from './convex-point.mjs';
 import {generateRawContactQueryWGSL} from './raw-strike.mjs';
-import Query from '../experimental-cue-obstacle-contact.js';
-import Guard from '../experimental-cue-rigid-exclusion.js';
+import * as importedQuery from '../experimental-cue-obstacle-contact.js';
+const Query=importedQuery.default??globalThis.LabCueObstacleContactExperimental;
+import * as importedGuard from '../experimental-cue-rigid-exclusion.js';
+const Guard=importedGuard.default??globalThis.LabCueRigidExclusionExperimental;
 import {CONTACT_JOURNAL_LAYOUT as J} from './contact-journal.mjs';
-import Topology from '../experimental-cue-convex-topology.js';
+import * as importedTopology from '../experimental-cue-convex-topology.js';
+const Topology=importedTopology.default??globalThis.LabCueConvexTopologyExperimental;
 const U=0xffffffff,f=Math.fround,key=h=>h.index+':'+h.generation,same=(a,b)=>key(a)===key(b),bits=x=>new Uint32Array(Float32Array.of(x).buffer)[0];
 const need=(ok,msg)=>{if(!ok)throw new RangeError('World cue geometry: '+msg);};
 export const WORLD_CUE_GEOMETRY_LAYOUT=Object.freeze({words:3456,bytes:13824,maxPairs:56,pairOffset:32,pairStride:56,cacheWords:48,poseInput:3168,poseOutput:3188,cacheInput:3202,cacheOutput:3258,query:3292,queryOutput:3324,queryMetadata:3340,proof:3356,normalQuery:3360,normalOutput:3388,scratchWords:13632,

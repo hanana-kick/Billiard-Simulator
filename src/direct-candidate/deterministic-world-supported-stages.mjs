@@ -1,0 +1,13 @@
+/** Private world-only adapter. Original prepared batch shaders remain unchanged.
+ * Every replacement is explicit and checked; no generic shader/physics compiler.
+ */
+import {RECUR_BRIDGE_PROBE_WGSL,RECUR_CHOOSE_WGSL,RECUR_ASSEMBLE_WGSL,RECUR_REBASE_WGSL} from './deterministic-recurring-stages.mjs';
+import {QT_BRIDGE_VERSION} from './deterministic-qt-bridge.mjs';
+function once(source,from,to){if(source.split(from).length!==2)throw Error('World supported shader source contract changed');return source.replace(from,to);}
+export const WORLD_QT_PROBE_WGSL=once(RECUR_BRIDGE_PROBE_WGSL,'rows[b+2u]=1;','');
+export const WORLD_SUPPORTED_CHOOSE_WGSL=once(once(once(RECUR_CHOOSE_WGSL,'if(bridges[i*128u+3u]!=0){state[35]++;}','if(bridges[i*128u+3u]!=0){state[35]++;}state[48]+=bridges[i*128u+53u];'),'state[40]=0;','state[40]=0;state[60]=0;'),'writeRow(i,256u+b,h,1);state[35]++;',`writeRow(i,256u+b,h,1);if(bridges[i*128u+3u]!=${QT_BRIDGE_VERSION}){state[35]++;}`);
+export const WORLD_SUPPORTED_ASSEMBLE_WGSL=once(RECUR_ASSEMBLE_WGSL,'fn bridgeBox(z:u32,j:u32,h:i32)->vec2<i32>{',`fn bridgeBox(z:u32,j:u32,h:i32)->vec2<i32>{if(bridges[z+3u]==${QT_BRIDGE_VERSION}){return vec2<i32>(bridges[z+40u+2u*j],bridges[z+41u+2u*j]);}`);
+export const WORLD_SUPPORTED_REBASE_WGSL=once(RECUR_REBASE_WGSL,'state[a+40u]=bridges[z+14u];',`state[a+40u]=select(bridges[z+14u],1,bridges[z+3u]==${QT_BRIDGE_VERSION});if(bridges[z+3u]==${QT_BRIDGE_VERSION}){state[49]++;}`);
+export const WORLD_QT_JOIN_WGSL=`@group(0) @binding(0) var<storage,read_write> bridges:array<i32>;@group(0) @binding(1) var<storage,read> qt:array<i32>;@compute @workgroup_size(1) fn main(){for(var i=0u;i<4u;i++){let z=i*128u;if(qt[z+3u]!=${QT_BRIDGE_VERSION}){continue;}if(qt[z+1u]==1){for(var k=0u;k<128u;k++){bridges[z+k]=qt[z+k];}bridges[z+5u]=qt[z+4u];}bridges[z+53u]=qt[z+6u];}}`;
+export const WORLD_QT_SPLIT_WGSL=`@group(0) @binding(0) var<storage,read> probes:array<i32>;@group(0) @binding(1) var<storage,read_write> rows:array<i32>;@group(0) @binding(2) var<storage,read_write> qtRows:array<i32>;@compute @workgroup_size(1) fn main(){for(var k=0u;k<256u;k++){qtRows[k]=0;}for(var i=0u;i<4u;i++){let b=i*64u;if(rows[b+1u]!=0&&probes[i*128u+3u]==${QT_BRIDGE_VERSION}){for(var k=0u;k<64u;k++){qtRows[b+k]=rows[b+k];rows[b+k]=0;}}}}`;
+export const WORLD_QT_MERGE_WGSL=`@group(0) @binding(0) var<storage,read_write> state:array<i32>;@group(0) @binding(1) var<storage,read_write> bridges:array<i32>;@group(0) @binding(2) var<storage,read> qt:array<i32>;@compute @workgroup_size(1) fn main(){if(state[1]!=0){return;}for(var i=0u;i<4u;i++){let z=i*128u;if(qt[z+3u]!=${QT_BRIDGE_VERSION}){continue;}for(var k=0u;k<128u;k++){bridges[z+k]=qt[z+k];}state[48]+=qt[z+6u];}}`;

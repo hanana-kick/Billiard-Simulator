@@ -1,0 +1,121 @@
+{
+  "words": 6144,
+  "compileMs": 22132.502852,
+  "timings": [
+    {
+      "kind": "clear",
+      "maxWorldSteps": 1,
+      "status": 9,
+      "reason": 0,
+      "clock": 4713089,
+      "allocatedBytes": 78440,
+      "dispatches": 76,
+      "bufferClears": 0,
+      "intermediateReadbacks": 0,
+      "hostPhysicsBetweenPhases": 0,
+      "submitToDoneMs": 15.57713700000022
+    },
+    {
+      "kind": "hit",
+      "maxWorldSteps": 1,
+      "status": 5,
+      "reason": 77,
+      "clock": 532997,
+      "allocatedBytes": 78440,
+      "dispatches": 76,
+      "bufferClears": 0,
+      "intermediateReadbacks": 0,
+      "hostPhysicsBetweenPhases": 0,
+      "submitToDoneMs": 15.496576000001369
+    },
+    {
+      "kind": "hit",
+      "maxWorldSteps": 2,
+      "status": 5,
+      "reason": 77,
+      "clock": 548887,
+      "allocatedBytes": 78440,
+      "dispatches": 76,
+      "bufferClears": 0,
+      "intermediateReadbacks": 0,
+      "hostPhysicsBetweenPhases": 0,
+      "submitToDoneMs": 21.892958000000363
+    },
+    {
+      "kind": "hit",
+      "maxWorldSteps": 64,
+      "status": 5,
+      "reason": 43,
+      "clock": 562312,
+      "allocatedBytes": 78440,
+      "dispatches": 4230,
+      "bufferClears": 558,
+      "intermediateReadbacks": 0,
+      "hostPhysicsBetweenPhases": 0,
+      "submitToDoneMs": 1071.4207919999972
+    },
+    {
+      "kind": "rest",
+      "maxWorldSteps": 1,
+      "status": 9,
+      "reason": 0,
+      "clock": 191678,
+      "allocatedBytes": 78440,
+      "dispatches": 76,
+      "bufferClears": 0,
+      "intermediateReadbacks": 0,
+      "hostPhysicsBetweenPhases": 0,
+      "submitToDoneMs": 19.98718799999915
+    },
+    {
+      "kind": "clock",
+      "maxWorldSteps": 1,
+      "status": 7,
+      "reason": 79,
+      "clock": 2147483646,
+      "allocatedBytes": 78440,
+      "dispatches": 76,
+      "bufferClears": 0,
+      "intermediateReadbacks": 0,
+      "hostPhysicsBetweenPhases": 0,
+      "submitToDoneMs": 21.82796099999905
+    },
+    {
+      "kind": "geometry-budget",
+      "maxWorldSteps": 1,
+      "status": 5,
+      "reason": 76,
+      "clock": 191678,
+      "allocatedBytes": 78440,
+      "dispatches": 76,
+      "bufferClears": 0,
+      "intermediateReadbacks": 0,
+      "hostPhysicsBetweenPhases": 0,
+      "submitToDoneMs": 17.433929999999236
+    },
+    {
+      "kind": "initial-slip",
+      "maxWorldSteps": 1,
+      "status": 7,
+      "reason": 82,
+      "clock": 191678,
+      "allocatedBytes": 78440,
+      "dispatches": 76,
+      "bufferClears": 0,
+      "intermediateReadbacks": 0,
+      "hostPhysicsBetweenPhases": 0,
+      "submitToDoneMs": 25.573194000000512
+    }
+  ],
+  "initializerCases": 6,
+  "initializerWords": 3072,
+  "boundedProcess": {
+    "elapsedSeconds": 26.984,
+    "sampledAggregateRSSMiB": 1094.42,
+    "maxChildRSSMiB": 1056.26,
+    "sampling": "PPid status-table ancestry",
+    "finalMaximum": "fresh RUSAGE_CHILDREN after wait",
+    "limitSeconds": 135,
+    "limitRSSMiB": 1200
+  }
+}

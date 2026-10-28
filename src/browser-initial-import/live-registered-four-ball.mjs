@@ -5,6 +5,7 @@
 import '../experimental-live-registered-origin.js';
 import * as D from '../../tools/rapier-snapshot-decoder/browser.mjs';
 import * as World from './live-world.mjs';
+import {captureAcceptedEventHistory} from '../source-event-history.mjs';
 import * as importedOrigin from '../experimental-live-registered-origin.js';
 import * as importedVariant from '../experimental-cue-created-variant.js';
 import {canonicalizeCaptureHandles,validateBindings} from './configured-four-ball.mjs';
@@ -56,6 +57,7 @@ function validateCapture(c){
  equalData(a.registry,b.registry,'Candidate may not replace source layout or handle generations');equalData(a.params,b.params);equalData(a.controller.settings,b.controller.settings);equal(a.controller.selectedId,b.controller.selectedId);
  for(const k of ['time','steps','dt','strokeSubsteps','nextId'])equal(a[k],b[k],'Cue construction cannot advance the source application: '+k);
  equal(a.shots,b.shots+1);equal(a.revision,b.revision+1);
+ captureAcceptedEventHistory(b,a); // Exact original application list transition, not contact-only filtering.
 }
 function normalize(decoded,snapshot){
  for(const n of D.walk(decoded.state))if(n.kind==='float')requireThat(Number.isFinite(D.floatValue(n)),'Finite original native state required');
@@ -89,7 +91,7 @@ export async function projectLiveRegisteredFourBall(input){
  const clock=(application,native)=>({...Object.fromEntries(['time','steps','shots','revision'].map(k=>[k,application[k]])),nativeFrameIndex:native.state.broad_phase.frame_index});
  const selectedIndex=a.registry.objects.findIndex(o=>o.id===a.controller.selectedId);
  const sourceOrigin=Origin.validateSourceOrigin({schema:Origin.SCHEMA,boundary:Origin.BOUNDARY,nativeRestoreUsed:true,preStrikeSnapshotSha256:before.snapshotSha256,createdSnapshotSha256:row.snapshotSha256,preStrikeClock:clock(b,before),createdClock:clock(a,row),selectedId:a.controller.selectedId,selectedIndex,selectedBody:copy(a.registry.objects[selectedIndex].body),settings:copy(a.controller.settings),params:copy(a.params),gameBefore:copy(b.game),readiness:copy(c.readiness)});
- Object.assign(row,{hCount:0,outerStep:0,outerSubstep:0,boundary:Origin.BOUNDARY,candidateInput:true,nativeFrameIndex:sourceOrigin.createdClock.nativeFrameIndex,apiJournalLength:c.apiJournalLength,application:a,sourceOrigin,strikeCreationJournalSha256:await journalDigest(c.strikeCreationJournal)});
+ Object.assign(row,{hCount:0,outerStep:0,outerSubstep:0,boundary:Origin.BOUNDARY,candidateInput:true,nativeFrameIndex:sourceOrigin.createdClock.nativeFrameIndex,apiJournalLength:c.apiJournalLength,application:a,sourceOrigin,...captureAcceptedEventHistory(b,a),strikeCreationJournalSha256:await journalDigest(c.strikeCreationJournal)});
  validateBindings(row,{allowAwake:true});Origin.validateApplication(a,sourceOrigin);Origin.validateStrikeJournal(c.strikeCreationJournal,sourceOrigin,{apiJournalLength:c.apiJournalLength,cue:a.cue});
  return World.exportInitialSeed({[Origin.BOUNDARY]:row,strikeCreationJournal:c.strikeCreationJournal});
 }

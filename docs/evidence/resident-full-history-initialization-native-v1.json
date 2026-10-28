@@ -1,0 +1,67 @@
+{
+  "kind": "resident-full-history-raw-initialization-native-v1",
+  "status": "pass",
+  "sourceHead": "e083f82ff9837384c1c76011699ebebed2e131f7",
+  "sourcePhysicsSha256": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d",
+  "originalPhysicsUnchanged": true,
+  "logSha256": "28418c8525916094933c309b00d7dd727667f5d9464fcc43899a9c216c6e70bc",
+  "adapter": {
+    "vendor": "google",
+    "architecture": "swiftshader",
+    "device": "swiftshader-device-subzero-",
+    "description": "SwiftShader driver 5.0.0",
+    "isFallbackAdapter": true
+  },
+  "roster": {
+    "count": 10,
+    "admitted": 4,
+    "blocked": 2,
+    "invalid": 4
+  },
+  "coverage": [
+    "unchanged original PhysicsLab.strike independently executed at t0 for every row",
+    "full original events, not contact-only seed, supply expected count/head/rows",
+    "exact keyed flags, original collider-generation pair mapping and binary64 timestamp words",
+    "successful raw creation appends one non-key stroke; rejected and blocked keep prestrike history",
+    "source-created aliases and unchanged immutable CCD tail"
+  ],
+  "diagnostic": {
+    "rawRows": 10,
+    "clear": 4,
+    "blocked": 2,
+    "sourceInvalid": 4,
+    "dispatches": 68313,
+    "submissions": 67,
+    "intermediateReadbacks": 0,
+    "finalMappings": 1,
+    "createdAliasesBitwise": true,
+    "nativeStepCount": 0,
+    "wholeH": false,
+    "fullRest": false,
+    "nativeAllocation": false,
+    "hardwarePerformance": false,
+    "adapter": {
+      "vendor": "google",
+      "architecture": "swiftshader",
+      "device": "swiftshader-device-subzero-",
+      "description": "SwiftShader driver 5.0.0",
+      "isFallbackAdapter": true
+    }
+  },
+  "testWallMs": 46538.935273,
+  "testWallScope": "includes CPU fixture, shader preparation/compilation, compute, final map and assertion; not steady GPU time",
+  "process": {
+    "returncode": 0,
+    "signal": null,
+    "elapsedSeconds": 50.00963653900544,
+    "maxRssKiB": 1272384
+  },
+  "physicalHExecuted": 0,
+  "liveStatePatched": false,
+  "oldFailedArtifactsUnchanged": true,
+  "rawToFirstOuter": false,
+  "rawToStrike": false,
+  "fullRest": false,
+  "native1024": false,
+  "hardwarePerformance": false
+}

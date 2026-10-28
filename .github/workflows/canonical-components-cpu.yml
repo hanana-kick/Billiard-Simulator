@@ -1,0 +1,53 @@
+name: Canonical components (CPU only)
+on:
+  push:
+    branches: [main, 'backup/**']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: canonical-components-cpu-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  canonical-components-cpu:
+    name: Canonical components / CPU only (native SKIP)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Explicitly disable native execution: this is not a GPU qualification job.
+      REQUIRE_WEBGPU: '0'
+      GPU_NATIVE_MODULE: ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run prepare:engine
+      - name: TypeScript application contracts
+        run: npm run typecheck
+      - name: CPU components and fake-device contracts; native tests SKIP
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run test:canonical-components 2>&1 | tee canonical-components-cpu.log
+      - name: Preserve CPU results, including native SKIP records
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: canonical-components-cpu-evidence
+          path: canonical-components-cpu.log
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Record qualification boundary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '### Canonical components: CPU-only execution'
+            echo 'Native WebGPU tests are intentionally SKIP. This job does not qualify CPU/GPU word parity, hardware GPU performance, browser behavior, or a release.'
+            echo 'See the job status and attached per-suite results; repeated/imported tests must not be summed as unique cases.'
+            echo 'The existing Pages build, physics, provenance, and full real-app browser gates remain required.'
+          } >> "$GITHUB_STEP_SUMMARY"

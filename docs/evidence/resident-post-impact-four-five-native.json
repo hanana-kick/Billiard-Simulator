@@ -1,0 +1,434 @@
+{
+  "kind": "resident-post-impact-four-five-native-evidence-v1",
+  "status": "pass",
+  "frozenSourceHead": "499d9c96426bc4bbb9e855d4815b2eb33e1e0bba",
+  "manifestSha256": "c2de2819d5a4d79c7996aa103b7167cad739ca954db3f2f7f8945641e2d06c8e",
+  "rows": [
+    219,
+    522
+  ],
+  "diagnosticT0H": 192,
+  "additionalHPerFreshPass": 1,
+  "passesPerProfile": 2,
+  "nativeCaptureSha256": "254257154f75ecff1f2241ad86a5b6a8cf827d64afec3535459dbfc06116db31",
+  "profiles": {
+    "four": {
+      "assertionSha256": "41a1af3187e6ab33b4ed524c8f53a11f68125b95f4336692ad63eb4e816bc30c",
+      "actualSha256": "56790677fc6c98eee2624e8d29188d71d1f630c8b0755e5d77488b219aae63ea",
+      "inputSha256": "0bcf24c05e85c8fd1e927f551fd00f8adaf03c6ae887075655b07813036ec2b7",
+      "planSha256": "c674d500b0b8cf80632999d73d84354f8a5e0bdfa9fc169247c32fcb5f973ea7",
+      "hostExpectedSha256": "893b7ed95bbf2881b4fb518421ef37339ca8857944603c898391237f125996a5",
+      "allSixSourceBindingsExact": true,
+      "allVmWordsExact": true,
+      "readOnlyAndCodeExact": true,
+      "independentOriginalNativeProjection": [
+        [
+          {
+            "group": "balls",
+            "mismatch": null
+          },
+          {
+            "group": "cue",
+            "mismatch": null
+          },
+          {
+            "group": "clock",
+            "mismatch": null
+          },
+          {
+            "group": "rules",
+            "mismatch": null
+          },
+          {
+            "group": "history",
+            "mismatch": null
+          },
+          {
+            "group": "game",
+            "mismatch": null
+          },
+          {
+            "group": "partialOuter",
+            "mismatch": null
+          },
+          {
+            "group": "emissions",
+            "mismatch": null
+          }
+        ],
+        [
+          {
+            "group": "balls",
+            "mismatch": null
+          },
+          {
+            "group": "cue",
+            "mismatch": null
+          },
+          {
+            "group": "clock",
+            "mismatch": null
+          },
+          {
+            "group": "rules",
+            "mismatch": null
+          },
+          {
+            "group": "history",
+            "mismatch": null
+          },
+          {
+            "group": "game",
+            "mismatch": null
+          },
+          {
+            "group": "partialOuter",
+            "mismatch": null
+          },
+          {
+            "group": "emissions",
+            "mismatch": null
+          }
+        ]
+      ],
+      "adapter": {
+        "vendor": "google",
+        "architecture": "swiftshader",
+        "device": "swiftshader-device-subzero-",
+        "description": "SwiftShader driver 5.0.0",
+        "isFallbackAdapter": true
+      },
+      "compile": {
+        "preflightWallMs": 151.659466,
+        "totalColdWallMs": 127828.453865,
+        "cache": {
+          "validationCold": 5,
+          "coldCompiles": 6,
+          "warmHits": 0,
+          "compileWallMs": 127674.492471,
+          "modules": 5,
+          "pipelines": 6
+        },
+        "order": [
+          4,
+          0,
+          1,
+          2,
+          3,
+          5
+        ],
+        "allPreflightsBeforeAnyPipeline": true,
+        "allPipelinesBeforePayloadOpen": true,
+        "pipelineCount": 6
+      },
+      "stats": {
+        "mappings": 1,
+        "copies": 16,
+        "dispatches": 1082,
+        "submissions": 4,
+        "initialWrites": 14,
+        "mapWallMs": 0.09442199999466538
+      },
+      "runs": [
+        {
+          "pass": 0,
+          "dispatches": 541,
+          "copies": 8,
+          "initialWrites": 7,
+          "cacheBefore": {
+            "validationCold": 5,
+            "coldCompiles": 6,
+            "warmHits": 0,
+            "compileWallMs": 127674.492471,
+            "modules": 5,
+            "pipelines": 6
+          },
+          "initialUploadWallMs": 1.01527899998473,
+          "computeEncodeWallMs": 1.873591999989003,
+          "computeFinishWallMs": 0.0417029999953229,
+          "computeSubmitWallMs": 0.549648000014713,
+          "computeQueueDrainWallMs": 84678.003451,
+          "copyEncodeWallMs": 0.1858500000089407,
+          "copyFinishWallMs": 0.012728999980026856,
+          "copySubmitWallMs": 0.07538399999612011,
+          "copyQueueDrainWallMs": 2.75258900001063,
+          "cacheAfter": {
+            "validationCold": 5,
+            "coldCompiles": 6,
+            "warmHits": 6,
+            "compileWallMs": 127674.492471,
+            "modules": 5,
+            "pipelines": 6
+          }
+        },
+        {
+          "pass": 1,
+          "dispatches": 541,
+          "copies": 8,
+          "initialWrites": 7,
+          "cacheBefore": {
+            "validationCold": 5,
+            "coldCompiles": 6,
+            "warmHits": 6,
+            "compileWallMs": 127674.492471,
+            "modules": 5,
+            "pipelines": 6
+          },
+          "initialUploadWallMs": 0.7583400000003166,
+          "computeEncodeWallMs": 1.6920040000113659,
+          "computeFinishWallMs": 0.023935999983223155,
+          "computeSubmitWallMs": 0.605150000017602,
+          "computeQueueDrainWallMs": 88829.83562499998,
+          "copyEncodeWallMs": 0.501285000005737,
+          "copyFinishWallMs": 0.016375000006519258,
+          "copySubmitWallMs": 0.06099200004246086,
+          "copyQueueDrainWallMs": 0.9969820000114851,
+          "cacheAfter": {
+            "validationCold": 5,
+            "coldCompiles": 6,
+            "warmHits": 12,
+            "compileWallMs": 127674.492471,
+            "modules": 5,
+            "pipelines": 6
+          }
+        }
+      ],
+      "supervisor": {
+        "returncode": 0,
+        "signal": null,
+        "wallSeconds": 347.62116436701035,
+        "maxRssKiB": 1447016,
+        "userSeconds": 625.627047,
+        "systemSeconds": 9.952802,
+        "supervisorInterruption": null
+      },
+      "supervisorSha256": "9d655772e86a8fee133af78a28dfc83e25a198156a821dd3d590909126985a6d",
+      "supervisorTerminalSha256": "8ae5c6eede315abcc20d72f0b7878623db9b9b428077e469bfb6eb027bd70dd6"
+    },
+    "five": {
+      "assertionSha256": "2b48fd16821a0a2e273c4fc90d87b25af39f889685cbf4e2a20f9b711ed57bfe",
+      "actualSha256": "bd66e7f63e5c60024fbb87c0efc68460a2bcd13570f931771c6280f8c8d4a5fa",
+      "inputSha256": "c2df57a62e7c523ef46a59d4429f8cdb3b42e23056bce2f89d6c3c26285eb3c0",
+      "planSha256": "721204cc996c36997ed0927364b45431273c89f2b3f92ef6305c2f502fb82837",
+      "hostExpectedSha256": "6f9a78247e38d3fa4470c9f5c681706f2923d29bf84f5836d7e1ff6b6b07a236",
+      "allSixSourceBindingsExact": true,
+      "allVmWordsExact": true,
+      "readOnlyAndCodeExact": true,
+      "independentOriginalNativeProjection": [
+        [
+          {
+            "group": "balls",
+            "mismatch": null
+          },
+          {
+            "group": "cue",
+            "mismatch": null
+          },
+          {
+            "group": "clock",
+            "mismatch": null
+          },
+          {
+            "group": "rules",
+            "mismatch": null
+          },
+          {
+            "group": "history",
+            "mismatch": null
+          },
+          {
+            "group": "game",
+            "mismatch": null
+          },
+          {
+            "group": "partialOuter",
+            "mismatch": null
+          },
+          {
+            "group": "emissions",
+            "mismatch": null
+          }
+        ],
+        [
+          {
+            "group": "balls",
+            "mismatch": null
+          },
+          {
+            "group": "cue",
+            "mismatch": null
+          },
+          {
+            "group": "clock",
+            "mismatch": null
+          },
+          {
+            "group": "rules",
+            "mismatch": null
+          },
+          {
+            "group": "history",
+            "mismatch": null
+          },
+          {
+            "group": "game",
+            "mismatch": null
+          },
+          {
+            "group": "partialOuter",
+            "mismatch": null
+          },
+          {
+            "group": "emissions",
+            "mismatch": null
+          }
+        ]
+      ],
+      "adapter": {
+        "vendor": "google",
+        "architecture": "swiftshader",
+        "device": "swiftshader-device-subzero-",
+        "description": "SwiftShader driver 5.0.0",
+        "isFallbackAdapter": true
+      },
+      "compile": {
+        "preflightWallMs": 55.55862599999999,
+        "totalColdWallMs": 139641.195103,
+        "cache": {
+          "validationCold": 6,
+          "coldCompiles": 7,
+          "warmHits": 0,
+          "compileWallMs": 139582.55068699998,
+          "modules": 6,
+          "pipelines": 7
+        },
+        "order": [
+          4,
+          0,
+          1,
+          2,
+          3,
+          5,
+          6
+        ],
+        "allPreflightsBeforeAnyPipeline": true,
+        "allPipelinesBeforePayloadOpen": true,
+        "pipelineCount": 7
+      },
+      "stats": {
+        "mappings": 1,
+        "copies": 16,
+        "dispatches": 1154,
+        "submissions": 4,
+        "initialWrites": 14,
+        "mapWallMs": 0.1678029999602586
+      },
+      "runs": [
+        {
+          "pass": 0,
+          "dispatches": 577,
+          "copies": 8,
+          "initialWrites": 7,
+          "cacheBefore": {
+            "validationCold": 6,
+            "coldCompiles": 7,
+            "warmHits": 0,
+            "compileWallMs": 139582.55068699998,
+            "modules": 6,
+            "pipelines": 7
+          },
+          "initialUploadWallMs": 0.9659350000147242,
+          "computeEncodeWallMs": 3.3844870000029914,
+          "computeFinishWallMs": 0.04304499999852851,
+          "computeSubmitWallMs": 1.831259000027785,
+          "computeQueueDrainWallMs": 57959.30789,
+          "copyEncodeWallMs": 0.16843300001346506,
+          "copyFinishWallMs": 0.014471000002231449,
+          "copySubmitWallMs": 0.06643000000622123,
+          "copyQueueDrainWallMs": 2.631814000022132,
+          "cacheAfter": {
+            "validationCold": 6,
+            "coldCompiles": 7,
+            "warmHits": 7,
+            "compileWallMs": 139582.55068699998,
+            "modules": 6,
+            "pipelines": 7
+          }
+        },
+        {
+          "pass": 1,
+          "dispatches": 577,
+          "copies": 8,
+          "initialWrites": 7,
+          "cacheBefore": {
+            "validationCold": 6,
+            "coldCompiles": 7,
+            "warmHits": 7,
+            "compileWallMs": 139582.55068699998,
+            "modules": 6,
+            "pipelines": 7
+          },
+          "initialUploadWallMs": 0.9239210000087041,
+          "computeEncodeWallMs": 1.7528199999942444,
+          "computeFinishWallMs": 0.027300999994622543,
+          "computeSubmitWallMs": 0.6494979999843054,
+          "computeQueueDrainWallMs": 57002.671707,
+          "copyEncodeWallMs": 0.09418200002983212,
+          "copyFinishWallMs": 0.013779999979306012,
+          "copySubmitWallMs": 0.06643000000622123,
+          "copyQueueDrainWallMs": 1.0422099999850616,
+          "cacheAfter": {
+            "validationCold": 6,
+            "coldCompiles": 7,
+            "warmHits": 14,
+            "compileWallMs": 139582.55068699998,
+            "modules": 6,
+            "pipelines": 7
+          }
+        }
+      ],
+      "supervisor": {
+        "returncode": 0,
+        "signal": null,
+        "wallSeconds": 273.99770347299636,
+        "maxRssKiB": 1446992,
+        "userSeconds": 528.503151,
+        "systemSeconds": 9.135113,
+        "supervisorInterruption": null
+      },
+      "supervisorSha256": "a805f853715adffc4804b6f28ebdfd829de1960295a96e3c46857f596011d311",
+      "supervisorTerminalSha256": "100492783ac4b73b40892fc37913ec6b5cf59d9b664edefe9e0bcb6f69c570f9"
+    }
+  },
+  "scope": {
+    "ownedHostDiagnosticT0": true,
+    "rawInput": false,
+    "fullRest": false,
+    "queryTerminal": false,
+    "native1024": false,
+    "hardwareCalibration": false,
+    "gpuTimestamp": false,
+    "completeNativeEngineMemoryEquality": false,
+    "productionQualification": false,
+    "defaultActivation": false
+  },
+  "timingConditions": {
+    "coordinatorQuietHold": true,
+    "freshDevicePerProfile": true,
+    "sameProfilePipelinesRetainedAcrossFreshPasses": true,
+    "fixedOrder": [
+      "four",
+      "five"
+    ],
+    "notRandomizedOrABBA": true,
+    "cpuForwardInNativeExecution": false,
+    "futureExpectedFilesRuntimeInput": false,
+    "queueDrainIsGpuTimestamp": false
+  },
+  "descriptiveQueueSummary": {
+    "fourMeanMs": 86753.91953799999,
+    "fiveMeanMs": 57480.9897985,
+    "observedMeanReductionPercent": 33.74248667425089,
+    "interpretation": "Two quiet fresh-bank passes per profile on fallback SwiftShader, separate fresh devices and fixed profile order. Diagnostic phase only, not hardware or whole-shot calibration."
+  }
+}

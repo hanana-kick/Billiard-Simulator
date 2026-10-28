@@ -170,9 +170,19 @@ function consume(e){
 }
 function begin(R,req,topology,settings,options={}){
  if(!settings||!['angle','elevation','speed','tipX','tipY'].every(k=>Number.isFinite(settings[k])))throw new Error('Finite cue inputs required');
+ let finalizationPolicy=null;
+ if(req.finalization!==undefined){
+  if(req.finalization?.kind!=='source-finalization-request-v1'||!['source-route-query-v1','source-gameplay-finalization-v1'].includes(req.finalization.policy))throw new Error('Unknown explicit source finalization policy');
+  if(req.finalization.policy==='source-gameplay-finalization-v1'&&options.purpose==='verify'){
+   if(!G.LabSourceFinalizationRequest)throw new Error('Explicit source finalization admission is unavailable');
+   finalizationPolicy=G.LabSourceFinalizationRequest.policyFor(options.finalizationAdmission,req,topology,'verify');
+   if(finalizationPolicy?.effective!=='final-gameplay-verify'||!G.LabSourceGameplayFinalizationOwner||!G.ThreeBallGame||!G.FourBallGame||!G.ShotSearchCore.stepTrialOuter)throw new Error('Admitted original gameplay continuation modules are required');
+  }
+ }
  const expected=expectedEvents(topology),strictReq={...req,testBudget:true,settings:{...req.settings,elevation:settings.elevation},options:{...req.options,budget:1,elevationMode:'fixed',inputStrategy:'hybrid',targetId:topology.firstId??req.options.targetId,secondId:topology.secondId??req.options.secondId,methodId:topology.method??req.options.methodId,methods:undefined}};
  G.ShotSearchCore.validate(strictReq);
  const e={...createObservation(topology),req,settings:{...settings},expected,topologyId:topology.id||topology.topologyId||JSON.stringify(expected),purpose:options.purpose||'evaluate',done:false,disposed:false,inequalities:inputInequalities(req,settings)};
+ if(finalizationPolicy?.effective==='final-gameplay-verify'){e.finalizationPolicy=finalizationPolicy;e.finalizationIdentity=G.LabSourceFinalizationRequest.evaluationBindingFor(options.finalizationAdmission,req,topology,settings,'verify');}
  // A feasibility query observes geometry only. It never launches a candidate
  // or certifies a shot; an independent normal stroke/replay remains required.
  if(e.purpose==='clearance'){
@@ -188,7 +198,8 @@ function begin(R,req,topology,settings,options={}){
  // request. The caller's input constraints above remain authoritative.
  const search={R,req:strictReq,count:1,pool:[],successes:[],evaluated:0,rejected:0,successCount:0,started:performance.now()};
  e.search=search;e.trial=G.ShotSearchCore.beginTrial(search,e.settings);
- if(!e.trial){e.done=true;e.clearance=search.feasibility?.distance??null;e.inequalities.unshift(e.clearance===null?1:-e.clearance);e.blockedReason=e.clearance===null?'strike-rejected':'cue-clearance';return e;}
+ if(!e.trial){e.done=true;e.clearance=search.feasibility?.distance??null;e.inequalities.unshift(e.clearance===null?1:-e.clearance);e.blockedReason=e.clearance===null?'strike-rejected':'cue-clearance';if(e.finalizationPolicy)e.finalizationReceipt=G.LabSourceGameplayFinalizationOwner.rejected(e.finalizationPolicy,e.blockedReason,e.finalizationIdentity);return e;}
+ if(e.finalizationPolicy){try{e.finalizationOwner=G.LabSourceGameplayFinalizationOwner.create(e.finalizationPolicy,search,e.trial,e.finalizationIdentity);}catch(error){dispose(e);throw error;}}
  const lab=e.trial.lab,clearance=lab.cueClearance(lab.get(req.selectedId),e.settings);
  e.clearance=clearance.distance;e.inequalities.unshift(-clearance.distance);
  // Keep the core's physical event handler intact. Its scoring remains
@@ -219,7 +230,8 @@ function advance(e,stepBatch=240){
  if(!Number.isInteger(stepBatch)||stepBatch<1)throw new Error('Positive step batch required');
  try{
   for(let i=0;i<stepBatch&&!e.done;i++){
-   e.done=G.ShotSearchCore.stepTrial(e.search,e.trial,1);
+   e.done=e.finalizationOwner?G.LabSourceGameplayFinalizationOwner.advance(e.finalizationOwner,complete=>finalizationRoute(e,complete)):G.ShotSearchCore.stepTrial(e.search,e.trial,1);
+   if(e.finalizationOwner&&e.unavailable){e.finalizationReceipt=G.LabSourceGameplayFinalizationOwner.interrupt(e.finalizationOwner,'unsupported',e.unavailable);e.done=true;}
    // Observation already ran after EACH underlying solver step, including
    // every cue substep. Never replay the final impulse at the outer boundary.
   }
@@ -231,8 +243,46 @@ function finish(e){
  if(!e.done)throw new Error('Inverse event evaluation is still running');
  if(e.disposed)throw new Error('Inverse event evaluation was disposed without completion');
  let physicalResult=null;
- if(e.trial){restoreObserver(e);physicalResult=G.ShotSearchCore.finishTrial(e.search,e.trial);e.disposed=true;}
- return e.result=projectResult(e,physicalResult,e.trial?.steps||0);
+ if(e.trial){
+  restoreObserver(e);
+  if(e.finalizationOwner){
+   physicalResult=G.ShotSearchCore.physicalResult(e.search.req.options,e.trial,e.trial.lab.time);
+   e.finalizationReceipt=e.finalizationReceipt||G.LabSourceGameplayFinalizationOwner.result(e.finalizationOwner);
+   G.LabSourceGameplayFinalizationOwner.restore(e.finalizationOwner);e.trial.lab.dispose();
+  }else physicalResult=G.ShotSearchCore.finishTrial(e.search,e.trial);
+  e.disposed=true;
+ }
+ const result=projectResult(e,physicalResult,e.trial?.steps||0);
+ if(!e.finalizationPolicy)return e.result=result;
+ const finalization=e.finalizationReceipt,qualified=finalization?.status==='verified-final-gameplay'&&finalization.gameplayVerified===true;
+ if(!finalization)throw new Error('Missing terminal gameplay decision');
+ if(qualified&&(!result.goalVerified||!result.physicalResult?.success))throw new Error('Final gameplay proof disagrees with original route projection');
+ if(['incomplete','cancelled','stale','unsupported','failed'].includes(finalization.status)){
+  // A retained query prefix is diagnostic data only, not an evaluated terminal
+  // solver residual. In particular do not invent unavailable-zero carriers.
+  return e.result={id:e.topologyId,settings:e.settings,purpose:e.purpose,steps:e.trial?.steps||0,
+   status:finalization.status,reason:finalization.reason,finalization,verification:{finalization},
+   verified:false,goalVerified:false,physicalResult:null,incomplete:finalization.status==='incomplete',
+   unsupported:finalization.status==='unsupported',routeQueryObservation:result};
+ }
+ // Preserve the original route-query values separately. A pending foul or
+ // unfinished gameplay is NOT a fabricated original physical miss/score.
+ return e.result={...result,routeQueryPhysicalResult:result.physicalResult,routeQueryGoalVerified:result.goalVerified,
+  physicalResult:qualified?result.physicalResult:null,goalVerified:qualified,verified:qualified,
+  status:finalization.status,reason:finalization.reason,finalization,verification:{finalization},
+  incomplete:finalization.status==='incomplete',unsupported:finalization.status==='unsupported'};
+}
+function finalizationRoute(e,complete){
+ const t=e.trial,matched=!e.mismatch&&e.eventPrefix===e.expected.length,feasible=e.inequalities.every(v=>Number.isFinite(v)&&v<=0);
+ const rejected=!!e.mismatch||!feasible||!!t.invalid&&!t.verificationIncomplete;
+ return{complete:complete||rejected,goalSatisfied:t.success&&!t.invalid&&matched&&feasible,irreversiblyRejected:rejected};
+}
+// Optional explicit interruption publishes no successful result and cannot
+// convert cancellation, request timeout, or an unfinished horizon into a miss.
+function interrupt(e,status,reason=null){
+ if(!e.finalizationOwner||e.done||e.disposed)throw new Error('Active admitted gameplay verification required');
+ e.finalizationReceipt=G.LabSourceGameplayFinalizationOwner.interrupt(e.finalizationOwner,status,reason);e.done=true;
+ return finish(e);
 }
 // Pure final-result projection shared by native trials and committed GPU observations.
 function projectResult(e,physicalResult,steps){
@@ -250,6 +300,6 @@ function projectResult(e,physicalResult,steps){
   unsupported:!!e.unavailable,missingEvent:topologyMatched?null:e.expected[active],freshReplay:true,eventResolution:'solver-substep',substepOrderResolved:true,observedSubsteps:e.observedSubsteps||0};
 }
 function restoreObserver(e){if(e.originalWorldStep&&e.trial?.lab?.world)e.trial.lab.world.step=e.originalWorldStep;}
-function dispose(e){if(e.trial&&!e.disposed){restoreObserver(e);e.trial.lab.dispose();e.disposed=true;}e.done=true;}
-G.LabInverseEvents={observation:Object.freeze({phase:OBSERVATION_PHASE,create:createObservation,initial:observeInitial,step:observeSubstep}),projectResult,begin,advance,finish,dispose,expectedEvents,inputInequalities,sphereResidual,relativeSegmentResidual,railResidual};
+function dispose(e){if(e.trial&&!e.disposed){restoreObserver(e);if(e.finalizationOwner)G.LabSourceGameplayFinalizationOwner.restore(e.finalizationOwner);e.trial.lab.dispose();e.disposed=true;}e.done=true;}
+G.LabInverseEvents={observation:Object.freeze({phase:OBSERVATION_PHASE,create:createObservation,initial:observeInitial,step:observeSubstep}),projectResult,begin,advance,finish,interrupt,dispose,expectedEvents,inputInequalities,sphereResidual,relativeSegmentResidual,railResidual};
 })(globalThis);

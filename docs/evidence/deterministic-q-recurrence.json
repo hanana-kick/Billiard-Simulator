@@ -1,0 +1,106 @@
+{
+  "profile": "bounded-q-event-recurrence-v1",
+  "cases": 140,
+  "comparedWords": 24640,
+  "exactWords": true,
+  "compileMs": 2326.054397,
+  "shaderBytes": [
+    4116,
+    8418,
+    5991,
+    7082,
+    8485,
+    8752,
+    8644,
+    1451,
+    1451,
+    1451
+  ],
+  "runs": [
+    {
+      "options": {
+        "clothRestitution": 0,
+        "maxEvents": 80
+      },
+      "cpuMs": 24.213890999999876,
+      "rest": 33,
+      "metrics": {
+        "count": 35,
+        "maxEvents": 80,
+        "dispatches": 406,
+        "residentCopies": 80,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "finalReadbacks": 1,
+        "allocatedBytes": 121504,
+        "submitToDoneMs": 30.877477999999883,
+        "fullShot": false,
+        "hardwareSpeedClaim": false
+      }
+    },
+    {
+      "options": {
+        "clothRestitution": 0.2,
+        "maxEvents": 80
+      },
+      "cpuMs": 32.05930899999976,
+      "rest": 33,
+      "metrics": {
+        "count": 35,
+        "maxEvents": 80,
+        "dispatches": 406,
+        "residentCopies": 80,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "finalReadbacks": 1,
+        "allocatedBytes": 121504,
+        "submitToDoneMs": 61.96795299999985,
+        "fullShot": false,
+        "hardwareSpeedClaim": false
+      }
+    },
+    {
+      "options": {
+        "clothRestitution": 0.2,
+        "maxEvents": 2
+      },
+      "cpuMs": 4.255018000000291,
+      "rest": 0,
+      "metrics": {
+        "count": 35,
+        "maxEvents": 2,
+        "dispatches": 16,
+        "residentCopies": 2,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "finalReadbacks": 1,
+        "allocatedBytes": 121504,
+        "submitToDoneMs": 3.2261789999997745,
+        "fullShot": false,
+        "hardwareSpeedClaim": false
+      }
+    },
+    {
+      "options": {
+        "clothRestitution": 1,
+        "maxEvents": 8
+      },
+      "cpuMs": 9.399787999999717,
+      "rest": 0,
+      "metrics": {
+        "count": 35,
+        "maxEvents": 8,
+        "dispatches": 46,
+        "residentCopies": 8,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "finalReadbacks": 1,
+        "allocatedBytes": 121504,
+        "submitToDoneMs": 7.223569999999654,
+        "fullShot": false,
+        "hardwareSpeedClaim": false
+      }
+    }
+  ],
+  "fullShot": false
+}

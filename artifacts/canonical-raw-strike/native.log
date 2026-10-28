@@ -1,0 +1,67 @@
+TAP version 13
+# STRIKE_NATIVE_PHASE {"phase":"compile-start","milliseconds":380.468607,"pid":16}
+# STRIKE_NATIVE_PHASE {"name":"initialize","phase":"start","milliseconds":381.861686}
+# Subtest: ordinary resting strike uses cloth support/friction, full 3D tip law and independent physical checks
+ok 1 - ordinary resting strike uses cloth support/friction, full 3D tip law and independent physical checks
+  ---
+  duration_ms: 116.801832
+  type: 'test'
+  ...
+# Subtest: isolated gravity-free center: axial momentum and zero torque; real mass/inertia off-center response
+ok 2 - isolated gravity-free center: axial momentum and zero torque; real mass/inertia off-center response
+  ---
+  duration_ms: 48.96813
+  type: 'test'
+  ...
+# Subtest: independent timestep refinement is convergent on admitted centered/elevated material cases
+ok 3 - independent timestep refinement is convergent on admitted centered/elevated material cases
+  ---
+  duration_ms: 20.509841
+  type: 'test'
+  ...
+# Subtest: raw domain, miscue envelope, complete geometry, lift, and budget never become accepted shots
+ok 4 - raw domain, miscue envelope, complete geometry, lift, and budget never become accepted shots
+  ---
+  duration_ms: 13.933975
+  type: 'test'
+  ...
+# Subtest: branchless GPU checked-add lowering detects both signed overflows and forbidden INT_MIN
+ok 5 - branchless GPU checked-add lowering detects both signed overflows and forbidden INT_MIN
+  ---
+  duration_ms: 0.386573
+  type: 'test'
+  ...
+# Subtest: translated high-elevation scenes retain individual torque ledgers without signed wrapping
+ok 6 - translated high-elevation scenes retain individual torque ledgers without signed wrapping
+  ---
+  duration_ms: 81.336698
+  type: 'test'
+  ...
+# STRIKE_NATIVE_PHASE {"name":"initialize","compileMs":697.7264570000001,"shaderBytes":10632,"phase":"complete","milliseconds":1079.740893}
+# STRIKE_NATIVE_PHASE {"name":"clearance_pre","phase":"start","milliseconds":1079.940604}
+# STRIKE_NATIVE_PHASE {"name":"clearance_pre","compileMs":688.94777,"shaderBytes":10497,"phase":"complete","milliseconds":1793.853619}
+# STRIKE_NATIVE_PHASE {"name":"cue_contact","phase":"start","milliseconds":1794.057746}
+# STRIKE_NATIVE_PHASE {"name":"cue_contact","compileMs":4418.023102,"shaderBytes":12298,"phase":"complete","milliseconds":6212.226157}
+# STRIKE_NATIVE_PHASE {"name":"cloth_advance","phase":"start","milliseconds":6212.676846}
+# STRIKE_NATIVE_PHASE {"name":"cloth_advance","compileMs":764.7335499999999,"shaderBytes":11764,"phase":"complete","milliseconds":6993.313906}
+# STRIKE_NATIVE_PHASE {"name":"clearance_post","phase":"start","milliseconds":6993.494749}
+# STRIKE_NATIVE_PHASE {"name":"clearance_post","compileMs":649.4557960000002,"shaderBytes":10574,"phase":"complete","milliseconds":7643.030985}
+# STRIKE_NATIVE_PHASE {"name":"finalize","phase":"start","milliseconds":7643.182794}
+# STRIKE_NATIVE_PHASE {"name":"finalize","compileMs":153.8437559999993,"shaderBytes":10333,"phase":"complete","milliseconds":7797.137116}
+# STRIKE_NATIVE_PHASE {"phase":"compile-complete","milliseconds":7797.692934,"compileMs":7416.180984}
+# Subtest: raw strike CPU/GPU every output word identical; device-resident encode chain
+ok 7 - raw strike CPU/GPU every output word identical; device-resident encode chain
+  ---
+  duration_ms: 14081.968647
+  type: 'test'
+  ...
+# {"residentSecondPhaseVerified":true,"cases":67,"words":8576,"extraNonemptySceneCases":3,"extraNonemptySceneWords":384,"extraTranslatedCases":2,"extraTranslatedWords":256,"sceneBytes":96,"allocatedDiagnosticBytes":81568,"exactWords":true,"accepted":63,"compileMs":7416.180984,"compileStages":[{"name":"initialize","compileMs":697.7264570000001,"shaderBytes":10632},{"name":"clearance_pre","compileMs":688.94777,"shaderBytes":10497},{"name":"cue_contact","compileMs":4418.023102,"shaderBytes":12298},{"name":"cloth_advance","compileMs":764.7335499999999,"shaderBytes":11764},{"name":"clearance_post","compileMs":649.4557960000002,"shaderBytes":10574},{"name":"finalize","compileMs":153.8437559999993,"shaderBytes":10333}],"shaderBytes":66098,"adapter":{"subgroupMatrixConfigs":[]},"candidates":67,"dispatches":16386,"scratchBytes":8576,"submitToReadMs":2690.019561000001,"exactInteger":true,"hostPhysicsBetweenPhases":false,"rawInputUploads":1,"sceneUploads":1}
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 14532.451005

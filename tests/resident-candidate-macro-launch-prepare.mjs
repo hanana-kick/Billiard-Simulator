@@ -1,0 +1,42 @@
+// HOST-only authentic initial source coordinator. Never imports a forward
+// oracle, scalar compiler, GPU runtime or physical expectation artifact.
+import assert from 'node:assert/strict';
+import {readFileSync,writeFileSync,readdirSync,mkdirSync,existsSync,linkSync,unlinkSync} from 'node:fs';
+import {resolve,join,relative} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {execFileSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
+import {serialize,deserialize} from 'node:v8';
+import {setTimeout as delay} from 'node:timers/promises';
+import {originalRegisteredFixture} from './resident-candidate-original-fixture.mjs';
+import {createWorldInitializationPlan,assertWorldInitializationPlan} from '../src/resident-candidate/world-initialization.mjs';
+import {MICROCODE_ISA} from '../src/resident-candidate/microcode-isa.mjs';
+import {mixedLaunchInputsFromLegacyInitial,prepareMixedMacroLaunchSource,attachMixedMacroLaunchCompilation} from './resident-candidate-macro-launch-fixture.mjs';
+import {createMacroLaunchProfile,verifyMacroLaunchProfile,macroLaunchDataSha256} from '../src/resident-candidate/macro-launch-profile.mjs';
+const root=fileURLToPath(new URL('../',import.meta.url)),sha=bytes=>createHash('sha256').update(bytes).digest('hex');
+const log=data=>console.log(JSON.stringify({gate:'fresh-six-macro-launch-host-preparation',pid:process.pid,...data,memory:process.memoryUsage()}));
+const sourceFiles=()=>{const paths=[];const walk=dir=>{for(const d of readdirSync(dir,{withFileTypes:true})){const p=join(dir,d.name);if(d.isDirectory())walk(p);else if(/\.(?:m?js|cjs)$/.test(p))paths.push(p);}};walk(join(root,'src'));for(const p of['vendor/rapier.cjs','tools/rapier-snapshot-decoder/browser.mjs','tests/resident-candidate-original-fixture.mjs','tests/resident-candidate-macro-launch-fixture.mjs','tests/resident-candidate-macro-launch-prepare.mjs'])paths.push(join(root,p));return paths.sort();};
+const sourceHashes=()=>Object.fromEntries(sourceFiles().map(path=>[relative(root,path),sha(readFileSync(path))]));
+const save=(dir,name,bytes)=>{const temp=join(dir,name+'.writing');writeFileSync(temp,bytes,{flag:'wx'});linkSync(temp,join(dir,name));unlinkSync(temp);return sha(bytes);};
+const json=(dir,name,value)=>save(dir,name,JSON.stringify(value,null,2)+'\n');
+export async function prepareFreshMixedMacroLaunch(dir,{legacyPath='/tmp/resident-raw-pc-isolated-native-v2/runtime.v8',compileTimeoutMs=15*60*1000}={}){
+ assert.ok(Number.isSafeInteger(compileTimeoutMs)&&compileTimeoutMs>0&&compileTimeoutMs<=30*60*1000,'bounded explicit compiler handoff window');
+ mkdirSync(dir,{recursive:false});const before=sourceHashes(),head=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();
+ assert.equal(execFileSync('git',['status','--porcelain','--untracked-files=no'],{cwd:root,encoding:'utf8'}),'','committed source revision required');
+ const provenance=mixedLaunchInputsFromLegacyInitial(readFileSync(legacyPath));log({stage:'authentic-initial-source-start',sourceHead:head,count:6,frames:2});
+ const source=await originalRegisteredFixture();assert.equal(source.artifactSha256,provenance.sourceArtifactSha256);
+ let plan=await createWorldInitializationPlan({decoder:source.decoder,input:source.raw,rule:provenance.rule});assert.equal(plan.receipt.nativeStepCount,0);assertWorldInitializationPlan(plan);
+ const fixture=prepareMixedMacroLaunchSource({initializationPlan:plan,inputProvenance:provenance,sourceHead:head,sourceHashes:before});assertWorldInitializationPlan(plan);plan=null;
+ assert.deepEqual(sourceHashes(),before,'source unchanged during authentic source generation');
+ const r=fixture.original,sourceSha256=save(dir,'source.wgsl',fixture.source.code);assert.equal(sourceSha256,fixture.source.sourceSha256);
+ const receipt={kind:'resident-mixed-six-four-macro-source-handoff-v1',sourceHead:head,sourceHashes:before,sourceSha256,sourceBytes:Buffer.byteLength(fixture.source.code),entry:fixture.source.entry,count:6,maxH:2,storageBindings:{...MICROCODE_ISA.bindings},eventAudit:false,preparation:false,externalFunctions:['rc_cue_flat_advance','rc_num_eval','rc_world_broad_commit_collision','rc_coupled_transport_advance'],intrinsics:'none',allocation:'call-frames-v1',vmStateRelocation:false,sourceFixtureSha256:fixture.sourceFixtureSha256,originalGeneration:r.identity.generationIdentity,sourceIdentity:r.identity.sourceIdentity,preStrikeIdentity:r.identity.preStrikeIdentity,rawRows:r.identity.rawRows,rule:r.identity.rule,initialHistoryProfile:r.identity.options.initialHistoryProfile,layout:{sourceStateWords:r.pc.totalStateWords,sourceProgramWords:r.program.length,sourceGeometryWords:r.sharedGeometry.length,sourceScratchWords:r.init.scratchAlias.words,sourceInputWords:r.input.length},nativeSteps:0,forwardOracleRun:false};
+ const sourceReceiptSha256=json(dir,'source-receipt.json',receipt);log({sourceReceiptSha256,stage:'exact-source-ready-for-separate-compiler',directory:dir,sourceSha256,sourceBytes:receipt.sourceBytes,sourceFixtureSha256:fixture.sourceFixtureSha256,layout:receipt.layout,forwardOracleRun:false});
+ const started=Date.now(),compilerReceiptPath=join(dir,'compile-receipt.json');while(!existsSync(compilerReceiptPath)){assert.ok(Date.now()-started<compileTimeoutMs,'separate compiler handoff timeout; no runtime published');await delay(1000);}
+ const cr=JSON.parse(readFileSync(compilerReceiptPath,'utf8'));assert.equal(cr.sourceReceiptSha256,sourceReceiptSha256);assert.equal(cr.sourceHead,head);assert.equal(cr.count,6);assert.equal(cr.maxH,2);assert.equal(cr.preparationOpcodeCount,0);assert.equal(cr.sourceSha256,sourceSha256);assert.equal(cr.sourceBytes,receipt.sourceBytes);assert.equal(cr.entry,receipt.entry);assert.deepEqual(cr.storageBindings,receipt.storageBindings);assert.equal(cr.preparation,false);assert.equal(cr.eventAudit,false);assert.equal(cr.intrinsics,'none');assert.equal(cr.allocation,'call-frames-v1');assert.equal(cr.vmStateRelocation,false);
+ const compiledBytes=readFileSync(join(dir,'compiled.v8'));assert.equal(sha(compiledBytes),cr.compiledSha256,'exact separate compiler file');const compiled=deserialize(compiledBytes);assert.equal(compiled.sourceSha256,sourceSha256);assert.equal(compiled.entryFunction,fixture.source.entry);assert.deepEqual(sourceHashes(),before,'source unchanged through separate compilation');assert.equal(sha(readFileSync(join(dir,'source.wgsl'))),sourceSha256);
+ const runtime=attachMixedMacroLaunchCompilation(fixture,compiled),limits=JSON.parse(readFileSync(new URL('./fixtures/resident-microcode-impact-resource-shape.json',import.meta.url))).limits,profiles=[1,8,32,64].map(macroWorkgroupSize=>createMacroLaunchProfile(runtime,{macroWorkgroupSize,limits}));
+ for(const profile of profiles)verifyMacroLaunchProfile(runtime,profile,{limits});const runtimeSha256=save(dir,'runtime.v8',serialize(runtime));for(const profile of profiles)save(dir,`launch-wgs${profile.geometry.macros.workgroupSize}.v8`,serialize(profile));
+ const result={kind:'resident-mixed-six-four-macro-initial-source-manifest-v1',runtimeSha256,runtimeDataSha256:macroLaunchDataSha256(runtime),sourceSha256,sourceFixtureSha256:fixture.sourceFixtureSha256,sourceHead:head,sourceHashes:before,compiledSha256:cr.compiledSha256,count:6,frames:2,orderedIds:r.identity.rawRows.map(x=>x.id),initialHistoryProfile:r.identity.options.initialHistoryProfile,vm:{instructionCount:runtime.vm.instructionCount,localWords:runtime.vm.localWords,stride:runtime.vm.stride,stackCapacity:runtime.vm.stackCapacity,codeSha256:runtime.identity.bytecodeSha256,shaderSha256:runtime.identity.vmShaderSha256},profiles:profiles.map(p=>({workgroupSize:p.geometry.macros.workgroupSize,workgroups:p.geometry.macros.workgroups,paddingLanes:p.geometry.macros.paddingLanes,profileSha256:p.profileSha256})),resources:profiles[0].requirements,sourcePointerLocality:'requires exact source-budget proof and independent mixed-lane native parity',deviceLimits:'planning only; actual GPU device not queried',nativeCompileRun:false,numericalGpuExecuted:false,forwardOracleRun:false,coupledBudgetAdmission:false};
+ json(dir,'manifest.json',result);log({stage:'fresh-initial-runtime-prepared-source-only',directory:dir,...result,sourceHashes:undefined,resources:undefined});return result;
+}
+if(process.argv[1]===fileURLToPath(import.meta.url)){assert.equal(process.argv.length,3,'explicit new artifact directory required');await prepareFreshMixedMacroLaunch(resolve(process.argv[2]));}

@@ -1,0 +1,383 @@
+{
+  "kind": "resident-row219-original-milestone-counters-v1",
+  "scope": "One original CPU chronology from exact authenticated prestrike; counters only, not a resident runtime input or GPU qualification",
+  "baseRevision": "3cc9db9",
+  "candidate": 219,
+  "settings": {
+    "angle": 310,
+    "elevation": 85,
+    "speed": 4.5,
+    "tipX": 0.2,
+    "tipY": -0.1
+  },
+  "source": {
+    "artifactSha256": "11f41cd9c11ff47911f14afc084b27f32a15fc69db1f26d7970eb864f35f2262",
+    "preStrikeSnapshotSha256": "2d5a2cbf1b7dc481cb90a19de8fa5cee7ea389c7dbbede645324afbcb87279c8",
+    "createdSnapshotSha256": "feb6b6eea9a0d29236df73680e79d3cbedf84dee702f3dae0c1e80a33ef9c2ef",
+    "numericProfile": "original-js-number-v1",
+    "preStrikeHistorySha256": "e8f3386e627e4efd6b57bc2841fb9fe1bd5028f5f0d25c1eba3ca23ae717a389",
+    "preStrikeHistoryCount": 8,
+    "createdApplicationHistorySha256": "9d7b309e3ce81ca04a88a2a71d93822809462dbe094d3866283006315f27dd88",
+    "createdApplicationHistoryCount": 9,
+    "sourceSha256": {
+      "src/physics.js": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d",
+      "src/controller.js": "5d68e3dc9abe3f51cc5abf24a7b0c042c3685ed4564f072a8ff8c25cb4b7c7fe",
+      "src/game-rules.js": "33857334242fd280193595cda56b9d433de579c0f017efa7a21c35c470191160",
+      "tests/resident-candidate-original-fixture.mjs": "68b6234241baaa53221b324faf0de868e3c6d07f0e936b3892c677fe02fc8d78",
+      "tests/resident-candidate-native-rest-fixture.mjs": "924352d2165074bf428391515e85e65f43268858a605fa6e5607d15969137c44",
+      "tests/resident-candidate-post-impact-native-projection.mjs": "cfd9e16926f73265b431da07cf53f34f02856c278304ec3acef67373a873312e"
+    },
+    "observerSourceSha256": {
+      "tests/resident-candidate-row219-milestones.mjs": "d9195fd5b103295cffe4b9078dad657c9bdbe8c95eae4e8533bb838ca8f41dcd",
+      "tests/resident-candidate-row219-milestones-tests.mjs": "8e3717d107a2fdd24fe307ae1e1aaa2198f7caf38967e9386a10cdd4e27d8b51"
+    }
+  },
+  "initial": {
+    "outer": 0,
+    "nativeH": 0,
+    "time": 5.6291666666664275,
+    "timeWords": [
+      1145324343,
+      1075217476
+    ],
+    "elapsed": 0,
+    "applicationSteps": 5404,
+    "cuePresent": true,
+    "fullRest": false,
+    "allSleeping": true,
+    "emissionCount": 1,
+    "nativeDtWord": 982026377,
+    "gamePending": true,
+    "gameResult": null,
+    "queryStatus": "running"
+  },
+  "checkpoint192": {
+    "outer": 3,
+    "nativeH": 192,
+    "time": 5.632291666666382,
+    "timeWords": [
+      2004317751,
+      1075218295
+    ],
+    "elapsed": 0.0031249999999545253,
+    "applicationSteps": 5407,
+    "cuePresent": true,
+    "fullRest": false,
+    "allSleeping": false,
+    "emissionCount": 2,
+    "nativeDtWord": 982026377,
+    "gamePending": true,
+    "gameResult": null,
+    "queryStatus": "running"
+  },
+  "removal": {
+    "hEntered": 307,
+    "nativeStepsCompletedBefore": 306,
+    "outerOrdinal": 5,
+    "substepOrdinal": 51,
+    "applicationStepsBefore": 5408,
+    "time": 5.634147135416355,
+    "timeWords": [
+      3722304639,
+      1075218781
+    ],
+    "elapsed": 0.004980468749927525,
+    "phase": "compliant-tip-before-native",
+    "reason": "contacted tip separated",
+    "nativeDtWord": 931694729,
+    "cueStarted": 5.6291666666664275,
+    "contacted": true,
+    "remainingTipContacts": 0,
+    "lastContact": 5.634130859374689,
+    "lastContactWords": [
+      2576980027,
+      1075218777
+    ],
+    "nativeStepsCompletedAfter": 306,
+    "lastStroke": {
+      "firstContact": 5.631835937499722,
+      "lastContact": 5.634130859374689,
+      "peakNormalForce": 2655.3119279968814,
+      "maxCompression": 0.0026140365136685453,
+      "normalImpulse": 3.839791878091436,
+      "contactEpisodes": 1,
+      "ended": 5.634147135416355,
+      "started": 5.6291666666664275,
+      "contactDuration": 0.0022949218749666045
+    },
+    "ballVelocitiesUnchanged": true
+  },
+  "containingOuter": {
+    "outerOrdinal": 5,
+    "nativeHAfter": 320,
+    "nativeHBefore": 256,
+    "timeBefore": 5.6333333333330335,
+    "timeAfter": 5.634374999999685,
+    "timeAfterWords": [
+      2576980023,
+      1075218841
+    ],
+    "subdivisions": 64,
+    "h": 0.000016276041666666666,
+    "hWords": [
+      286331153,
+      1055985937
+    ],
+    "cueAtEntry": true,
+    "cueAtExit": false,
+    "restoredOuterDtWord": 982026377,
+    "nativeCallCount": 64,
+    "nativeDtWords": [
+      931694729
+    ],
+    "cuePresentNativeCalls": 50,
+    "cueAbsentNativeCalls": 14,
+    "firstCueAbsentNativeH": 307
+  },
+  "nextOuter": {
+    "outerOrdinal": 6,
+    "nativeHAfter": 321,
+    "nativeHBefore": 320,
+    "timeBefore": 5.634374999999685,
+    "timeAfter": 5.635416666666352,
+    "timeAfterWords": [
+      2863311176,
+      1075219114
+    ],
+    "subdivisions": 1,
+    "h": 0.0010416666666666667,
+    "hWords": [
+      286331153,
+      1062277393
+    ],
+    "cueAtEntry": false,
+    "cueAtExit": false,
+    "restoredOuterDtWord": 982026377,
+    "nativeCallCount": 1,
+    "nativeDtWords": [
+      982026377
+    ],
+    "cuePresentNativeCalls": 0,
+    "cueAbsentNativeCalls": 1,
+    "firstCueAbsentNativeH": 321
+  },
+  "events": [
+    {
+      "h": 0,
+      "nativeStepsCompleted": 0,
+      "outer": 0,
+      "phase": "accepted-unstepped-strike",
+      "time": 5.6291666666664275,
+      "timeWords": [
+        1145324343,
+        1075217476
+      ],
+      "kind": "stroke",
+      "label": "2번째 타격 · 4.50 m/s",
+      "key": null,
+      "a": null,
+      "b": null
+    },
+    {
+      "h": 165,
+      "nativeStepsCompleted": 164,
+      "outer": 3,
+      "phase": "compliant-tip-before-native",
+      "time": 5.631835937499722,
+      "timeWords": [
+        4294966983,
+        1075218175
+      ],
+      "kind": "contact",
+      "label": "노란 수구 ↔ 큐 팁",
+      "key": null,
+      "a": null,
+      "b": null
+    },
+    {
+      "h": 353,
+      "nativeStepsCompleted": 353,
+      "outer": 38,
+      "phase": "source-application-after-native",
+      "time": 5.668749999999683,
+      "timeWords": [
+        3435973480,
+        1075227852
+      ],
+      "kind": "contact",
+      "label": "오른쪽 쿠션 ↔ 노란 수구",
+      "key": "2e-323:9e-323",
+      "a": {
+        "id": null,
+        "kind": "cushion",
+        "label": "오른쪽 쿠션"
+      },
+      "b": {
+        "id": 2,
+        "kind": "ball",
+        "label": "노란 수구"
+      }
+    },
+    {
+      "h": 861,
+      "nativeStepsCompleted": 861,
+      "outer": 546,
+      "phase": "source-application-after-native",
+      "time": 6.19791666666632,
+      "timeWords": [
+        2863311140,
+        1075366570
+      ],
+      "kind": "contact",
+      "label": "앞쪽 쿠션 ↔ 노란 수구",
+      "key": "4e-323:9e-323",
+      "a": {
+        "id": null,
+        "kind": "cushion",
+        "label": "앞쪽 쿠션"
+      },
+      "b": {
+        "id": 2,
+        "kind": "ball",
+        "label": "노란 수구"
+      }
+    },
+    {
+      "h": 1136,
+      "nativeStepsCompleted": 1136,
+      "outer": 821,
+      "phase": "source-application-after-native",
+      "time": 6.484374999999637,
+      "timeWords": [
+        4294966887,
+        1075441663
+      ],
+      "kind": "contact",
+      "label": "흰 수구 ↔ 노란 수구",
+      "key": "8.4e-323:9.4e-323",
+      "a": {
+        "id": 1,
+        "kind": "ball",
+        "label": "흰 수구"
+      },
+      "b": {
+        "id": 2,
+        "kind": "ball",
+        "label": "노란 수구"
+      }
+    },
+    {
+      "h": 1170,
+      "nativeStepsCompleted": 1170,
+      "outer": 855,
+      "phase": "source-application-after-native",
+      "time": 6.519791666666301,
+      "timeWords": [
+        1145324201,
+        1075450948
+      ],
+      "kind": "contact",
+      "label": "흰 수구 ↔ 적구 2",
+      "key": "1.14e-322:8.4e-323",
+      "a": {
+        "id": 1,
+        "kind": "ball",
+        "label": "흰 수구"
+      },
+      "b": {
+        "id": 4,
+        "kind": "ball",
+        "label": "적구 2"
+      }
+    },
+    {
+      "h": 3842,
+      "nativeStepsCompleted": 3842,
+      "outer": 3527,
+      "phase": "source-application-after-native",
+      "time": 9.303125000000588,
+      "timeWords": [
+        858993790,
+        1076009779
+      ],
+      "kind": "contact",
+      "label": "뒤쪽 쿠션 ↔ 적구 2",
+      "key": "1.1e-322:5e-323",
+      "a": {
+        "id": null,
+        "kind": "cushion",
+        "label": "뒤쪽 쿠션"
+      },
+      "b": {
+        "id": 4,
+        "kind": "ball",
+        "label": "적구 2"
+      }
+    }
+  ],
+  "after192": {
+    "firstContactH": 353,
+    "firstFloorH": null,
+    "firstContactBeforeRemoval": null,
+    "firstFloorBeforeRemoval": null
+  },
+  "terminal": {
+    "outer": 5987,
+    "nativeH": 6302,
+    "time": 11.865625000002627,
+    "timeWords": [
+      858994938,
+      1076345651
+    ],
+    "elapsed": 6.236458333336199,
+    "applicationSteps": 11391,
+    "cuePresent": false,
+    "fullRest": true,
+    "allSleeping": true,
+    "emissionCount": 7,
+    "nativeDtWord": 982026377,
+    "gamePending": false,
+    "gameResult": {
+      "cueId": 2,
+      "delta": -1,
+      "nextCue": 1
+    },
+    "queryStatus": "miss"
+  },
+  "stopReason": "full-rest",
+  "horizonSeconds": 8,
+  "maxOuterSteps": 7680,
+  "incrementalNativeHFrom192": {
+    "withdrawalEntered": 115,
+    "containingOuterEnd": 128,
+    "nextOuterEnd": 129,
+    "nextContact": 161,
+    "fullRest": 6110
+  },
+  "gameAuthority": {
+    "class": "original FourBallGame",
+    "events": "every actual original emission",
+    "finalization": "existing oracle invokes original Game.finish at the unchanged Controller no-cue/all-sleep predicate after complete outer",
+    "controllerMethodExecuted": false,
+    "scoreFromPhysicsAlone": false
+  },
+  "validation": {
+    "tests": 3,
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "testDurationMs": 2599.697906,
+    "originalTrialCount": 1,
+    "observerWallMs": 2344.789443,
+    "chronologySha256": "dbca0e74400aed952d23aed255e29c2a66a32444e924f7aaba52e773954f1179",
+    "logSha256": "7aedc6d2495487a007c9c6e2a4a1d143f5bacf293c4aa2c2945cea9cd6c88e5f"
+  },
+  "capability": {
+    "oracleChronologyOnly": true,
+    "futureRuntimeInput": false,
+    "residentVmExecuted": false,
+    "gpuExecuted": false,
+    "browserExecuted": false,
+    "physicalReleaseQualified": false
+  }
+}

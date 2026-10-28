@@ -1,0 +1,332 @@
+{
+  "kind": "resident-1024-allocation-compact-diagnostic-proposal-v1",
+  "status": "PROPOSED_NOT_IMPLEMENTED_OR_RUN",
+  "sourceRevision": "b6b5eba7cfa24b9c27756386508e81b2d76b8cd8",
+  "layoutOrigin": {
+    "path": "docs/evidence/resident-initial-microcode-batch-host-v1.json",
+    "fileSha256": "f95a4516678ee6f97a24ac0280f419fe581637d78a8a25f97df977316b3998f1",
+    "jsonField": "sourceOnly1024",
+    "planSha256": "652cfb9841eaae09090f9c14cbad923b1d12fd9a2225cd78695ab30ab1492216",
+    "sourceSha256": "86c0a2ce9ca618e89397ca50409a351c2fd1a7bd43bb0db99b278f5f27dc26a2",
+    "bytecodeSha256": "44c0bfeedd9e0abcd144980198d4ba88c55d6e218341e9aed170425dd292714e",
+    "bankCount": 2,
+    "rowsPerBank": 512,
+    "sourceH": 2,
+    "macroProfile": "historical source-four-macros-owned-initial-v1",
+    "vmStrideWords": 7814,
+    "originalPlanWasSourceOnly": true,
+    "currentPhysicsCountSpecializationReadmitted": false
+  },
+  "currentContractSha256": {
+    "src/resident-candidate/abi.mjs": "703a91112592c14d32dab16b278bb0f1d9ddc0bcb76ad6adeb3361146057df90",
+    "src/resident-candidate/numeric-profile.mjs": "90170db77099e64a910832c522dd8df989563e993db995e3ff113687ace401b5",
+    "src/resident-candidate/batch-protocol.mjs": "ffefaf1ccfab5df5797d3e3bbe34a7a730237ed81b9688a63e108c07182fef89",
+    "src/resident-candidate/initial-microcode-runtime.mjs": "01cd9caff226eb580ec6a56f1e9574996bf2814a104ca69c8384f96dd13d63c3",
+    "src/resident-candidate/initial-microcode-launch.mjs": "c20e54762ebda17a295b80bdc0fee609912403cdc3a8306b396f7455df9526c6",
+    "src/resident-candidate/initial-microcode-batch-plan.mjs": "7cfee00d0281a9189b4932351307465b9427ebb044f66d49ff0a0ec53adf4f75",
+    "src/resident-candidate/initial-microcode-batch-executor.mjs": "7ec06fc4a6ce5731162912ddb87dc21d7e39920b1404dc5323ef59e999478fda",
+    "src/resident-candidate/initial-microcode-publication.mjs": "4a9d5265e466872c5e1930d9ed8755fb311899b7fd23637da7f8f562e260f8e1",
+    "src/resident-candidate/microcode-resources.mjs": "d1b9f02995dc7cc3a17edbf3b571d6d27d141953f1b79170f3ee8e9f0df21269"
+  },
+  "allocations": [
+    {
+      "bank": 0,
+      "name": "rawProgram",
+      "words": 5071,
+      "bytes": 20284,
+      "access": "read-only",
+      "usage": 136
+    },
+    {
+      "bank": 0,
+      "name": "rawGeometry",
+      "words": 11368,
+      "bytes": 45472,
+      "access": "read-only",
+      "usage": 136
+    },
+    {
+      "bank": 0,
+      "name": "worldTemplate",
+      "words": 62990,
+      "bytes": 251960,
+      "access": "read-only",
+      "usage": 136
+    },
+    {
+      "bank": 0,
+      "name": "worldProgram",
+      "words": 874992,
+      "bytes": 3499968,
+      "access": "read-only",
+      "usage": 136
+    },
+    {
+      "bank": 0,
+      "name": "worldGeometry",
+      "words": 25408,
+      "bytes": 101632,
+      "access": "read-only",
+      "usage": 136
+    },
+    {
+      "bank": 0,
+      "name": "worldState",
+      "words": 32297976,
+      "bytes": 129191904,
+      "access": "read-write",
+      "usage": 136
+    },
+    {
+      "bank": 0,
+      "name": "rawState",
+      "words": 1029120,
+      "bytes": 4116480,
+      "access": "read-write",
+      "usage": 136
+    },
+    {
+      "bank": 0,
+      "name": "scratch",
+      "words": 6979584,
+      "bytes": 27918336,
+      "access": "read-write",
+      "usage": 136
+    },
+    {
+      "bank": 0,
+      "name": "inputs",
+      "words": 8192,
+      "bytes": 32768,
+      "access": "read-write",
+      "usage": 136
+    },
+    {
+      "bank": 0,
+      "name": "microcode",
+      "words": 1048896,
+      "bytes": 4195584,
+      "access": "read-only",
+      "usage": 136
+    },
+    {
+      "bank": 0,
+      "name": "vmState",
+      "words": 4000768,
+      "bytes": 16003072,
+      "access": "read-write",
+      "usage": 136
+    },
+    {
+      "bank": 0,
+      "name": "compactResults",
+      "words": 2048,
+      "bytes": 8192,
+      "access": "read-write",
+      "usage": 140
+    },
+    {
+      "bank": 1,
+      "name": "rawProgram",
+      "words": 5071,
+      "bytes": 20284,
+      "access": "read-only",
+      "usage": 136
+    },
+    {
+      "bank": 1,
+      "name": "rawGeometry",
+      "words": 11368,
+      "bytes": 45472,
+      "access": "read-only",
+      "usage": 136
+    },
+    {
+      "bank": 1,
+      "name": "worldTemplate",
+      "words": 62990,
+      "bytes": 251960,
+      "access": "read-only",
+      "usage": 136
+    },
+    {
+      "bank": 1,
+      "name": "worldProgram",
+      "words": 874992,
+      "bytes": 3499968,
+      "access": "read-only",
+      "usage": 136
+    },
+    {
+      "bank": 1,
+      "name": "worldGeometry",
+      "words": 25408,
+      "bytes": 101632,
+      "access": "read-only",
+      "usage": 136
+    },
+    {
+      "bank": 1,
+      "name": "worldState",
+      "words": 32297976,
+      "bytes": 129191904,
+      "access": "read-write",
+      "usage": 136
+    },
+    {
+      "bank": 1,
+      "name": "rawState",
+      "words": 1029120,
+      "bytes": 4116480,
+      "access": "read-write",
+      "usage": 136
+    },
+    {
+      "bank": 1,
+      "name": "scratch",
+      "words": 6979584,
+      "bytes": 27918336,
+      "access": "read-write",
+      "usage": 136
+    },
+    {
+      "bank": 1,
+      "name": "inputs",
+      "words": 8192,
+      "bytes": 32768,
+      "access": "read-write",
+      "usage": 136
+    },
+    {
+      "bank": 1,
+      "name": "microcode",
+      "words": 1048896,
+      "bytes": 4195584,
+      "access": "read-only",
+      "usage": 136
+    },
+    {
+      "bank": 1,
+      "name": "vmState",
+      "words": 4000768,
+      "bytes": 16003072,
+      "access": "read-write",
+      "usage": 136
+    },
+    {
+      "bank": 1,
+      "name": "compactResults",
+      "words": 2048,
+      "bytes": 8192,
+      "access": "read-write",
+      "usage": 140
+    },
+    {
+      "bank": null,
+      "name": "compactReadback",
+      "words": 4096,
+      "bytes": 16384,
+      "access": "map-read",
+      "usage": 9
+    }
+  ],
+  "peakLogicalBufferBytes": 370787688,
+  "maxLiveBytes": 370787688,
+  "driverHostCompilerOverheadIncluded": false,
+  "compatibilityBindingCeiling": 134217728,
+  "worldBindingHeadroomBytes": 5025824,
+  "aliasesPerBank": {
+    "rawScratch": "scratch",
+    "numericScratch": "scratch"
+  },
+  "readonlyDeduplication": false,
+  "perFullAccessWave": {
+    "buffersCreated": 25,
+    "sourceBufferClears": 20,
+    "inputWrites": 2,
+    "inputBytes": 65536,
+    "compactSeedWrites": 2,
+    "compactSeedBytes": 16384,
+    "guardDispatches": 2,
+    "workgroupsPerDispatch": 16,
+    "workgroupSize": 32,
+    "compactCopies": 2,
+    "bytesPerCopy": 8192,
+    "submissions": 1,
+    "maps": 1,
+    "mapBytes": 16384,
+    "physicsDispatches": 0
+  },
+  "proposedWaves": [
+    {
+      "name": "complete-unqualified-transport",
+      "fullAccess": true,
+      "commit": true
+    },
+    {
+      "name": "cancel-after-clear-drain",
+      "fullAccess": false,
+      "buffersCreated": 25,
+      "sourceBufferClears": 20,
+      "inputWrites": 2,
+      "compactSeedWrites": 2,
+      "submissions": 1,
+      "guardDispatches": 0,
+      "compactCopies": 0,
+      "maps": 0,
+      "commit": false
+    },
+    {
+      "name": "stale-after-first-bank-staged",
+      "fullAccess": true,
+      "commit": false
+    }
+  ],
+  "proposedGateTotals": {
+    "maximumSimultaneousBuffers": 25,
+    "bufferCreationsAcrossThreeSequentialWaves": 75,
+    "pipelines": 1,
+    "shaderCompilationInfoCalls": 1,
+    "guardDispatches": 4,
+    "submissions": 3,
+    "maps": 2,
+    "readbackBytes": 32768,
+    "physicsDispatches": 0
+  },
+  "transport": {
+    "abiWordsPerRow": 4,
+    "qualifiedMask": 0,
+    "physicalPassMissAllowed": false,
+    "gpuSeededCaseCycle": [
+      "PASS adversarial",
+      "MISS adversarial",
+      "UNSUPPORTED/NUMERIC",
+      "INCOMPLETE/HORIZON",
+      "CANCELLED/CANCELLED",
+      "FAILED/STALE_SOURCE",
+      "FAILED/DEVICE_LOST",
+      "REJECTED/SOURCE_INPUT_RANGE"
+    ],
+    "expectedCompleteWaveStatusCounts": {
+      "unsupported": 384,
+      "incomplete": 128,
+      "cancelled": 128,
+      "failed": 256,
+      "rejected": 128
+    },
+    "allPassFields": null,
+    "syntheticStatusRecordsAreNotPhysicalOutcomes": true
+  },
+  "capability": {
+    "implemented": false,
+    "deviceAllocated": false,
+    "nativeExecuted": false,
+    "productionClassifierExecuted": false,
+    "currentPhysicsRuntimeConstructed": false,
+    "sourceRowsAdmitted": false,
+    "physicalResidencyProven": false,
+    "deviceFreeMemoryKnown": false,
+    "physicsQualified": false,
+    "releaseQualified": false
+  }
+}

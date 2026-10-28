@@ -120,13 +120,14 @@ test('explicit64-lane workgroup opt-in keeps candidate addresses unchanged and g
 });
 
 test('exact-source intrinsic transport is opt-in, copies contiguous operands and never silently runs a CPU fallback',async()=>{
- const {sourceIntrinsicNativeWGSL,MICROCODE_SOURCE_INTRINSICS}=await import('../src/resident-candidate/microcode-source-intrinsics.mjs');
+ const {sourceIntrinsicNativeWGSL,MICROCODE_SOURCE_INTRINSICS,sourceIntrinsicProfileAllows}=await import('../src/resident-candidate/microcode-source-intrinsics.mjs');
  const program=code(ins('SET',0,10),ins('SET',1,11),ins('SET',2,20),ins('SET',3,21),ins('F64_ADD',0,0,2),ins('HALT'));let calls=0;
  const handler=(spec,args,{bindings})=>{calls++;assert.equal(spec.opcode,'F64_ADD');assert.deepEqual(args.map(a=>Array.from(a)),[[10,11],[20,21]]);assert.equal(bindings.length,5);args[0][0]=999;return Uint32Array.of(30,32);};
  const disabled=machine(program,{intrinsicHandler:handler});disabled.begin();disabled.advance();assert.equal(disabled.state[C.status],S.unsupported);assert.equal(disabled.state[C.error],E.unsupportedPrimitive);assert.equal(calls,0);
  const missing=machine(program,{intrinsics:'source-f64-v1'});missing.begin();missing.advance();assert.equal(missing.state[C.status],S.unsupported);assert.equal(missing.state[C.error],E.unsupportedPrimitive);
  const enabled=machine(program,{intrinsics:'source-f64-v1',intrinsicHandler:handler});enabled.begin();enabled.advance();assert.equal(enabled.state[C.status],S.complete);assert.equal(calls,1);assert.equal(enabled.local(0,0),30);assert.equal(enabled.local(0,1),32);
- for(const profile of['source-f64-v1','source-numeric-v1','source-continuations-v1']){const shader=generateMicrocodeVmWGSL({localWords:32,instructionCount:10,intrinsics:profile});assert.ok(shader.includes(sourceIntrinsicNativeWGSL(profile)),'verbatim original native source, not rewritten math');for(const d of MICROCODE_SOURCE_INTRINSICS.filter(d=>profile==='source-continuations-v1'||profile==='source-numeric-v1'&&['f64','numeric'].includes(d.family)||d.family==='f64'))assert.match(shader,new RegExp('intrinsicResult='+d.name+'\\('));}
+ for(const profile of['source-f64-v1','source-numeric-v1','source-continuations-v1']){const shader=generateMicrocodeVmWGSL({localWords:32,instructionCount:10,intrinsics:profile});assert.ok(shader.includes(sourceIntrinsicNativeWGSL(profile)),'verbatim original native source, not rewritten math');for(const d of MICROCODE_SOURCE_INTRINSICS.filter(d=>sourceIntrinsicProfileAllows(profile,d)))assert.match(shader,new RegExp('intrinsicResult='+d.name+'\\('));}
+ assert.equal(MICROCODE_SOURCE_INTRINSICS.filter(d=>sourceIntrinsicProfileAllows('source-continuations-v1',d)).length,17,'existing numerical profile must not acquire preparation');
  const none=generateMicrocodeVmWGSL({localWords:16,instructionCount:1});assert.doesNotMatch(none,/fn rc_f64_add/);assert.throws(()=>generateMicrocodeVmWGSL({localWords:16,instructionCount:1,intrinsics:'math-shortcut'}),/intrinsic profile/);
 });
 

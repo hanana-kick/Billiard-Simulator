@@ -1,0 +1,58 @@
+{
+  "scope": "Admitted default-material source-owned no-contact whole shot and raw failures/work budgets; not general collision/goal coverage",
+  "backend": "SwiftShader software Vulkan",
+  "sourceFreeze": "World integration owner held source freeze during this native run; later graph changes need their own regression run",
+  "result": {
+    "fullOwnedRawWorldJournalRules": true,
+    "comparedCandidateExecutions": 18,
+    "cancelledAfterSubmitExecutions": 2,
+    "comparedWords": 11888,
+    "exactCPUAndOriginalStagedGPU": true,
+    "beforeSubmitAndAfterSubmitCancellationChecked": true,
+    "defaultBackendUnchanged": "staged",
+    "scope": "admitted default-material no-contact whole shot plus raw failures/budgets",
+    "metrics": [
+      {
+        "strikeBackend": "staged",
+        "compileMs": 70821.841116,
+        "worldMetrics": {
+          "allocatedBytes": 152048,
+          "allocatedBytesScope": "world continuation, journal and rule buffers; excludes resident producer allocations",
+          "residentRawProducer": true,
+          "dispatches": 19993,
+          "bufferClears": 1280,
+          "intermediateReadbacks": 0,
+          "hostPhysicsBetweenPhases": 0,
+          "submitToDoneMs": 2490.4335929999943
+        }
+      },
+      {
+        "strikeBackend": "chunked-16",
+        "compileMs": 68741.97746,
+        "worldMetrics": {
+          "allocatedBytes": 152048,
+          "allocatedBytesScope": "world continuation, journal and rule buffers; excludes resident producer allocations",
+          "residentRawProducer": true,
+          "dispatches": 11929,
+          "bufferClears": 1280,
+          "intermediateReadbacks": 0,
+          "hostPhysicsBetweenPhases": 0,
+          "submitToDoneMs": 2118.756204000005
+        }
+      }
+    ],
+    "softwareVulkanOnly": true
+  },
+  "process": {
+    "boundedNativeProcess": true,
+    "exitCode": 0,
+    "stopReason": null,
+    "sampledAggregateRSSMiB": 1409.82,
+    "maxChildRSSMiB": 1373.67,
+    "rssCoverage": "PPid status-table ancestry; sampled aggregate, RUSAGE_CHILDREN maximum separately",
+    "elapsedSeconds": 201.296,
+    "limitRSSMiB": 1500,
+    "limitSeconds": 240.0
+  },
+  "interpretation": "Sequential staged/K16 device builds include two world compilations. Submit timings are single samples, not hardware GPU performance."
+}

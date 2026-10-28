@@ -1,0 +1,77 @@
+{
+  "kind": "source-gameplay-cpu-continuation-host-v1",
+  "scope": "opt-in CPU owner and bounded native admission only",
+  "gpuExecuted": false,
+  "fullShotExecuted": false,
+  "defaultActivated": false,
+  "fixtureReachabilityClaim": false,
+  "sourceBase": "34c2ad0682c2ef623ec2b0d46322c48742739da9",
+  "helperSourceCommit": "b5a58d319bde61ee4eb831925effdbc618701562",
+  "node": "v24.22.1",
+  "tests": {
+    "combined": {
+      "pass": 93,
+      "fail": 0,
+      "skip": 6,
+      "durationMs": 2866.007447,
+      "skips": "existing opt-in native-forward tests not enabled"
+    },
+    "selectedHistoricalNative": {
+      "cases": [
+        "target",
+        "wrong-first",
+        "four-ball",
+        "gentle"
+      ],
+      "outerStepsEach": 383,
+      "pass": 4,
+      "fail": 0,
+      "durationMs": 875.576792,
+      "longerFixturesRun": false
+    }
+  },
+  "boundedRetainedNative": {
+    "outerSteps": 221,
+    "sourceSeconds": 0.23020833333333282,
+    "nativeTestMs": 355.772906,
+    "fullNativeWorldBytesEqual": true,
+    "clockEqual": true,
+    "realEmissionsEqual": true,
+    "originalGameStateEqual": true,
+    "realEmissions": 1,
+    "queryLatch": "deliberately forced DISCRETE control-state witness only",
+    "pendingGameFabricated": false,
+    "gameplayVerified": false,
+    "terminal": "incomplete on explicit bounded test timeout"
+  },
+  "actualAdmissionPrefix": {
+    "outerSteps": 4,
+    "elapsedMs": 410.845867,
+    "fullNativePrefixEqual": true,
+    "tokenRejectionBeforeWorld": true,
+    "incompleteTopLevelSolverScalars": false,
+    "solverVerifyOutcome": "unconverged",
+    "solverReason": "bounded-prefix-stop"
+  },
+  "remaining": [
+    "reviewed worker/cooperative/controller/planner/build integration",
+    "actually reached scoring route retained through original full rest",
+    "broader native fixtures and full application/UI qualification",
+    "GPU producer and versioned terminal-observation profile"
+  ],
+  "sourceSha256": {
+    "src/optimizer-core.js": "c69770a36008eeb1e006c1bce8de4ae1722f12522f886690d1cb956fd291a40a",
+    "src/inverse-events.js": "41e2959e360080b55f02149c6b719237bf69093c3087c948d12eb770ea2c3994",
+    "src/source-gameplay-finalization-owner.js": "5c9edb9fc1fe173f188c8161842fd58d6f69c4e55e1014428ce7767dde8b7298",
+    "src/source-finalization-request.js": "9b83e7173a91298ec52d1025c201c3103542302d1910a61c32dde4e76b6c89a6"
+  },
+  "admissionDependencyFollowup": {
+    "sourceSha256": {
+      "src/inverse-events.js": "5eff496a7baec8dcc108a61207877bd8c50fc303d6d66cb0dd1681a79022ec5e"
+    },
+    "pass": 2,
+    "fail": 0,
+    "durationMs": 882.662839,
+    "missingOptionalModulesRejectBeforeWorldConstruction": true
+  }
+}

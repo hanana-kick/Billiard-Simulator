@@ -11,6 +11,8 @@ import {Dialog,DialogContent,DialogHeader,DialogTitle,DialogDescription,DialogFo
 import {createRoot} from 'react-dom/client'
 import {Alert,AlertDescription} from '@/components/ui/alert'
 import {RoutePlanner} from '@/components/route-planner'
+import {CanonicalPracticeEntry} from '@/components/canonical-practice-entry'
+import {CanonicalSearchGrid} from '@/components/canonical-search-grid'
 import {Icon} from '@/icons'
 // A surrounding hit region forwards only clicks on its own empty padding.
 // The official button, keyboard behavior and visible registry styles stay intact.
@@ -52,23 +54,26 @@ function PrecisionControls({state:s}:{state:any}){
   <FieldDescription>0.01° 단위 입력 · Alt + 드래그: 미세 조준</FieldDescription>
  </FieldGroup>
 }
-function PositionInput({id,label,value,onCommit,min,max,disabled}:{id:string;label:string;value:number;onCommit:(value:number)=>void;min?:number;max?:number;disabled:boolean}){
- const [draft,setDraft]=React.useState(n(value,1)),[editing,setEditing]=React.useState(false),skipCommit=React.useRef(false)
- const finish=()=>{if(skipCommit.current){skipCommit.current=false;setEditing(false);return;}const v=Number(draft);if(draft.trim()&&Number.isFinite(v)&&(min===undefined||v>=min)&&(max===undefined||v<=max))onCommit(v);setEditing(false)}
- return <Field><FieldLabel htmlFor={id}>{label}</FieldLabel><Input id={id} type="number" inputMode="decimal" step=".5" min={min} max={max} disabled={disabled} value={editing?draft:n(value,1)}
-  onFocus={()=>{skipCommit.current=false;setDraft(n(value,1));setEditing(true)}} onChange={e=>setDraft(e.target.value)} onBlur={finish}
-  onKeyDown={e=>{if(e.key==='Enter'){e.currentTarget.blur()}else if(e.key==='Escape'){e.preventDefault();skipCommit.current=true;setDraft(n(value,1));setEditing(false);e.currentTarget.blur()}}}/></Field>
+function positionDraftChanged(draft:string,initial:string,precise:boolean){return !precise||draft!==initial}
+function PositionInput({id,label,value,onCommit,min,max,disabled,precise=false}:{id:string;label:string;value:number;onCommit:(value:number)=>void;min?:number;max?:number;disabled:boolean;precise?:boolean}){
+ const format=(v:number)=>precise?String(v):n(v,1)
+ const [draft,setDraft]=React.useState(format(value)),[editing,setEditing]=React.useState(false),skipCommit=React.useRef(false),initialDraft=React.useRef(format(value))
+ const finish=()=>{if(skipCommit.current){skipCommit.current=false;setEditing(false);return;}const v=Number(draft);if(positionDraftChanged(draft,initialDraft.current,precise)&&draft.trim()&&Number.isFinite(v)&&(min===undefined||v>=min)&&(max===undefined||v<=max))onCommit(v);setEditing(false)}
+ return <Field><FieldLabel htmlFor={id}>{label}</FieldLabel><Input id={id} type="number" inputMode="decimal" step={precise?'any':'.5'} min={min} max={max} disabled={disabled} value={editing?draft:format(value)}
+  onFocus={()=>{skipCommit.current=false;initialDraft.current=format(value);setDraft(initialDraft.current);setEditing(true)}} onChange={e=>setDraft(e.target.value)} onBlur={finish}
+  onKeyDown={e=>{if(e.key==='Enter'){e.currentTarget.blur()}else if(e.key==='Escape'){e.preventDefault();skipCommit.current=true;setDraft(format(value));setEditing(false);e.currentTarget.blur()}}}/></Field>
 }
 function Placement({state:s}:{state:any}){
- const o=s.objects.find((o:any)=>o.id===s.selectedId)
+ const o=s.objects.find((o:any)=>o.id===s.selectedId),canonical=!!s.canonicalPlayback
  if(!o)return null
  return <section className="settings-section" id="placement" tabIndex={-1} aria-labelledby="placement-title"><div className="section-heading"><h2 id="placement-title">배치·물체</h2><span>{o.label}</span></div><Field><FieldLabel htmlFor="placementObject">편집할 물체</FieldLabel><SelectField id="placementObject" aria-label="편집할 물체" value={s.selectedId} onChange={(e:any)=>controller.select(Number(e.target.value))}>{s.objects.map((item:any)=><option key={item.id} value={item.id}>{item.label}</option>)}</SelectField></Field><div className="advanced-body"><FieldGroup>
-  <div className="coordinates">{[['X','x'],['Z','z']].map(([label,key])=><PositionInput key={key} id={'pos'+label} label={label+' · cm'} value={o.pos[key]*100} disabled={!s.ready||s.activeStroke} onCommit={v=>controller.setPosition({[key]:v/100})}/>)}<PositionInput id="posY" label="높이 · cm" min={0} max={150} value={Math.max(0,s.height)} disabled={!s.ready||s.activeStroke} onCommit={v=>controller.setHeight(v)}/></div>
-  <Field><FieldLabel htmlFor="height">들어 올리기</FieldLabel><SliderField label="물체 들어 올리기" id="height" min={0} max={70} step={.5} value={Math.max(0,Math.min(70,s.height))} onChange={h=>controller.setHeight(h)}/></Field>
- </FieldGroup><div className="action-row"><Button size="sm" variant="outline" id="drop" onClick={()=>controller.pause(false)}>놓기</Button><Button size="sm" variant="outline" id="putOnTable" onClick={()=>controller.setHeight(0)}>천 위로</Button><Button size="sm" variant="ghost" id="remove" aria-label="선택 물체 삭제" disabled={s.objects.length<2} onClick={()=>controller.remove()}><Icon name="trash" data-icon="inline-start"/></Button></div><div className="action-row"><Button size="sm" variant="secondary" id="addBall" onClick={()=>controller.add('sphere')}><Icon name="plus" data-icon="inline-start"/>공 추가</Button><Button size="sm" variant="secondary" id="addBox" onClick={()=>controller.add('box')}>블록 추가</Button></div></div></section>
+  <div className="coordinates">{[['X','x'],['Z','z']].map(([label,key])=><PositionInput key={key} id={'pos'+label} label={label+' · cm'} value={o.pos[key]*100} precise={canonical} disabled={!s.ready||s.activeStroke||(canonical&&!s.canAim)} onCommit={v=>controller.setPosition({[key]:v/100})}/>)}{!canonical?<PositionInput id="posY" label="높이 · cm" min={0} max={150} value={Math.max(0,s.height)} disabled={!s.ready||s.activeStroke} onCommit={v=>controller.setHeight(v)}/>:null}</div>
+  {!canonical?<Field><FieldLabel htmlFor="height">들어 올리기</FieldLabel><SliderField label="물체 들어 올리기" id="height" min={0} max={70} step={.5} value={Math.max(0,Math.min(70,s.height))} onChange={h=>controller.setHeight(h)}/></Field>:null}
+ </FieldGroup>{canonical?<p id="canonicalPlacementScope" className="helper">공을 드래그하거나 X/Z 좌표로 옮길 수 있습니다. 좌표는 Q24 (1/16,777,216 m) 격자로 반올림됩니다. 겹침·쿠션 경계 여유를 보수적으로 검사하며, 충분한 간격을 확인할 수 없는 배치는 거부합니다. 배치 변경은 이전 탐색 후보를 무효화합니다. 높이·공 추가/삭제·재질·게임 모드 변경은 지원하지 않습니다.</p>:<><div className="action-row"><Button size="sm" variant="outline" id="drop" onClick={()=>controller.pause(false)}>놓기</Button><Button size="sm" variant="outline" id="putOnTable" onClick={()=>controller.setHeight(0)}>천 위로</Button><Button size="sm" variant="ghost" id="remove" aria-label="선택 물체 삭제" disabled={s.objects.length<2} onClick={()=>controller.remove()}><Icon name="trash" data-icon="inline-start"/></Button></div><div className="action-row"><Button size="sm" variant="secondary" id="addBall" onClick={()=>controller.add('sphere')}><Icon name="plus" data-icon="inline-start"/>공 추가</Button><Button size="sm" variant="secondary" id="addBox" onClick={()=>controller.add('box')}>블록 추가</Button></div></>}</div></section>
 }
 const parameters=[['clothFriction','천 마찰',0,.6,.01,1],['cushionRestitution','쿠션 반발',0,1,.01,1],['cushionFriction','쿠션 마찰',0,.6,.01,1],['ballRestitution','공 반발',0,1,.01,1],['ballFriction','공 마찰',0,.3,.01,1],['tipFriction','팁 마찰',0,1,.01,1],['gravity','중력',0,20,.1,1],['rollingLength','구름 저항 · mm',0,2,.01,1000],['spinLength','회전 저항 · mm',0,2,.01,1000]] as const
 function MaterialSettings({state:s}:{state:any}){
+ if(s.canonicalPlayback)return <section className="settings-section" id="materials"><h2>물리 재질</h2><p className="helper">Canonical 모델의 고정 재질을 사용합니다. 이 모드에서 재질 변경은 지원하지 않습니다.</p></section>
  return <section className="settings-section" id="materials" tabIndex={-1} aria-labelledby="materials-title"><div className="section-heading"><h2 id="materials-title">물리 재질</h2><span>9개 항목</span></div><div className="advanced-body"><FieldGroup>{parameters.map(([key,label,min,max,step,factor])=><Field key={key}><div className="field-heading"><FieldLabel htmlFor={'p-'+key}>{label}</FieldLabel><output>{n(s.params[key]*factor)}</output></div><SliderField label={label} id={'p-'+key} min={min} max={max} step={step} value={s.params[key]*factor} onChange={v=>controller.params({[key]:v/factor})}/></Field>)}</FieldGroup></div></section>
 }
 function HelpDialog({open,onOpenChange}:{open:boolean;onOpenChange:(value:boolean)=>void}){
@@ -112,12 +117,12 @@ function Workspace(){
       <FieldGroup><Field><FieldLabel>타격할 공</FieldLabel>
       <OptionGroup id="ballChoices" label="선택 물체" value={String(s.selectedId)} onChange={id=>controller.select(Number(id))} options={s.objects.filter((o:any)=>!s.game||s.game.cueIds.includes(o.id)).map((o:any)=>({value:String(o.id),label:<><i className="ball-dot" style={{background:o.color}}/>{o.label}</>}))}/></Field></FieldGroup>
       <TipSelector state={s}/><Separator/>
-      <SwitchField id="fineAim" checked={s.fineAim} onChange={v=>controller.option('fineAim',v)} label="미세 조준"/><PrecisionControls state={s}/>
+      <SwitchField id="fineAim" checked={s.fineAim} onChange={v=>controller.option('fineAim',v)} label="미세 조준"/><PrecisionControls state={s}/><CanonicalSearchGrid state={s} controller={controller}/>
 
       {s.obstruction?<Alert id="strikeWarning"><AlertDescription>큐가 {s.obstruction}에 닿습니다. 기울기나 조준을 바꾸세요.</AlertDescription></Alert>:null}
       <p className="helper">미세 조준을 켜면 드래그 감도가 낮아집니다. 숫자와 ± 버튼은 0.01° 단위입니다.</p><Separator/><Placement state={s}/>
      </TabsContent>
-     <TabsContent value="routes" id="routesPanel" className="tool-panel route-panel" aria-label="경로 탐색">      <Field><FieldLabel>게임 모드</FieldLabel><OptionGroup id="gameMode" label="게임 모드" value={s.gameMode} onChange={mode=>controller.setGameMode(mode)} options={[{value:'free',label:'3구'},{value:'four',label:'4구'}]}/><FieldDescription>모드를 변경하면 배치와 점수가 초기화됩니다. 4구는 연습 규칙입니다.</FieldDescription></Field><RoutePlanner state={s} controller={controller}/></TabsContent>
+     <TabsContent value="routes" id="routesPanel" className="tool-panel route-panel" aria-label="경로 탐색">      {s.canonicalPlayback?<p className="helper">현재 게임 모드는 고정됩니다. 모드 변경은 지원하지 않습니다.</p>:<Field><FieldLabel>게임 모드</FieldLabel><OptionGroup id="gameMode" label="게임 모드" value={s.gameMode} onChange={mode=>controller.setGameMode(mode)} options={[{value:'free',label:'3구'},{value:'four',label:'4구'}]}/><FieldDescription>모드를 변경하면 배치와 점수가 초기화됩니다. 4구는 연습 규칙입니다.</FieldDescription></Field>}<RoutePlanner state={s} controller={controller}/></TabsContent>
      <TabsContent value="settings" id="settingsPanel" className="tool-panel" aria-label="시뮬레이션 설정">
       <section className="settings-section" id="preview-settings" tabIndex={-1} aria-labelledby="preview-settings-title">
       <div className="section-heading"><h2 id="preview-settings-title">표시·재생</h2></div><FieldGroup>
@@ -132,8 +137,8 @@ function Workspace(){
       <p className="helper"><a href="./guide.html" target="_blank" rel="noopener">3구·삼구·4구·사구·3쿠션 연습 안내 (새 탭)</a></p>
      </TabsContent>
 
-     <span className="forecast-status" id="forecastStatus" title={s.forecastStatus} aria-live="polite">{s.routeStatus==='searching'?`제약식 계산 · 물리 평가 ${s.routeProgress?.evaluated||0}회`:s.predictionBusy?'예측 중…':s.forecastStatus}</span>
-     <section className="panel-utility" aria-label="기록 및 도움말"><Separator/><p className="muted-caption">기록 및 도움말</p><div className="action-row"><Button id="undo" variant="outline" size="sm" disabled={!s.undo} onClick={()=>controller.undo()}><Icon name="undo" data-icon="inline-start"/>되돌리기</Button><Button id="redo" variant="outline" size="sm" disabled={!s.redo} onClick={()=>controller.redo()}>다시 실행</Button><Button id="reset" variant="outline" size="sm" onClick={()=>controller.reset()}><Icon name="reset" data-icon="inline-start"/>초기화</Button><Button variant="ghost" size="icon" aria-label="조작 도움말" onClick={()=>setHelpOpen(true)}><Icon name="info"/></Button></div></section>
+     <span className="forecast-status" id="forecastStatus" title={s.forecastStatus} aria-live="polite">{s.routeStatus==='searching'?(s.canonicalPlayback?`GPU 파라미터 평가 ${s.routeProgress?.evaluated||0}회`:`제약식 계산 · 물리 평가 ${s.routeProgress?.evaluated||0}회`):s.predictionBusy?'예측 중…':s.forecastStatus}</span>
+     <section className="panel-utility" aria-label="기록 및 도움말"><Separator/><p className="muted-caption">기록 및 도움말</p><div className="action-row"><Button id="undo" variant="outline" size="sm" disabled={!s.undo} onClick={()=>controller.undo()}><Icon name="undo" data-icon="inline-start"/>되돌리기</Button><Button id="redo" variant="outline" size="sm" disabled={!s.redo} onClick={()=>controller.redo()}>다시 실행</Button><Button id="reset" variant="outline" size="sm" disabled={!!s.canonicalPlayback?.deviceLost} title={s.canonicalPlayback?'처음 GPU 게임 배치·점수·타격 설정으로 돌아가고 기록을 지웁니다. 탐색 조합은 유지합니다. GPU 장치 손실은 복구하지 않습니다.':undefined} onClick={()=>controller.reset()}><Icon name="reset" data-icon="inline-start"/>초기화</Button><Button variant="ghost" size="icon" aria-label="조작 도움말" onClick={()=>setHelpOpen(true)}><Icon name="info"/></Button></div></section>
      </SidebarContent>
     </Tabs>
 
@@ -142,6 +147,7 @@ function Workspace(){
     <header className="workspace-header"><div className="sidebar-opener"><HitTarget><SidebarTrigger id="sidebarTrigger" aria-label={(isMobile?mobileOpen:sidebarOpen)?"설정 패널 닫기":"설정 패널 열기"} aria-expanded={isMobile?mobileOpen:sidebarOpen}/></HitTarget><h1>당구 연습</h1></div></header>
     <section id="stagePreview" className="stage-region" aria-label="당구대와 직접 조작">
      <div className="stage-toolbar">
+      <CanonicalPracticeEntry state={s} controller={controller}/>
       <div className="view-controls"><OptionGroup id="viewGroup" label="카메라 시점" value={s.view||'3d'} onChange={v=>controller.view(v)} options={[{value:'top',label:'상단'},{value:'3d',label:'3D'},{value:'side',label:'측면'}]}/></div>
       <div className="zoom-tools"><HitTarget><Button variant="outline" size="icon" aria-label="축소" onClick={()=>controller.zoom(1.12)}><Icon name="minus"/></Button></HitTarget><HitTarget><Button variant="outline" size="icon" id="fit" aria-label="화면 맞춤" onClick={()=>controller.fit()}><Icon name="frame"/></Button></HitTarget><HitTarget><Button variant="outline" size="icon" aria-label="확대" onClick={()=>controller.zoom(1/1.12)}><Icon name="plus"/></Button></HitTarget></div>
 

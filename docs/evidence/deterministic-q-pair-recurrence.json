@@ -1,0 +1,87 @@
+{
+  "profile": "resident-subsequent-supported-pairs-v1",
+  "cases": 105,
+  "comparedWords": 19320,
+  "exactWords": true,
+  "compileMs": 4233.016853,
+  "shaderBytes": [
+    4116,
+    8418,
+    5991,
+    7082,
+    8565,
+    8752,
+    8644,
+    1760,
+    1760,
+    1760,
+    8961,
+    6326
+  ],
+  "runs": [
+    {
+      "options": {
+        "clothRestitution": 0,
+        "maxEvents": 80
+      },
+      "rest": 30,
+      "subsequentPairs": 61,
+      "metrics": {
+        "count": 35,
+        "maxEvents": 80,
+        "dispatches": 646,
+        "residentCopies": 80,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "finalReadbacks": 1,
+        "allocatedBytes": 123744,
+        "submitToDoneMs": 70.6806059999999,
+        "fullShot": false,
+        "hardwareSpeedClaim": false
+      }
+    },
+    {
+      "options": {
+        "clothRestitution": 0.2,
+        "maxEvents": 80
+      },
+      "rest": 35,
+      "subsequentPairs": 70,
+      "metrics": {
+        "count": 35,
+        "maxEvents": 80,
+        "dispatches": 646,
+        "residentCopies": 80,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "finalReadbacks": 1,
+        "allocatedBytes": 123744,
+        "submitToDoneMs": 79.66484499999933,
+        "fullShot": false,
+        "hardwareSpeedClaim": false
+      }
+    },
+    {
+      "options": {
+        "clothRestitution": 0,
+        "maxEvents": 2
+      },
+      "rest": 0,
+      "subsequentPairs": 0,
+      "metrics": {
+        "count": 35,
+        "maxEvents": 2,
+        "dispatches": 22,
+        "residentCopies": 2,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "finalReadbacks": 1,
+        "allocatedBytes": 123744,
+        "submitToDoneMs": 5.571162000000186,
+        "fullShot": false,
+        "hardwareSpeedClaim": false
+      }
+    }
+  ],
+  "fullShot": false
+}

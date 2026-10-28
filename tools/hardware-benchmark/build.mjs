@@ -1,0 +1,35 @@
+import {mkdtempSync,readFileSync,writeFileSync,mkdirSync,rmSync,copyFileSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {resolve,dirname,join} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {execFileSync} from 'node:child_process';
+import {createRequire} from 'node:module';
+import {createHash} from 'node:crypto';
+import {gunzipSync} from 'node:zlib';
+import esbuild from 'esbuild';
+const here=dirname(fileURLToPath(import.meta.url)),root=resolve(here,'../..'),out=resolve(process.argv[2]??'/tmp/billiard-hardware-benchmark'),tmp=mkdtempSync(join(tmpdir(),'billiard-frozen-cpu-'));
+const sha=x=>createHash('sha256').update(x).digest('hex');
+try{
+ const commit=execFileSync('git',['rev-parse','0850a4d^{commit}'],{cwd:root,encoding:'utf8'}).trim();
+ const archive=execFileSync('git',['archive',commit,'src/direct-candidate'],{cwd:root,maxBuffer:32*1024*1024});
+ execFileSync('tar',['-x','-C',tmp],{input:archive});mkdirSync(out,{recursive:true});
+ const require=createRequire(join(root,'package.json')),RAPIER=require(join(root,'vendor/rapier.cjs'));await RAPIER.init();require(join(root,'src/math.js'));require(join(root,'src/physics.js'));
+ const lab=new globalThis.PhysicsLab(RAPIER),snapshot=lab.snapshot();lab.dispose();
+ const {CANONICAL_DEFAULT_PARAMETERS}=await import(join(tmp,'src/direct-candidate/canonical-engine-contract.mjs'));
+ const v=(x=0,y=0,z=0)=>({x,y,z}),R=.03075;snapshot.params={...CANONICAL_DEFAULT_PARAMETERS};
+ snapshot.objects=[{id:50,p:[0,R,0]},{id:8,p:[.085,R,0]},{id:300,p:[-.6,R,.45]},{id:19,p:[.9,R,-.4]}].map(x=>({id:x.id,shape:'sphere',kind:'ball',radius:R,mass:.21,pos:v(...x.p),v:v(),w:v(),rot:{x:0,y:0,z:0,w:1}}));
+ const reference=JSON.parse(readFileSync(join(root,'artifacts/raw-world-batch/scale-cpu-reference.json'),'utf8'));
+ if(reference.sourceCommit!=='0850a4d')throw Error('Wrong CPU reference');
+ const fixture={snapshot,request:{epoch:7,requestId:17,selectedId:50,purpose:'search',executionProfile:'canonical-local-v1',budget:{maximumTicks:2**23,maximumEvents:1024,maximumWorkItems:1000000},rules:{game:4,firstId:8,secondId:300,opponentId:19,threeCushion:false,search:true,method:'carom',minCushions:0,allowKiss:false,kissFacts:false,conditionOnly:false}},candidates:reference.stress.candidates.slice(0,256),rawSceneSHA256:reference.rawSceneSHA256,worldTemplateSHA256:reference.worldTemplateSHA256};
+ const frozen=join(tmp,'src/direct-candidate'),current=join(root,'src/direct-candidate');
+ const ctx=readFileSync(join(here,'context.mjs'),'utf8');
+ for(const [name,base] of [['cpu',frozen],['gpu',current]])writeFileSync(join(tmp,`${name}-context.mjs`),ctx.replace("'CONTRACT'",JSON.stringify(join(base,'canonical-engine-contract.mjs'))).replace("'RAW'",JSON.stringify(join(base,'deterministic-raw-world.mjs'))));
+ const aliases={CPU_CONTEXT:join(tmp,'cpu-context.mjs'),GPU_CONTEXT:join(tmp,'gpu-context.mjs'),CPU_CONTINUATION:join(frozen,'canonical-world-continuation.mjs'),CPU_WORDS:join(frozen,'deterministic-prepared-world-gpu.mjs')};
+ const result=await esbuild.build({entryPoints:[join(here,'worker.mjs')],outfile:join(out,'worker.js'),bundle:true,format:'esm',platform:'browser',target:'es2022',minify:true,legalComments:'none',alias:aliases,metafile:true});
+ await esbuild.build({entryPoints:[join(here,'cpu.mjs')],outfile:join(out,'cpu-check.mjs'),bundle:true,format:'esm',platform:'browser',target:'es2022',minify:true,legalComments:'none',alias:aliases});
+ writeFileSync(join(out,'fixture.json'),JSON.stringify(fixture));
+ writeFileSync(join(out,'reference.bin'),gunzipSync(Buffer.from(reference.stress.words,'base64')).subarray(0,256*2916*4));
+ const manifest={schema:'billiard-local-benchmark-v1',pipelineRevision:'0850a4d',cpuCommit:commit,fixtureSHA256:sha(readFileSync(join(out,'fixture.json'))),referenceSHA256:sha(readFileSync(join(out,'reference.bin'))),workerSHA256:sha(readFileSync(join(out,'worker.js'))),inputs:Object.fromEntries(Object.keys(result.metafile.inputs).sort().map(p=>[p.startsWith(tmp)?p.replace(tmp,'FROZEN_BUILD'):p,sha(readFileSync(resolve(p)))]))};
+ writeFileSync(join(out,'manifest.json'),JSON.stringify(manifest,null,2));copyFileSync(join(here,'index.html'),join(out,'index.html'));
+ console.log(`Local-only build: ${out}\nServe: node tools/hardware-benchmark/serve.mjs ${out}`);
+}finally{rmSync(tmp,{recursive:true,force:true});}

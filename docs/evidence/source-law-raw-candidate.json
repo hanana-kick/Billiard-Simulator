@@ -1,0 +1,226 @@
+{
+  "kind": "raw-source-backed-full-rest-candidate-checkpoint",
+  "wallMs": 1930.863627,
+  "productionEnabled": false,
+  "acceleratedRawShot": false,
+  "runs": [
+    {
+      "name": "positive",
+      "preparationSteps": 484,
+      "constructorSteps": 72,
+      "status": "verified-final-gameplay",
+      "game": {
+        "cueId": 1,
+        "delta": 1,
+        "nextCue": 1
+      },
+      "work": {
+        "nativeSteps": 5480,
+        "outerSteps": 5039,
+        "skippedSourceSteps": 0,
+        "admissionAttempts": 1,
+        "admissionReason": "unowned-or-coupled-world",
+        "admissionDiagnostics": {
+          "sampleTime": 0.5114583333333255,
+          "lastNativeDt": 0.00001627604251552839,
+          "cachedManifoldImpulsesAreNotFutureLoadCertificate": true,
+          "cuePresent": false,
+          "preparedBoundaryCertified": false,
+          "nativeGravity": [
+            0,
+            -9.8100004196167,
+            0
+          ],
+          "parameterGravity": 9.81,
+          "gravityExactlyMatchesParameter": false,
+          "gravityMatchesNativeF32": true,
+          "counts": {
+            "balls": 4,
+            "supportHeightMismatch": 4,
+            "verticalMotion": 0,
+            "translating": 1,
+            "tangentialSpin": 1,
+            "nonaxial": 1,
+            "slipZero": 3,
+            "cachedPositiveClothImpulse": 4
+          },
+          "rows": [
+            {
+              "id": 1,
+              "supportGap": -0.00006799772381782532,
+              "verticalVelocity": 0,
+              "horizontalSpeed": 2.3926072120666504,
+              "tangentialAngularSpeed": 3.8933560848236084,
+              "normalAngular": -5.7192415628523356e-30,
+              "slipSpeed": 2.2728865091514394,
+              "strictAxial": false,
+              "sleeping": false,
+              "contactPoints": 1,
+              "normalImpulse": 0.00003353027568664402
+            },
+            {
+              "id": 2,
+              "supportGap": -0.00006748363375663757,
+              "verticalVelocity": 0,
+              "horizontalSpeed": 0,
+              "tangentialAngularSpeed": 0,
+              "normalAngular": 0,
+              "slipSpeed": 0,
+              "strictAxial": true,
+              "sleeping": true,
+              "contactPoints": 1,
+              "normalImpulse": 0.002145937643945217
+            },
+            {
+              "id": 3,
+              "supportGap": -0.00006748363375663757,
+              "verticalVelocity": 0,
+              "horizontalSpeed": 0,
+              "tangentialAngularSpeed": 0,
+              "normalAngular": 0,
+              "slipSpeed": 0,
+              "strictAxial": true,
+              "sleeping": true,
+              "contactPoints": 1,
+              "normalImpulse": 0.002145937643945217
+            },
+            {
+              "id": 4,
+              "supportGap": -0.00006748363375663757,
+              "verticalVelocity": 0,
+              "horizontalSpeed": 0,
+              "tangentialAngularSpeed": 0,
+              "normalAngular": 0,
+              "slipSpeed": 0,
+              "strictAxial": true,
+              "sleeping": true,
+              "contactPoints": 1,
+              "normalImpulse": 0.002145937643945217
+            }
+          ],
+          "scope": "single-actual-post-cue-sample-not-whole-shot-admission-survey"
+        }
+      },
+      "firstGoalTime": 0.9541666666666808,
+      "firstFoulTime": null,
+      "sourceTime": 5.753124999999747,
+      "wallMs": 516.434675,
+      "memory": {
+        "sourceSnapshotBytes": 39269,
+        "journalEvents": 8,
+        "journalSerializedBytes": 2002,
+        "journalCapBytes": 262144,
+        "nativeHeapMeasured": false
+      }
+    },
+    {
+      "name": "late-foul",
+      "preparationSteps": 484,
+      "constructorSteps": 72,
+      "status": "evaluated-negative",
+      "game": {
+        "cueId": 1,
+        "delta": -1,
+        "nextCue": 2
+      },
+      "work": {
+        "nativeSteps": 5415,
+        "outerSteps": 4974,
+        "skippedSourceSteps": 0,
+        "admissionAttempts": 1,
+        "admissionReason": "unowned-or-coupled-world",
+        "admissionDiagnostics": {
+          "sampleTime": 0.5114583333333255,
+          "lastNativeDt": 0.00001627604251552839,
+          "cachedManifoldImpulsesAreNotFutureLoadCertificate": true,
+          "cuePresent": false,
+          "preparedBoundaryCertified": false,
+          "nativeGravity": [
+            0,
+            -9.8100004196167,
+            0
+          ],
+          "parameterGravity": 9.81,
+          "gravityExactlyMatchesParameter": false,
+          "gravityMatchesNativeF32": true,
+          "counts": {
+            "balls": 4,
+            "supportHeightMismatch": 4,
+            "verticalMotion": 0,
+            "translating": 1,
+            "tangentialSpin": 1,
+            "nonaxial": 1,
+            "slipZero": 3,
+            "cachedPositiveClothImpulse": 4
+          },
+          "rows": [
+            {
+              "id": 1,
+              "supportGap": -0.00006799772381782532,
+              "verticalVelocity": 0,
+              "horizontalSpeed": 2.3926072120666504,
+              "tangentialAngularSpeed": 3.8933560848236084,
+              "normalAngular": -5.7192415628523356e-30,
+              "slipSpeed": 2.2728865091514394,
+              "strictAxial": false,
+              "sleeping": false,
+              "contactPoints": 1,
+              "normalImpulse": 0.00003353027568664402
+            },
+            {
+              "id": 2,
+              "supportGap": -0.00006748363375663757,
+              "verticalVelocity": 0,
+              "horizontalSpeed": 0,
+              "tangentialAngularSpeed": 0,
+              "normalAngular": 0,
+              "slipSpeed": 0,
+              "strictAxial": true,
+              "sleeping": true,
+              "contactPoints": 1,
+              "normalImpulse": 0.002145937643945217
+            },
+            {
+              "id": 3,
+              "supportGap": -0.00006748363375663757,
+              "verticalVelocity": 0,
+              "horizontalSpeed": 0,
+              "tangentialAngularSpeed": 0,
+              "normalAngular": 0,
+              "slipSpeed": 0,
+              "strictAxial": true,
+              "sleeping": true,
+              "contactPoints": 1,
+              "normalImpulse": 0.002145937643945217
+            },
+            {
+              "id": 4,
+              "supportGap": -0.00006748363375663757,
+              "verticalVelocity": 0,
+              "horizontalSpeed": 0,
+              "tangentialAngularSpeed": 0,
+              "normalAngular": 0,
+              "slipSpeed": 0,
+              "strictAxial": true,
+              "sleeping": true,
+              "contactPoints": 1,
+              "normalImpulse": 0.002145937643945217
+            }
+          ],
+          "scope": "single-actual-post-cue-sample-not-whole-shot-admission-survey"
+        }
+      },
+      "firstGoalTime": 0.9541666666666808,
+      "firstFoulTime": 1.5312499999999862,
+      "sourceTime": 5.685416666666417,
+      "wallMs": 335.7566239999999,
+      "memory": {
+        "sourceSnapshotBytes": 39269,
+        "journalEvents": 9,
+        "journalSerializedBytes": 2295,
+        "journalCapBytes": 262144,
+        "nativeHeapMeasured": false
+      }
+    }
+  ]
+}

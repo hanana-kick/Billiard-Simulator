@@ -1,0 +1,45 @@
+{
+  "pipelineRevision": "0850a4d",
+  "native": {
+    "checkpoint": "0850a4d",
+    "candidateCount": 1024,
+    "comparedCompactWords": 4096,
+    "compileMs": 96356.45808899999,
+    "metrics": {
+      "candidateCount": 1024,
+      "allocatedBytes": 171334484,
+      "readbackBytes": 16384,
+      "submissions": 1,
+      "intermediateReadbacks": 0,
+      "hostPhysicsBetweenPhases": 0,
+      "dispatches": 12506,
+      "hostPrepareMs": 59.436693999989075,
+      "encodeMs": 300.86563000000024,
+      "submitToQueueDoneMs": 359242.721933,
+      "readbackMs": 128.70383399998536,
+      "submitToDoneMs": 359371.42710900004
+    },
+    "softwareVulkanOnly": true,
+    "diagnostic": false,
+    "physicsRuns": 1,
+    "scope": "all1024 compact results only; full trajectories qualified separately atN256;3 parameter classes with unique IDs; not goal-at-scale or hardware throughput"
+  },
+  "watchdog": {
+    "boundedNativeProcess": true,
+    "exitCode": 0,
+    "stopReason": null,
+    "sampledAggregateRSSMiB": 1113.97,
+    "maxChildRSSMiB": 1076.83,
+    "rssCoverage": "PPid status-table ancestry; sampled aggregate, RUSAGE_CHILDREN maximum separately",
+    "elapsedSeconds": 456.988,
+    "limitRSSMiB": 1500,
+    "limitSeconds": 600.0
+  },
+  "logs": [
+    "/tmp/raw-world-batch-n1024-compact-native.log",
+    "/tmp/raw-world-batch-n1024-compact-native-receipt.log"
+  ],
+  "reference": "scale-cpu-reference.json; recovered0850a4d CPU; unique IDs1000..2023;3 repeated parameter classes",
+  "scope": "N1024 compact-only4096-word parity, one execution; no full diagnostics or goal-at-scale or hardware throughput claim",
+  "runBoundJustification": "N256 measured compile104.300s +4*compact queue90.381s ~=465.8s;600s allowed bounded scheduling slack, unchanged1500MiB RSS and256MiB owned allocation caps"
+}

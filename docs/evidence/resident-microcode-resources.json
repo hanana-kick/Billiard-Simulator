@@ -1,0 +1,402 @@
+{
+  "fixture": {
+    "kind": "resident-microcode-resource-fixture-v1",
+    "runtimeSha256": "5a233a1b2d79345a28dfe33964fae7d1c008764db0f0908d0ad7d81e0473375f",
+    "runtimeBytes": 13750901,
+    "sourceHead": "3b09eed1ce17d4bae6b9fe5e1e3e987961121f66",
+    "shape": {
+      "kind": "resident-microcode-resource-shape-v1",
+      "sourceRuntimeKind": "resident-raw-tip-outer-microcode-runtime-v1",
+      "sourceCount": 2,
+      "sourceFrames": 64,
+      "perCandidate": {
+        "worldWords": 62976,
+        "controlWords": 80,
+        "requestWords": 24,
+        "vmControlWords": 16,
+        "vmLocalWords": 7783,
+        "vmStackWords": 15,
+        "vmStrideWords": 7814,
+        "rawStateWords": 2010,
+        "rawScratchWords": 13632,
+        "numericScratchWords": 13632,
+        "scratchWords": 13632,
+        "inputWords": 16,
+        "resultWords": 4
+      },
+      "fixedCcdWords": 1016,
+      "sharedWords": {
+        "rawProgram": 5071,
+        "rawGeometry": 11368,
+        "worldTemplate": 62990,
+        "worldProgram": 874992,
+        "worldGeometry": 25408,
+        "microcode": 1078200
+      },
+      "workgroupSize": 64,
+      "macroWorkgroupSize": 1,
+      "storageBindings": 7
+    },
+    "limits": {
+      "maxStorageBufferBindingSize": 134217728,
+      "maxBufferSize": 268435456,
+      "maxStorageBuffersPerShaderStage": 8,
+      "maxBindingsPerBindGroup": 1000,
+      "maxBindGroups": 4,
+      "maxComputeInvocationsPerWorkgroup": 256,
+      "maxComputeWorkgroupSizeX": 256,
+      "maxComputeWorkgroupsPerDimension": 65535
+    }
+  },
+  "rows": [
+    {
+      "count": 1,
+      "worlds": 256384,
+      "vm": 31256,
+      "scratch": 54528,
+      "input": 64,
+      "retainedInitialization": 325756,
+      "initializationState": 8040,
+      "initializationReadonly": 317716,
+      "residentReadonly": 7914400,
+      "totalReadonly": 8232116,
+      "currentBase": 8582388,
+      "diagnostics": 862920,
+      "currentTestTotal": 9445308,
+      "proposedCompactResult": 16,
+      "proposedCompactReadback": 16,
+      "proposedCompactTotal": 8582420,
+      "at128": {
+        "compact": true,
+        "diagnostics3": true
+      },
+      "at256": {
+        "compact": true,
+        "diagnostics3": true
+      }
+    },
+    {
+      "count": 16,
+      "worlds": 4041184,
+      "vm": 500096,
+      "scratch": 872448,
+      "input": 1024,
+      "retainedInitialization": 446356,
+      "initializationState": 128640,
+      "initializationReadonly": 317716,
+      "residentReadonly": 7914400,
+      "totalReadonly": 8232116,
+      "currentBase": 13775508,
+      "diagnostics": 13623840,
+      "currentTestTotal": 27399348,
+      "proposedCompactResult": 256,
+      "proposedCompactReadback": 256,
+      "proposedCompactTotal": 13776020,
+      "at128": {
+        "compact": true,
+        "diagnostics3": true
+      },
+      "at256": {
+        "compact": true,
+        "diagnostics3": true
+      }
+    },
+    {
+      "count": 64,
+      "worlds": 16152544,
+      "vm": 2000384,
+      "scratch": 3489792,
+      "input": 4096,
+      "retainedInitialization": 832276,
+      "initializationState": 514560,
+      "initializationReadonly": 317716,
+      "residentReadonly": 7914400,
+      "totalReadonly": 8232116,
+      "currentBase": 30393492,
+      "diagnostics": 54458784,
+      "currentTestTotal": 84852276,
+      "proposedCompactResult": 1024,
+      "proposedCompactReadback": 1024,
+      "proposedCompactTotal": 30395540,
+      "at128": {
+        "compact": true,
+        "diagnostics3": true
+      },
+      "at256": {
+        "compact": true,
+        "diagnostics3": true
+      }
+    },
+    {
+      "count": 256,
+      "worlds": 64597984,
+      "vm": 8001536,
+      "scratch": 13959168,
+      "input": 16384,
+      "retainedInitialization": 2375956,
+      "initializationState": 2058240,
+      "initializationReadonly": 317716,
+      "residentReadonly": 7914400,
+      "totalReadonly": 8232116,
+      "currentBase": 96865428,
+      "diagnostics": 217798560,
+      "currentTestTotal": 314663988,
+      "proposedCompactResult": 4096,
+      "proposedCompactReadback": 4096,
+      "proposedCompactTotal": 96873620,
+      "at128": {
+        "compact": true,
+        "diagnostics3": true
+      },
+      "at256": {
+        "compact": true,
+        "diagnostics3": true
+      }
+    },
+    {
+      "count": 512,
+      "worlds": 129191904,
+      "vm": 16003072,
+      "scratch": 27918336,
+      "input": 32768,
+      "retainedInitialization": 4434196,
+      "initializationState": 4116480,
+      "initializationReadonly": 317716,
+      "residentReadonly": 7914400,
+      "totalReadonly": 8232116,
+      "currentBase": 185494676,
+      "diagnostics": 435584928,
+      "currentTestTotal": 621079604,
+      "proposedCompactResult": 8192,
+      "proposedCompactReadback": 8192,
+      "proposedCompactTotal": 185511060,
+      "at128": {
+        "compact": true,
+        "diagnostics3": false
+      },
+      "at256": {
+        "compact": true,
+        "diagnostics3": false
+      }
+    },
+    {
+      "count": 1024,
+      "worlds": 258379744,
+      "vm": 32006144,
+      "scratch": 55836672,
+      "input": 65536,
+      "retainedInitialization": 8550676,
+      "initializationState": 8232960,
+      "initializationReadonly": 317716,
+      "residentReadonly": 7914400,
+      "totalReadonly": 8232116,
+      "currentBase": 362753172,
+      "diagnostics": 871157664,
+      "currentTestTotal": 1233910836,
+      "proposedCompactResult": 16384,
+      "proposedCompactReadback": 16384,
+      "proposedCompactTotal": 362785940,
+      "at128": {
+        "compact": false,
+        "diagnostics3": false
+      },
+      "at256": {
+        "compact": true,
+        "diagnostics3": false
+      }
+    },
+    {
+      "count": 4096,
+      "worlds": 1033506784,
+      "vm": 128024576,
+      "scratch": 223346688,
+      "input": 262144,
+      "retainedInitialization": 33249556,
+      "initializationState": 32931840,
+      "initializationReadonly": 317716,
+      "residentReadonly": 7914400,
+      "totalReadonly": 8232116,
+      "currentBase": 1426304148,
+      "diagnostics": 3484594080,
+      "currentTestTotal": 4910898228,
+      "proposedCompactResult": 65536,
+      "proposedCompactReadback": 65536,
+      "proposedCompactTotal": 1426435220,
+      "at128": {
+        "compact": false,
+        "diagnostics3": false
+      },
+      "at256": {
+        "compact": false,
+        "diagnostics3": false
+      }
+    }
+  ],
+  "banks": [
+    {
+      "kind": "resident-microcode-bank-resource-estimate-v1",
+      "count": 1024,
+      "bankRows": 512,
+      "output": "compact-terminal",
+      "banks": [
+        {
+          "first": 0,
+          "count": 512,
+          "fits": true,
+          "violations": [],
+          "totalBytes": 185511060
+        },
+        {
+          "first": 512,
+          "count": 512,
+          "fits": true,
+          "violations": [],
+          "totalBytes": 185511060
+        }
+      ],
+      "fits": true,
+      "totalBytes": 371022120,
+      "allBanksResident": true,
+      "sharedImmutableCopies": 2,
+      "implemented": false,
+      "qualified": false,
+      "estimated": true,
+      "hardwareMeasured": false
+    },
+    {
+      "kind": "resident-microcode-bank-resource-estimate-v1",
+      "count": 4096,
+      "bankRows": 512,
+      "output": "compact-terminal",
+      "banks": [
+        {
+          "first": 0,
+          "count": 512,
+          "fits": true,
+          "violations": [],
+          "totalBytes": 185511060
+        },
+        {
+          "first": 512,
+          "count": 512,
+          "fits": true,
+          "violations": [],
+          "totalBytes": 185511060
+        },
+        {
+          "first": 1024,
+          "count": 512,
+          "fits": true,
+          "violations": [],
+          "totalBytes": 185511060
+        },
+        {
+          "first": 1536,
+          "count": 512,
+          "fits": true,
+          "violations": [],
+          "totalBytes": 185511060
+        },
+        {
+          "first": 2048,
+          "count": 512,
+          "fits": true,
+          "violations": [],
+          "totalBytes": 185511060
+        },
+        {
+          "first": 2560,
+          "count": 512,
+          "fits": true,
+          "violations": [],
+          "totalBytes": 185511060
+        },
+        {
+          "first": 3072,
+          "count": 512,
+          "fits": true,
+          "violations": [],
+          "totalBytes": 185511060
+        },
+        {
+          "first": 3584,
+          "count": 512,
+          "fits": true,
+          "violations": [],
+          "totalBytes": 185511060
+        }
+      ],
+      "fits": true,
+      "totalBytes": 1484088480,
+      "allBanksResident": true,
+      "sharedImmutableCopies": 8,
+      "implemented": false,
+      "qualified": false,
+      "estimated": true,
+      "hardwareMeasured": false
+    },
+    {
+      "kind": "resident-microcode-bank-resource-estimate-v1",
+      "count": 1024,
+      "bankRows": 256,
+      "output": "current-diagnostics",
+      "banks": [
+        {
+          "first": 0,
+          "count": 256,
+          "fits": true,
+          "violations": [],
+          "totalBytes": 314663988
+        },
+        {
+          "first": 256,
+          "count": 256,
+          "fits": true,
+          "violations": [],
+          "totalBytes": 314663988
+        },
+        {
+          "first": 512,
+          "count": 256,
+          "fits": true,
+          "violations": [],
+          "totalBytes": 314663988
+        },
+        {
+          "first": 768,
+          "count": 256,
+          "fits": true,
+          "violations": [],
+          "totalBytes": 314663988
+        }
+      ],
+      "fits": true,
+      "totalBytes": 1258655952,
+      "allBanksResident": true,
+      "sharedImmutableCopies": 4,
+      "implemented": false,
+      "qualified": false,
+      "estimated": true,
+      "hardwareMeasured": false
+    }
+  ],
+  "kind": "resident-microcode-resource-evidence-v1",
+  "scope": "HOST-only arithmetic and fake-device allocation equivalence; hypothetical row scaling",
+  "files": {
+    "src/resident-candidate/microcode-resources.mjs": "99f0b215c9e48114d1b69789a47f04024f45c895cde810c00dc8d0d71f64e31e",
+    "src/resident-candidate/world-initialization.mjs": "b0ee670e717f21a7cb51e1c75b2458a61dbc551a5118d80bffea63455b2796b3",
+    "src/resident-candidate/microcode-vm.mjs": "911ea45c0c7abb7a98124d2ebdb173db08e8ac9c6363847de21fdb955461b2d1",
+    "src/resident-candidate/abi.mjs": "20015d498dd5ba4584aea793c58381351abd9f82e718d4a824158730b989a9c7",
+    "tests/resident-candidate-microcode-world-runtime.mjs": "1c4a4475bb23c487d7e55c10fd62d62015b55de00cc6b2bc1132c93a2eaa57bc",
+    "tests/resident-candidate-gpu-support.mjs": "59bfd1b6a3e1951b2b35e89c705204d5e21fbbdbf05d9f588d4d2795ea6f4679"
+  },
+  "hostGate": {
+    "passed": 8,
+    "gpuSubmissions": 0,
+    "expectedFilesOpened": false
+  },
+  "native1024": false,
+  "hardwarePerformance": false,
+  "runtimeActivation": false,
+  "memoryAvailabilityChecked": false
+}

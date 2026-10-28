@@ -1,0 +1,153 @@
+{
+  "kind": "resident-mixed-six-macro-source-shape-evidence-v1",
+  "runtimeSha256": "780872cc0105e20375dcbd2f84a2e1962176133feefb23fdaa0a0778b312b4de",
+  "runtimeDataSha256": "5a114404df0eb616c8b112b553f484d837171bdfbef9f9b7c138686b30aaf958",
+  "sourceSha256": "c2aded677c03f8db550530c39df80a5591057f892a2f44aa4f6fe99d956baa20",
+  "sourceFixtureSha256": "9c222923ff7bef351f92611f4e36ae9e98ba657d45bb36e1ed427f3e8918cbaf",
+  "sourceHead": "3514fd3e0a993685b2348d74b18b6f999fceb2c3",
+  "compiledSha256": "8c1075bc06dfcb28cb45c27f89ebac98d892fddba806526d8f1c287252d15cf5",
+  "count": 6,
+  "frames": 2,
+  "orderedIds": [
+    17,
+    118,
+    219,
+    320,
+    421,
+    522
+  ],
+  "initialHistoryProfile": "source-full-application-history-v1",
+  "vm": {
+    "instructionCount": 131112,
+    "localWords": 7783,
+    "stride": 7814,
+    "stackCapacity": 15,
+    "codeSha256": "30f7e7aae2258d01bdcb98811024f314592351f83ced1ffadfde2cda36c825e4",
+    "shaderSha256": "cedfc8e0b6fdb26a174ebefb2e687172d7466f6e03a5c50ad88e19ed289872f6"
+  },
+  "profiles": [
+    {
+      "workgroupSize": 1,
+      "workgroups": 6,
+      "paddingLanes": 0,
+      "profileSha256": "6c5c294a62dbf8dfc7709fd218e8a20e8389f5490d4d47397a380272a74b19a6"
+    },
+    {
+      "workgroupSize": 8,
+      "workgroups": 1,
+      "paddingLanes": 2,
+      "profileSha256": "6619d313bc7f495f38153741cca4238028bed08770a048263287af2e788444c9"
+    },
+    {
+      "workgroupSize": 32,
+      "workgroups": 1,
+      "paddingLanes": 26,
+      "profileSha256": "a61b1dcff43f517718c4271196674b5ea0bf2981e744b98c31a3b4b748f4f12f"
+    },
+    {
+      "workgroupSize": 64,
+      "workgroups": 1,
+      "paddingLanes": 58,
+      "profileSha256": "80f49a5a45787c1d94b6ae6d2007bd1ebb7049bd8aede86bb3ff7b45a96b2f87"
+    }
+  ],
+  "resources": {
+    "buffers": {
+      "rawProgram": {
+        "words": 5071,
+        "bytes": 20284
+      },
+      "rawGeometry": {
+        "words": 11368,
+        "bytes": 45472
+      },
+      "worldTemplate": {
+        "words": 62990,
+        "bytes": 251960
+      },
+      "worldProgram": {
+        "words": 874992,
+        "bytes": 3499968
+      },
+      "worldGeometry": {
+        "words": 25408,
+        "bytes": 101632
+      },
+      "worldState": {
+        "words": 379496,
+        "bytes": 1517984
+      },
+      "rawState": {
+        "words": 12060,
+        "bytes": 48240
+      },
+      "scratch": {
+        "words": 81792,
+        "bytes": 327168
+      },
+      "inputs": {
+        "words": 96,
+        "bytes": 384
+      },
+      "microcode": {
+        "words": 1048896,
+        "bytes": 4195584
+      },
+      "vmState": {
+        "words": 46884,
+        "bytes": 187536
+      }
+    },
+    "limits": {
+      "maxStorageBuffersPerShaderStage": 7,
+      "maxBindingsPerBindGroup": 7,
+      "maxBindGroups": 1,
+      "maxComputeInvocationsPerWorkgroup": 64,
+      "maxComputeWorkgroupSizeX": 64,
+      "maxComputeWorkgroupsPerDimension": 6
+    }
+  },
+  "sourcePointerLocality": "requires exact source-budget proof and independent mixed-lane native parity",
+  "deviceLimits": "planning only; actual GPU device not queried",
+  "nativeCompileRun": false,
+  "numericalGpuExecuted": false,
+  "forwardOracleRun": false,
+  "coupledBudgetAdmission": false,
+  "generatorProfile": "resident-preparation-disabled-integrated-isa-source-v1",
+  "sourceBytes": 542365,
+  "sourceReceiptSha256": "49de718120fea364dc9bffd099eb7876339018dd00ff4664635684fdea81ec33",
+  "compileReceiptSha256": "b79c8e8b98fa89b203af23e9de3ecdda71e8ad5a5e7ee45cd8ee70a12b1a7eba",
+  "compilation": {
+    "unallocatedLocalWords": 92493,
+    "localWords": 7783,
+    "instructionCount": 131112,
+    "callDepth": 15,
+    "preparationOpcodeCount": 0,
+    "preparation": false,
+    "eventAudit": false,
+    "intrinsics": "none",
+    "allocation": "call-frames-v1",
+    "vmStateRelocation": false,
+    "loweringInvocations": 2,
+    "firstAttempt": "receipt guard incorrectly assumed descriptor array follows requested-name order; no artifacts published; stable canonical IDs unchanged",
+    "compileAndAllocateWallMs": 626.790487,
+    "processResourceUsage": {
+      "userCPUTime": 1137188,
+      "systemCPUTime": 194154,
+      "maxRSS": 288472,
+      "sharedMemorySize": 0,
+      "unsharedDataSize": 0,
+      "unsharedStackSize": 0,
+      "minorPageFault": 86296,
+      "majorPageFault": 0,
+      "swappedOut": 0,
+      "fsRead": 0,
+      "fsWrite": 0,
+      "ipcSent": 0,
+      "ipcReceived": 0,
+      "signalsCount": 0,
+      "voluntaryContextSwitches": 1114,
+      "involuntaryContextSwitches": 13
+    }
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "kind": "exact-constant-relative-pair-mask",
+  "rowsPerWorkload": 300,
+  "warmup": 3,
+  "samples": 7,
+  "physicalModelChanged": false,
+  "runs": [
+    {
+      "mode": "one-moving",
+      "comparedWords": 14400,
+      "baselineNodePairBounds": 47892,
+      "maskedNodePairBounds": 23946,
+      "cpuMs": [
+        2.5820517999999995,
+        1.5077854000000115
+      ],
+      "nativeSubmitToDoneMs": [
+        1.9870039999999562,
+        2.559927000000016
+      ],
+      "nativeWholeCallMs": [
+        2.5243419999999333,
+        2.992817999999943
+      ],
+      "order": "baseline,mask"
+    },
+    {
+      "mode": "all-active",
+      "comparedWords": 14400,
+      "baselineNodePairBounds": 1800,
+      "maskedNodePairBounds": 1800,
+      "cpuMs": [
+        0.2645305999999891,
+        0.32298860000000784
+      ],
+      "nativeSubmitToDoneMs": [
+        0.3993719999999712,
+        0.41532600000005004
+      ],
+      "nativeWholeCallMs": [
+        0.5659829999999602,
+        0.5871849999999768
+      ],
+      "order": "baseline,mask"
+    },
+    {
+      "mode": "common-motion",
+      "comparedWords": 14400,
+      "baselineNodePairBounds": 1800,
+      "maskedNodePairBounds": 0,
+      "cpuMs": [
+        0.32544020000000273,
+        0.24036799999998948
+      ],
+      "nativeSubmitToDoneMs": [
+        0.4090559999999641,
+        0.6499189999999544
+      ],
+      "nativeWholeCallMs": [
+        0.5774299999999357,
+        0.7937759999999798
+      ],
+      "order": "baseline,mask"
+    }
+  ],
+  "adapter": {
+    "vendor": "google",
+    "architecture": "swiftshader",
+    "device": "swiftshader-device-subzero-",
+    "description": "SwiftShader driver 5.0.0"
+  }
+}

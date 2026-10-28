@@ -1,0 +1,269 @@
+{
+  "kind": "resident-small-strike-first-outer-native-negative-v1",
+  "status": "fail",
+  "sourceHead": "de9a2b62a99f6a0f337b1b7bee204834dd5f39fb",
+  "count": 2,
+  "rows": [
+    219,
+    522
+  ],
+  "frames": 64,
+  "rawInputUnchanged": true,
+  "sourcePhysicsDtUnchanged": true,
+  "nativeProcess": {
+    "returncode": 0,
+    "signal": null,
+    "elapsedSeconds": 3080.3895117909997,
+    "maxRssKiB": 1704864
+  },
+  "runtimeSha256": "e0800adef3060dbdc7e5c9facbe127d1daadc7a199c777af5f8cef6f0fd2c6c8",
+  "actualSha256": "10f468e950a8bffe5e3b714ce5801e596f5588ee9949a179addf5d36a4b65166",
+  "expectedSha256": "deb9a7b75feb822dbc82e33ad9e41800d5b691a79da02ed0e3dcd0813886616b",
+  "untouchedComparator": {
+    "exitCode": 1,
+    "sourceAll11": "pass under contact-only source seed; not independent native parity",
+    "nativeProjectionGroups": {
+      "balls": null,
+      "cue": null,
+      "clock": null,
+      "rules": null,
+      "history": {
+        "path": "$.history.count",
+        "actual": 7,
+        "expected": 8
+      },
+      "game": null
+    }
+  },
+  "initialClonedHistory": {
+    "count": 7,
+    "head": 7
+  },
+  "nativeHistory": {
+    "actual": {
+      "count": 7,
+      "head": 7,
+      "rows": [
+        {
+          "pairId": null,
+          "time": [
+            572662288,
+            1064837666
+          ]
+        },
+        {
+          "pairId": 478,
+          "time": [
+            2290649205,
+            1071220872
+          ]
+        },
+        {
+          "pairId": 232,
+          "time": [
+            286331157,
+            1073107217
+          ]
+        },
+        {
+          "pairId": 124,
+          "time": [
+            3149642637,
+            1073314747
+          ]
+        },
+        {
+          "pairId": 288,
+          "time": [
+            2863311437,
+            1073506986
+          ]
+        },
+        {
+          "pairId": 126,
+          "time": [
+            572662057,
+            1074455074
+          ]
+        },
+        {
+          "pairId": 482,
+          "time": [
+            4008635962,
+            1074855662
+          ]
+        }
+      ]
+    },
+    "expected": {
+      "count": 8,
+      "head": 0,
+      "rows": [
+        {
+          "pairId": null,
+          "time": [
+            572662288,
+            1064837666
+          ]
+        },
+        {
+          "pairId": 478,
+          "time": [
+            2290649205,
+            1071220872
+          ]
+        },
+        {
+          "pairId": 232,
+          "time": [
+            286331157,
+            1073107217
+          ]
+        },
+        {
+          "pairId": 124,
+          "time": [
+            3149642637,
+            1073314747
+          ]
+        },
+        {
+          "pairId": 288,
+          "time": [
+            2863311437,
+            1073506986
+          ]
+        },
+        {
+          "pairId": 126,
+          "time": [
+            572662057,
+            1074455074
+          ]
+        },
+        {
+          "pairId": 482,
+          "time": [
+            4008635962,
+            1074855662
+          ]
+        },
+        {
+          "pairId": null,
+          "time": [
+            1145324343,
+            1075217476
+          ]
+        }
+      ]
+    }
+  },
+  "finalVm": [
+    {
+      "id": 219,
+      "status": 2,
+      "finalPc": 2474,
+      "precedingOpcode": "HALT",
+      "steps": "106362589"
+    },
+    {
+      "id": 522,
+      "status": 2,
+      "finalPc": 2474,
+      "precedingOpcode": "HALT",
+      "steps": "2511"
+    }
+  ],
+  "adapter": {
+    "vendor": "google",
+    "architecture": "swiftshader",
+    "device": "swiftshader-device-subzero-",
+    "description": "SwiftShader driver 5.0.0",
+    "isFallbackAdapter": true
+  },
+  "pumpWallMs": 2471655.7489,
+  "stats": {
+    "dispatches": 101083,
+    "submissions": 102,
+    "initialWrites": 8,
+    "copies": 6,
+    "mappings": 1,
+    "encodeWallMs": 1190.906716014375,
+    "submitWallMs": 55.07433300104458,
+    "queueDrainWallMs": 2474857.0935450005,
+    "executionGroups": [
+      {
+        "name": "initialize",
+        "wallMs": 4598.343012999976,
+        "dispatches": 68315,
+        "submissions": 67,
+        "encodeWallMs": 354.6774840160506,
+        "submitWallMs": 24.84581000020262,
+        "queueDrainWallMs": 4205.262133000302,
+        "externalHandlerDispatches": 0,
+        "pumpCycles": 0
+      },
+      {
+        "name": "pump",
+        "wallMs": 242266.8803330001,
+        "dispatches": 2048,
+        "submissions": 2,
+        "encodeWallMs": 6.164788999245502,
+        "submitWallMs": 1.791698999935761,
+        "queueDrainWallMs": 242257.63038999995,
+        "externalHandlerDispatches": 1536,
+        "pumpCycles": 512
+      },
+      {
+        "name": "pump",
+        "wallMs": 700982.1205500001,
+        "dispatches": 6144,
+        "submissions": 6,
+        "encodeWallMs": 153.79472700378392,
+        "submitWallMs": 5.688273000414483,
+        "queueDrainWallMs": 700785.801529,
+        "externalHandlerDispatches": 4608,
+        "pumpCycles": 1536
+      },
+      {
+        "name": "pump",
+        "wallMs": 1528406.748017,
+        "dispatches": 24576,
+        "submissions": 24,
+        "encodeWallMs": 676.269715995295,
+        "submitWallMs": 22.51150400051847,
+        "queueDrainWallMs": 1527607.7808300003,
+        "externalHandlerDispatches": 18432,
+        "pumpCycles": 6144
+      }
+    ],
+    "externalHandlerDispatches": 24576,
+    "pumpCycles": 8192,
+    "readbackWallMs": 1.3933290005661547,
+    "cache": {
+      "requests": 25,
+      "coldCompiles": 0,
+      "warmHits": 25,
+      "inflightHits": 0,
+      "failures": 0,
+      "compileWallMs": 0,
+      "validationRequests": 25,
+      "validationCold": 0,
+      "validationWarm": 25,
+      "validationFailures": 0,
+      "entries": 0
+    },
+    "steadyEndToEndWallMs": 2476339.489727,
+    "steadyEndToEndScope": "after compilation/bindings/upload drain through initialization, pump, final diagnostics map and validation"
+  },
+  "timingScope": "SwiftShader correctness run; independent HOST work active after probe, not a calibrated performance benchmark",
+  "initializations": 1,
+  "hostStateReadbacksDuringContinuation": 0,
+  "liveStatePatched": false,
+  "rawToFirstOuterNativeParity": false,
+  "rawToStrike": false,
+  "fullRest": false,
+  "native1024": false,
+  "hardwarePerformance": false,
+  "rootCause": "Contact-only exported seed omitted non-key stroke history. Actual PhysicsLab debounces against unfiltered last8 events. Original history gate retained; producer and reference must be repaired from authentic initial metadata."
+}

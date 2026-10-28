@@ -1,0 +1,83 @@
+{
+  "kind": "resident-worker-source-and-host-protocol-checkpoint-v1",
+  "baseCommit": "6191494",
+  "retainedDependencies": [
+    "90aa6a7e8bb7e79d74c1172c7d3730b0c272fb98",
+    "ba3418596d2df9f61454d7946812b7661c19fafc",
+    "88d5e6cc8e932b7a05487914bcb6833ae8a197e8"
+  ],
+  "sourceHashes": {
+    "src/resident-candidate/browser-runtime-entry.mjs": "d46d98ed178317cf49511c2086b26babf360cdba836ea87e46ec2671bd0d14bf",
+    "src/resident-candidate/worker-protocol.mjs": "9357e17a44180712366cc2f122c3067977b794d25d37ec6a5d3292c14dd7ad53",
+    "src/resident-candidate/worker-host.mjs": "bb60b222b9353fcfaf981a7679ebf6a3cee1cd6294bb93c3fe7fa13ad9b69689",
+    "src/resident-candidate/worker-client.mjs": "87e367f1d75ce1bfb589614aeee37481d1e415b144dcba5a9db70f8f294b3a2b",
+    "src/resident-candidate/worker-entry.mjs": "b25e82e5975a398b71910e155a224b4dd7355af9b08ff680c616bd5b1adbb38d",
+    "src/resident-candidate/worker-bootstrap.mjs": "c51636e60001cf4d546a1cc92d56a13249e547853adf296714820fc3ec21fc0b",
+    "src/resident-candidate/worker-retained-backend.mjs": "d881b72665e24c05085dbb98c8346fdc5aaddd910c19061ae1729659846b4040",
+    "tools/build-gpu-worker-assets.cjs": "704192e1286cc3e336d15b32fd0f99e7ddc134a65bccf4bc4a60f71c29aa0dfa",
+    "tests/resident-candidate-worker-host.mjs": "97d19844c5ee31f310463fa9aee5c804f04ffe513a1065e0f1342bb1ad6a0e79",
+    "tests/resident-candidate-worker-client.mjs": "76e20ce9d7fa08a11402347cfcf71035a2e5bc1907e7bfccd7519dbc70a403b7",
+    "tests/resident-candidate-worker-backend.mjs": "a6ba1e27cf3c5ca13aa67ddfb1f2b334660deb1eb6dcdebf7d305bcdd2075199",
+    "tests/resident-worker-http-assets.cjs": "e29cb6b2eeb25904b7486149fc1287783ac47b9b9f50147443ebdfafe679bd08",
+    "tests/resident-candidate-worker-browser.cjs": "2ce4c35e2df486bca6d9e33af314c802ad34c3776dbdd75e54ee64d012d925ce"
+  },
+  "hostProtocol": {
+    "status": "pass",
+    "groups": 11,
+    "skips": 0,
+    "fakeWorkerBackendAndDevice": true,
+    "logSha256": "ce8ad0af642e4b5f8ca9aaccc7518f011709403010381e5f126a67b089a12a1d",
+    "physicsProducer": false
+  },
+  "browserLikeModules": {
+    "status": "pass-with-explicit-unrun-source-fixture",
+    "groupsPassed": 2,
+    "groupsSkipped": 1,
+    "actualBrowser": false,
+    "logSha256": "4918dadce685c6a44ad4e23067963d160efc42a50869f3a77e4c62917d8ba180"
+  },
+  "httpPackage": {
+    "scope": "local HTTP/package only",
+    "files": 205,
+    "payloadBytes": 14574018,
+    "sourceVersion": "c9d6ec60e4bbb27522adb06005dbc316f3b7d9c14957808891e3e4e7849ce0e0",
+    "actualBrowser": false,
+    "gpuExecuted": false,
+    "activation": false,
+    "status": "pass",
+    "groups": 1,
+    "logSha256": "97cb67b34ad32646fc7bb7912166565e21bbb291237d384a36c7e6fda1945ed0"
+  },
+  "actualBrowser": {
+    "status": "blocked-before-page-or-Worker-startup",
+    "passed": false,
+    "attempts": [
+      {
+        "context": "command sandbox",
+        "failure": "Chromium process-singleton socket Operation not permitted; SIGABRT"
+      },
+      {
+        "context": "authorized escalation launcher",
+        "failure": "launcher failed on protected read-only session path before test"
+      }
+    ],
+    "noProtectedPathAccessOrWorkaround": true,
+    "realDeviceLossTested": false,
+    "realWorkerRetainedExecutionTested": false
+  },
+  "scope": {
+    "moduleWorkerEntryImplemented": true,
+    "sameRealmAuthenticatedRuntimeConstructionImplemented": true,
+    "actualWorkerConstructionValidated": false,
+    "automaticDeviceRequest": false,
+    "automaticExecution": false,
+    "numericQualificationOverride": false,
+    "publicPhysicalResultsAvailable": false,
+    "defaultActivation": false,
+    "cpuBackendChanged": false,
+    "numericalGpuExecuted": false,
+    "fullRestQualified": false,
+    "native1024Qualified": false,
+    "externalPublication": false
+  }
+}

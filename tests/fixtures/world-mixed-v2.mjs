@@ -1,0 +1,8 @@
+import {createRequire} from 'node:module';
+const root=new URL('../../',import.meta.url).pathname;
+const {packCushionHull}=await import(root+'src/direct-candidate/deterministic-cushion-geometry.mjs');
+const {packResidentScene}=await import(root+'src/direct-candidate/deterministic-resident-transition.mjs');
+const {packPreparedWorld}=await import(root+'src/direct-candidate/deterministic-prepared-world.mjs');
+const require=createRequire(root+'package.json'),RAPIER=require(root+'vendor/rapier.cjs');await RAPIER.init();require(root+'src/math.js');require(root+'src/physics.js');const lab=new PhysicsLab(RAPIER),hulls=lab.statics.filter(x=>x.kind==='cushion').map((h,i)=>packCushionHull({id:i,vertices:h.vertices,indices:h.indices}));lab.dispose();
+const R=.03075,scene=packResidentScene({provenance:'prepared-finite-cloth-and-static-bounds',ballCount:3,radius:R,mass:.21,y:R,z:0,clothTop:0,clothFootprint:[-1.42,1.42,-.71,.71],restitution:.93,pairFriction:.04,clothFriction:.2,motionMaterial:{gravity:9.81,clothFriction:.2,rollingLength:.00045,spinLength:.00035},staticBounds:[]}),o={durationTicks:65535,budgets:[2000,2000,20000,20000,20000,20000,20000],maxWorldSteps:128,executionProfile:'canonical-local-v1',clothRestitution:.2,cushionRestitution:.82,cushionFriction:.15,enableCushionContinuation:true,mixedMotionRevision:'mmq2'};
+export function rollingCushionFixture(speed=.2,{x=1.38}={}){const bodies=[[x,R,0],[.5,R,.3],[-.8,R,-.4]].map((position,i)=>({id:100+i*9,radius:R,mass:.21,position,velocity:i?[0,0,0]:[speed,0,0],surfaceSpin:i?[0,0,0]:[0,.03,-speed]}));return {world:packPreparedWorld({candidateId:77,bodies,absoluteTick:1234,modelVersion:1,sourceKind:2,selectedSlot:0,sceneKey:42,requestKey:9},scene),scene,hulls,options:{...o}};}

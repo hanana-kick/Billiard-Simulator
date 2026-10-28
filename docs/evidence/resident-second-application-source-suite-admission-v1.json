@@ -1,0 +1,56 @@
+{
+  "kind": "resident-second-application-source-suite-admission-v1",
+  "predecessor": "3786277d9b14c9e21c063092469e1ad35bf105ea",
+  "sourceDependencies": [
+    "7a5059edc70ceea86eebace622f8c3a21a68b074",
+    "7512e3a8ee5cc4f26344aff3d1551b58342fb1b7"
+  ],
+  "scope": "Runner-only admission of separate costly second-application source suite; no new physical source execution",
+  "sourceSha256": {
+    "tools/run-resident-source-qualification.cjs": "fc23cf40ab8d9f9d7161b29fc8de22b4f3608e1c36e52f8fa8f717c84ff38241",
+    "tests/resident-source-qualification-runners.cjs": "cbdadb9ad272ba828a6244a48aa2adddac01f963052225e4fa38646380820619"
+  },
+  "inventory": {
+    "hostModuleCount": 49,
+    "sourceSuiteCount": 14,
+    "sourceModuleCount": 17,
+    "newSuite": {
+      "tests": [
+        "tests/resident-three-ball-second-application.mjs"
+      ],
+      "dependencies": [
+        "tests/resident-three-ball-two-h-native-fixture.cjs",
+        "tests/resident-three-ball-current-cue-oracle.mjs",
+        "src/resident-candidate/three-ball-second-application.mjs"
+      ],
+      "inputs": [
+        "decoder-provenance"
+      ],
+      "scope": "Authentic t0 through two source inner-h steps with independent original CPU/WASM application and all2678 current cue words; completed outer0, no general recurrence/full-rest/GPU qualification."
+    }
+  },
+  "focused": {
+    "tests": 17,
+    "passed": 17,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 908.725841,
+    "logSha256": "6415cf67ec14d4a7536b6c2ca0fbd83b58e6bda24e93f3688e27daba290bbd47"
+  },
+  "guardedDefaultHost": {
+    "tests": 278,
+    "passed": 271,
+    "failed": 0,
+    "skipped": 7,
+    "exit": 0,
+    "durationMs": 19572.500331,
+    "logSha256": "69d61633643d157d306af717b518422083e77fd042e02a62df093a87acaa4bd7"
+  },
+  "capability": {
+    "sourceSuiteExecuted": false,
+    "actualBrowser": false,
+    "moduleWorker": false,
+    "gpuExecution": false,
+    "releaseQualified": false
+  }
+}

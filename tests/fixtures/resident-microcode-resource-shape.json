@@ -1,0 +1,49 @@
+{
+  "kind": "resident-microcode-resource-fixture-v1",
+  "runtimeSha256": "5a233a1b2d79345a28dfe33964fae7d1c008764db0f0908d0ad7d81e0473375f",
+  "runtimeBytes": 13750901,
+  "sourceHead": "3b09eed1ce17d4bae6b9fe5e1e3e987961121f66",
+  "shape": {
+    "kind": "resident-microcode-resource-shape-v1",
+    "sourceRuntimeKind": "resident-raw-tip-outer-microcode-runtime-v1",
+    "sourceCount": 2,
+    "sourceFrames": 64,
+    "perCandidate": {
+      "worldWords": 62976,
+      "controlWords": 80,
+      "requestWords": 24,
+      "vmControlWords": 16,
+      "vmLocalWords": 7783,
+      "vmStackWords": 15,
+      "vmStrideWords": 7814,
+      "rawStateWords": 2010,
+      "rawScratchWords": 13632,
+      "numericScratchWords": 13632,
+      "scratchWords": 13632,
+      "inputWords": 16,
+      "resultWords": 4
+    },
+    "fixedCcdWords": 1016,
+    "sharedWords": {
+      "rawProgram": 5071,
+      "rawGeometry": 11368,
+      "worldTemplate": 62990,
+      "worldProgram": 874992,
+      "worldGeometry": 25408,
+      "microcode": 1078200
+    },
+    "workgroupSize": 64,
+    "macroWorkgroupSize": 1,
+    "storageBindings": 7
+  },
+  "limits": {
+    "maxStorageBufferBindingSize": 134217728,
+    "maxBufferSize": 268435456,
+    "maxStorageBuffersPerShaderStage": 8,
+    "maxBindingsPerBindGroup": 1000,
+    "maxBindGroups": 4,
+    "maxComputeInvocationsPerWorkgroup": 256,
+    "maxComputeWorkgroupSizeX": 256,
+    "maxComputeWorkgroupsPerDimension": 65535
+  }
+}

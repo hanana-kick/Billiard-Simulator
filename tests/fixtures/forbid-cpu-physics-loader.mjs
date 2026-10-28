@@ -1,0 +1,3 @@
+import {registerHooks} from 'node:module';
+const forbidden=['runRawWorldCPU','runPreparedWorldCPU','runClothMicrotailsCPU','advanceMicrotailFractionCPU','runSmoothSegmentsCPU','runSlipBridgeCPU','runQtBridgeCPU','runRollingPartialCPU'];
+registerHooks({load(url,context,nextLoad){const result=nextLoad(url,context);if(result.format!=='module'||!url.includes('/src/direct-candidate/'))return result;let source=typeof result.source==='string'?result.source:Buffer.from(result.source).toString('utf8');for(const name of forbidden){const pattern=new RegExp('(export function '+name+'\\([^)]*\\)\\{)');source=source.replace(pattern,"$1throw new Error('CPU_PHYSICS_FORBIDDEN_DURING_GPU_HYDRATION: "+name+"');");}return {...result,source};}});

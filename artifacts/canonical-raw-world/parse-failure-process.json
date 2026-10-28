@@ -1,0 +1,19 @@
+{
+  "activeOwnedPidsAfterCleanup": [],
+  "elapsedSeconds": 11.27071812003851,
+  "returnCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "rssWatchdogTriggered": false,
+  "rssLimitKiB": 1572864,
+  "peakOwnedGroupRSSKiB": 865564,
+  "maximumChildRSSKiB": 825080,
+  "cgroupBefore": {
+    "available": false
+  },
+  "cgroupAfter": {
+    "available": false
+  },
+  "processGroup": 6,
+  "terminatedAndReaped": true
+}

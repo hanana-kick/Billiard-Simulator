@@ -1,0 +1,28 @@
+/** CPU reference generation occurs outside any native compilation/watchdog window.
+ * Writes only flat little-endian expected words plus reconstruction/provenance data.
+ */
+import fs from 'node:fs/promises';import path from 'node:path';import {fileURLToPath} from 'node:url';import {createHash} from 'node:crypto';import assert from 'node:assert/strict';
+import {staticSourceDependencies} from '../tools/build-live-world-upload-seal.mjs';
+import {liveWorldWideFixture,flattenWideReference,WIDE_REFERENCE_LAYOUT,WIDE_REFERENCE_WORDS} from '../tests/fixtures/live-world-wide-reference.mjs';
+import {prepareRawWorldBatch} from '../src/direct-candidate/deterministic-raw-world.mjs';
+import {runCanonicalRawWorldContinuationCPU} from '../src/direct-candidate/canonical-world-continuation.mjs';
+const root=fileURLToPath(new URL('../',import.meta.url)),sha=bytes=>createHash('sha256').update(bytes).digest('hex');
+async function sourceHashes(){const pending=['src/direct-candidate/canonical-world-continuation.mjs','src/direct-candidate/deterministic-raw-world.mjs','src/direct-candidate/canonical-engine-contract.mjs','src/direct-candidate/deterministic-prepared-world-gpu.mjs'],files={};while(pending.length){const name=pending.pop();if(Object.hasOwn(files,name))continue;const text=await fs.readFile(path.join(root,name),'utf8');files[name]=sha(text);pending.push(...staticSourceDependencies(name,text));}return Object.fromEntries(Object.entries(files).sort(([a],[b])=>a.localeCompare(b)));}
+export async function prepareWideReference({count=33,maximumSteps=1700}={}){
+ if(![1700,2048].includes(maximumSteps))throw RangeError('Explicit reviewed raw work cap1700 or2048');
+ const f=liveWorldWideFixture(count),flat=new Uint32Array(count*WIDE_REFERENCE_WORDS),rows=[],historyKinds=new Set(),bodyModes=new Set(),journalKinds=new Set(),started=performance.now();
+ for(let i=0;i<count;i++){
+  const candidate=f.candidates[i],begin=performance.now(),result=runCanonicalRawWorldContinuationCPU(f.binding,prepareRawWorldBatch(f.batch.binding,[candidate],{maximumSteps})),c=result.continuation;
+  assert.equal(result.rawHandoffStatus[1],1,'Genuine raw READY at '+i);assert.ok(c?.nominalRest,'Genuine full nominal REST at '+i);assert.equal(c.state[2],0);assert.equal(c.compactResult[0],candidate.candidateId);assert.notEqual(c.compactResult[3],0x80000000);
+  const words=flattenWideReference(result);flat.set(words,i*WIDE_REFERENCE_WORDS);
+  const kinds=c.history.map(h=>h.kind??null);for(const kind of kinds)if(kind!==null)historyKinds.add(kind);for(const h of c.history)if(h.state)for(let body=0;body<h.state[3];body++)bodyModes.add(h.state[64+body*48+40]);
+  const events=Array.from({length:c.journalWords[3]},(_,j)=>c.journalWords[32+j*8]);for(const kind of events)journalKinds.add(kind);
+  rows.push({index:i,candidateId:candidate.candidateId,settings:candidate.settings,cpuMs:performance.now()-begin,rawSteps:result.rawHandoffStatus[7]/16,rawReady:true,nominalRest:true,finalTick:c.state[5],historyEntries:c.history.length,historyKinds:[...new Set(kinds)],cushionCount:c.state[61],journalKinds:events,compact:Array.from(c.compactResult)});
+ }
+ const cpuMs=performance.now()-started,bytes=Buffer.alloc(flat.length*4);for(let i=0;i<flat.length;i++)bytes.writeUInt32LE(flat[i],i*4);
+ const maximumObservedRawSteps=Math.max(...rows.map(r=>r.rawSteps));
+ const metadata={maximumObservedRawSteps,remainingRawStepMargin:maximumSteps-maximumObservedRawSteps,rawBudgetScope:'fixture-only; no universal input capability',kind:'live-world-wide-flat-cpu-reference-v1',createdAt:new Date().toISOString(),proposedWidth:count,profile:'mmq2-cushion',strikeBackend:'staged',maximumSteps,layout:WIDE_REFERENCE_LAYOUT,wordCount:flat.length,byteCount:bytes.length,wordEncoding:'little-endian-u32',expectedSHA256:sha(bytes),request:f.request,rawBindingOptions:{absoluteTick:f.batch.binding.absoluteTick,sceneKey:f.batch.binding.sceneKey,requestKey:f.batch.binding.requestKey},worldBindingOptions:{...f.binding.localOptions,sceneKey:f.binding.sceneKey,requestKey:f.binding.requestKey},candidates:f.candidates.map(c=>({candidateId:c.candidateId,settings:c.settings})),cpuSourceSHA256:await sourceHashes(),fixtureSourceSHA256:sha(await fs.readFile(path.join(root,'tests/fixtures/live-world-wide-reference.mjs'))),coverage:{allAdmitted:true,allRawReady:true,allNominalRest:true,historyKinds:[...historyKinds].sort(),bodyModes:[...bodyModes].sort(),journalKinds:[...journalKinds].sort(),cushionCount:rows.reduce((s,x)=>s+x.cushionCount,0),pairCollisionQualified:false,cushionCollisionQualified:false,qyStopQualified:false,cancellationQualified:false,gpuExecutionQualified:false,scope:'genuine raw strike and free cloth continuation to REST; width/index boundary fixture, not broad physics branch coverage'},cpuMs,rows};
+ return{metadata,bytes};
+}
+async function cli(){const [prefix,countText='33',stepsText='1700']=process.argv.slice(2);if(!prefix)throw Error('Usage: node scripts/prepare-live-world-wide-reference.mjs output-prefix [32|33] [1700|2048]');const {metadata,bytes}=await prepareWideReference({count:Number(countText),maximumSteps:Number(stepsText)});await fs.mkdir(path.dirname(path.resolve(prefix)),{recursive:true});await fs.writeFile(prefix+'.u32le',bytes);await fs.writeFile(prefix+'.json',JSON.stringify(metadata,null,2)+'\n');console.log(JSON.stringify({prefix,count:metadata.proposedWidth,words:metadata.wordCount,bytes:metadata.byteCount,sha256:metadata.expectedSHA256,cpuMs:metadata.cpuMs,coverage:metadata.coverage}));}
+if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url))cli().catch(error=>{console.error(error);process.exitCode=1;});

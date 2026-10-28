@@ -1,0 +1,552 @@
+{
+  "kind": "resident-raw-broad-macro-two-h-native-evidence-v1",
+  "status": "strict-original-parity-pass-performance-target-not-met",
+  "scope": {
+    "rawRows": 6,
+    "acceptedRows": 4,
+    "rejectedRows": 2,
+    "h": 2,
+    "runs": 2,
+    "initialization": "unchanged original 19-stage raw initialization",
+    "runtimeFutureStateInput": false,
+    "sourceStateReadbackBetweenH": false,
+    "physicalStrikeQualified": false,
+    "fullRestQualified": false,
+    "candidates1024Qualified": false,
+    "hardwarePerformance": false,
+    "defaultBackendChanged": false
+  },
+  "sourceHead": "704a1ca954cfa279657e3e84592ec58d22a64d38",
+  "localArtifact": "/tmp/resident-microcode-world-broad-v1",
+  "identity": {
+    "runtimeSha256": "e883cca5569191dff72f3feec7bc8949ebc8e6fcb4f8181dcd4f2e9b9227f65f",
+    "actualSha256": "b3d36047ac4659c84fabafd25f2deded9c25ae2cb25b14183d7cec152032c571",
+    "sourceSha256": "c2aded677c03f8db550530c39df80a5591057f892a2f44aa4f6fe99d956baa20",
+    "bytecodeSha256": "958a525cb73faef1c369e9b4c99bad5155c32fa4d4f307a7a5ae27ef8fea01c3",
+    "vmShaderSha256": "cd99c4fa39cae4a042c7eea8b3bca6bdde2ff765e859412ae57a288975b66097",
+    "originalRuntimeSha256": "4f2db833f116034d5ffe979b0d748418b4022f26c8906e0ed5cb13cf15b878dc"
+  },
+  "configuration": {
+    "instructionBudget": 65536,
+    "dispatchChunks": 512,
+    "workgroupSize": 64,
+    "localWords": 7783,
+    "bytecodeInstructions": 134775,
+    "externalFunctions": [
+      "rc_cue_flat_advance",
+      "rc_num_eval",
+      "rc_world_broad_commit_collision"
+    ],
+    "handlers": [
+      {
+        "id": 0,
+        "name": "rc_cue_flat_advance",
+        "workgroupSize": 1,
+        "shaderBytes": 32661,
+        "shaderSha256": "8597f7cc84513bb43f47e1700334c60a776d7e408b4a9518d8fbe6fffd22dd23"
+      },
+      {
+        "id": 1,
+        "name": "rc_num_eval",
+        "workgroupSize": 1,
+        "shaderBytes": 17081,
+        "shaderSha256": "770f132f98d86fe7d4d169a632336cf9f70599d9609a4c04c3e8fdb52f47c221"
+      },
+      {
+        "id": 2,
+        "name": "rc_world_broad_commit_collision",
+        "workgroupSize": 1,
+        "shaderBytes": 42158,
+        "shaderSha256": "bcc6accd7fc989e046847fc754c2a1d21e4810adc47018df20a248b415e2154c"
+      }
+    ]
+  },
+  "adapter": {
+    "vendor": "google",
+    "architecture": "swiftshader",
+    "device": "swiftshader-device-subzero-",
+    "description": "SwiftShader driver 5.0.0",
+    "isFallbackAdapter": true
+  },
+  "assertion": {
+    "stage": "microcode-world-strict-gate-passed",
+    "runtimeSha256": "e883cca5569191dff72f3feec7bc8949ebc8e6fcb4f8181dcd4f2e9b9227f65f",
+    "actualSha256": "b3d36047ac4659c84fabafd25f2deded9c25ae2cb25b14183d7cec152032c571",
+    "count": 6,
+    "frames": 2,
+    "runs": 2,
+    "strictOriginalComparisons": 8,
+    "all11SourceGroups": true,
+    "rawParameters": true,
+    "expectedStatesUploaded": false,
+    "fullRest": false,
+    "native1024": false,
+    "hardwarePerformance": false
+  },
+  "resources": {
+    "stage": "native-child-terminal",
+    "returncode": 0,
+    "signal": null,
+    "wallSeconds": 340.04279956099344,
+    "maxRssKiB": 1712476,
+    "noSubprocessTimeout": true
+  },
+  "pipelineCompileWall": [
+    {
+      "name": "external macro 0 rc_cue_flat_advance",
+      "compileWallMs": 45195.242224999995
+    },
+    {
+      "name": "external macro 1 rc_num_eval",
+      "compileWallMs": 3001.2215610000057
+    },
+    {
+      "name": "external macro 2 rc_world_broad_commit_collision",
+      "compileWallMs": 15013.207258999995
+    },
+    {
+      "name": "microcode begin",
+      "compileWallMs": 31.120833000000857
+    },
+    {
+      "name": "microcode bounded pump",
+      "compileWallMs": 4036.0392920000013
+    },
+    {
+      "name": "device-pc-begin",
+      "compileWallMs": 983.0499120000022
+    },
+    {
+      "name": "initialize raw-init",
+      "compileWallMs": 17.260643000001437
+    },
+    {
+      "name": "initialize raw-step",
+      "compileWallMs": 8431.283551
+    },
+    {
+      "name": "initialize raw-finish",
+      "compileWallMs": 95.07021999999415
+    },
+    {
+      "name": "initialize contact-init",
+      "compileWallMs": 2041.5263180000038
+    },
+    {
+      "name": "initialize contact-gjk",
+      "compileWallMs": 2680.2800049999933
+    },
+    {
+      "name": "initialize contact-epa",
+      "compileWallMs": 5824.6590730000025
+    },
+    {
+      "name": "initialize contact-finish",
+      "compileWallMs": 245.393968999997
+    },
+    {
+      "name": "initialize cast-init",
+      "compileWallMs": 1974.7029500000062
+    },
+    {
+      "name": "initialize cast-cast",
+      "compileWallMs": 1021.4971389999992
+    },
+    {
+      "name": "initialize cast-contact-init",
+      "compileWallMs": 762.6441059999925
+    },
+    {
+      "name": "initialize cast-contact-gjk",
+      "compileWallMs": 944.0068800000008
+    },
+    {
+      "name": "initialize cast-contact-epa",
+      "compileWallMs": 2479.063964000001
+    },
+    {
+      "name": "initialize cast-finish",
+      "compileWallMs": 126.40044800000032
+    },
+    {
+      "name": "initialize world-transfer",
+      "compileWallMs": 26.23603600000206
+    },
+    {
+      "name": "initialize creation-begin",
+      "compileWallMs": 79.53685599999153
+    },
+    {
+      "name": "initialize creation-gather",
+      "compileWallMs": 9.846945000012056
+    },
+    {
+      "name": "initialize creation-evaluate",
+      "compileWallMs": 3017.451562999995
+    },
+    {
+      "name": "initialize creation-scatter",
+      "compileWallMs": 10.88607399999455
+    },
+    {
+      "name": "initialize creation-finish",
+      "compileWallMs": 67.42818299999635
+    }
+  ],
+  "runs": [
+    {
+      "run": 1,
+      "controls": [
+        [
+          1380142422,
+          1,
+          2,
+          0,
+          2474,
+          0,
+          3664809,
+          0,
+          24,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1380142422,
+          1,
+          2,
+          0,
+          2474,
+          0,
+          3666316,
+          0,
+          24,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1380142422,
+          1,
+          2,
+          0,
+          2474,
+          0,
+          3666550,
+          0,
+          24,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1380142422,
+          1,
+          2,
+          0,
+          2474,
+          0,
+          3735006,
+          0,
+          24,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1380142422,
+          1,
+          2,
+          0,
+          2474,
+          0,
+          2511,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1380142422,
+          1,
+          2,
+          0,
+          2474,
+          0,
+          2511,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "stats": {
+        "dispatches": 70363,
+        "submissions": 70,
+        "initialWrites": 8,
+        "copies": 2,
+        "mappings": 1,
+        "encodeWallMs": 461.26741199893877,
+        "submitWallMs": 27.154861999995774,
+        "queueDrainWallMs": 118029.28116799993,
+        "executionGroups": [
+          {
+            "name": "initialize",
+            "wallMs": 7022.182723999998,
+            "dispatches": 68315,
+            "submissions": 67,
+            "encodeWallMs": 453.3129719985882,
+            "submitWallMs": 25.32426399999531,
+            "queueDrainWallMs": 6515.301893999931,
+            "externalHandlerDispatches": 0,
+            "pumpCycles": 0
+          },
+          {
+            "name": "pump",
+            "wallMs": 111546.27668899999,
+            "dispatches": 2048,
+            "submissions": 2,
+            "encodeWallMs": 7.954440000350587,
+            "submitWallMs": 1.741543999989517,
+            "queueDrainWallMs": 111513.63742900001,
+            "externalHandlerDispatches": 1536,
+            "pumpCycles": 512
+          }
+        ],
+        "externalHandlerDispatches": 1536,
+        "pumpCycles": 512,
+        "readbackWallMs": 0.909711000014795,
+        "cache": {
+          "requests": 25,
+          "coldCompiles": 25,
+          "warmHits": 0,
+          "inflightHits": 0,
+          "failures": 0,
+          "compileWallMs": 98115.05600499998,
+          "validationRequests": 25,
+          "validationCold": 25,
+          "validationWarm": 0,
+          "validationFailures": 0,
+          "entries": 25
+        },
+        "steadyEndToEndWallMs": 118604.30935999998,
+        "steadyEndToEndScope": "after compilation/bindings/upload drain through initialization, pump, final diagnostics map and validation"
+      }
+    },
+    {
+      "run": 2,
+      "controls": [
+        [
+          1380142422,
+          1,
+          2,
+          0,
+          2474,
+          0,
+          3664809,
+          0,
+          24,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1380142422,
+          1,
+          2,
+          0,
+          2474,
+          0,
+          3666316,
+          0,
+          24,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1380142422,
+          1,
+          2,
+          0,
+          2474,
+          0,
+          3666550,
+          0,
+          24,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1380142422,
+          1,
+          2,
+          0,
+          2474,
+          0,
+          3735006,
+          0,
+          24,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1380142422,
+          1,
+          2,
+          0,
+          2474,
+          0,
+          2511,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1380142422,
+          1,
+          2,
+          0,
+          2474,
+          0,
+          2511,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "stats": {
+        "dispatches": 70363,
+        "submissions": 70,
+        "initialWrites": 8,
+        "copies": 2,
+        "mappings": 1,
+        "encodeWallMs": 457.5159389989276,
+        "submitWallMs": 29.62824900005944,
+        "queueDrainWallMs": 117806.29070800022,
+        "executionGroups": [
+          {
+            "name": "initialize",
+            "wallMs": 8150.760886999982,
+            "dispatches": 68315,
+            "submissions": 67,
+            "encodeWallMs": 450.6751069975144,
+            "submitWallMs": 28.295832000032533,
+            "queueDrainWallMs": 7643.066178000183,
+            "externalHandlerDispatches": 0,
+            "pumpCycles": 0
+          },
+          {
+            "name": "pump",
+            "wallMs": 110173.53039599999,
+            "dispatches": 2048,
+            "submissions": 2,
+            "encodeWallMs": 6.840832001413219,
+            "submitWallMs": 1.2437030000146478,
+            "queueDrainWallMs": 110162.97100900006,
+            "externalHandlerDispatches": 1536,
+            "pumpCycles": 512
+          }
+        ],
+        "externalHandlerDispatches": 1536,
+        "pumpCycles": 512,
+        "readbackWallMs": 0.7018370000296272,
+        "cache": {
+          "requests": 25,
+          "coldCompiles": 0,
+          "warmHits": 25,
+          "inflightHits": 0,
+          "failures": 0,
+          "compileWallMs": 0,
+          "validationRequests": 25,
+          "validationCold": 0,
+          "validationWarm": 25,
+          "validationFailures": 0,
+          "entries": 0
+        },
+        "steadyEndToEndWallMs": 118373.15848600003,
+        "steadyEndToEndScope": "after compilation/bindings/upload drain through initialization, pump, final diagnostics map and validation"
+      }
+    }
+  ],
+  "timingLimitations": {
+    "measurement": "host wall / queue drain, not GPU timestamps",
+    "coldCompilationExcludedFromSteady": true,
+    "oneWarmRunOnly": true,
+    "concurrentLightweightHostChecks": [
+      {
+        "endTimeWindowUtc": "2026-10-25T22:39:44Z",
+        "shellWallMs": 318.1304,
+        "nodeTapMs": 297.822308
+      },
+      {
+        "endTimeWindowUtc": "2026-10-25T22:40:30Z",
+        "shellWallMs": 120.34853
+      }
+    ],
+    "absoluteHostCheckStartTimesNotLogged": true,
+    "notACalibratedRatio": true
+  },
+  "comparison": {
+    "previousMacroWarmPumpMs": 133938.74842299998,
+    "previous16OwnerWarmPumpMs": 65869.687791,
+    "interpretation": "modest observed reduction versus previous macro pilot; still slower than earlier native-owner debug oracle; no full-shot extrapolation or hardware ratio"
+  },
+  "nextGate": "opcode-specific operand loading only; source bytecode, physical horizon/caps and strict comparator unchanged"
+}

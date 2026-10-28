@@ -1,0 +1,166 @@
+{
+  "cases": 6,
+  "words": 12576,
+  "compileMs": 24044.316668000003,
+  "shaderBytes": [
+    10965,
+    10679,
+    9409,
+    10181,
+    825,
+    9060,
+    13870,
+    13645,
+    15075,
+    9633,
+    630,
+    7677,
+    8258,
+    5503,
+    2688,
+    1132,
+    417,
+    8445,
+    8128,
+    8660,
+    7488,
+    6217,
+    934,
+    6738,
+    5394,
+    142,
+    360,
+    8009,
+    4186
+  ],
+  "timings": [
+    {
+      "profile": "strict-carried-v1",
+      "maxPrefixes": 1,
+      "allocatedBytes": 60968,
+      "dispatches": 86,
+      "bufferClears": 9,
+      "intermediateReadbacks": 0,
+      "hostPhysicsBetweenPhases": 0,
+      "submitToDoneMs": 53.62141299999712,
+      "tailMaxNodes": 256,
+      "budgets": [
+        2000,
+        2000,
+        20000,
+        20000,
+        20000,
+        20000,
+        20000
+      ]
+    },
+    {
+      "profile": "strict-carried-v1",
+      "maxPrefixes": 7,
+      "allocatedBytes": 60968,
+      "dispatches": 482,
+      "bufferClears": 63,
+      "intermediateReadbacks": 0,
+      "hostPhysicsBetweenPhases": 0,
+      "submitToDoneMs": 199.71876300000076,
+      "tailMaxNodes": 256,
+      "budgets": [
+        2000,
+        2000,
+        20000,
+        20000,
+        20000,
+        20000,
+        20000
+      ]
+    },
+    {
+      "profile": "strict-carried-v1",
+      "maxPrefixes": 40,
+      "allocatedBytes": 60968,
+      "dispatches": 2660,
+      "bufferClears": 360,
+      "intermediateReadbacks": 0,
+      "hostPhysicsBetweenPhases": 0,
+      "submitToDoneMs": 839.3306840000005,
+      "tailMaxNodes": 256,
+      "budgets": [
+        2000,
+        2000,
+        20000,
+        20000,
+        20000,
+        20000,
+        20000
+      ]
+    },
+    {
+      "profile": "canonical-local-v1",
+      "maxPrefixes": 40,
+      "allocatedBytes": 60968,
+      "dispatches": 2660,
+      "bufferClears": 360,
+      "intermediateReadbacks": 0,
+      "hostPhysicsBetweenPhases": 0,
+      "submitToDoneMs": 953.4939879999984,
+      "tailMaxNodes": 256,
+      "budgets": [
+        2000,
+        2000,
+        20000,
+        20000,
+        20000,
+        20000,
+        20000
+      ]
+    },
+    {
+      "profile": "canonical-local-v1",
+      "maxPrefixes": 40,
+      "allocatedBytes": 60968,
+      "dispatches": 2660,
+      "bufferClears": 360,
+      "intermediateReadbacks": 0,
+      "hostPhysicsBetweenPhases": 0,
+      "submitToDoneMs": 914.9989399999977,
+      "tailMaxNodes": 1,
+      "budgets": [
+        2000,
+        2000,
+        20000,
+        20000,
+        20000,
+        20000,
+        20000
+      ]
+    },
+    {
+      "profile": "canonical-local-v1",
+      "maxPrefixes": 40,
+      "allocatedBytes": 60968,
+      "dispatches": 2660,
+      "bufferClears": 360,
+      "intermediateReadbacks": 0,
+      "hostPhysicsBetweenPhases": 0,
+      "submitToDoneMs": 889.6189240000022,
+      "tailMaxNodes": 256,
+      "budgets": [
+        1000,
+        1000,
+        10000,
+        10000,
+        10000,
+        10000,
+        10000
+      ]
+    }
+  ],
+  "boundedProcess": {
+    "elapsedSeconds": 30.086,
+    "limitSeconds": 125,
+    "limitRSSMiB": 1200,
+    "sampledRSSMiBIncomplete": 40.05,
+    "rssCoverage": "Incomplete: sampled main-thread child ancestry can omit Node test workers; not a process-tree peak or reliable aggregate RSS enforcement",
+    "timeLimitEnforced": true
+  }
+}

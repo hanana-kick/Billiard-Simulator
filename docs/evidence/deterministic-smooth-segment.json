@@ -1,0 +1,15 @@
+{
+  "cases": 41,
+  "words": 2624,
+  "compileMs": 9723.806986,
+  "shaderBytes": [
+    10015,
+    10062,
+    11492
+  ],
+  "allocatedBytes": 62976,
+  "dispatches": 48,
+  "intermediateReadbacks": 0,
+  "submitToDoneMs": 49.35688300000038,
+  "conditionalSupportedODEOnly": true
+}

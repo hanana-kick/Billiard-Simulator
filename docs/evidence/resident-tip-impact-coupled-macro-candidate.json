@@ -1,0 +1,66 @@
+{
+  "kind": "coupled-transport-read-only-macro-candidate-audit-v1",
+  "root": "rc_coupled_transport_advance",
+  "params": [
+    {
+      "name": "commonBase",
+      "type": {
+        "name": "u32",
+        "args": []
+      },
+      "attributes": []
+    },
+    {
+      "name": "coefficient",
+      "type": {
+        "name": "u32",
+        "args": []
+      },
+      "attributes": []
+    },
+    {
+      "name": "roster",
+      "type": {
+        "name": "u32",
+        "args": []
+      },
+      "attributes": []
+    },
+    {
+      "name": "bundle",
+      "type": {
+        "name": "u32",
+        "args": []
+      },
+      "attributes": []
+    },
+    {
+      "name": "scratch",
+      "type": {
+        "name": "u32",
+        "args": []
+      },
+      "attributes": []
+    },
+    {
+      "name": "instructionBudget",
+      "type": {
+        "name": "u32",
+        "args": []
+      },
+      "attributes": []
+    }
+  ],
+  "returnType": {
+    "name": "u32",
+    "args": []
+  },
+  "nativeClosureBytes": 24784,
+  "functions": 41,
+  "privateGlobals": [],
+  "sourceFunctionsExact": true,
+  "numericProfile": "source-f32-preserved-v1",
+  "bodySha256": "489de183316fa5e0e2742b32921853a89a83983809e3a31b74b15275138bb758",
+  "compilerFeasibility": "not-tested",
+  "nativeExecuted": false
+}

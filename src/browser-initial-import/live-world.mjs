@@ -3,6 +3,7 @@
 // Numerical values, generations and caches are copied from verified native bytes;
 // this adapter never creates/restores/steps physics or accepts future output.
 import '../experimental-live-registered-origin.js';
+import {validateSeedEventHistory} from '../source-event-history.mjs';
 import * as D from '../../tools/rapier-snapshot-decoder/browser.mjs';
 import {requireThat,equal,equalData,plain,hash,journalDigest,copy} from './exact-data.mjs';
 import * as importedOrigin from '../experimental-live-registered-origin.js';
@@ -43,6 +44,8 @@ async function exportInitialSeed(input){
  const initialFloor=sceneRegistry.statics.find(s=>s.kind==='cloth');
  for(const ball of balls){const pair=row.contactPairs.find(p=>same(p.collider1,initialFloor.collider.handle)&&same(p.collider2,ball.collider));equal(pair.contacts.variant,'Rigid');const rigid=pair.contacts.value,m=rigid.manifolds[0],point=m.points[0];ball.state.topology.manifoldPresent=!!m;Object.assign(ball.state,{localN1:copy(m.local_n1),feature1:point.fid1,feature2:point.fid2,solverColor:rigid.solver_color});}
 
+ const historyFields=Object.fromEntries(['initialEventHistoryProfile','preStrikeEventHistory','initialEventHistory'].filter(k=>Object.hasOwn(row,k)).map(k=>[k,copy(row[k])]));
+ validateSeedEventHistory({...historyFields,kind:'original-live-registered-four-ball-created-world',sourceOrigin:row.sourceOrigin,initialSnapshotSha256:row.snapshotSha256,initialContactEvents:row.application.events.filter(e=>e.kind==='contact')});
  const app=row.application,cue=app.cue,e=await Joints.exportCueJoints(d,Object.fromEntries(Object.entries({shaftBody:cue.shaft,headBody:cue.head,guideBody:cue.guide,flex:cue.flex,prismatic:cue.prismatic}).map(([k,h])=>[k,nativeHandle(h)])),D),[flex,guide]=e.joints;
  const body=q=>({...copy(q),translation:copy(q.pose.translation),rotation:copy(q.pose.rotation)}),ccd=role=>{const b=created.bodies[role];return{ccdEnabled:b.ccd.ccd_enabled,maxCcdSubsteps:4,softCcdPrediction:b.ccd.soft_ccd_prediction,maxExtent:b.mprops.max_extent,ccdThickness:b.ccd.ccd_thickness,force:copy(b.forces.force),torque:copy(b.forces.torque)};};
  const p=app.params;
@@ -69,7 +72,7 @@ async function exportInitialSeed(input){
   cushions:rails.map((r,j)=>{const co=find(r.collider.handle),m=material(co),p=staticProxies.find(p=>same(p.colliderHandle,co.handle)),retained=initialContactOrigin.retainedCushions.find(c=>c.ballIndex===i&&c.cushionIndex===j);if(retained){requireThat(same(retained.collider1,co.handle)&&same(retained.collider2,o.collider));}return{hull:hulls.get(key(co.handle)),bodyHandle:copy(r.body),colliderHandle:copy(co.handle),identityPose:true,groups:m.groups,frictionRule:2,restitutionRule:2,contactSkin:0,colliderFriction:m.friction,colliderRestitution:m.restitution,friction:f(m.friction*primary.material.friction),restitution:f(m.restitution*primary.material.restitution),proxy:{min:copy(p.min),max:copy(p.max)},cache:retained?copy(retained.cache):{pairPresent:0,pointPresent:0,active:0,recycleValid:0,solverColor:255}};})};});
  const bodyRegistry=Three.registry(d),bodyColliders=objects.map(o=>({body:copy(o.body),colliders:copy(row.bodies.find(b=>same(b.handle,o.body)).colliders)}));
  const cueEmptyConvexHulls=created.colliders.filter(c=>c.shape.variant==='ConvexPolyhedron'&&sceneRegistry.statics.some(r=>same(r.collider.handle,c.handle))).map(c=>({collider:copy(c.handle),body:copy(c.parent.handle),hull:hulls.get(key(c.handle))}));equal(cueEmptyConvexHulls.length,8);
- return{sourceOrigin:copy(row.sourceOrigin),cueEmptyConvexHulls,initialContactOrigin,solverContactRoster:Roster.seedFromSourceSnapshot(row),kind:'original-live-registered-four-ball-created-world',boundary:'liveRegisteredStrikeCreated',initialSnapshotSha256:row.snapshotSha256,selectedIndex,selectedId:app.controller.selectedId,balls,sceneRegistry,staticProxies,globalEdges,bodyRegistry,bodyColliders,cushionSeeds,cueInitial,pairSeeds,pairSeed:pairSeeds[0].seed,contactGraphSeed:broad.graphSeed,cueBroadSeed:broad.broadSeed,game:copy(app.game),sourceApplicationSteps:app.steps,sourceApplicationTime:app.time,initialContactEvents:copy(app.events.filter(e=>e.kind==='contact')),
+ return{...historyFields,sourceOrigin:copy(row.sourceOrigin),cueEmptyConvexHulls,initialContactOrigin,solverContactRoster:Roster.seedFromSourceSnapshot(row),kind:'original-live-registered-four-ball-created-world',boundary:'liveRegisteredStrikeCreated',initialSnapshotSha256:row.snapshotSha256,selectedIndex,selectedId:app.controller.selectedId,balls,sceneRegistry,staticProxies,globalEdges,bodyRegistry,bodyColliders,cushionSeeds,cueInitial,pairSeeds,pairSeed:pairSeeds[0].seed,contactGraphSeed:broad.graphSeed,cueBroadSeed:broad.broadSeed,game:copy(app.game),sourceApplicationSteps:app.steps,sourceApplicationTime:app.time,initialContactEvents:copy(app.events.filter(e=>e.kind==='contact')),
   provenance};
 }
 export {exportInitialSeed};

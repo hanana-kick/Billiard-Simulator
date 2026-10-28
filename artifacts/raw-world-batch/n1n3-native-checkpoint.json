@@ -1,0 +1,48 @@
+{
+  "pipelineRevision": "0850a4d",
+  "scope": "experimental full raw-world candidate batch, not latest main world or release",
+  "native": {
+    "checkpoint": "0850a4d",
+    "compileMs": 87625.985606,
+    "comparedWords": 32076,
+    "candidateWidths": [
+      1,
+      3
+    ],
+    "scope": "actual owned raw hit and other trajectories on the same immutable scene, plus raw failure; not a goal claim",
+    "metrics": {
+      "candidateCount": 3,
+      "allocatedBytes": 591168,
+      "readbackBytes": 35040,
+      "submissions": 1,
+      "intermediateReadbacks": 0,
+      "hostPhysicsBetweenPhases": 0,
+      "dispatches": 12514,
+      "submitToDoneMs": 3189.0755780000036
+    },
+    "softwareVulkanOnly": true
+  },
+  "watchdog": {
+    "boundedNativeProcess": true,
+    "exitCode": 0,
+    "stopReason": null,
+    "sampledAggregateRSSMiB": 1089.57,
+    "maxChildRSSMiB": 1055.27,
+    "rssCoverage": "PPid status-table ancestry; sampled aggregate, RUSAGE_CHILDREN maximum separately",
+    "elapsedSeconds": 109.962,
+    "limitRSSMiB": 1500,
+    "limitSeconds": 240.0
+  },
+  "logs": [
+    "/tmp/raw-world-batch-n1n3-native.log",
+    "/tmp/raw-world-batch-n1n3-native-receipt.log"
+  ],
+  "priorFailedAttempt": {
+    "log": "/tmp/raw-world-batch-first-native-receipt.log",
+    "cause": "incorrect fixture expectation: speed .4 raw failure was compared to null continuation as full diagnostic words",
+    "actualHitN1MatchedWordsBeforeFixtureFailure": 2916,
+    "watchdogTrip": false
+  },
+  "sourceReproduction": "scripts/capture-raw-world-batch-sources.mjs byte-identical",
+  "cpuReferenceReproduction": "scripts/capture-frozen-raw-world-batch-reference.mjs recovers exact0850a4d CPU; added future stresscases not yet native evidence"
+}

@@ -1,0 +1,23 @@
+{
+  "kind": "resident-inverse-terminal-observation-host-v1",
+  "baseCommit": "d81ba34d338b5c37f2c633f4c107db0a2e07bfc9",
+  "scope": "optional terminal value ABI and host comparison only",
+  "recordBytes": 256,
+  "publicCandidateResultBytesUnchanged": 16,
+  "currentSourceResidualCount": 3,
+  "currentSourceInequalityCount": 9,
+  "hostTests": {"newPassed": 9, "allPassed": 78, "failed": 0, "nativeForwardSkipped": 6},
+  "preservesSourceNullAndNonfinitePolicy": true,
+  "nonFourQueryScope": "original-early-search-query-only, never final gameplay",
+  "fourScope": "carom; fullShot policy derived from gameMode, successful goal requires full-rest boundary",
+  "hostCodecIsQualification": false,
+  "gpuAccumulatorImplemented": false,
+  "solverAdapterImplemented": false,
+  "defaultBackendChanged": false,
+  "nativeOrGpuExecuted": false,
+  "forwardPhysicsReplayExecuted": false,
+  "winnerComparisonGrantsQualification": false,
+  "winnerComparisonReturnsPhysicalResultReplacement": false,
+  "batchCapacityQualified": false,
+  "hardwarePerformanceClaim": false
+}

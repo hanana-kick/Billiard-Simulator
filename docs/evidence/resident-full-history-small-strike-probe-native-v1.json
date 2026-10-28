@@ -1,0 +1,53 @@
+{
+  "kind": "resident-full-history-small-strike-probe-native-v1",
+  "sourceCommit": "3b09eed1ce17d4bae6b9fe5e1e3e987961121f66",
+  "scope": "Fresh raw 219 admitted + 522 rejected; eight original h, before any original outer completion or impact",
+  "adapter": "SwiftShader fallback; not hardware acceleration",
+  "profile": "source-full-application-history-v1",
+  "result": "pass",
+  "artifactHashes": {
+    "runtimeSha256": "70cb41d0304a2399514f35614d327907578377bb349771de80f9515cc49e46b2",
+    "actualSha256": "e5149c6e38cb74f30ea59fb20db9714524a19dd82eb47b326c083fa9b2c7b124",
+    "expectedSha256": "817f1c3cd25912d54deacadf6824f076ecf734d27c57fb3f2e47cf43ac884dec"
+  },
+  "comparisons": {
+    "all11OriginalSourceGroups": true,
+    "rejectedPrestrikeFifoUnchanged": true,
+    "rejectedNewStrokeAppended": false,
+    "actualPhysicsLabOuterBoundary": false,
+    "fullAcceptedEmissionTape": false
+  },
+  "transport": {
+    "initializations": 1,
+    "hostStateReadbacksDuringContinuation": 0,
+    "dispatches": 76507,
+    "submissions": 76,
+    "pumpCycles": 2048,
+    "copies": 2,
+    "mappings": 1,
+    "initialWrites": 8
+  },
+  "observedWallMs": {
+    "coldPairCompile": 115093.825178,
+    "initialization": 5015.542004999996,
+    "pump": 321382.379984,
+    "steadyEndToEnd": 326402.199684,
+    "finalReadback": 0.5806640000082552
+  },
+  "timingCaveat": "Host wall, not GPU timestamp; HOST correctness continuation ran concurrently after cold compilation; no calibrated speed or hardware ratio. Cold pair preparation covers both h8 and h64 profiles.",
+  "subsequentBank": {
+    "bornFrames": 64,
+    "freshInitialization": true,
+    "reusesImmutablePipelinesOnly": true,
+    "probeStateReused": false,
+    "result": "pending"
+  },
+  "notQualified": [
+    "native h64 actual outer observables",
+    "raw to impact",
+    "physical full rest and late foul",
+    "1024 physical trajectories",
+    "production backend",
+    "hardware performance"
+  ]
+}

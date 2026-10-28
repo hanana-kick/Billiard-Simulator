@@ -5,7 +5,7 @@ import {composeWorldMicrocodeSource} from '../src/resident-candidate/world-micro
 import {parseMicrocodeWGSL} from '../src/resident-candidate/microcode-parser.mjs';
 const bindings='@group(0) @binding(0) var<storage,read_write> rc_state:array<u32>;@group(0) @binding(1) var<storage,read> rc_program:array<u32>;@group(0) @binding(3) var<storage,read_write> rc_scratch:array<u32>;';
 test('selected macro signatures and entire source closures remain exact, without private globals',()=>{
- assert.deepEqual(MICROCODE_SOURCE_MACROS.map(x=>[x.id,x.name,x.parameterWords.length,x.resultWords]),[[0,'rc_cue_flat_advance',8,1],[1,'rc_num_eval',2,1],[2,'rc_world_broad_commit_collision',3,0]]);
+ assert.deepEqual(MICROCODE_SOURCE_MACROS.map(x=>[x.id,x.name,x.parameterWords.length,x.resultWords]),[[0,'rc_cue_flat_advance',8,1],[1,'rc_num_eval',2,1],[2,'rc_world_broad_commit_collision',3,0],[3,'rc_coupled_transport_advance',6,1]]);
  for(const spec of MICROCODE_SOURCE_MACROS){const native=sourceMacroNativeWGSL(spec.name),a=approveSourceMacros(bindings+native,{functionNames:[spec.name]}).entries[0];assert.equal(a.name,spec.name);assert.equal(a.id,spec.id);assert.ok(Object.keys(a.dependencies).length>=30);assert.match(a.closureSha256,/^[a-f0-9]{64}$/);assert.ok(!parseMicrocodeWGSL(native).globals.some(g=>g.storage==='private'));
   const changed=spec.resultWords===0?native.replace('rc_journal_prepare_bvh(j,v);','rc_journal_prepare_bvh(v,j);'):native.replace('let s=a[i]+b[i];','let s=a[i]-b[i];');assert.notEqual(changed,native);assert.throws(()=>approveSourceMacros(bindings+changed,{functionNames:[spec.name]}),/mismatch/);
  }
@@ -18,7 +18,9 @@ test('macro admission rejects source caps, scalar signatures, logical bindings a
  assert.throws(()=>approveSourceMacros(bindings,{functionNames:names}),/absent/);assert.deepEqual(approveSourceMacros(code).entries,[]);
 });
 test('authentic frozen raw6 two-h world contains the same approved macro source, not recreated physics',()=>{
- const p=deserialize(readFileSync('/tmp/resident-raw-pc-isolated-native-v2/runtime.v8')),source=composeWorldMicrocodeSource(p.pc),names=MICROCODE_SOURCE_MACROS.map(x=>x.name),a=approveSourceMacros(source.code,{functionNames:names});assert.equal(a.entries.length,3);
+ // Preserve this historical three-macro fixture's selected profile. A new
+ // registry entry is not implicit runtime activation or a fourth qualification.
+ const p=deserialize(readFileSync('/tmp/resident-raw-pc-isolated-native-v2/runtime.v8')),source=composeWorldMicrocodeSource(p.pc),names=MICROCODE_SOURCE_MACROS.filter(x=>x.id<3).map(x=>x.name),a=approveSourceMacros(source.code,{functionNames:names});assert.equal(a.entries.length,3);
  for(const entry of a.entries){const canonical=approveSourceMacros(bindings+sourceMacroNativeWGSL(entry.name),{functionNames:[entry.name]}).entries[0];assert.deepEqual(entry,canonical);}
 });
 test('broad commit keeps exact void signature, signed-zero BVH helpers and lifecycle caps',()=>{

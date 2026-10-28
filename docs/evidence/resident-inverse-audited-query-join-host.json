@@ -1,0 +1,79 @@
+{
+  "kind": "resident-inverse-audited-query-join-host-v1",
+  "scope": "HOST source/view contract and discrete terminal-component parity; no GPU or physical terminal trajectory",
+  "sourceFiles": {
+    "src/resident-candidate/inverse-observation-storage.mjs": "05e2001fd08a447282de1d90d02f89e2317c6e60c0da4896ba1218b12a2ec993",
+    "src/resident-candidate/inverse-audited-query-join.mjs": "33cf60e268caab0f084dd0935d870ead60c3a2e26ce3ff80e84fe185722cf3e7",
+    "src/resident-candidate/inverse-world-query-join.mjs": "f469c9289a05d7e200a8d2a8ea801b55a49a64c3aa1b4ad3bbbed7b0ba309454",
+    "tests/resident-candidate-inverse-query-join.mjs": "26c85eedb5eeaf24e9511da30dd3a6438643fa3a3f3c343e591e729946733217",
+    "tests/resident-candidate-inverse-audited-world.mjs": "ddf730ec1cb70943355907c96b1650a3239a0df3c629a09569b26ef7df31bd27",
+    "tests/resident-candidate-inverse-observation-storage.mjs": "fc2d19ad12d303520a577a16805d1ee8395ba7d2644dab9a12b21dee7a452f73"
+  },
+  "tests": {
+    "mapperAndJoin": {
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 14441.643023
+    },
+    "genuineContext": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 32636.416592
+    }
+  },
+  "join": {
+    "rows": 2,
+    "discreteScenarios": 9,
+    "shaderBytes": 21140,
+    "scalarInstructions": 2673,
+    "allOriginalScalarSourceRecoverable": true,
+    "fullObserverWordsEqual": true,
+    "fullAuditSnapshotPaddingUntouched": true,
+    "sourceShaBindsFullMappedKernel": true
+  },
+  "allocation": {
+    "auditViewWords": 254024,
+    "observerBase": 254080,
+    "observerWords": 4992,
+    "totalWords": 259072,
+    "bytes": 1036288,
+    "physicalBindings": 8,
+    "plannedOnly": true,
+    "compactProductionBudget": false
+  },
+  "genuineContext": {
+    "createdT0": true,
+    "h": 2,
+    "framesCompared": [
+      0,
+      1,
+      2
+    ],
+    "all11SourceGroups": true,
+    "wholeOriginalTape": true,
+    "emittedEvents": 0,
+    "activeImpactTape": false,
+    "compiledInstructions": 154250,
+    "coreInstructions": 9430189,
+    "pumps": 260
+  },
+  "qualification": {
+    "gpuExecuted": false,
+    "rawToTerminal": false,
+    "fullRest": false,
+    "finalGameplay": false,
+    "solverAdapter": false,
+    "nativeResourceAllocation": false,
+    "runtimeScheduling": false,
+    "defaultEnabled": false
+  },
+  "notes": [
+    "Terminal component values model source decisions explicitly; no physical h128/h192 state or trajectory is claimed.",
+    "The genuine t0/two-h context gate did not execute the separate terminal join; terminal scheduling remains unimplemented.",
+    "The original scalar observation context is unchanged; a future runtime must bind the complete physical executor, view mapping, mapped source hash, and initial inputs independently.",
+    "Out-of-view access qualification is for the scalar compiler/VM explicit storageRange path, not native WGSL robust access semantics.",
+    "Source-only h192 checkpoint allocation preserves the complete original diagnostic snapshot extent; this is not a production compact output footprint."
+  ]
+}

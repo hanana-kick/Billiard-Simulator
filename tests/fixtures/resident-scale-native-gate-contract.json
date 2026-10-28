@@ -1,0 +1,364 @@
+{
+  "kind": "resident-eight-nine-frozen-native-gate-source-contract-v1",
+  "sourceHead": "470e11d712a6ac2ee6d45e8fa013f16cb8bde691",
+  "counts": [
+    {
+      "count": 8,
+      "runtimeSha256": "c60729f0a9956ef377c6f76fd5f61511a12fe5856575c6d68b1ca4296520123f",
+      "runtimeDataSha256": "5961beebc8e33bdec6273acb5973d891e940dfe88b52f919d2a89a2aab3ae1d5",
+      "sourceSha256": "125fe36f8c3a11f1d2b46d2b854e893dd0ce49f48e76e8b634aee614d854b7d8",
+      "bytecodeSha256": "83e4d333bcbd32a37b8bd8ca71457187c87f2d9d101e9f9c3082520d963dfaec",
+      "coreShaderSha256": "fa2289f8f57ac9db4e130368cb469dbe964ae91a827b96d4372714f0349be2db",
+      "generationIdentity": "e3db44310046f27af4914984c85ae6e6802aa453a67c96a7293f7ee53adaa84c",
+      "sourceIdentity": "a93473fceb1da27bb580a2981d3e536057eb30856e49d64405ad2b96f8b51e0f",
+      "preStrikeIdentity": "2d5a2cbf1b7dc481cb90a19de8fa5cee7ea389c7dbbede645324afbcb87279c8",
+      "sourceReceiptSha256": "9dfc47076ca1901a853a63b142d1e846d9e12a3afdf054687d9ae6de77a014ea",
+      "bindingReceiptSha256": "b7485bd283f0110caf9dcde29fdc6ca2e3b528380d1a88af1f91a8cb4cc7b53a",
+      "expectedSha256": "646e192d7b0394f4f753c0e54318d1e995bd6971fa5c8a8981d238feb4ee6532",
+      "orderedIds": [
+        17,
+        118,
+        219,
+        320,
+        421,
+        522,
+        623,
+        724
+      ],
+      "acceptedRows": [
+        17,
+        118,
+        219,
+        320,
+        623,
+        724
+      ],
+      "rejectedRows": [
+        421,
+        522
+      ],
+      "vm": {
+        "instructionCount": 131112,
+        "localWords": 7783,
+        "stride": 7814,
+        "stackCapacity": 15,
+        "totalWords": 62512,
+        "instructionBudget": 65536,
+        "dispatchChunks": 512,
+        "bytecodeSha256": "83e4d333bcbd32a37b8bd8ca71457187c87f2d9d101e9f9c3082520d963dfaec",
+        "coreShaderSha256": "fa2289f8f57ac9db4e130368cb469dbe964ae91a827b96d4372714f0349be2db"
+      },
+      "requirements": {
+        "buffers": {
+          "rawProgram": {
+            "words": 5071,
+            "bytes": 20284
+          },
+          "rawGeometry": {
+            "words": 11368,
+            "bytes": 45472
+          },
+          "worldTemplate": {
+            "words": 62990,
+            "bytes": 251960
+          },
+          "worldProgram": {
+            "words": 874992,
+            "bytes": 3499968
+          },
+          "worldGeometry": {
+            "words": 25408,
+            "bytes": 101632
+          },
+          "worldState": {
+            "words": 505656,
+            "bytes": 2022624
+          },
+          "rawState": {
+            "words": 16080,
+            "bytes": 64320
+          },
+          "scratch": {
+            "words": 109056,
+            "bytes": 436224
+          },
+          "inputs": {
+            "words": 128,
+            "bytes": 512
+          },
+          "microcode": {
+            "words": 1048896,
+            "bytes": 4195584
+          },
+          "vmState": {
+            "words": 62512,
+            "bytes": 250048
+          }
+        },
+        "limits": {
+          "maxStorageBuffersPerShaderStage": 7,
+          "maxBindingsPerBindGroup": 7,
+          "maxBindGroups": 1,
+          "maxComputeInvocationsPerWorkgroup": 64,
+          "maxComputeWorkgroupSizeX": 64,
+          "maxComputeWorkgroupsPerDimension": 8
+        },
+        "storageBytes": 10888628,
+        "storageBuffers": 11,
+        "initialWrites": 8
+      },
+      "launches": [
+        {
+          "workgroupSize": 1,
+          "launchSha256": "f4395d293fb3e516f790c9d8129c770306a4788bfffd3956599759f868f05196",
+          "profileSha256": "022f5bbf3267cb085203404748d35a2ab77c3fd2fbaf4831a552b08f3c6a2283",
+          "preflightSha256": "3b44859781eef8af15f616879753c766e901055d1ee60c58d7f7ac4935df6fa6",
+          "geometry": {
+            "core": {
+              "workgroupSize": 64,
+              "workgroups": 1,
+              "invocations": 64,
+              "paddingLanes": 56
+            },
+            "macros": {
+              "workgroupSize": 1,
+              "workgroups": 8,
+              "invocations": 8,
+              "paddingLanes": 0
+            }
+          },
+          "diagnosticPlan": {
+            "captureNames": [
+              "worldState",
+              "vmState",
+              "scratch"
+            ],
+            "captureAfterCycles": [
+              0,
+              512
+            ],
+            "captureWords": 677224,
+            "readbackBytes": 5417792,
+            "storageBytes": 10888628,
+            "peakLiveBytes": 16306420
+          }
+        },
+        {
+          "workgroupSize": 8,
+          "launchSha256": "d35cb71badeedb2485ad94749d0370ed26b972f5d3f7c6f34d9e0f8900d91193",
+          "profileSha256": "bcca084a99291ce6d0c49cf5abce461faf9ea9c9fdd61ebc27707aec5e10a6e9",
+          "preflightSha256": "ba62baa00119a3f9902d03f3e849cf1fd5d9ce8bfa1af8bad3acd768862ee8bc",
+          "geometry": {
+            "core": {
+              "workgroupSize": 64,
+              "workgroups": 1,
+              "invocations": 64,
+              "paddingLanes": 56
+            },
+            "macros": {
+              "workgroupSize": 8,
+              "workgroups": 1,
+              "invocations": 8,
+              "paddingLanes": 0
+            }
+          },
+          "diagnosticPlan": {
+            "captureNames": [
+              "worldState",
+              "vmState",
+              "scratch"
+            ],
+            "captureAfterCycles": [
+              0,
+              512
+            ],
+            "captureWords": 677224,
+            "readbackBytes": 5417792,
+            "storageBytes": 10888628,
+            "peakLiveBytes": 16306420
+          }
+        }
+      ]
+    },
+    {
+      "count": 9,
+      "runtimeSha256": "cb0e8cb37e09c4b48a58323e806d642e2885b00351ff4e9dde6889d28fe67663",
+      "runtimeDataSha256": "b62bc951ee80036ff366d23ad8e524fb3c1d2f81a06542bdeb000c7135379ca0",
+      "sourceSha256": "6ea4df039bdf9eb5d56cee7f55b5de5b38f2939600c16d0bd1b523ef652d6e67",
+      "bytecodeSha256": "7f64d6e5af572fd216ec4af3c92881ae7ec6b9de5d39a098f8ae4982a675dcf9",
+      "coreShaderSha256": "0f00e659805601e79fe44193b7aa3b21ef06d235a5b0cf0292b5e967accc2d36",
+      "generationIdentity": "8102979d238d6743097773590dfc41327d2ad6dc4fe068173ac1b7421e450bdf",
+      "sourceIdentity": "a93473fceb1da27bb580a2981d3e536057eb30856e49d64405ad2b96f8b51e0f",
+      "preStrikeIdentity": "2d5a2cbf1b7dc481cb90a19de8fa5cee7ea389c7dbbede645324afbcb87279c8",
+      "sourceReceiptSha256": "b651794588e3f334b808c3d429c05e9c9d9aede18a4ed335e02e0e37333a7fd4",
+      "bindingReceiptSha256": "a6fd61cb4656894e59d29c069b3b0e9784a7fbb23dd25c3e30b156740a00de47",
+      "expectedSha256": "524a49d67cffba378c5c8a65b77076e601351e23a429d66da1c7cb0ad97f815e",
+      "orderedIds": [
+        17,
+        118,
+        219,
+        320,
+        421,
+        522,
+        623,
+        724,
+        825
+      ],
+      "acceptedRows": [
+        17,
+        118,
+        219,
+        320,
+        623,
+        724,
+        825
+      ],
+      "rejectedRows": [
+        421,
+        522
+      ],
+      "vm": {
+        "instructionCount": 131112,
+        "localWords": 7783,
+        "stride": 7814,
+        "stackCapacity": 15,
+        "totalWords": 70326,
+        "instructionBudget": 65536,
+        "dispatchChunks": 512,
+        "bytecodeSha256": "7f64d6e5af572fd216ec4af3c92881ae7ec6b9de5d39a098f8ae4982a675dcf9",
+        "coreShaderSha256": "0f00e659805601e79fe44193b7aa3b21ef06d235a5b0cf0292b5e967accc2d36"
+      },
+      "requirements": {
+        "buffers": {
+          "rawProgram": {
+            "words": 5071,
+            "bytes": 20284
+          },
+          "rawGeometry": {
+            "words": 11368,
+            "bytes": 45472
+          },
+          "worldTemplate": {
+            "words": 62990,
+            "bytes": 251960
+          },
+          "worldProgram": {
+            "words": 874992,
+            "bytes": 3499968
+          },
+          "worldGeometry": {
+            "words": 25408,
+            "bytes": 101632
+          },
+          "worldState": {
+            "words": 568736,
+            "bytes": 2274944
+          },
+          "rawState": {
+            "words": 18090,
+            "bytes": 72360
+          },
+          "scratch": {
+            "words": 122688,
+            "bytes": 490752
+          },
+          "inputs": {
+            "words": 144,
+            "bytes": 576
+          },
+          "microcode": {
+            "words": 1048896,
+            "bytes": 4195584
+          },
+          "vmState": {
+            "words": 70326,
+            "bytes": 281304
+          }
+        },
+        "limits": {
+          "maxStorageBuffersPerShaderStage": 7,
+          "maxBindingsPerBindGroup": 7,
+          "maxBindGroups": 1,
+          "maxComputeInvocationsPerWorkgroup": 64,
+          "maxComputeWorkgroupSizeX": 64,
+          "maxComputeWorkgroupsPerDimension": 9
+        },
+        "storageBytes": 11234836,
+        "storageBuffers": 11,
+        "initialWrites": 8
+      },
+      "launches": [
+        {
+          "workgroupSize": 1,
+          "launchSha256": "766db4e912b8e868a4a49c1ec3f868dc599614169c93f48717759efe765122d2",
+          "profileSha256": "7a5526c38a39dfa39f3e2eb0421f98ee701beb49e34f84e123d99e899448908c",
+          "preflightSha256": "9bf80694f0803cba37238b590b8f0959971309cbcdf5caf2315e0323c2b1f9b3",
+          "geometry": {
+            "core": {
+              "workgroupSize": 64,
+              "workgroups": 1,
+              "invocations": 64,
+              "paddingLanes": 55
+            },
+            "macros": {
+              "workgroupSize": 1,
+              "workgroups": 9,
+              "invocations": 9,
+              "paddingLanes": 0
+            }
+          },
+          "diagnosticPlan": {
+            "captureNames": [
+              "worldState",
+              "vmState",
+              "scratch"
+            ],
+            "captureAfterCycles": [
+              0,
+              512
+            ],
+            "captureWords": 761750,
+            "readbackBytes": 6094000,
+            "storageBytes": 11234836,
+            "peakLiveBytes": 17328836
+          }
+        },
+        {
+          "workgroupSize": 8,
+          "launchSha256": "cd2d7850f7051e0ba873e4639eb5b44791d85b7eb9d9146c214506f283e64f43",
+          "profileSha256": "80a91a3137b5dd36cc522fda1370dcc8694858c8de7bb2577f18f29949bea5ac",
+          "preflightSha256": "5f6dd76d1406074a3ab46dda7342384582fc9b24eb71e434652706c4d751697f",
+          "geometry": {
+            "core": {
+              "workgroupSize": 64,
+              "workgroups": 1,
+              "invocations": 64,
+              "paddingLanes": 55
+            },
+            "macros": {
+              "workgroupSize": 8,
+              "workgroups": 2,
+              "invocations": 16,
+              "paddingLanes": 7
+            }
+          },
+          "diagnosticPlan": {
+            "captureNames": [
+              "worldState",
+              "vmState",
+              "scratch"
+            ],
+            "captureAfterCycles": [
+              0,
+              512
+            ],
+            "captureWords": 761750,
+            "readbackBytes": 6094000,
+            "storageBytes": 11234836,
+            "peakLiveBytes": 17328836
+          }
+        }
+      ]
+    }
+  ]
+}

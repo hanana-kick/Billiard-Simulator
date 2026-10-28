@@ -1,0 +1,19 @@
+{
+  "kind": "resident-tip-impact-pilot-barrier-host-v1",
+  "baseCommit": "8174eace67adcaf005ab79144bd89fd148461ade",
+  "scope": "TEST-only retained native cost/continue barrier, no physics port",
+  "defaultModeChanged": false,
+  "sourceShaderChanged": false,
+  "physicalHorizon": 192,
+  "candidateCount": 2,
+  "instructionBudget": 65536,
+  "pilotPoint": "after first unchanged predetermined work block and GPU-only capture",
+  "waitTimeout": "explicit operational 1..3600000 ms, never physical time",
+  "intermediateStateMaps": 0,
+  "expectedFileAccessInNativeRole": false,
+  "hostTests": {"passed": 34, "failed": 0, "skipped": 0},
+  "actualNativeExecuted": false,
+  "hardwarePerformanceClaim": false,
+  "fullRestQualified": false,
+  "native1024Qualified": false
+}

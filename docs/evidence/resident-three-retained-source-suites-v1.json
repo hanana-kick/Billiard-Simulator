@@ -1,0 +1,162 @@
+{
+  "kind": "resident-three-retained-source-suite-qualification-v1",
+  "sourceCommit": "a1ae4fa",
+  "baseCommit": "d1ef30a",
+  "scope": "Explicit guarded HOST source-suite wiring plus original CPU/WASM represented h1/h2/h3 gates; no GPU or production activation",
+  "temporaryRoot": "/workspace/scratch/f887f82f638e/resident-native-artifacts/host-tmp",
+  "sourceSha256": {
+    "tools/run-resident-source-qualification.cjs": "037c5120a5824719981cc366aab4d785ee3a15fc563f69e33dbb850cc2dcaadb",
+    "tests/resident-source-qualification-runners.cjs": "d19dc145a737b90c08505c4772b0891c61f62d4f5e922d077728fe15b384b27b",
+    "tests/resident-three-ball-retained-h.mjs": "3dcc6ce618d759d725215308914a74fa7bfba9b6270663339669b6125c9914e9",
+    "tests/resident-three-ball-retained-default-bytes.mjs": "dab92c09b73f3945ee2726e2f0200b34bec4768064a6b1198abefc619a647be0"
+  },
+  "inventory": {
+    "hostModuleCount": 49,
+    "sourceSuiteCount": 17,
+    "sourceModuleCount": 20,
+    "newSuites": [
+      "three-retained-owners",
+      "three-retained-default-bytes",
+      "three-retained-h"
+    ]
+  },
+  "focused": {
+    "tests": 18,
+    "passed": 18,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 970.016343,
+    "exit": 0,
+    "log": "/tmp/three-retained-suite-runner-contracts.log",
+    "logSha256": "c4222719b2ed8a6f2b3e2548be0710ec732a8dbff48d730d81a548d535954ba9"
+  },
+  "guardedSources": {
+    "three-retained-owners": {
+      "definition": {
+        "tests": [
+          "tests/resident-three-ball-retained-bvh-owners.mjs"
+        ],
+        "dependencies": [
+          "tests/resident-three-ball-initialization-source-fixture.cjs",
+          "tests/fixtures/three-ball-retained-bvh-legacy-fingerprint.json"
+        ],
+        "inputs": [
+          "decoder-provenance"
+        ],
+        "scope": "Genuine-three retained Guard/cache/physical rearm source controls, cache persistence and old-profile bytes; synthetic rearm headers are not a physical trajectory or GPU gate."
+      },
+      "identities": {
+        "decoderProvenanceSha256": "59a484863bf92cd0af388cb21baf15526116b5cf9855549257a7e54511d6f86c",
+        "decoderWasmSha256": "1647149118688a7152bc385e0c06ce985eda36e97a3a7e16a8f86fa8506eeabd",
+        "engineSha256": "fca22b2f33d4e88d2992215f42df6312093476db7fea4197816fb8e4ce17cba4"
+      },
+      "plan": {
+        "log": "/tmp/three-retained-owners-runner-plan.log",
+        "logSha256": "72b6aca6226299c825e3206609c4d0dbaf6b3508bb66aa2340bd3520a9be797f",
+        "planOnly": true
+      },
+      "tests": 5,
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 9497.08874,
+      "exit": 0,
+      "log": "/tmp/three-retained-owners-guarded.log",
+      "logSha256": "134c9ee2e546d1bbcfefb38fb42357395d450e4ada54368ef902512465f6a75f"
+    },
+    "three-retained-default-bytes": {
+      "definition": {
+        "tests": [
+          "tests/resident-three-ball-retained-default-bytes.mjs"
+        ],
+        "dependencies": [
+          "tests/resident-three-ball-two-h-native-fixture.cjs"
+        ],
+        "inputs": [
+          "decoder-provenance"
+        ],
+        "scope": "Portable frozen h2 source/initial/program/geometry/layout fingerprints after additive retained ownership; original CPU/WASM fixture only, no retained physics or GPU execution."
+      },
+      "identities": {
+        "decoderProvenanceSha256": "59a484863bf92cd0af388cb21baf15526116b5cf9855549257a7e54511d6f86c",
+        "decoderWasmSha256": "1647149118688a7152bc385e0c06ce985eda36e97a3a7e16a8f86fa8506eeabd",
+        "engineSha256": "fca22b2f33d4e88d2992215f42df6312093476db7fea4197816fb8e4ce17cba4"
+      },
+      "plan": {
+        "log": "/tmp/three-retained-default-bytes-runner-plan.log",
+        "logSha256": "a2b053a6ed39b7f573ff920efa96657f5bb9c8277175f9d2bca0aa54ad7363a7",
+        "planOnly": true
+      },
+      "tests": 1,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 10268.445606,
+      "exit": 0,
+      "log": "/tmp/three-retained-default-bytes-guarded.log",
+      "logSha256": "99486734d9268df821c6f83bb43d8d62cd3fbdf42d656f2e755f34bff573f7ca"
+    },
+    "three-retained-h": {
+      "definition": {
+        "tests": [
+          "tests/resident-three-ball-retained-h.mjs"
+        ],
+        "dependencies": [
+          "tests/resident-three-ball-retained-h-native-fixture.cjs",
+          "tests/resident-three-ball-current-cue-oracle.mjs",
+          "tests/resident-three-ball-cue-transport-oracle.mjs",
+          "src/resident-candidate/three-ball-retained-h.mjs"
+        ],
+        "inputs": [
+          "decoder-provenance"
+        ],
+        "scope": "Authentic selected2 t0 through unchanged h1 and the same reused source advance for h2/h3, exact independent original CPU/WASM represented state/CUE/cache/tape and fail-closed guards; outer0, no active CCD/emission/outer64/full-rest/GPU qualification."
+      },
+      "identities": {
+        "decoderProvenanceSha256": "59a484863bf92cd0af388cb21baf15526116b5cf9855549257a7e54511d6f86c",
+        "decoderWasmSha256": "1647149118688a7152bc385e0c06ce985eda36e97a3a7e16a8f86fa8506eeabd",
+        "engineSha256": "fca22b2f33d4e88d2992215f42df6312093476db7fea4197816fb8e4ce17cba4"
+      },
+      "plan": {
+        "log": "/tmp/three-retained-h-runner-plan.log",
+        "logSha256": "4c0e94cf18b7c659309a71cf968d87e752c3862bcc0c21a068b87f624db6d614",
+        "planOnly": true
+      },
+      "tests": 10,
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 77878.690477,
+      "exit": 0,
+      "log": "/tmp/three-retained-h-guarded.log",
+      "logSha256": "178666cb9956d635736b2ae1a56f2bd5f7bbdf76e29bde177988fc9cf806a624"
+    }
+  },
+  "guardedDefaultHost": {
+    "tests": 279,
+    "passed": 272,
+    "failed": 0,
+    "skipped": 7,
+    "durationMs": 17909.405182,
+    "exit": 0,
+    "log": "/tmp/three-retained-suite-default-host.log",
+    "logSha256": "818150b949fd1fa20c6efd0edbc08030f084bde36eec08dfdf0d438186d342af"
+  },
+  "capability": {
+    "explicitSourceSuitesExecuted": true,
+    "actualOriginalCpuWasmFixture": true,
+    "sourceRetainedHorizon": 3,
+    "completedOuterSteps": 0,
+    "generalRetainedTrajectory": false,
+    "activeCcd": false,
+    "eventfulApplication": false,
+    "emittedThreeBallGame": false,
+    "outer64": false,
+    "fullRest": false,
+    "actualBrowser": false,
+    "moduleWorker": false,
+    "gpuExecution": false,
+    "runtimeIntegrated": false,
+    "releaseQualified": false
+  }
+}

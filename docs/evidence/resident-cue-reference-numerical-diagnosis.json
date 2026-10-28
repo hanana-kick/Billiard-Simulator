@@ -1,0 +1,93 @@
+{
+  "kind": "resident-cue-reference-numerical-diagnosis-v1",
+  "date": "2026-10-26",
+  "base": "b615d8d",
+  "node": "v24.22.1",
+  "v8": "13.6.233.17-node.58",
+  "result": "exact legacy tangent mismatch reproduced by compensated oracle recurrence",
+  "sourceFiles": {
+    "src/physics.js": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d",
+    "src/experimental-cue-created-stroke-stage.js": "9b2543bcfd0d6894669b4798fda1bd122d79cf45cc898b9d6cbb5cd7131a42d5",
+    "src/experimental-cue-joint-tip-contact.js": "8e42b00d42c6ca1495b981998126cd0987877d72ac080738bc82bdb94ea5d7bb",
+    "src/experimental-cue-lateral-compensated.js": "ebdc3297869edf9f11a97c8a2e01d13abbd502b4f9a56d450c99a3a9921b2b37",
+    "src/resident-candidate/cue.mjs": "d2eb0d48f03a839a7de29fc2bc5b2b168f43827e50bed61e4f45f9b374d58e76",
+    "src/resident-candidate/raw-strike.mjs": "2a3f70d84762fd456f826a8734b1bfa47926ca6cbdda7fe2f2a61fafebdd59a7"
+  },
+  "programSha256": "6428e6f49d0a92da172bd9713ec4235b77b682f62e1aa2916f2a0aeeb3fa9694",
+  "nativeCapture": {
+    "physicsSha256": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d",
+    "engineSha256": "fca22b2f33d4e88d2992215f42df6312093476db7fea4197816fb8e4ce17cba4",
+    "artifactSha256": "11f41cd9c11ff47911f14afc084b27f32a15fc69db1f26d7970eb864f35f2262",
+    "preStrikeSnapshotSha256": "2d5a2cbf1b7dc481cb90a19de8fa5cee7ea389c7dbbede645324afbcb87279c8",
+    "createdSnapshotSha256": "feb6b6eea9a0d29236df73680e79d3cbedf84dee702f3dae0c1e80a33ef9c2ef",
+    "observer": "original compliantTipContact and velocityAtPoint wrappers forward identical receiver/arguments/result; no numerical body edit",
+    "originalLatchedOuterCalls": 3,
+    "originalHCalls": 192,
+    "sourceH": 0.000016276041666666666,
+    "fixture": "tests/fixtures/resident-cue-native-tip-number-diagnosis.json",
+    "fixtureSha256": "37b44746675aebf8fae834bd44690ae5be95f9696ecdf1ff24f827d52bd53729",
+    "records": 28,
+    "firstTipH": 165,
+    "lastH": 192
+  },
+  "frozenAssertionArtifact": {
+    "path": "/tmp/resident-tip-impact-full-history-created-host-v2/expected.v8",
+    "sha256": "eefa6069514ae4ae0c7cf4ae593fa1591a8551c4b0d172d0b51691b85f329226",
+    "scope": "read only to confirm legacy h192 tangent; not needed by standalone regression"
+  },
+  "firstLoss": {
+    "tipRadius": {
+      "sourceLow": 3161095930,
+      "compensatedLow": 3161095928
+    },
+    "h": {
+      "sourceLow": 286331153,
+      "compensatedLow": 286331152
+    },
+    "friction": {
+      "sourceLow": 1717986918,
+      "compensatedLow": 1717986920
+    }
+  },
+  "h192": {
+    "nativeSourceResident": [
+      3610802870,
+      3208481677,
+      2545628303,
+      1060557805,
+      3902929616,
+      3209759694
+    ],
+    "recurrentCompensatedAndLegacySourceOwner": [
+      3610802880,
+      3208481677,
+      2545628320,
+      1060557805,
+      3902929632,
+      3209759694
+    ],
+    "lowWordDelta": [
+      -10,
+      -17,
+      -16
+    ]
+  },
+  "tests": {
+    "command": "RUN_RESIDENT_CUE_NUMBER_NATIVE_CAPTURE=1 node --test tests/resident-candidate-cue-reference-profile-diagnosis.mjs tests/resident-candidate-cue-reference-native-diagnosis.mjs",
+    "passed": 5,
+    "failed": 0,
+    "elapsedMs": 2190.697899
+  },
+  "coverage": {
+    "actualNativeCpuCapture": true,
+    "all28IdenticalInputTrials": true,
+    "sourceNativeBodyOutputsExact": true,
+    "residentAllTipSourceOutputsExact": true,
+    "originalSourceModified": false,
+    "runtimeFutureInputs": false,
+    "fullWorldRecurrenceRerun": false,
+    "gpuExecution": false,
+    "fullRest": false,
+    "productionQualified": false
+  }
+}

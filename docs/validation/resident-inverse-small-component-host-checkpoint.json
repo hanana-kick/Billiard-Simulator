@@ -1,0 +1,107 @@
+{
+  "scope": "HOST source preparation and transport contract only; no GPU compilation or execution",
+  "baseSource": "b6b5eba7cfa24b9c27756386508e81b2d76b8cd8",
+  "standalone": {
+    "command": "node --test tests/resident-candidate-inverse-components.mjs",
+    "log": "/tmp/inverse-component-host-retry.log",
+    "exitCode": 0,
+    "pass": 4,
+    "fail": 0,
+    "skipped": 0,
+    "durationMs": 12846.343698,
+    "sourceScope": "before final cleanup-lifetime and separate-role-digest additions; those later edits remain unrun under the parent quiet hold"
+  },
+  "combinedRerun": {
+    "command": "node --test --test-concurrency=1 tests/resident-candidate-inverse-components.mjs tests/resident-candidate-inverse-query-join.mjs",
+    "log": "/tmp/inverse-component-host-final.log",
+    "exitCode": 1,
+    "reportedTests": 9,
+    "pass": 8,
+    "fail": 1,
+    "skipped": 0,
+    "durationMs": 31184.378301,
+    "componentChild": {
+      "reportedDurationMs": 12716.059152,
+      "message": "test failed",
+      "exitCode": null,
+      "signal": null,
+      "assertionDetail": null,
+      "stderrDetail": null,
+      "unknownReason": "The Node spec reporter emitted only a file-level failure. Child exit code/signal and a source/numerical assertion were not present in the captured combined stdout/stderr. No cause is inferred."
+    },
+    "unchangedQueryJoinRegressions": {
+      "pass": 8,
+      "fail": 0
+    }
+  },
+  "pending": [
+    "Parent-owned native WGSL preflight and compile-only gate",
+    "Parent-owned native exact component dispatch followed by separate assertion role"
+  ],
+  "physicalTrajectoryQualified": false,
+  "solverAdapterQualified": false,
+  "defaultEnabled": false,
+  "serialRetry": {
+    "command": "node --max-old-space-size=512 --test --test-reporter=tap tests/resident-candidate-inverse-components.mjs",
+    "log": "/tmp/inverse-component-host-serial.log",
+    "resourceLog": "/tmp/inverse-component-host-serial.resources",
+    "exitCode": 0,
+    "signal": null,
+    "pass": 4,
+    "fail": 0,
+    "skipped": 0,
+    "wallSeconds": 12.55653687400627,
+    "maxRssKiB": 1073424
+  },
+  "serialPreparation": {
+    "log": "/tmp/inverse-component-prepare-final.log",
+    "resourceLog": "/tmp/inverse-component-prepare-final.resources",
+    "exitCode": 0,
+    "signal": null,
+    "wallSeconds": 11.753298340016045,
+    "maxRssKiB": 566636,
+    "precursor": "/tmp/inverse-native-components-final.v8",
+    "precursorSha256": "aef4ce3e70a67085640cd9583c57a961efe4babaf3c9a514997aa97203bb167b"
+  },
+  "separatedRolesSuccessor": {
+    "log": "/tmp/inverse-component-separated-final.log",
+    "exitCode": 0,
+    "pass": 9,
+    "fail": 0,
+    "skipped": 0,
+    "durationMs": 2312.170857,
+    "originalRecaptured": false,
+    "inputAuthority": "exact authenticated serial precursor; shader/input/expected role hashes unchanged",
+    "nativeExecuted": false
+  },
+  "parentNativeFirstAttempt": {
+    "sourceCheckpoint": "72223fb9edd92594e668e2b0c1f1612f87976e89",
+    "session": 26726,
+    "exitCode": 1,
+    "signal": null,
+    "stderr": "/workspace/scratch/f887f82f638e/resident-native-artifacts/inverse-small-native-v1/native.stderr",
+    "errors": [
+      "reducer-observe 57:81 active is a reserved keyword",
+      "reducer-observe 94:49 target is a reserved keyword"
+    ],
+    "pipelinesCreated": 0,
+    "buffersAllocated": 0,
+    "dispatches": 0,
+    "inputOpened": false,
+    "ownerReleased": true,
+    "failedArtifactsModified": false
+  },
+  "alphaRepairHost": {
+    "log": "/tmp/inverse-component-alpha-host.log",
+    "exitCode": 0,
+    "tests": 20,
+    "pass": 20,
+    "fail": 0,
+    "skipped": 0,
+    "durationMs": 3719.888934,
+    "comparedWords": 8937261,
+    "newOriginalCapture": false,
+    "newExpectedWords": false,
+    "nativeExecuted": false
+  }
+}

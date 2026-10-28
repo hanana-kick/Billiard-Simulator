@@ -1,0 +1,16 @@
+// Opaque lead decision-record contract; ownership/identity, not GPU qualification.
+import assert from 'node:assert/strict';
+const hash=x=>assert.match(x,/^[a-f0-9]{64}$/),keys=(x,list)=>assert.deepEqual(Object.keys(x).sort(),list.sort());
+export function validateMacroLaunchDecision(decision,boundary,{now=Date.now()}={}){
+ assert.ok(Number.isSafeInteger(now)&&now<=Date.parse(boundary.deadline),'bounded decision window expired');assert.equal(decision.kind,'resident-macro-launch-lead-decision-v1');assert.equal(decision.nonce,boundary.nonce);assert.equal(decision.gateSha256,boundary.gateSha256);assert.equal(decision.receiptSha256,boundary.receiptSha256);assert.equal(decision.phase,boundary.phase);hash(decision.nonce);hash(decision.gateSha256);hash(decision.receiptSha256);
+ const common=['kind','nonce','gateSha256','receiptSha256','phase','action'];if(decision.action==='stop'){keys(decision,common);return decision;}
+ if(boundary.phase==='after-wgs1-actual'){keys(decision,[...common,'baselineActualSha256','leadAssertionReceiptSha256','parallelGatePath','parallelGateSha256','baselinePassReceiptPath']);assert.equal(decision.action,'compile-wgs8');assert.equal(decision.baselineActualSha256,boundary.baselineActualSha256);hash(decision.leadAssertionReceiptSha256);hash(decision.parallelGateSha256);assert.ok(typeof decision.baselinePassReceiptPath==='string'&&decision.baselinePassReceiptPath.startsWith('/'));assert.ok(typeof decision.parallelGatePath==='string'&&decision.parallelGatePath.startsWith('/'));return decision;}
+ keys(decision,[...common,'cycles','macroWorkgroupSize']);assert.ok(['wgs1-compiled','wgs8-compiled'].includes(boundary.phase));assert.equal(decision.action,'run-fixed-schedule');assert.equal(decision.cycles,512);assert.equal(decision.macroWorkgroupSize,boundary.macroWorkgroupSize);return decision;
+}
+
+export function validateMacroLaunchBaselinePass(receipt,{gateSha256,actualSha256,expectedSha256,generationIdentity}){
+ assert.equal(receipt.kind,'resident-mixed-six-independent-t0-h2-pass-receipt-v1');assert.equal(receipt.status,'pass');assert.equal(receipt.macroWorkgroupSize,1);assert.equal(receipt.gateSha256,gateSha256);assert.equal(receipt.actualSha256,actualSha256);assert.equal(receipt.expectedSha256,expectedSha256);assert.equal(receipt.generationIdentity,generationIdentity);assert.equal(receipt.runtimeSha256,'780872cc0105e20375dcbd2f84a2e1962176133feefb23fdaa0a0778b312b4de');assert.equal(receipt.referenceAuthority,'original-js-number-v1');assert.equal(receipt.scope,'isolated-two-source-h-v1');assert.equal(receipt.rawRows,6);assert.deepEqual(receipt.acceptedRows,[17,118,219,320]);assert.deepEqual(receipt.rejectedRows,[421,522]);assert.deepEqual(receipt.owners,['balls','cue','caches','cueCloth','journal','roster','scene','bvh','clock','rules','game']);assert.equal(receipt.h2AllOwners,true);assert.equal(receipt.fullRestQualified,false);assert.equal(receipt.native1024Qualified,false);return receipt;
+}
+export async function applyMacroLaunchDecision(decision,boundary,{now=Date.now(),stop,runFixedSchedule,compileParallel}={}){
+ const d=validateMacroLaunchDecision(decision,boundary,{now});if(d.action==='stop')return stop(d);if(d.action==='run-fixed-schedule')return runFixedSchedule(d);return compileParallel(d);
+}

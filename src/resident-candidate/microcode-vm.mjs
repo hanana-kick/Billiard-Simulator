@@ -6,18 +6,22 @@
  */
 import {MICROCODE_ISA as I} from './microcode-isa.mjs';
 import {generateCachedMicrocodeControlWGSL,createCachedMicrocodeReferenceForTest} from './microcode-control-cache.mjs';
-import {MICROCODE_SOURCE_MACROS as M,sourceMacroNativeWGSL,approveSourceMacros} from './microcode-source-macros.mjs';
-import {MICROCODE_SOURCE_INTRINSICS as D,MICROCODE_INTRINSIC_PROFILES,sourceIntrinsicNativeWGSL} from './microcode-source-intrinsics.mjs';
+import {MICROCODE_ALL_SOURCE_MACROS as M,sourceMacroNativeWGSL,approveSourceMacros} from './microcode-source-macros.mjs';
+import {generateNumberProgramMacroAdmissionWGSL} from './number-program-macro-admission.mjs';
+import {MICROCODE_SOURCE_INTRINSICS as D,MICROCODE_INTRINSIC_PROFILES,sourceIntrinsicNativeWGSL,sourceIntrinsicProfileAllows} from './microcode-source-intrinsics.mjs';
+import {PREPARATION_PROFILE,assertPreparationDescriptor,assertPreparationInputs} from './microcode-preparation.mjs';
+import {MICROCODE_NUMERIC_CONTINUATION as Q,generateMicrocodeNumericContinuationWGSL,assertMicrocodeNumericContinuationDescriptor} from './microcode-numeric-continuation.mjs';
 const intrinsicByOpcode=new Map(D.map(d=>[d.opcode,d]));
-const intrinsicEnabled=(profile,d)=>profile==='source-continuations-v1'||profile==='source-numeric-v1'&&['f64','numeric'].includes(d.family)||profile==='source-f64-v1'&&d.family==='f64';
+const intrinsicEnabled=sourceIntrinsicProfileAllows;
 const intrinsicAdmitted=(p,d)=>intrinsicEnabled(p.intrinsics,d)&&(p.intrinsicFunctions===null||p.intrinsicFunctions.includes(d.name));
 const C=I.control,S=I.status,E=I.error,O=I.opcodes;
 const bounded=(n,label,zero=false)=>{if(!Number.isSafeInteger(n)||n<(zero?0:1)||n>0xffffffff)throw new RangeError(label+' must be a bounded u32');return n;};
 export const MICROCODE_VM_CAPABILITY=Object.freeze({...I.capability,storageContinuation:true,hostPhysicsFallback:false,hardwareF64:false});
-export function microcodeVmLayout({count=1,localWords,stackCapacity=64}){
+export function microcodeVmLayout({count=1,localWords,stackCapacity=64,numericContinuation}){
  bounded(count,'candidate count');bounded(localWords,'local words');bounded(stackCapacity,'call capacity');
- const stride=C.words+localWords+stackCapacity,totalWords=count*stride;bounded(stride,'candidate stride');bounded(totalWords,'VM storage words');
- return Object.freeze({count,localWords,stackCapacity,controlWords:C.words,localsOffset:C.words,stackOffset:C.words+localWords,stride,totalWords});
+ const phased=numericContinuation!==undefined;if(phased&&numericContinuation!==Q.mode)throw new TypeError('Explicit source-num-eval-phased-v1 continuation mode required');
+ const tail=C.words+localWords+stackCapacity,stride=tail+(phased?Q.words:0),totalWords=count*stride;bounded(stride,'candidate stride');bounded(totalWords,'VM storage words');
+ return Object.freeze({count,localWords,stackCapacity,controlWords:C.words,localsOffset:C.words,stackOffset:C.words+localWords,stride,totalWords,...(phased?{numericContinuation:Q.mode,numericTailOffset:tail,numericTailWords:Q.words}:{})});
 }
 const macroApprovalCache=new Map();
 function macroApproval(spec){
@@ -30,7 +34,7 @@ function externalConfiguration(rows,l,instructionCount){
  if(rows===undefined)return Object.freeze([]);if(!Array.isArray(rows))throw new TypeError('Explicit external function descriptor array required');const ids=new Set(),pcs=new Set();
  return Object.freeze(rows.map(row=>{
   const spec=M.find(x=>x.id===row?.id&&x.name===row?.name);if(!spec||ids.has(spec.id))throw new TypeError('Unique approved external source macro required');ids.add(spec.id);
-  const expected=macroApproval(spec),approval=row.approval;if(!approval||['id','name','signatureSha256','bodySha256','closureSha256','nativeSourceSha256'].some(k=>approval[k]!==expected[k])||Object.keys(expected.dependencies).some(k=>approval.dependencies?.[k]!==expected.dependencies[k])||Object.keys(approval.dependencies??{}).length!==Object.keys(expected.dependencies).length)throw new TypeError('Exact external source macro approval required');
+  const expected=macroApproval(spec),approval=row.approval,approvalKeys=['id','name','signatureSha256','bodySha256','closureSha256','nativeSourceSha256',...['numericProfile','declarationsSha256','numericProfileDeclarationSha256'].filter(k=>Object.hasOwn(expected,k))];if(!approval||approvalKeys.some(k=>approval[k]!==expected[k])||Object.keys(expected.dependencies).some(k=>approval.dependencies?.[k]!==expected.dependencies[k])||Object.keys(approval.dependencies??{}).length!==Object.keys(expected.dependencies).length)throw new TypeError('Exact external source macro approval required');
   const entryPc=bounded(row.entryPc,'external entry PC',true);if(entryPc+1>=instructionCount||pcs.has(entryPc))throw new RangeError('Unique external stub and RET in instruction range required');pcs.add(entryPc);
   if(!Array.isArray(row.params)||row.params.length!==spec.parameterWords.length||row.returnWords!==spec.resultWords)throw new TypeError('Exact external scalar signature required');
   const params=row.params.map((arg,i)=>{const slot=bounded(arg.slot,'external parameter slot',true),words=arg.words;if(words!==spec.parameterWords[i]||slot>=l.localWords||words>l.localWords-slot)throw new RangeError('External parameter span outside local storage');return Object.freeze({...arg,slot,words});});
@@ -43,7 +47,7 @@ function configuration(options){
  const l=microcodeVmLayout(options),instructionCount=bounded(options.instructionCount??options.code?.length/I.instructionWords,'instruction count'),entryPc=bounded(options.entryPc??0,'entry PC',true),instructionBudget=bounded(options.instructionBudget??4096,'instruction budget');
  if(entryPc>=instructionCount)throw new RangeError('Entry PC outside immutable instruction table');const externalFunctions=externalConfiguration(options.externalFunctions,l,instructionCount);
  const seen=new Set(),initialSlots=(options.initialSlots??[]).map(row=>{if(!row||typeof row!=='object')throw new TypeError('Explicit initial local slot required');const slot=bounded(row.slot,'initial slot',true);if(slot>=l.localWords||seen.has(slot))throw new RangeError('Unique initial local slot in range required');seen.add(slot);const candidateStride=bounded(row.candidateStride??0,'candidate stride',true),value=bounded(row.value??0,'initial value',true);if(Object.keys(row).some(k=>!['slot','candidateStride','value'].includes(k)))throw new TypeError('Unknown initial local input');return Object.freeze({slot,candidateStride,value});});
- const intrinsics=options.intrinsics??'none';if(!MICROCODE_INTRINSIC_PROFILES.includes(intrinsics))throw new TypeError('Explicit exact-source intrinsic profile required');let intrinsicFunctions=null;if(options.intrinsicFunctions!==undefined&&options.intrinsicFunctions!==null){if(!Array.isArray(options.intrinsicFunctions)||new Set(options.intrinsicFunctions).size!==options.intrinsicFunctions.length)throw new TypeError('Unique exact-source intrinsic function names required');intrinsicFunctions=Object.freeze(options.intrinsicFunctions.map(name=>{const d=D.find(x=>x.name===name);if(!d||!intrinsicEnabled(intrinsics,d))throw new TypeError('Unknown or out-of-profile intrinsic function: '+name);return name;}));}if(options.eventAudit!==undefined&&typeof options.eventAudit!=='boolean')throw new TypeError('Explicit eventAudit boolean required');const workgroupSize=bounded(options.workgroupSize??1,'workgroup size');if(workgroupSize>256)throw new RangeError('Explicit workgroup size must not exceed 256; caller must check device limit');return Object.freeze({...l,instructionCount,entryPc,instructionBudget,intrinsics,intrinsicFunctions,externalFunctions,controlMode,vmStateDisjoint,workgroupSize,workgroups:Math.ceil(l.count/workgroupSize),eventAudit:options.eventAudit===true,initialSlots:Object.freeze(initialSlots)});
+ const intrinsics=options.intrinsics??'none';const preparationApproval=intrinsics===PREPARATION_PROFILE?assertPreparationDescriptor(options.preparationApproval,{count:l.count}):null;if(intrinsics!==PREPARATION_PROFILE&&options.preparationApproval!==undefined)throw new TypeError('Preparation descriptor requires explicit preparation profile');if(!MICROCODE_INTRINSIC_PROFILES.includes(intrinsics))throw new TypeError('Explicit exact-source intrinsic profile required');let intrinsicFunctions=null;if(options.intrinsicFunctions!==undefined&&options.intrinsicFunctions!==null){if(!Array.isArray(options.intrinsicFunctions)||new Set(options.intrinsicFunctions).size!==options.intrinsicFunctions.length)throw new TypeError('Unique exact-source intrinsic function names required');intrinsicFunctions=Object.freeze(options.intrinsicFunctions.map(name=>{const d=D.find(x=>x.name===name);if(!d||!intrinsicEnabled(intrinsics,d))throw new TypeError('Unknown or out-of-profile intrinsic function: '+name);return name;}));}if(options.eventAudit!==undefined&&typeof options.eventAudit!=='boolean')throw new TypeError('Explicit eventAudit boolean required');const workgroupSize=bounded(options.workgroupSize??1,'workgroup size');if(workgroupSize>256)throw new RangeError('Explicit workgroup size must not exceed 256; caller must check device limit');let numericContinuationDescriptor;if(l.numericContinuation){if(!vmStateDisjoint||options.state&&[options.code,...options.bindings??[]].some(x=>x?.buffer===options.state.buffer))throw new TypeError('Phased numeric VM tail requires disjoint VM/source/code storage');if(intrinsics!=='source-numeric-v1'||intrinsicFunctions?.length!==1||intrinsicFunctions[0]!=='rc_num_eval'||externalFunctions.some(x=>x.name==='rc_num_eval'))throw new TypeError('Phased continuation admits only explicit exact-source rc_num_eval intrinsic');numericContinuationDescriptor=assertMicrocodeNumericContinuationDescriptor(options.numericContinuationDescriptor,{candidateCount:l.count,vmStride:l.stride,tailOffset:l.numericTailOffset});}else if(options.numericContinuationDescriptor!==undefined)throw new TypeError('Numeric continuation descriptor requires explicit phased mode');return Object.freeze({...l,...(numericContinuationDescriptor?{numericContinuationDescriptor}:{}),instructionCount,entryPc,instructionBudget,intrinsics,intrinsicFunctions,...(preparationApproval?{preparationApproval}:{}),externalFunctions,controlMode,vmStateDisjoint,workgroupSize,workgroups:Math.ceil(l.count/workgroupSize),eventAudit:options.eventAudit===true,initialSlots:Object.freeze(initialSlots)});
 }
 const unary=new Set(['MOV','NOT','LNOT','INEG','FNEG','UCLZ','UCTZ','POPCOUNT','FABS','FSQRT','FLOOR','CEIL','TRUNC','ROUND','UTOF','ITOF','FTOU','FTOI']);
 const binary=new Set(['UADD','USUB','UMUL','UDIV','UREM','IADD','ISUB','IMUL','IDIV','IREM','FADD','FSUB','FMUL','FDIV','AND','OR','XOR','SHL','USHR','ISHR','EQ','NE','ULT','ULE','UGT','UGE','ILT','ILE','IGT','IGE','FEQ','FNE','FLT','FLE','FGT','FGE','FMIN','FMAX']);
@@ -74,7 +78,7 @@ function domain(name,a,b){if(['UDIV','UREM','IDIV','IREM'].includes(name)&&b===0
  * instruction counts across lanes/chunks; begin does not reset the observer.
  * Counter overflow aborts the test instead of wrapping or publishing a result. */
 export function createMicrocodeVmReferenceForTest(options){
- if(options?.testOnly!==true)throw new TypeError('Microcode host execution is TEST ONLY');for(const key of['onCall','onReturn'])if(options[key]!==undefined&&typeof options[key]!=='function')throw new TypeError('TEST-only call/return observer must be a function');const p=configuration(options),code=options.code;
+ if(options?.testOnly!==true)throw new TypeError('Microcode host execution is TEST ONLY');for(const key of['onCall','onReturn','numericContinuationHandler'])if(options[key]!==undefined&&typeof options[key]!=='function')throw new TypeError('TEST-only call/return observer must be a function');if(options.stopAfterCommittedReturn!==undefined&&typeof options.stopAfterCommittedReturn!=='function')throw new TypeError('TEST-only committed return stop must be a function');const p=configuration(options),code=options.code;
  if(!(code instanceof Uint32Array)||code.length!==p.instructionCount*8)throw new TypeError('Exact owned u32 instruction array required');
  const bindings=options.bindings??Array.from({length:p.eventAudit?6:5},()=>new Uint32Array(1));if(!Array.isArray(bindings)||bindings.length!==(p.eventAudit?6:5)||bindings.some(b=>!(b instanceof Uint32Array)))throw new TypeError('Exact original u32 source bindings required (optional eventAudit is explicit)');
  const state=options.state??new Uint32Array(p.totalWords);if(!(state instanceof Uint32Array)||state.length!==p.totalWords)throw new TypeError('Exact candidate VM state array required');
@@ -89,7 +93,7 @@ export function createMicrocodeVmReferenceForTest(options){
   if(sp===0)return pc===p.entryPc;const back=state[at+p.stackOffset+sp-1];return back>0&&back<p.instructionCount&&code[(back-1)*8]===O.CALL&&code[(back-1)*8+2]===pc&&!code.subarray((back-1)*8,(back-1)*8+8).some((v,i)=>i!==0&&i!==2&&v!==0);
  };
  const serviceExternal=(lane=0,macroId,handler)=>{
-  const at=base(lane),lb=at+p.localsOffset;if(!controlValid(at))return fail(at,E.malformedControl);const status=state[at+C.status],pending=state[at+C.pendingMacro];if(!Number.isInteger(macroId)||!p.externalFunctions.some(x=>x.id===macroId))return fail(at,E.externalProtocol);
+  const at=base(lane),lb=at+p.localsOffset;if(!controlValid(at))return fail(at,E.malformedControl);const status=state[at+C.status],pending=state[at+C.pendingMacro];if(p.numericContinuation&&status===S.waiting&&state.subarray(at+p.numericTailOffset,at+p.numericTailOffset+Q.ownedWords).some(x=>x!==0))return fail(at,E.malformedControl);if(!Number.isInteger(macroId)||!p.externalFunctions.some(x=>x.id===macroId))return fail(at,E.externalProtocol);
   if(status!==S.waiting){if([S.invalid,S.unsupported].includes(status))return status;if(![S.ready,S.complete].includes(status)||pending!==0)return fail(at,E.externalProtocol);return status;}
   if(pending===0||!externalValid(at,pending-1)||state[at+C.lastOpcode]!==O.EXTERNAL_CALL)return fail(at,E.externalProtocol);
   if(pending!==macroId+1)return S.waiting;if(state[at+C.stepsLow]===0xffffffff&&state[at+C.stepsHigh]===0xffffffff)return fail(at,E.counterOverflow);
@@ -97,16 +101,31 @@ export function createMicrocodeVmReferenceForTest(options){
   const result=handler(descriptor,args,{bindings});if(!(result instanceof Uint32Array)||result.length!==descriptor.returnWords)throw new TypeError('Exact TEST-only external result words required');
   recordStep(state[at+C.pc]);state.set(result,lb+descriptor.returnSlot);state[at+C.pendingMacro]=0;state[at+C.pc]++;state[at+C.stepsLow]=(state[at+C.stepsLow]+1)>>>0;if(state[at+C.stepsLow]===0)state[at+C.stepsHigh]++;state[at+C.status]=S.ready;return S.ready;
  };
+ const numericAdvance=(at,pc,dst,programBase,scratchBase)=>{
+  const t=at+p.numericTailOffset,F=Q.fields,handler=options.numericContinuationHandler;
+  if(typeof handler!=='function'){fail(at,E.unsupportedPrimitive,S.unsupported);return null;}
+  const phase=state[t+F.phase];if(phase===0){if(state.subarray(t,t+Q.ownedWords).some(x=>x!==0)){fail(at,E.malformedControl);return null;}}
+  else if(state[t+F.ownerPC]!==pc||state[t+F.destination]!==dst||state[t+F.program]!==programBase||state[t+F.scratch]!==scratchBase){fail(at,E.malformedControl);return null;}
+  if(state[t+F.microWorkLow]===0xffffffff&&state[t+F.microWorkHigh]===0xffffffff){fail(at,E.counterOverflow);return null;}
+  const invoke=(operation,args)=>{const r=handler(operation,Object.freeze(args),{state,bindings,configuration:p});if(!Number.isInteger(r)||r<0||r>Q.protocolFault)throw new TypeError('Exact TEST phased numeric transport return required');return r;};
+  const result=phase===0?invoke('start',[at,programBase,scratchBase,pc,dst]):invoke('step',[at]);
+  if(result===Q.protocolFault){fail(at,E.malformedControl);return null;}
+  if(result!==0){if(state[t+F.phase]!==Q.phases.RETURN||state[t+F.sourceResult]!==result||invoke('clear',[at])!==0){fail(at,E.malformedControl);return null;}}
+  state[t+F.microWorkLow]=(state[t+F.microWorkLow]+1)>>>0;if(state[t+F.microWorkLow]===0)state[t+F.microWorkHigh]++;
+  return result===0?null:result;
+ };
  const begin=(lane=0)=>{const at=base(lane);state.fill(0,at,at+p.stride);state[at+C.magicWord]=C.magic;state[at+C.versionWord]=C.version;state[at+C.status]=S.ready;state[at+C.pc]=p.entryPc;state[at+C.entryPc]=p.entryPc;for(const x of p.initialSlots)state[at+p.localsOffset+x.slot]=(Math.imul(lane,x.candidateStride)+x.value)>>>0;return S.ready;};
  const advance=(lane=0,budget=p.instructionBudget)=>{bounded(budget,'instruction budget');const at=base(lane),lb=at+p.localsOffset,sb=at+p.stackOffset;
   if(!controlValid(at))return fail(at,E.malformedControl);
-  const prior=state[at+C.status],pending=state[at+C.pendingMacro];if(prior===S.waiting){if(pending===0||!externalValid(at,pending-1)||state[at+C.lastOpcode]!==O.EXTERNAL_CALL)return fail(at,E.externalProtocol);return prior;}if(prior!==S.ready){if(![S.complete,S.invalid,S.unsupported].includes(prior))return fail(at,E.malformedControl);if(prior===S.complete&&pending!==0)return fail(at,E.externalProtocol);return prior;}if(pending!==0)return fail(at,E.externalProtocol);
+  if(p.numericContinuation&&state[at+p.numericTailOffset+Q.fields.phase]===0&&state.subarray(at+p.numericTailOffset,at+p.numericTailOffset+Q.ownedWords).some(x=>x!==0))return fail(at,E.malformedControl);
+ const prior=state[at+C.status],pending=state[at+C.pendingMacro];if(p.numericContinuation&&state[at+p.numericTailOffset+Q.fields.phase]!==0&&![S.ready,S.invalid,S.unsupported].includes(prior))return fail(at,E.malformedControl);if(prior===S.waiting){if(pending===0||!externalValid(at,pending-1)||state[at+C.lastOpcode]!==O.EXTERNAL_CALL)return fail(at,E.externalProtocol);return prior;}if(prior!==S.ready){if(![S.complete,S.invalid,S.unsupported].includes(prior))return fail(at,E.malformedControl);if(prior===S.complete&&pending!==0)return fail(at,E.externalProtocol);return prior;}if(pending!==0)return fail(at,E.externalProtocol);
   for(let work=0;work<budget&&state[at+C.status]===S.ready;work++){
-   const pc=state[at+C.pc];if(pc>=p.instructionCount)return fail(at,E.instructionRange);const ins=code.subarray(pc*8,pc*8+8),name=I.names[ins[0]];state[at+C.lastOpcode]=ins[0];if(state[at+C.stepsLow]===0xffffffff&&state[at+C.stepsHigh]===0xffffffff)return fail(at,E.counterOverflow);if(!name)return fail(at,E.unknownOpcode);
+   const pc=state[at+C.pc];if(pc>=p.instructionCount)return fail(at,E.instructionRange);const ins=code.subarray(pc*8,pc*8+8),name=I.names[ins[0]];state[at+C.lastOpcode]=ins[0];if(p.numericContinuation&&state[at+p.numericTailOffset+Q.fields.phase]!==0&&name!=='NUM_EVAL')return fail(at,E.malformedControl);if(state[at+C.stepsLow]===0xffffffff&&state[at+C.stepsHigh]===0xffffffff)return fail(at,E.counterOverflow);if(!name)return fail(at,E.unknownOpcode);
    if(Array.from(ins).some((v,i)=>i>0&&!use[name].includes(i)&&v!==0))return fail(at,E.unknownOpcode);
    if(reg[name].some(i=>ins[i]>=p.localWords))return fail(at,E.localRange);const intrinsic=intrinsicByOpcode.get(name);if(intrinsic&&[intrinsic.resultWords,...intrinsic.parameterWords].some((width,i)=>width>p.localWords-ins[i+1]))return fail(at,E.localRange);
    const[op,dst,aa,bb,cc]=ins,a=state[lb+aa],b=state[lb+bb],c=state[lb+cc];let next=pc+1;
-   if(intrinsic){if(!intrinsicAdmitted(p,intrinsic))return fail(at,E.unsupportedPrimitive,S.unsupported);const args=intrinsic.parameterWords.map((width,i)=>state.slice(lb+ins[i+2],lb+ins[i+2]+width)),handler=options.intrinsicHandler,result=typeof handler==='function'?handler(intrinsic,args,{bindings,state,configuration:p,lane,localBase:lb}):null;if(result===null||result===undefined)return fail(at,E.unsupportedPrimitive,S.unsupported);if(!(result instanceof Uint32Array)||result.length!==intrinsic.resultWords)throw new TypeError('Exact test-only intrinsic result words required for '+name);state.set(result,lb+dst);}
+   if(intrinsic&&p.numericContinuation&&name==='NUM_EVAL'){const result=numericAdvance(at,pc,dst,a,b);if(result===null){if(state[at+C.status]!==S.ready)return state[at+C.status];continue;}state[lb+dst]=result;}
+   else if(intrinsic){if(!intrinsicAdmitted(p,intrinsic))return fail(at,E.unsupportedPrimitive,S.unsupported);if(intrinsic.family==='preparation'){try{assertPreparationInputs(Array.from(ins.slice(2,8),slot=>state[lb+slot]),bindings,{lane});}catch{return fail(at,E.sourceDomain,S.unsupported);}}const args=intrinsic.parameterWords.map((width,i)=>state.slice(lb+ins[i+2],lb+ins[i+2]+width)),handler=options.intrinsicHandler,result=typeof handler==='function'?handler(intrinsic,args,{bindings,state,configuration:p,lane,localBase:lb}):null;if(result===null||result===undefined)return fail(at,E.unsupportedPrimitive,S.unsupported);if(intrinsic.family==='preparation'&&result?.kind==='source-preparation-failure'){if(result.error!==E.storageRange||result.status!==S.invalid)throw new TypeError('Exact preparation failure transport');return fail(at,result.error,result.status);}if(!(result instanceof Uint32Array)||result.length!==intrinsic.resultWords)throw new TypeError('Exact test-only intrinsic result words required for '+name);state.set(result,lb+dst);}
    else if(name==='EXTERNAL_CALL'){if(!p.externalFunctions.length)return fail(at,E.unsupportedPrimitive,S.unsupported);if(!externalValid(at,aa))return fail(at,E.externalProtocol);state[at+C.pendingMacro]=aa+1;state[at+C.status]=S.waiting;return S.waiting;}
    else if(name==='HALT'){state[at+C.status]=S.complete;}
    else if(name==='GUARD'){if(a===0)return fail(at,E.sourceDomain,S.unsupported);}
@@ -117,6 +136,7 @@ export function createMicrocodeVmReferenceForTest(options){
    else if(name==='LOCAL_LOAD'||name==='LOCAL_STORE'){if(a>=p.localWords)return fail(at,E.localRange);if(name==='LOCAL_LOAD')state[lb+dst]=state[lb+a];else state[lb+a]=b;}
    else{if(!domain(name,a,b))return fail(at,E.sourceDomain,S.unsupported);state[lb+dst]=scalar(name,a,b,c);}
    recordStep(pc);state[at+C.stepsLow]=(state[at+C.stepsLow]+1)>>>0;if(state[at+C.stepsLow]===0)state[at+C.stepsHigh]++;state[at+C.pc]=next;
+   if(name==='RET'&&options.stopAfterCommittedReturn){let stop;try{stop=options.stopAfterCommittedReturn(Object.freeze({lane,pc,targetPc:state[at+C.status]===S.complete?null:next}));if(typeof stop!=='boolean')throw new TypeError('TEST-only committed return stop requires boolean');}catch(error){fail(at,E.malformedControl);throw error;}if(stop)break;}
   }
   if(state[at+C.status]===S.ready){if(state[at+C.yields]===0xffffffff)return fail(at,E.counterOverflow);state[at+C.yields]++;}return state[at+C.status];
  };
@@ -154,11 +174,24 @@ ${p.eventAudit?'@group(0) @binding(7) var<storage,read_write> rc_event_audit:arr
  * marshalling only. Their compiler/device performance needs independent gates.
  * begin/main share seven bindings (eight with audit); begin ONCE per fresh run.
  */
+function phasedNumericWGSL(p,fail){
+ const t=`base+${p.numericTailOffset}u`,F=Q.fields;
+ return `let nt=${t};let numericPhase=rc_vm_state[nt+${F.phase}u];let numericProgram=rc_vm_state[lb+aa];let numericScratch=rc_vm_state[lb+bb];
+ if(numericPhase==0u){if(${Array.from({length:Q.ownedWords},(_,i)=>`rc_vm_state[nt+${i}u]!=0u`).join('||')}){${fail(E.malformedControl)}}}
+ else if(rc_vm_state[nt+${F.ownerPC}u]!=pc||rc_vm_state[nt+${F.destination}u]!=dst||rc_vm_state[nt+${F.program}u]!=numericProgram||rc_vm_state[nt+${F.scratch}u]!=numericScratch){${fail(E.malformedControl)}}
+ if(rc_vm_state[nt+${F.microWorkLow}u]==0xffffffffu&&rc_vm_state[nt+${F.microWorkHigh}u]==0xffffffffu){${fail(E.counterOverflow)}}
+ var numericResult=0u;if(numericPhase==0u){numericResult=rc_vm_num_start(base,numericProgram,numericScratch,pc,dst);}else{numericResult=rc_vm_num_step(base);}
+ if(numericResult==5u){${fail(E.malformedControl)}}
+ if(numericResult!=0u){if(rc_vm_state[nt+${F.phase}u]!=5u||rc_vm_state[nt+${F.sourceResult}u]!=numericResult){${fail(E.malformedControl)}}if(rc_vm_num_clear(base)!=0u){${fail(E.malformedControl)}}}
+ rc_vm_state[nt+${F.microWorkLow}u]++;if(rc_vm_state[nt+${F.microWorkLow}u]==0u){rc_vm_state[nt+${F.microWorkHigh}u]++;}
+ if(numericResult==0u){return true;}rc_vm_state[lb+dst]=numericResult;`;
+}
 export function generateMicrocodeVmWGSL(options){
  const p=configuration(options),N=p.localWords,B=p.localsOffset,T=p.stackOffset;
  const fail=(error,status=S.invalid)=>`return rc_vm_fail(base,${error}u,${status}u);`;
  const cases=I.names.map((name,id)=>{const intrinsic=intrinsicByOpcode.get(name),unused=Array.from({length:7},(_,i)=>i+1).filter(i=>!use[name].includes(i)),regs=reg[name],pre=(unused.length?`if(${unused.map(i=>`rc_microcode[ip+${i}u]!=0u`).join('||')}){${fail(E.unknownOpcode)}}`:'')+(regs.length?`if(${regs.map(i=>`rc_microcode[ip+${i}u]>=${N}u`).join('||')}){${fail(E.localRange)}}`:'');let body;
-  if(intrinsic){if(!intrinsicAdmitted(p,intrinsic))body=fail(E.unsupportedPrimitive,S.unsupported);else{const widths=[intrinsic.resultWords,...intrinsic.parameterWords];body=`if(${widths.map((width,i)=>`${width}u>${N}u-rc_microcode[ip+${i+1}u]`).join('||')}){${fail(E.localRange)}}`;const args=intrinsic.parameterWords.map((width,i)=>{const offset=['aa','bb','cc'][i];return width===1?`rc_vm_state[lb+${offset}]`:`RcF64(rc_vm_state[lb+${offset}],rc_vm_state[lb+${offset}+1u])`;});body+=`let intrinsicResult=${intrinsic.name}(${args.join(',')});`;if(intrinsic.resultWords===2)body+='rc_vm_state[lb+dst]=intrinsicResult.x;rc_vm_state[lb+dst+1u]=intrinsicResult.y;';else body+=`rc_vm_state[lb+dst]=${['F64_EQ','F64_LT','F64_LE','F64_FINITE'].includes(name)?'select(0u,1u,intrinsicResult)':'intrinsicResult'};`;}}
+  if(intrinsic&&p.numericContinuation&&name==='NUM_EVAL')body=phasedNumericWGSL(p,fail);
+  else if(intrinsic){if(!intrinsicAdmitted(p,intrinsic))body=fail(E.unsupportedPrimitive,S.unsupported);else{const widths=[intrinsic.resultWords,...intrinsic.parameterWords];body=`if(${widths.map((width,i)=>`${width}u>${N}u-rc_microcode[ip+${i+1}u]`).join('||')}){${fail(E.localRange)}}`;const args=intrinsic.parameterWords.map((width,i)=>{const offset=['aa','bb','cc','dd','ee','ff'][i];return width===1?`rc_vm_state[lb+${offset}]`:`RcF64(rc_vm_state[lb+${offset}],rc_vm_state[lb+${offset}+1u])`;});if(intrinsic.family==='preparation')body+=`if(rc_vm_state[lb+aa]!=(base/${p.stride}u)*${p.preparationApproval.layout.bankWords}u||!rc_gp_begin(rc_vm_state[lb+aa])){${fail(E.sourceDomain,S.unsupported)}}`;body+=`let intrinsicResult=${intrinsic.name}(${args.join(',')});`;if(intrinsic.family==='preparation')body+=`if(rc_gp_error!=0u){${fail(E.storageRange)}}`;if(intrinsic.resultWords===2)body+='rc_vm_state[lb+dst]=intrinsicResult.x;rc_vm_state[lb+dst+1u]=intrinsicResult.y;';else body+=`rc_vm_state[lb+dst]=${['F64_EQ','F64_LT','F64_LE','F64_FINITE'].includes(name)?'select(0u,1u,intrinsicResult)':'intrinsicResult'};`;}}
   else if(name==='EXTERNAL_CALL')body=p.externalFunctions.length?`if(!rc_vm_external_valid(base,aa)){${fail(E.externalProtocol)}}rc_vm_state[base+${C.pendingMacro}u]=aa+1u;rc_vm_state[base+${C.status}u]=${S.waiting}u;return false;`:fail(E.unsupportedPrimitive,S.unsupported);
   else if(name==='GUARD')body=`if(a==0u){${fail(E.sourceDomain,S.unsupported)}}`;
   else if(name==='HALT')body=`rc_vm_state[base+2u]=${S.complete}u;`;
@@ -174,15 +207,15 @@ export function generateMicrocodeVmWGSL(options){
  const storageCode=`// Source scalar VM ABI ${I.version}; exact source-intrinsic profile: ${p.intrinsics}.
 ${vmBindingsWGSL(p)}
 ${externalValidationWGSL(p)}
-${sourceIntrinsicNativeWGSL(p.intrinsics,p.intrinsicFunctions===null?{}:{functionNames:p.intrinsicFunctions})}
+${p.numericContinuation?generateMicrocodeNumericContinuationWGSL({candidateCount:p.count,vmStride:p.stride,tailOffset:p.numericTailOffset}):sourceIntrinsicNativeWGSL(p.intrinsics,p.intrinsicFunctions===null?{}:{functionNames:p.intrinsicFunctions})}
 fn rc_vm_fail(base:u32,error:u32,status:u32)->bool{rc_vm_state[base+2u]=status;rc_vm_state[base+3u]=error;return false;}
 fn rc_vm_storage_length(binding:u32)->u32{switch binding{case 0u:{return arrayLength(&rc_state);}case 1u:{return arrayLength(&rc_program);}case 2u:{return arrayLength(&rc_geometry);}case 3u:{return arrayLength(&rc_scratch);}case 4u:{return arrayLength(&rc_inputs);}${p.eventAudit?'case 5u:{return arrayLength(&rc_event_audit);}':''}default:{return 0u;}}}
 fn rc_vm_storage_read(binding:u32,address:u32)->u32{switch binding{case 0u:{return rc_state[address];}case 1u:{return rc_program[address];}case 2u:{return rc_geometry[address];}case 3u:{return rc_scratch[address];}case 4u:{return rc_inputs[address];}${p.eventAudit?'case 5u:{return rc_event_audit[address];}':''}default:{return 0u;}}}
 fn rc_vm_storage_write(binding:u32,address:u32,value:u32){if(binding==0u){rc_state[address]=value;}else if(binding==3u){rc_scratch[address]=value;}${p.eventAudit?'else if(binding==5u){rc_event_audit[address]=value;}':''}}
 fn rc_vm_step(base:u32)->bool{
- let pc=rc_vm_state[base+4u];if(pc>=${p.instructionCount}u){${fail(E.instructionRange)}}let ip=pc*8u;let op=rc_microcode[ip];rc_vm_state[base+9u]=op;
+ let pc=rc_vm_state[base+4u];if(pc>=${p.instructionCount}u){${fail(E.instructionRange)}}let ip=pc*8u;let op=rc_microcode[ip];rc_vm_state[base+9u]=op;${p.numericContinuation?`if(rc_vm_state[base+${p.numericTailOffset+Q.fields.phase}u]!=0u&&op!=${O.NUM_EVAL}u){${fail(E.malformedControl)}}`:''}
  if(rc_vm_state[base+6u]==0xffffffffu&&rc_vm_state[base+7u]==0xffffffffu){${fail(E.counterOverflow)}}
- let lb=base+${B}u;let dst=rc_microcode[ip+1u];let aa=rc_microcode[ip+2u];let bb=rc_microcode[ip+3u];let cc=rc_microcode[ip+4u];
+ let lb=base+${B}u;let dst=rc_microcode[ip+1u];let aa=rc_microcode[ip+2u];let bb=rc_microcode[ip+3u];let cc=rc_microcode[ip+4u];${p.intrinsics===PREPARATION_PROFILE?'let dd=rc_microcode[ip+5u];let ee=rc_microcode[ip+6u];let ff=rc_microcode[ip+7u];':''}
  // Only opcode-required local values are read, after its operand guards.
  var next=pc+1u;
  switch op{${cases}\ndefault:{${fail(E.unknownOpcode)}}}
@@ -197,7 +230,7 @@ fn rc_vm_step(base:u32)->bool{
  if(gid.x>=${p.count}u||arrayLength(&rc_vm_state)!=${p.totalWords}u){return;}let base=gid.x*${p.stride}u;
  if(rc_vm_state[base]!=${C.magic}u||rc_vm_state[base+1u]!=1u||rc_vm_state[base+10u]!=${p.entryPc}u||rc_vm_state[base+5u]>${p.stackCapacity}u){rc_vm_fail(base,1u,3u);return;}
  for(var k=${C.reservedStart}u;k<16u;k++){if(rc_vm_state[base+k]!=0u){rc_vm_fail(base,1u,3u);return;}}
- let status=rc_vm_state[base+2u];let pending=rc_vm_state[base+${C.pendingMacro}u];if(status==${S.waiting}u){if(pending==0u||!rc_vm_external_valid(base,pending-1u)||rc_vm_state[base+${C.lastOpcode}u]!=${O.EXTERNAL_CALL}u){rc_vm_fail(base,${E.externalProtocol}u,3u);}return;}if(status!=1u){if(status<2u||status>4u){rc_vm_fail(base,1u,3u);}else if(status==2u&&pending!=0u){rc_vm_fail(base,${E.externalProtocol}u,3u);}return;}if(pending!=0u){rc_vm_fail(base,${E.externalProtocol}u,3u);return;}
+ ${p.numericContinuation?`if(rc_vm_state[base+${p.numericTailOffset+Q.fields.phase}u]==0u&&(${Array.from({length:Q.ownedWords},(_,i)=>`rc_vm_state[base+${p.numericTailOffset+i}u]!=0u`).join('||')})){rc_vm_fail(base,${E.malformedControl}u,3u);return;}`:''}let status=rc_vm_state[base+2u];let pending=rc_vm_state[base+${C.pendingMacro}u];${p.numericContinuation?`if(rc_vm_state[base+${p.numericTailOffset+Q.fields.phase}u]!=0u&&status!=1u&&status!=3u&&status!=4u){rc_vm_fail(base,${E.malformedControl}u,3u);return;}`:''}if(status==${S.waiting}u){if(pending==0u||!rc_vm_external_valid(base,pending-1u)||rc_vm_state[base+${C.lastOpcode}u]!=${O.EXTERNAL_CALL}u){rc_vm_fail(base,${E.externalProtocol}u,3u);}return;}if(status!=1u){if(status<2u||status>4u){rc_vm_fail(base,1u,3u);}else if(status==2u&&pending!=0u){rc_vm_fail(base,${E.externalProtocol}u,3u);}return;}if(pending!=0u){rc_vm_fail(base,${E.externalProtocol}u,3u);return;}
  if(arrayLength(&rc_microcode)!=${p.instructionCount*8}u){rc_vm_fail(base,2u,3u);return;}
  for(var work=0u;work<${p.instructionBudget}u;work++){if(!rc_vm_step(base)){return;}}
  if(rc_vm_state[base+8u]==0xffffffffu){rc_vm_fail(base,${E.counterOverflow}u,3u);return;}rc_vm_state[base+8u]++;
@@ -217,20 +250,22 @@ export function createMicrocodeCachedVmReferenceForTest(options){return createCa
  */
 export function generateMicrocodeExternalWGSL(options){
  const p=configuration(options),d=p.externalFunctions.find(x=>x.id===options.macroId);if(!d)throw new TypeError('Explicit approved external macro ID required');
+ const numberGuard=d.id===4?generateNumberProgramMacroAdmissionWGSL(options.numberProgramViews,p):'';
+ if(d.id!==4&&options.numberProgramViews!==undefined)throw new TypeError('Number macro logical views apply only to its explicit handler');
  return `// Source macro ${d.name}; closure ${d.approval.closureSha256}.
 ${vmBindingsWGSL(p)}
 ${sourceMacroNativeWGSL(d.name)}
-${externalValidationWGSL(p)}
+${externalValidationWGSL(p)}${numberGuard}
 fn rc_vm_external_fail(base:u32,error:u32){rc_vm_state[base+${C.status}u]=${S.invalid}u;rc_vm_state[base+${C.error}u]=error;}
 @compute @workgroup_size(${p.workgroupSize}) fn main(@builtin(global_invocation_id) gid:vec3<u32>){
  if(gid.x>=${p.count}u||arrayLength(&rc_vm_state)!=${p.totalWords}u){return;}let base=gid.x*${p.stride}u;
  if(rc_vm_state[base+${C.magicWord}u]!=${C.magic}u||rc_vm_state[base+${C.versionWord}u]!=${C.version}u||rc_vm_state[base+${C.entryPc}u]!=${p.entryPc}u||rc_vm_state[base+${C.sp}u]>${p.stackCapacity}u){rc_vm_external_fail(base,${E.malformedControl}u);return;}
  for(var k=${C.reservedStart}u;k<${C.words}u;k++){if(rc_vm_state[base+k]!=0u){rc_vm_external_fail(base,${E.malformedControl}u);return;}}
  let status=rc_vm_state[base+${C.status}u];let pending=rc_vm_state[base+${C.pendingMacro}u];
- if(status!=${S.waiting}u){if(status==${S.invalid}u||status==${S.unsupported}u){return;}if((status!=${S.ready}u&&status!=${S.complete}u)||pending!=0u){rc_vm_external_fail(base,${E.externalProtocol}u);}return;}
+ ${p.numericContinuation?`if(status==${S.waiting}u&&(${Array.from({length:Q.ownedWords},(_,i)=>`rc_vm_state[base+${p.numericTailOffset+i}u]!=0u`).join('||')})){rc_vm_external_fail(base,${E.malformedControl}u);return;}`:''}if(status!=${S.waiting}u){if(status==${S.invalid}u||status==${S.unsupported}u){return;}if((status!=${S.ready}u&&status!=${S.complete}u)||pending!=0u){rc_vm_external_fail(base,${E.externalProtocol}u);}return;}
  if(pending==0u||!rc_vm_external_valid(base,pending-1u)||rc_vm_state[base+${C.lastOpcode}u]!=${O.EXTERNAL_CALL}u){rc_vm_external_fail(base,${E.externalProtocol}u);return;}if(pending!=${d.id+1}u){return;}
  if(rc_vm_state[base+${C.stepsLow}u]==0xffffffffu&&rc_vm_state[base+${C.stepsHigh}u]==0xffffffffu){rc_vm_external_fail(base,${E.counterOverflow}u);return;}
- let lb=base+${p.localsOffset}u;${d.returnWords?'let result=':''}${d.name}(${d.params.map(x=>`rc_vm_state[lb+${x.slot}u]`).join(',')});
+ let lb=base+${p.localsOffset}u;${numberGuard?`if(!rc_vm_number_admit(gid.x,${d.params.map(x=>`rc_vm_state[lb+${x.slot}u]`).join(',')})){rc_vm_external_fail(base,${E.storageRange}u);return;}`:''}${d.returnWords?'let result=':''}${d.name}(${d.params.map(x=>`rc_vm_state[lb+${x.slot}u]`).join(',')});
  ${d.returnWords?`rc_vm_state[lb+${d.returnSlot}u]=result;`:''}rc_vm_state[base+${C.pendingMacro}u]=0u;rc_vm_state[base+${C.pc}u]++;rc_vm_state[base+${C.stepsLow}u]++;if(rc_vm_state[base+${C.stepsLow}u]==0u){rc_vm_state[base+${C.stepsHigh}u]++;}rc_vm_state[base+${C.status}u]=${S.ready}u;
 }
 `;

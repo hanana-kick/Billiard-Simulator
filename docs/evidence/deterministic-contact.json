@@ -1,0 +1,28 @@
+{
+  "eventUpperHandoffs": 5,
+  "arithmeticCases": 1006,
+  "arithmeticComparedWords": 64384,
+  "profile": "prepared-real-arm-pair-cloth-integer-v1",
+  "cases": 81,
+  "comparedWords": 5184,
+  "exactWords": true,
+  "compileMs": 410.74639,
+  "shaderBytes": 5989,
+  "metrics": {
+    "candidates": 81,
+    "inputBytes": 20736,
+    "outputBytes": 20736,
+    "readbackBytes": 20736,
+    "allocatedBytes": 62208,
+    "submitToDoneMs": 0.8899800000000369,
+    "hardwareSpeedClaim": false,
+    "physicalAcceptance": false
+  },
+  "statuses": {
+    "1": 77,
+    "4": 3,
+    "5": 1
+  },
+  "iterations": 399,
+  "physicalAcceptance": false
+}

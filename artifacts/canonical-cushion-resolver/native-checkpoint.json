@@ -1,0 +1,27 @@
+{
+  "profile": "canonical-local-cushion-composition",
+  "physicalGPU": false,
+  "backend": "SwiftShader Vulkan",
+  "cpuTestsPassed": 10,
+  "nativeCases": 9,
+  "nativeExactWords": 7408,
+  "compileMs": 76639.036643,
+  "elapsedSeconds": 77.835,
+  "sampledAggregateRSSMiB": 1066.54,
+  "maxChildRSSMiB": 1032.24,
+  "intermediateReadbacks": 0,
+  "hostPhysicsBetweenPhases": 0,
+  "dispatchesPerEncode": 25,
+  "globalReceiptCertified": false,
+  "coverage": [
+    "actual finite EDGE impact with original SMT2 departure16/64/512",
+    "unqualified4096 departure preserves impact pending",
+    "source state mismatch",
+    "original gravity/cloth/spin-drag mismatch",
+    "original deadline preserves impact budget-pending"
+  ],
+  "sourceSha256": {
+    "src/direct-candidate/deterministic-cushion-resolver.mjs": "2e8132aa3f4ef13671bf304e3dda898d351ea458e14685f3f4d257214de615ce",
+    "tests/deterministic-cushion-resolver.mjs": "c8dc2520ad895ab0e445b728ddb4bd0e7a88c54452711cac3b1770dcb68b81c3"
+  }
+}

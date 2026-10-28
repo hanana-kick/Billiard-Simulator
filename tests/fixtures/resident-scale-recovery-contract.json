@@ -1,0 +1,42 @@
+{
+  "kind": "resident-count9-wgs8-fresh-device-recovery-contract-v1",
+  "gateSha256": "679a2a921d0839f062ce524561277e90c77c4ef29c2bf6b0a48544f6ff945110",
+  "count": 9,
+  "macroWorkgroupSize": 8,
+  "cycles": 512,
+  "decisionTimeoutMs": 900000,
+  "evidence": {
+    "count8-wgs1-pass.json": "e549ab8ba6e0c4f41eb0866c4f640151303054f3e9b2eaa236d7a23fc008baba",
+    "count8-wgs8-pass.json": "4be0ef06fd64007a2adf263533174089abb8cfd386c93d22d2f9e9d9f3df9d91",
+    "count9-wgs1-pass.json": "e799a7fac42d30143288d70b71585ad66cdcff50170a4ada2c708fa6021293f0",
+    "failed-attempt-observation.json": "6fe31fead14e7e884f450c8150b973a84d2474cb489352d9400951a56bee9fff",
+    "failed-count9-wgs8-decision.json": "b9f5a7b20e77294100de4a3620d42e708bca069e941a4c183fbfa01a27e5c4e7",
+    "failed-supervisor-terminal.json": "4f88440467129ad3d437ddbeab70fd8ccb90d34394dfd0fa0670cd248bbf986b"
+  },
+  "priorRuns": {
+    "count8-wgs1-pass.json": {
+      "count": 8,
+      "workgroupSize": 1,
+      "gateSha256": "5256fea5d39dcfec53a22dd803b7b6e0cf6e65a1d2b790e2bd2d892275409ef2",
+      "actualSha256": "cdde4e1f86a89420a906f40cf82a9761e786337bb52fc9abac8907175e7f746c"
+    },
+    "count8-wgs8-pass.json": {
+      "count": 8,
+      "workgroupSize": 8,
+      "gateSha256": "694a82ec41dc1f3133860764b3d60ba706fe8ac0debeb54cf81e776aa9765f37",
+      "actualSha256": "b4266cfc5272ddb2f9cb1569f93a2aeee3fbef26e7699c77bffa37cf1fe35063"
+    },
+    "count9-wgs1-pass.json": {
+      "count": 9,
+      "workgroupSize": 1,
+      "gateSha256": "04d27df2f03cc7dd1239b3ff0675ddfeee01b1f08f1f5e414a4bb70565843978",
+      "actualSha256": "d2182c1b9d31f1ea56f4b49efc9848fb6c51e2cd349d52f5f29de635aaf4a493"
+    }
+  },
+  "failedSourceHead": "704829a89470bbd335dc9664a36d86a332824b54",
+  "failureCause": "unproven",
+  "freshDeviceRequired": true,
+  "expectedColdPipelines": 26,
+  "expectedWarmPipelines": 0,
+  "shaderInputScheduleChanged": false
+}

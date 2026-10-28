@@ -1,0 +1,59 @@
+{
+  "scope": "Owned raw strike to full prepared roster and real initializer; not full world continuation/gameplay",
+  "backend": "SwiftShader software Vulkan",
+  "result": {
+    "strikeBackend": "chunked-16",
+    "cases": 67,
+    "words": 56816,
+    "admitted": 64,
+    "exactWords": true,
+    "actualSourceStatics": 16,
+    "ownedCloth": {
+      "staticSlot": 4,
+      "canonicalOwner": "scene-static-slot:4",
+      "kind": "cloth",
+      "shape": "box",
+      "representation": "persistent support law plus finite footprint guards"
+    },
+    "staticObstacleCount": 15,
+    "otherSphereObstacleCount": 3,
+    "supportExclusionCount": 4,
+    "obstacles": 22,
+    "residentRawToPreparedWorld": true,
+    "residentInitializerConsumed": 67,
+    "intermediateReadbacks": 0,
+    "hostPhysicsBetweenPhases": false,
+    "parseMs": 16.795169999999985,
+    "rawCompileMs": 8682.312383,
+    "handoffCompileMs": 74.18282800000088,
+    "handoffShaderBytes": 6025,
+    "submitToReadMs": 183.6038520000002,
+    "dispatches": 198,
+    "syntheticHandoffGateProbes": {
+      "cases": 19,
+      "words": 3952,
+      "authoritativePhysics": false
+    },
+    "elapsedDurationBudgetProbes": {
+      "cases": 17,
+      "words": 5712,
+      "zeroPhysicsCases": 2,
+      "exactWords": true
+    },
+    "literalCPUComparedWords": 55280,
+    "invalidInitializerExpectedWords": 1536
+  },
+  "process": {
+    "boundedNativeProcess": true,
+    "exitCode": 0,
+    "stopReason": null,
+    "sampledAggregateRSSMiB": 909.8,
+    "maxChildRSSMiB": 870.74,
+    "rssCoverage": "PPid status-table ancestry; sampled aggregate, RUSAGE_CHILDREN maximum separately",
+    "elapsedSeconds": 10.879,
+    "limitRSSMiB": 1500,
+    "limitSeconds": 120.0
+  },
+  "defaultBackendUnchanged": "staged",
+  "metadataClarification": "words includes invalid initializer expected packets; literalCPUComparedWords excludes those packets. Synthetic handoff gates are ABI tests, not physical trajectories."
+}

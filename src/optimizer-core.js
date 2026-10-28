@@ -288,13 +288,21 @@ function finishPhysicalHorizon(req,t,input){
  if(t.steps>=max&&t.goalLatched&&(input.cuePresent()||(fullShot(req.options)&&!input.allSleeping()))){t.invalid=true;t.verificationIncomplete=true;}
  return t.steps>=max;
 }
+// Exactly one authentic outer PhysicsLab step. The opt-in final-gameplay owner
+// may continue this same world after the legacy route-query stop; it must not
+// call stepTrial repeatedly (that function deliberately has early guards).
+function stepTrialOuter(search,t){
+ const input=t.input||physicalInputs(t.lab);
+ if(t.steps>=Math.round(search.req.options.horizon/input.dt))throw new RangeError('Physical horizon already reached');
+ t.lab.step();
+ return observePhysicalStep(search.req,t,input);
+}
 function stepTrial(search,t,budget=240){
  if(t.invalid)return true;
  if(t.success&&!t.lab?.cue&&!fullShot(search.req.options))return true;
  const {req}=search,input=t.input||physicalInputs(t.lab),max=Math.round(req.options.horizon/input.dt);
  for(let i=0;i<budget&&t.steps<max;i++){
-  t.lab.step();
-  if(observePhysicalStep(req,t,input))return true;
+  if(stepTrialOuter(search,t))return true;
  }
  return finishPhysicalHorizon(req,t,input);
 }
@@ -365,5 +373,5 @@ function finishSearch(search){
  return{...progress(search),failureReasons:{...search.failureReasons},results:unique,resultCount:unique.length,resultLimit:null,nearest:unique.length?null:search.bestMiss,options:{...search.req.options},hz:Math.round(1/search.req.snapshot.dt),solverStats:search.solverStats||{probes:0,steps:0,accepted:0,rejected:0},globalOptimal:false,exhaustive:false,seedCushionRange:search.req.options.methodId==='carom'?[requiredCushions(search.req.options),search.seedMaxOrder??requiredCushions(search.req.options)]:search.req.options.methodId==='any'?[3,search.seedMaxOrder??3]:null,seedMaxOrder:search.seedMaxOrder??null,searchModel:search.req.options.inputStrategy==='analytic'?'closed-form-inputs-with-physical-fallback':'hybrid-physical-search',inputStrategy:search.req.options.inputStrategy||'hybrid',physicsSteps:search.physicsSteps||0,firstSuccessCost:search.firstSuccessCost??null,analyticDiagnostics:search.analyticDiagnostics||[],analyticStats:{proposed:search.analyticSeeds?.length||0,feasible:search.analyticSeeds?.filter(x=>x.ok).length||0,evaluated:search.analyticCursor||0,rejectedReasons:[...new Set((search.analyticSeeds||[]).filter(x=>!x.ok).map(x=>x.reason))]},feasibilityStats:search.feasibilityStats,feasibilityStatus:search.successes.length?'verified-feasible-shot':'not-found-within-budget',terminationReason:search.finished?'candidate-budget-exhausted':'partial'};
 }
 function disposeSearch(search){if(search.active){search.active.lab.dispose();search.active=null;}}
-G.ShotSearchCore={createPhysicalAccumulator,observePhysicalEvent,observePhysicalStep,finishPhysicalHorizon,physicalResult,physicalInputs,proposeCandidate,beginCandidate,finishCandidate,commitCandidate,acceptCandidate,validate,constrainSettings,sampleKisses,solveLinear,dampedStep,projectInputs,nextDls,createSearch,advanceSearch,finishSearch,disposeSearch,progress,beginTrial,stepTrial,finishTrial};
+G.ShotSearchCore={createPhysicalAccumulator,observePhysicalEvent,observePhysicalStep,finishPhysicalHorizon,physicalResult,physicalInputs,proposeCandidate,beginCandidate,finishCandidate,commitCandidate,acceptCandidate,validate,constrainSettings,sampleKisses,solveLinear,dampedStep,projectInputs,nextDls,createSearch,advanceSearch,finishSearch,disposeSearch,progress,beginTrial,stepTrialOuter,stepTrial,finishTrial};
 })(globalThis);

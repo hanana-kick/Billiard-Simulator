@@ -1,0 +1,64 @@
+{
+  "kind": "inverse-component-reserved-alpha-repair-v1",
+  "predecessor": "/tmp/inverse-native-components-final.v8",
+  "predecessorSha256": "aef4ce3e70a67085640cd9583c57a961efe4babaf3c9a514997aa97203bb167b",
+  "sourceFile": "src/resident-candidate/inverse-observation-reducer.mjs",
+  "oldSourceSha256": "27a2dc353b8b109d4705f05ddfe38fcb7feda199ac5cc50d2003bb585e0cb8b1",
+  "newSourceSha256": "276c6f5b2a75fe99731a08ce456061133698e04530ef833394dc048b7c94b0c7",
+  "numericalInputWordsSha256": "96139c65278c832e62379f4676bdd11a5d6afcdbd886524dee7d55c2c7c8eb1b",
+  "expectedWordsSha256": "5ba3e6ef2d30a11d052a7750b952f07ad8f466dc1811ed49a3af2262f56e8cd4",
+  "casesScheduleSha256": "3946daa226d53dd02d2decf1ef1dcfa2c22890c83fd5c53f9f89824c41c349e8",
+  "comparedWords": 8937261,
+  "jobs": 26,
+  "dispatches": 32,
+  "changes": [
+    {
+      "id": "reducer-observe",
+      "oldSha256": "f1e179e3ed55d402aefe0b2796dc74acc22a7d6399be0504f06f38a828da2a4a",
+      "newSha256": "dff7e70f90aed9fe4508cab96bcf110170e24e89ce667a37109e29b91f2be2c2",
+      "oldBytes": 21092,
+      "newBytes": 21151,
+      "vmInstructionsEqual": true,
+      "helperHashesUnchanged": true
+    },
+    {
+      "id": "reducer-project",
+      "oldSha256": "fbd20f04bd8817f5c3441813cad824b43414424d4255e795c83a20e0de72ad4d",
+      "newSha256": "fbd20f04bd8817f5c3441813cad824b43414424d4255e795c83a20e0de72ad4d",
+      "oldBytes": 11842,
+      "newBytes": 11842,
+      "vmInstructionsEqual": true,
+      "helperHashesUnchanged": true
+    },
+    {
+      "id": "audited-join-standard",
+      "oldSha256": "fc063bddd24c2adb95f50decc69d50e4e561fb0dd5c47c587d9dfece671be0df",
+      "newSha256": "fc063bddd24c2adb95f50decc69d50e4e561fb0dd5c47c587d9dfece671be0df",
+      "oldBytes": 21140,
+      "newBytes": 21140,
+      "vmInstructionsEqual": true,
+      "helperHashesUnchanged": true
+    },
+    {
+      "id": "audited-join-signed-zero-subnormal-spin-off-fixed",
+      "oldSha256": "e76fedc65653dc0b768c85ff72d36b849448103118226092ff9c61a51b7e115b",
+      "newSha256": "e76fedc65653dc0b768c85ff72d36b849448103118226092ff9c61a51b7e115b",
+      "oldBytes": 21162,
+      "newBytes": 21162,
+      "vmInstructionsEqual": true,
+      "helperHashesUnchanged": true
+    }
+  ],
+  "mathHelperBodiesUnchanged": true,
+  "newOriginalCapture": false,
+  "newExpectedWords": false,
+  "nativeExecuted": false,
+  "metadataChanges": [
+    "reducer source-file hash",
+    "reducer-observe shader bytes/hash/length",
+    "source closure and payload hashes",
+    "runtime/assertion runner binding hashes",
+    "plan/input/expected envelope identity hashes",
+    "source checkpoint identity"
+  ]
+}

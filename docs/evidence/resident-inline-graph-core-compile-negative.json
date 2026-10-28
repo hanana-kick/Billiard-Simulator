@@ -1,0 +1,53 @@
+{
+  "kind": "resident-inline-graph-core-compile-negative-v1",
+  "sourceHead": "5663d42702cacd08eb09c1c04e2907802ccc928f",
+  "payloadSha256": "b21fd8fe9faa22dbb7f3b28f3db2093cbb0ead9865355652d21ded3d9e416080",
+  "shaderSha256": "d1b84f15ea4ec37630ef1c26c21b6c945ffb684d8314c82977bfbdb51b8da497",
+  "shaderBytes": 52334,
+  "adapter": {
+    "vendor": "google",
+    "architecture": "swiftshader",
+    "device": "swiftshader-device-subzero-",
+    "description": "SwiftShader driver 5.0.0",
+    "isFallbackAdapter": true
+  },
+  "work": {
+    "pipelines": 1,
+    "entryPoint": "main",
+    "bindings": 8,
+    "candidateCount": 2,
+    "workgroupSize": 64,
+    "instructionBudget": 65536,
+    "initialUploads": 0,
+    "computeDispatches": 0,
+    "mappings": 0
+  },
+  "preflight": "pass-zero-errors",
+  "lastPhase": "createComputePipelineAsync main",
+  "terminal": {
+    "stage": "owned-compile-child-terminal",
+    "returncode": -9,
+    "signal": 9,
+    "wallSeconds": 46.33924455899978,
+    "maxRssKiB": 1929384,
+    "userSeconds": 91.739347,
+    "systemSeconds": 3.192069,
+    "supervisorInterruption": null,
+    "computeDispatchesAuthorized": 0
+  },
+  "terminalReceiptSha256": "eaf89426da7c4f733f80c1023317c06ee7dcbc487b2dca2faa89aa5ef23aae4c",
+  "execution": {
+    "initialUploads": 0,
+    "buffersAllocated": 0,
+    "computeDispatches": 0,
+    "mappings": 0
+  },
+  "interpretation": {
+    "nativeCompilationQualified": false,
+    "numericalFailure": false,
+    "oomCauseProven": false,
+    "hardwarePerformance": false,
+    "profileAdopted": false
+  },
+  "next": "Keep proven four-macro baseline. Source-exact resumable numeric-only core feasibility is separate; no identical retry."
+}

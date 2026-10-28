@@ -1,0 +1,138 @@
+{
+  "kind": "resident-full-history-small-strike-first-outer-native-v1",
+  "status": "pass",
+  "sourceCommit": "3b09eed1ce17d4bae6b9fe5e1e3e987961121f66",
+  "initialHistoryProfile": "source-full-application-history-v1",
+  "adapter": "SwiftShader fallback; not hardware acceleration",
+  "rows": [
+    {
+      "id": 219,
+      "status": "running query; completed fixed64 h",
+      "settings": {
+        "angle": 310,
+        "elevation": 85,
+        "speed": 4.5,
+        "tipX": 0.2,
+        "tipY": -0.1
+      }
+    },
+    {
+      "id": 522,
+      "status": "rejected at h0; prestrike history unchanged",
+      "settings": {
+        "angle": 9,
+        "elevation": 8,
+        "speed": 0,
+        "tipX": 0,
+        "tipY": 0
+      }
+    }
+  ],
+  "artifactHashes": {
+    "runtimeSha256": "5a233a1b2d79345a28dfe33964fae7d1c008764db0f0908d0ad7d81e0473375f",
+    "actualSha256": "87ada419a20869a78dd4a5c573536edb3c56ec40dfc484d0319de6212084ba10",
+    "expectedSha256": "521c6874b1868c106b821492ed6ba888cb115ea5f292a5fc30eb3f56369e3bf5"
+  },
+  "comparisons": {
+    "all11OriginalSourceGroups": true,
+    "actualPhysicsLabOuter": 1,
+    "actualNativeRepresentedGroups": [
+      "balls",
+      "cue",
+      "clock",
+      "rules",
+      "history",
+      "game"
+    ],
+    "rejectedPrestrikeFifoUnchanged": true,
+    "rejectedNewStrokeAppended": false,
+    "fullAcceptedEmissionTapeQualified": false,
+    "physicalImpactCompared": false
+  },
+  "transport": {
+    "freshBank": true,
+    "probeOrFailedStateReused": false,
+    "initializations": 1,
+    "hostStateReadbacksDuringContinuation": 0,
+    "dispatches": 101083,
+    "submissions": 102,
+    "pumpCycles": 8192,
+    "fixedWorkBlocks": [
+      512,
+      1536,
+      6144
+    ],
+    "copies": 6,
+    "mappings": 1,
+    "initialWrites": 8,
+    "vmControls": [
+      [
+        1380142422,
+        1,
+        2,
+        0,
+        2474,
+        0,
+        106362589,
+        0,
+        602,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        1380142422,
+        1,
+        2,
+        0,
+        2474,
+        0,
+        2511,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    ]
+  },
+  "observedWallMs": {
+    "coldPairCompile": 115093.825178,
+    "initialization": 5323.018884000077,
+    "pumpBlocks": [
+      251544.11467500008,
+      731745.4190509999,
+      1576893.4138429998
+    ],
+    "pumpTotal": 2560182.9475689996,
+    "steadyEndToEnd": 2565593.2660640003,
+    "encode": 1450.5500949821435,
+    "submit": 51.92352200020105,
+    "queueDrain": 2563874.9736170014,
+    "finalReadback": 1.3080299999564886
+  },
+  "timingCaveat": "Host wall, not GPU timestamp; independent HOST correctness tasks ran concurrently. Not calibrated throughput, hardware ratio or full-shot projection. Cold pair compile covers both h8/h64 profiles.",
+  "process": {
+    "returncode": 0,
+    "signal": null,
+    "totalElapsedSecondsIncludingProbeCompileDecisionWait": 3090.4596217100043,
+    "maxRssKiB": 1700408,
+    "stopRequestAccepted": false
+  },
+  "preservedNegativeEvidence": "resident-small-strike-first-outer-native-negative-v1.json",
+  "notQualified": [
+    "raw to physical impact",
+    "physical full rest and late foul",
+    "1024 physical trajectories",
+    "production backend",
+    "hardware performance"
+  ]
+}

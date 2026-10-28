@@ -3,7 +3,7 @@
  * microcode lowering, NOT a giant native shader, numeric proof or CPU fallback.
  * All original logical buffer views survive physical slab concatenation.
  */
-import {createHash} from 'node:crypto';
+import {createHash} from './source-sha256.mjs';
 import {tokenizeMicrocodeWGSL} from './microcode-parser.mjs';
 import {linkResidentWGSL} from './wgsl-linker.mjs';
 import {MICROCODE_ISA} from './microcode-isa.mjs';

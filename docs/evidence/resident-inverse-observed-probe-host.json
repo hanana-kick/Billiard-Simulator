@@ -1,0 +1,310 @@
+{
+  "kind": "resident-inverse-observed-probe-host-evidence-v1",
+  "scope": "fixed count2/raw source profile; independently admitted CREATED219 t0/two-h HOST execution only",
+  "profiles": {
+    "runtime": "resident-raw-inverse-observation-probe-runtime-v1",
+    "macro": "source-coupled-inverse-observation-probe-v1",
+    "source": "source-four-ball-inverse-producer-v2",
+    "number": "v8-13.6.233-fast-hypot-binary64-v1"
+  },
+  "proof": {
+    "sourceSha256": "7d26b60354a72c06b1b29e0c1f8a236cfdfa5824abd0140844c7aba6caa5a3e6",
+    "bytecodeSha256": "dc3f88f33235ef94bf7adca35265e14dc247f5113494f8cc6cc966ba9e2efae4",
+    "vmShaderSha256": "86ee2858d31ffed1c6b3a93dbb6a48d892224b8473f1267dbd8ccfb7dd138d7b",
+    "descriptorsSha256": "c9a6ea8fd8a9dfd5ee91e1f5376dd11beaa0bb370e7662d33e4d34c0cd1d1cad",
+    "handlersSha256": "6d6686f2e395bee2869f6492844b2c414a0057452ba35b7fab967ec0fd970a89",
+    "vmShapeSha256": "5559ff660948ae3540297adc961b88eeb54b59ab4ee66b2d1dd016d7af1cd564",
+    "initialSourceSha256": "7c3647dbfbcf3f374ae5edcae2b5e4aa499d2f4396e7c48458d2006a681c4087",
+    "observationSha256": "47112d601bafc83292f336174cab8afee5be2fdcef0cde213ddd67b4e0a2ac2b"
+  },
+  "sourceShape": {
+    "requestedH": 2,
+    "physicalHorizonOuterSteps": 15360,
+    "instructions": 154230,
+    "locals": 8155,
+    "stackCapacity": 18,
+    "coreWorkgroupSize": 64,
+    "coreBudget": 65536,
+    "macroIds": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  "storage": {
+    "kind": "source-inverse-observed-probe-storage-v1",
+    "count": 2,
+    "auditViewWords": 2056,
+    "observerBase": 2112,
+    "observerStride": 2496,
+    "observerWords": 4992,
+    "paddingWords": 56,
+    "totalWords": 8000,
+    "bytes": 32000,
+    "sourceBinding": 5,
+    "gpuBinding": 7,
+    "physicalBindings": 8,
+    "qualificationAllocationOnly": true,
+    "compactProductionBudget": false,
+    "measured": false,
+    "limits": {
+      "maxStorageBufferBindingSize": 134217728,
+      "maxBufferSize": 268435456,
+      "maxStorageBuffersPerShaderStage": 8
+    }
+  },
+  "diagnostics": {
+    "kind": "source-inverse-observation-two-h-probe-v1",
+    "count": 2,
+    "points": [
+      0,
+      1,
+      2
+    ],
+    "base": 7104,
+    "words": 896,
+    "laneStride": 448,
+    "headerWords": 64,
+    "frameStride": 128,
+    "frameWords": 108,
+    "totalWords": 8000,
+    "bytes": 32000,
+    "originalSlabWords": 7104,
+    "initialization": "fresh GPU-zeroed storage only",
+    "diagnosticOnly": true,
+    "measured": false
+  },
+  "allocationOneFinalCapture": {
+    "kind": "resident-observed-diagnostic-allocation-v1",
+    "rows": [
+      {
+        "name": "scratch",
+        "words": 27264,
+        "bytes": 109056,
+        "storage": true
+      },
+      {
+        "name": "inputs",
+        "words": 32,
+        "bytes": 128,
+        "storage": true
+      },
+      {
+        "name": "rawState",
+        "words": 4020,
+        "bytes": 16080,
+        "storage": true
+      },
+      {
+        "name": "rawProgram",
+        "words": 5071,
+        "bytes": 20284,
+        "storage": true
+      },
+      {
+        "name": "rawGeometry",
+        "words": 11368,
+        "bytes": 45472,
+        "storage": true
+      },
+      {
+        "name": "worldState",
+        "words": 127176,
+        "bytes": 508704,
+        "storage": true
+      },
+      {
+        "name": "worldTemplate",
+        "words": 62990,
+        "bytes": 251960,
+        "storage": true
+      },
+      {
+        "name": "worldProgram",
+        "words": 874992,
+        "bytes": 3499968,
+        "storage": true
+      },
+      {
+        "name": "worldGeometry",
+        "words": 25408,
+        "bytes": 101632,
+        "storage": true
+      },
+      {
+        "name": "microcode",
+        "words": 1233840,
+        "bytes": 4935360,
+        "storage": true
+      },
+      {
+        "name": "vmState",
+        "words": 16378,
+        "bytes": 65512,
+        "storage": true
+      },
+      {
+        "name": "eventAudit",
+        "words": 8000,
+        "bytes": 32000,
+        "storage": true
+      },
+      {
+        "name": "final-only-diagnostics",
+        "words": 151554,
+        "bytes": 606216,
+        "storage": false
+      }
+    ],
+    "totalBytes": 10192372,
+    "aliases": {
+      "rawScratch": "scratch",
+      "numericScratch": "scratch"
+    },
+    "measured": false,
+    "compactProductionBudget": false
+  },
+  "allocationTwoDiagnosticCaptures": {
+    "kind": "resident-observed-diagnostic-allocation-v1",
+    "rows": [
+      {
+        "name": "scratch",
+        "words": 27264,
+        "bytes": 109056,
+        "storage": true
+      },
+      {
+        "name": "inputs",
+        "words": 32,
+        "bytes": 128,
+        "storage": true
+      },
+      {
+        "name": "rawState",
+        "words": 4020,
+        "bytes": 16080,
+        "storage": true
+      },
+      {
+        "name": "rawProgram",
+        "words": 5071,
+        "bytes": 20284,
+        "storage": true
+      },
+      {
+        "name": "rawGeometry",
+        "words": 11368,
+        "bytes": 45472,
+        "storage": true
+      },
+      {
+        "name": "worldState",
+        "words": 127176,
+        "bytes": 508704,
+        "storage": true
+      },
+      {
+        "name": "worldTemplate",
+        "words": 62990,
+        "bytes": 251960,
+        "storage": true
+      },
+      {
+        "name": "worldProgram",
+        "words": 874992,
+        "bytes": 3499968,
+        "storage": true
+      },
+      {
+        "name": "worldGeometry",
+        "words": 25408,
+        "bytes": 101632,
+        "storage": true
+      },
+      {
+        "name": "microcode",
+        "words": 1233840,
+        "bytes": 4935360,
+        "storage": true
+      },
+      {
+        "name": "vmState",
+        "words": 16378,
+        "bytes": 65512,
+        "storage": true
+      },
+      {
+        "name": "eventAudit",
+        "words": 8000,
+        "bytes": 32000,
+        "storage": true
+      },
+      {
+        "name": "final-only-diagnostics",
+        "words": 303108,
+        "bytes": 1212432,
+        "storage": false
+      }
+    ],
+    "totalBytes": 10798588,
+    "aliases": {
+      "rawScratch": "scratch",
+      "numericScratch": "scratch"
+    },
+    "measured": false,
+    "compactProductionBudget": false
+  },
+  "gates": {
+    "serial": {
+      "tests": 23,
+      "pass": 23,
+      "fail": 0,
+      "skip": 0,
+      "durationMs": 77132.915589
+    },
+    "additionalSourceWriteDomainRerun": {
+      "tests": 3,
+      "pass": 3,
+      "fail": 0,
+      "skip": 0,
+      "durationMs": 15533.385493
+    },
+    "genuineCreatedTwoH": {
+      "candidateIds": [
+        219,
+        522
+      ],
+      "acceptedH": 2,
+      "rejectedH": 0,
+      "frameSequences": [
+        0,
+        1,
+        2
+      ],
+      "all11": true,
+      "actualOriginalNativeFrameWords": true,
+      "nativeLatchedOuterCalls": 64,
+      "completeAuditPrefix": true,
+      "activeImpact": false,
+      "exactOriginalReducerFields": true,
+      "rejectedBankAndViewsUnchanged": true,
+      "pumps": 355,
+      "lane0CoreInstructions": 15689516,
+      "durationMs": 45041.159295,
+      "rawInitializationExecuted": false
+    }
+  },
+  "sourceRecovery": true,
+  "captureWritesOnlyNewView": true,
+  "oldObservedH192PinsUnchanged": true,
+  "sourceCapsUnchanged": true,
+  "perHHostMaps": 0,
+  "oneFinalMap": true,
+  "terminalJoinScheduled": false,
+  "rawNativeObservedQualified": false,
+  "gpuExecuted": false,
+  "fullRestQualified": false,
+  "solverCommitEnabled": false,
+  "capacity1024Qualified": false
+}

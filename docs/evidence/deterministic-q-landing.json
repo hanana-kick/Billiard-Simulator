@@ -1,0 +1,84 @@
+{
+  "profile": "gpu-canonical-isolated-landing-requery-v1",
+  "candidates": 156,
+  "comparedWords": 24960,
+  "exactWords": true,
+  "landed": 132,
+  "compileMs": 3440.73556,
+  "shaderBytes": [
+    4116,
+    8418,
+    5991,
+    5906,
+    6974,
+    7001,
+    6974
+  ],
+  "runs": [
+    {
+      "e": 0,
+      "metrics": {
+        "count": 39,
+        "dispatches": 7,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "finalReadbacks": 1,
+        "stateBytesPerCandidate": 640,
+        "allocatedBytes": 105376,
+        "submitToDoneMs": 3.6028070000002117,
+        "fullShot": false,
+        "physicalAcceptance": false,
+        "hardwareSpeedClaim": false
+      }
+    },
+    {
+      "e": 0.2,
+      "metrics": {
+        "count": 39,
+        "dispatches": 7,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "finalReadbacks": 1,
+        "stateBytesPerCandidate": 640,
+        "allocatedBytes": 105376,
+        "submitToDoneMs": 4.729333999999653,
+        "fullShot": false,
+        "physicalAcceptance": false,
+        "hardwareSpeedClaim": false
+      }
+    },
+    {
+      "e": 1,
+      "metrics": {
+        "count": 39,
+        "dispatches": 7,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "finalReadbacks": 1,
+        "stateBytesPerCandidate": 640,
+        "allocatedBytes": 105376,
+        "submitToDoneMs": 2.4713120000001254,
+        "fullShot": false,
+        "physicalAcceptance": false,
+        "hardwareSpeedClaim": false
+      }
+    },
+    {
+      "e": 9.5367431640625e-7,
+      "metrics": {
+        "count": 39,
+        "dispatches": 7,
+        "intermediateReadbacks": 0,
+        "hostPhysicsBetweenPhases": 0,
+        "finalReadbacks": 1,
+        "stateBytesPerCandidate": 640,
+        "allocatedBytes": 105376,
+        "submitToDoneMs": 2.4577119999999013,
+        "fullShot": false,
+        "physicalAcceptance": false,
+        "hardwareSpeedClaim": false
+      }
+    }
+  ],
+  "fullShot": false
+}

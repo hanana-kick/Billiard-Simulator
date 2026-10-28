@@ -1,0 +1,10 @@
+{"status":"prefix-only-not-parity","backend":"native-dawn-webgpu","execution":"serial-bounded-evaluation","adapter":{"vendor":"google","architecture":"swiftshader","device":"swiftshader-device-subzero-","description":"SwiftShader driver 5.0.0"},"testedCommit":"b27da83bef4f67d63103a728299665500f4f997e","inputArtifactSha256":"e9c01bedf7d15b91f8d65af5c809698790dfd56f5f14082e7b333388aafa6a12","snapshotSha256":"a93473fceb1da27bb580a2981d3e536057eb30856e49d64405ad2b96f8b51e0f","preStrikeSha256":"2d5a2cbf1b7dc481cb90a19de8fa5cee7ea389c7dbbede645324afbcb87279c8","sourceBoundary":"liveRegisteredStrikeCreated","committedH":1,"sourceValidated":true,"cpuFallback":false,"nativeContinuation":false,"parallelShotBatch":false,"fullRest":false,"borrowedDeviceSurvives":true,"resources":{"buffersCreated":1026,"buffersDestroyed":1026,"buffersCollected":0,"trackedBuffers":0,"peakTrackedBuffers":578},"gpuErrors":[],"memory":{"rss":584249344,"heapTotal":261529600,"heapUsed":82677104,"external":5334344,"arrayBuffers":970011},"processMaxRSSKiB":642864}
+✔ real native Dawn evaluator owns source bytes and drains a bounded current-source prefix (4905.530633ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5144.027035

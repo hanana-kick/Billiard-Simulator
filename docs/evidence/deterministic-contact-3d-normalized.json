@@ -1,0 +1,11 @@
+{
+  "cases": 70,
+  "words": 8960,
+  "exactWords": true,
+  "compileMs": 1306.420988,
+  "shaderBytes": 8591,
+  "candidates": 70,
+  "allocatedBytes": 89600,
+  "submitToReadMs": 78.95802099999992,
+  "physicalAcceptance": false
+}

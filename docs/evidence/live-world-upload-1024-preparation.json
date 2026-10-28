@@ -1,0 +1,4584 @@
+{
+  "observedAt": "2026-10-27T23:45:04.623Z",
+  "currentSourceBytesVerifiedAgainstReviewedPin": true,
+  "kind": "sealed-live-world-upload-preparation-benchmark-v1",
+  "artifactSHA256": "63b9a4a4183a9d38d06d9da8a6c208ff8320d5b1a8b66dc0500ada4375ee3a54",
+  "buildRevision": "44ae7d4811e29252be9a113b9608d2716424d857a2a9acd978522fc712371e55",
+  "candidateCount": 1024,
+  "admittedCount": 807,
+  "unadmittedCount": 217,
+  "baselineCaptureMs": 1575.3684690000005,
+  "candidateGenerationMs": 2539.831075,
+  "prepareMs": 2789.9268699999993,
+  "logicalUploadBytes": 57344,
+  "tokenCount": 1024,
+  "memory": {
+    "samples": [
+      {
+        "candidate": 0,
+        "rss": 514572288,
+        "heapUsed": 167826888,
+        "heapTotal": 236720128,
+        "external": 7210369,
+        "arrayBuffers": 1963504
+      },
+      {
+        "candidate": 32,
+        "rss": 515538944,
+        "heapUsed": 158843936,
+        "heapTotal": 237752320,
+        "external": 7552921,
+        "arrayBuffers": 2306016
+      },
+      {
+        "candidate": 64,
+        "rss": 515801088,
+        "heapUsed": 145811688,
+        "heapTotal": 238014464,
+        "external": 7840905,
+        "arrayBuffers": 2594000
+      },
+      {
+        "candidate": 96,
+        "rss": 516063232,
+        "heapUsed": 132600656,
+        "heapTotal": 238800896,
+        "external": 8125481,
+        "arrayBuffers": 2878576
+      },
+      {
+        "candidate": 128,
+        "rss": 516456448,
+        "heapUsed": 119440928,
+        "heapTotal": 238800896,
+        "external": 8413225,
+        "arrayBuffers": 3166320
+      },
+      {
+        "candidate": 160,
+        "rss": 516718592,
+        "heapUsed": 106213616,
+        "heapTotal": 239063040,
+        "external": 8697889,
+        "arrayBuffers": 3450984
+      },
+      {
+        "candidate": 192,
+        "rss": 516849664,
+        "heapUsed": 160318136,
+        "heapTotal": 239063040,
+        "external": 9041009,
+        "arrayBuffers": 3794104
+      },
+      {
+        "candidate": 224,
+        "rss": 517111808,
+        "heapUsed": 147055792,
+        "heapTotal": 239587328,
+        "external": 9328841,
+        "arrayBuffers": 4081936
+      },
+      {
+        "candidate": 256,
+        "rss": 517373952,
+        "heapUsed": 133772384,
+        "heapTotal": 239587328,
+        "external": 9613417,
+        "arrayBuffers": 4366512
+      },
+      {
+        "candidate": 288,
+        "rss": 517636096,
+        "heapUsed": 120688360,
+        "heapTotal": 240373760,
+        "external": 9901161,
+        "arrayBuffers": 4654256
+      },
+      {
+        "candidate": 320,
+        "rss": 517898240,
+        "heapUsed": 107409288,
+        "heapTotal": 240373760,
+        "external": 10185825,
+        "arrayBuffers": 4938920
+      },
+      {
+        "candidate": 352,
+        "rss": 518029312,
+        "heapUsed": 161549920,
+        "heapTotal": 240373760,
+        "external": 10528945,
+        "arrayBuffers": 5282040
+      },
+      {
+        "candidate": 384,
+        "rss": 518291456,
+        "heapUsed": 148303976,
+        "heapTotal": 240373760,
+        "external": 10816777,
+        "arrayBuffers": 5569872
+      },
+      {
+        "candidate": 416,
+        "rss": 518684672,
+        "heapUsed": 134947824,
+        "heapTotal": 241422336,
+        "external": 11101353,
+        "arrayBuffers": 5854448
+      },
+      {
+        "candidate": 448,
+        "rss": 518946816,
+        "heapUsed": 121917248,
+        "heapTotal": 241684480,
+        "external": 11389097,
+        "arrayBuffers": 6142192
+      },
+      {
+        "candidate": 480,
+        "rss": 519340032,
+        "heapUsed": 108579424,
+        "heapTotal": 241684480,
+        "external": 11673761,
+        "arrayBuffers": 6426856
+      },
+      {
+        "candidate": 512,
+        "rss": 519864320,
+        "heapUsed": 162788032,
+        "heapTotal": 241684480,
+        "external": 12016881,
+        "arrayBuffers": 6769976
+      },
+      {
+        "candidate": 544,
+        "rss": 520126464,
+        "heapUsed": 149523056,
+        "heapTotal": 241946624,
+        "external": 12305241,
+        "arrayBuffers": 7058336
+      },
+      {
+        "candidate": 576,
+        "rss": 520519680,
+        "heapUsed": 136180000,
+        "heapTotal": 242208768,
+        "external": 12592985,
+        "arrayBuffers": 7346080
+      },
+      {
+        "candidate": 608,
+        "rss": 520912896,
+        "heapUsed": 123147392,
+        "heapTotal": 242733056,
+        "external": 12883897,
+        "arrayBuffers": 7636992
+      },
+      {
+        "candidate": 640,
+        "rss": 521306112,
+        "heapUsed": 109821720,
+        "heapTotal": 242733056,
+        "external": 13171641,
+        "arrayBuffers": 7924736
+      },
+      {
+        "candidate": 672,
+        "rss": 521568256,
+        "heapUsed": 163591584,
+        "heapTotal": 242733056,
+        "external": 13516345,
+        "arrayBuffers": 8269440
+      },
+      {
+        "candidate": 704,
+        "rss": 522092544,
+        "heapUsed": 150497272,
+        "heapTotal": 243781632,
+        "external": 13807257,
+        "arrayBuffers": 8560352
+      },
+      {
+        "candidate": 736,
+        "rss": 522354688,
+        "heapUsed": 137171224,
+        "heapTotal": 243781632,
+        "external": 14095001,
+        "arrayBuffers": 8848096
+      },
+      {
+        "candidate": 768,
+        "rss": 523010048,
+        "heapUsed": 124230416,
+        "heapTotal": 244043776,
+        "external": 14385913,
+        "arrayBuffers": 9139008
+      },
+      {
+        "candidate": 800,
+        "rss": 523272192,
+        "heapUsed": 110802232,
+        "heapTotal": 244043776,
+        "external": 14673657,
+        "arrayBuffers": 9426752
+      },
+      {
+        "candidate": 832,
+        "rss": 523403264,
+        "heapUsed": 164587024,
+        "heapTotal": 244043776,
+        "external": 15018361,
+        "arrayBuffers": 9771456
+      },
+      {
+        "candidate": 864,
+        "rss": 523796480,
+        "heapUsed": 151587896,
+        "heapTotal": 244305920,
+        "external": 15309273,
+        "arrayBuffers": 10062368
+      },
+      {
+        "candidate": 896,
+        "rss": 524058624,
+        "heapUsed": 138306744,
+        "heapTotal": 245354496,
+        "external": 15597017,
+        "arrayBuffers": 10350112
+      },
+      {
+        "candidate": 928,
+        "rss": 524451840,
+        "heapUsed": 125165400,
+        "heapTotal": 245354496,
+        "external": 15884761,
+        "arrayBuffers": 10637856
+      },
+      {
+        "candidate": 960,
+        "rss": 524713984,
+        "heapUsed": 111839152,
+        "heapTotal": 245354496,
+        "external": 16175673,
+        "arrayBuffers": 10928768
+      },
+      {
+        "candidate": 992,
+        "rss": 524845056,
+        "heapUsed": 165553352,
+        "heapTotal": 245354496,
+        "external": 16520377,
+        "arrayBuffers": 11273472
+      },
+      {
+        "candidate": 1024,
+        "rss": 525369344,
+        "heapUsed": 152365032,
+        "heapTotal": 245616640,
+        "external": 16808121,
+        "arrayBuffers": 11561216
+      }
+    ],
+    "retainedSnapshot": {
+      "rss": 525369344,
+      "heapUsed": 152365912,
+      "heapTotal": 245616640,
+      "external": 16808121,
+      "arrayBuffers": 11561216
+    },
+    "sampledMax": {
+      "rss": 525369344,
+      "heapUsed": 167826888,
+      "heapTotal": 245616640,
+      "external": 16808121,
+      "arrayBuffers": 11561216
+    },
+    "forcedGC": false,
+    "scope": "sampled Node process including source imports, compiled JS, fixture and private graph; not token-exclusive allocation accounting or true peak"
+  },
+  "representativeFullCapture": {
+    "indices": [
+      0,
+      1,
+      31,
+      32,
+      97,
+      511,
+      512,
+      1023
+    ],
+    "comparisons": [
+      {
+        "index": 0,
+        "candidateId": 2147483648,
+        "admitted": false,
+        "fullCaptureMs": 1349.3342820000007,
+        "allocationCount": 194,
+        "commandCount": 34642,
+        "exactInitialBytes": 338280
+      },
+      {
+        "index": 1,
+        "candidateId": 2147483649,
+        "admitted": false,
+        "fullCaptureMs": 1481.7696460000006,
+        "allocationCount": 194,
+        "commandCount": 34642,
+        "exactInitialBytes": 338280
+      },
+      {
+        "index": 31,
+        "candidateId": 2147483679,
+        "admitted": true,
+        "fullCaptureMs": 1337.3078409999998,
+        "allocationCount": 194,
+        "commandCount": 34642,
+        "exactInitialBytes": 338280
+      },
+      {
+        "index": 32,
+        "candidateId": 2147483680,
+        "admitted": true,
+        "fullCaptureMs": 1291.2208770000016,
+        "allocationCount": 194,
+        "commandCount": 34642,
+        "exactInitialBytes": 338280
+      },
+      {
+        "index": 97,
+        "candidateId": 2147483745,
+        "admitted": false,
+        "fullCaptureMs": 1266.4069600000003,
+        "allocationCount": 194,
+        "commandCount": 34642,
+        "exactInitialBytes": 338280
+      },
+      {
+        "index": 511,
+        "candidateId": 2147484159,
+        "admitted": true,
+        "fullCaptureMs": 1325.5224429999998,
+        "allocationCount": 194,
+        "commandCount": 34642,
+        "exactInitialBytes": 338280
+      },
+      {
+        "index": 512,
+        "candidateId": 2147484160,
+        "admitted": true,
+        "fullCaptureMs": 1300.43462,
+        "allocationCount": 194,
+        "commandCount": 34642,
+        "exactInitialBytes": 338280
+      },
+      {
+        "index": 1023,
+        "candidateId": 4294967295,
+        "admitted": false,
+        "fullCaptureMs": 1286.437661,
+        "allocationCount": 194,
+        "commandCount": 34642,
+        "exactInitialBytes": 338280
+      }
+    ],
+    "comparisonMs": 11988.66192,
+    "allSourceGraphAndInitialBytesExact": true
+  },
+  "resourcePlans": [
+    {
+      "width": 1,
+      "gpuExecutionQualified": false,
+      "worldBytes": 337448,
+      "rawBytes": 3156,
+      "faultAndIdsBytes": 8,
+      "compactReadbackBytes": 16,
+      "diagnosticReadbackBytes": 11664,
+      "totalExplicitBufferBytesCompact": 340628,
+      "totalExplicitBufferBytesDiagnostic": 352276,
+      "maximumAllocationBytes": 32768,
+      "maximumStorageBindingBytes": 22528,
+      "maximumWordAddress": 8191,
+      "addressMetricScope": "largest allocated last-word index, not a complete computed-index proof",
+      "maximumConservativeRawPaddedWordAddress": 6143,
+      "rawPaddedInvocationCount": 32,
+      "rawMaximumPreGuardRowBase": 496,
+      "finalGateIntermediateWords": 2916,
+      "finalGateMaximumWordAddress": 2915,
+      "nonzeroStorageBindingOffsetGCD": 256,
+      "observedWorkgroupSizeX": [
+        1,
+        16,
+        32
+      ],
+      "runtimeResourcePreflightImplemented": false,
+      "dispatch": {
+        "worldY": 1,
+        "finalGateX": 1,
+        "rawX": 1,
+        "maxPhaseX": 44
+      },
+      "requiredDeviceLimits": {
+        "maxBufferSize": 32768,
+        "maxStorageBufferBindingSize": 22528,
+        "maxBindGroups": 1,
+        "maxBindingsPerBindGroup": 10,
+        "maxStorageBuffersPerShaderStage": 10,
+        "maxComputeWorkgroupsPerDimension": 44,
+        "maxComputeWorkgroupSizeX": 32,
+        "maxComputeInvocationsPerWorkgroup": 32
+      },
+      "actualDeviceLimits": null,
+      "worldAllocations": [
+        {
+          "allocation": 2,
+          "bytes": 512,
+          "shared": true
+        },
+        {
+          "allocation": 3,
+          "bytes": 640,
+          "shared": false
+        },
+        {
+          "allocation": 4,
+          "bytes": 640,
+          "shared": false
+        },
+        {
+          "allocation": 5,
+          "bytes": 32,
+          "shared": true
+        },
+        {
+          "allocation": 6,
+          "bytes": 64,
+          "shared": true
+        },
+        {
+          "allocation": 7,
+          "bytes": 704,
+          "shared": true
+        },
+        {
+          "allocation": 8,
+          "bytes": 512,
+          "shared": false
+        },
+        {
+          "allocation": 9,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 10,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 11,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 12,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 13,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 14,
+          "bytes": 2048,
+          "shared": false
+        },
+        {
+          "allocation": 15,
+          "bytes": 512,
+          "shared": false
+        },
+        {
+          "allocation": 16,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 17,
+          "bytes": 1536,
+          "shared": false
+        },
+        {
+          "allocation": 18,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 19,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 20,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 21,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 22,
+          "bytes": 2048,
+          "shared": false
+        },
+        {
+          "allocation": 23,
+          "bytes": 512,
+          "shared": false
+        },
+        {
+          "allocation": 24,
+          "bytes": 1088,
+          "shared": false
+        },
+        {
+          "allocation": 25,
+          "bytes": 4224,
+          "shared": true
+        },
+        {
+          "allocation": 26,
+          "bytes": 512,
+          "shared": false
+        },
+        {
+          "allocation": 27,
+          "bytes": 64,
+          "shared": true
+        },
+        {
+          "allocation": 28,
+          "bytes": 2560,
+          "shared": false
+        },
+        {
+          "allocation": 29,
+          "bytes": 2048,
+          "shared": false
+        },
+        {
+          "allocation": 30,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 31,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 32,
+          "bytes": 1280,
+          "shared": false
+        },
+        {
+          "allocation": 33,
+          "bytes": 4224,
+          "shared": false
+        },
+        {
+          "allocation": 34,
+          "bytes": 8,
+          "shared": false
+        },
+        {
+          "allocation": 35,
+          "bytes": 22528,
+          "shared": false
+        },
+        {
+          "allocation": 36,
+          "bytes": 512,
+          "shared": false
+        },
+        {
+          "allocation": 37,
+          "bytes": 256,
+          "shared": false
+        },
+        {
+          "allocation": 38,
+          "bytes": 640,
+          "shared": false
+        },
+        {
+          "allocation": 39,
+          "bytes": 512,
+          "shared": false
+        },
+        {
+          "allocation": 40,
+          "bytes": 640,
+          "shared": false
+        },
+        {
+          "allocation": 41,
+          "bytes": 640,
+          "shared": false
+        },
+        {
+          "allocation": 42,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 43,
+          "bytes": 8,
+          "shared": false
+        },
+        {
+          "allocation": 44,
+          "bytes": 32768,
+          "shared": true
+        },
+        {
+          "allocation": 45,
+          "bytes": 128,
+          "shared": false
+        },
+        {
+          "allocation": 46,
+          "bytes": 2048,
+          "shared": false
+        },
+        {
+          "allocation": 47,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 48,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 49,
+          "bytes": 4224,
+          "shared": false
+        },
+        {
+          "allocation": 50,
+          "bytes": 4096,
+          "shared": false
+        },
+        {
+          "allocation": 51,
+          "bytes": 64,
+          "shared": true
+        },
+        {
+          "allocation": 52,
+          "bytes": 24,
+          "shared": true
+        },
+        {
+          "allocation": 53,
+          "bytes": 208,
+          "shared": false
+        },
+        {
+          "allocation": 54,
+          "bytes": 32,
+          "shared": true
+        },
+        {
+          "allocation": 55,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 56,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 57,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 58,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 59,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 60,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 61,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 62,
+          "bytes": 2048,
+          "shared": false
+        },
+        {
+          "allocation": 63,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 64,
+          "bytes": 2048,
+          "shared": false
+        },
+        {
+          "allocation": 65,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 66,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 67,
+          "bytes": 2048,
+          "shared": false
+        },
+        {
+          "allocation": 68,
+          "bytes": 2048,
+          "shared": false
+        },
+        {
+          "allocation": 69,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 70,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 71,
+          "bytes": 2048,
+          "shared": false
+        },
+        {
+          "allocation": 72,
+          "bytes": 128,
+          "shared": false
+        },
+        {
+          "allocation": 73,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 74,
+          "bytes": 2048,
+          "shared": false
+        },
+        {
+          "allocation": 75,
+          "bytes": 128,
+          "shared": false
+        },
+        {
+          "allocation": 76,
+          "bytes": 16,
+          "shared": true
+        },
+        {
+          "allocation": 77,
+          "bytes": 16,
+          "shared": true
+        },
+        {
+          "allocation": 78,
+          "bytes": 11664,
+          "shared": false
+        },
+        {
+          "allocation": 79,
+          "bytes": 640,
+          "shared": false
+        },
+        {
+          "allocation": 80,
+          "bytes": 128,
+          "shared": false
+        },
+        {
+          "allocation": 81,
+          "bytes": 384,
+          "shared": false
+        },
+        {
+          "allocation": 82,
+          "bytes": 384,
+          "shared": false
+        },
+        {
+          "allocation": 83,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 84,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 85,
+          "bytes": 2560,
+          "shared": false
+        },
+        {
+          "allocation": 86,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 87,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 88,
+          "bytes": 2048,
+          "shared": false
+        },
+        {
+          "allocation": 89,
+          "bytes": 2048,
+          "shared": false
+        },
+        {
+          "allocation": 90,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 91,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 92,
+          "bytes": 704,
+          "shared": true
+        },
+        {
+          "allocation": 93,
+          "bytes": 64,
+          "shared": true
+        },
+        {
+          "allocation": 94,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 95,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 96,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 97,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 98,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 99,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 100,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 101,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 102,
+          "bytes": 32,
+          "shared": false
+        },
+        {
+          "allocation": 103,
+          "bytes": 8,
+          "shared": true
+        },
+        {
+          "allocation": 104,
+          "bytes": 4224,
+          "shared": false
+        },
+        {
+          "allocation": 105,
+          "bytes": 4096,
+          "shared": false
+        },
+        {
+          "allocation": 106,
+          "bytes": 4224,
+          "shared": false
+        },
+        {
+          "allocation": 107,
+          "bytes": 512,
+          "shared": false
+        },
+        {
+          "allocation": 108,
+          "bytes": 768,
+          "shared": false
+        },
+        {
+          "allocation": 109,
+          "bytes": 640,
+          "shared": false
+        },
+        {
+          "allocation": 110,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 111,
+          "bytes": 512,
+          "shared": false
+        },
+        {
+          "allocation": 112,
+          "bytes": 640,
+          "shared": false
+        },
+        {
+          "allocation": 113,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 114,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 115,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 116,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 117,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 118,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 119,
+          "bytes": 2048,
+          "shared": false
+        },
+        {
+          "allocation": 120,
+          "bytes": 1280,
+          "shared": false
+        },
+        {
+          "allocation": 121,
+          "bytes": 4224,
+          "shared": false
+        },
+        {
+          "allocation": 122,
+          "bytes": 256,
+          "shared": false
+        },
+        {
+          "allocation": 123,
+          "bytes": 8,
+          "shared": true
+        },
+        {
+          "allocation": 124,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 125,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 126,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 127,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 128,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 129,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 130,
+          "bytes": 640,
+          "shared": false
+        },
+        {
+          "allocation": 131,
+          "bytes": 128,
+          "shared": false
+        },
+        {
+          "allocation": 132,
+          "bytes": 384,
+          "shared": false
+        },
+        {
+          "allocation": 133,
+          "bytes": 384,
+          "shared": false
+        },
+        {
+          "allocation": 134,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 135,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 136,
+          "bytes": 2560,
+          "shared": false
+        },
+        {
+          "allocation": 137,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 138,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 139,
+          "bytes": 2048,
+          "shared": false
+        },
+        {
+          "allocation": 140,
+          "bytes": 2048,
+          "shared": false
+        },
+        {
+          "allocation": 141,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 142,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 143,
+          "bytes": 704,
+          "shared": true
+        },
+        {
+          "allocation": 144,
+          "bytes": 64,
+          "shared": true
+        },
+        {
+          "allocation": 145,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 146,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 147,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 148,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 149,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 150,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 151,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 152,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 153,
+          "bytes": 32,
+          "shared": false
+        },
+        {
+          "allocation": 154,
+          "bytes": 8,
+          "shared": true
+        },
+        {
+          "allocation": 155,
+          "bytes": 4224,
+          "shared": false
+        },
+        {
+          "allocation": 156,
+          "bytes": 4096,
+          "shared": false
+        },
+        {
+          "allocation": 157,
+          "bytes": 4224,
+          "shared": false
+        },
+        {
+          "allocation": 158,
+          "bytes": 512,
+          "shared": false
+        },
+        {
+          "allocation": 159,
+          "bytes": 768,
+          "shared": false
+        },
+        {
+          "allocation": 160,
+          "bytes": 640,
+          "shared": false
+        },
+        {
+          "allocation": 161,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 162,
+          "bytes": 512,
+          "shared": false
+        },
+        {
+          "allocation": 163,
+          "bytes": 640,
+          "shared": false
+        },
+        {
+          "allocation": 164,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 165,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 166,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 167,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 168,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 169,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 170,
+          "bytes": 2048,
+          "shared": false
+        },
+        {
+          "allocation": 171,
+          "bytes": 1280,
+          "shared": false
+        },
+        {
+          "allocation": 172,
+          "bytes": 4224,
+          "shared": false
+        },
+        {
+          "allocation": 173,
+          "bytes": 256,
+          "shared": false
+        },
+        {
+          "allocation": 174,
+          "bytes": 8,
+          "shared": true
+        },
+        {
+          "allocation": 175,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 176,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 177,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 178,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 179,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 180,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 181,
+          "bytes": 640,
+          "shared": false
+        },
+        {
+          "allocation": 182,
+          "bytes": 128,
+          "shared": false
+        },
+        {
+          "allocation": 183,
+          "bytes": 384,
+          "shared": false
+        },
+        {
+          "allocation": 184,
+          "bytes": 384,
+          "shared": false
+        },
+        {
+          "allocation": 185,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 186,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 187,
+          "bytes": 2560,
+          "shared": false
+        },
+        {
+          "allocation": 188,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 189,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 190,
+          "bytes": 2048,
+          "shared": false
+        },
+        {
+          "allocation": 191,
+          "bytes": 2048,
+          "shared": false
+        },
+        {
+          "allocation": 192,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 193,
+          "bytes": 1024,
+          "shared": false
+        }
+      ],
+      "rawAllocations": [
+        {
+          "bytes": 768,
+          "usage": 136
+        },
+        {
+          "bytes": 64,
+          "usage": 136
+        },
+        {
+          "bytes": 512,
+          "usage": 132
+        },
+        {
+          "bytes": 128,
+          "usage": 128
+        },
+        {
+          "bytes": 64,
+          "usage": 136
+        },
+        {
+          "bytes": 768,
+          "usage": 136
+        },
+        {
+          "bytes": 4,
+          "usage": 136
+        },
+        {
+          "bytes": 16,
+          "usage": 136
+        },
+        {
+          "bytes": 768,
+          "usage": 132
+        },
+        {
+          "bytes": 64,
+          "usage": 132
+        }
+      ]
+    },
+    {
+      "width": 3,
+      "gpuExecutionQualified": false,
+      "worldBytes": 773240,
+      "rawBytes": 6364,
+      "faultAndIdsBytes": 24,
+      "compactReadbackBytes": 48,
+      "diagnosticReadbackBytes": 34992,
+      "totalExplicitBufferBytesCompact": 779676,
+      "totalExplicitBufferBytesDiagnostic": 814620,
+      "maximumAllocationBytes": 67584,
+      "maximumStorageBindingBytes": 67584,
+      "maximumWordAddress": 16895,
+      "addressMetricScope": "largest allocated last-word index, not a complete computed-index proof",
+      "maximumConservativeRawPaddedWordAddress": 6143,
+      "rawPaddedInvocationCount": 32,
+      "rawMaximumPreGuardRowBase": 496,
+      "finalGateIntermediateWords": 8748,
+      "finalGateMaximumWordAddress": 8747,
+      "nonzeroStorageBindingOffsetGCD": 256,
+      "observedWorkgroupSizeX": [
+        1,
+        16,
+        32
+      ],
+      "runtimeResourcePreflightImplemented": false,
+      "dispatch": {
+        "worldY": 3,
+        "finalGateX": 3,
+        "rawX": 1,
+        "maxPhaseX": 44
+      },
+      "requiredDeviceLimits": {
+        "maxBufferSize": 67584,
+        "maxStorageBufferBindingSize": 67584,
+        "maxBindGroups": 1,
+        "maxBindingsPerBindGroup": 10,
+        "maxStorageBuffersPerShaderStage": 10,
+        "maxComputeWorkgroupsPerDimension": 44,
+        "maxComputeWorkgroupSizeX": 32,
+        "maxComputeInvocationsPerWorkgroup": 32
+      },
+      "actualDeviceLimits": null,
+      "worldAllocations": [
+        {
+          "allocation": 2,
+          "bytes": 512,
+          "shared": true
+        },
+        {
+          "allocation": 3,
+          "bytes": 1920,
+          "shared": false
+        },
+        {
+          "allocation": 4,
+          "bytes": 1920,
+          "shared": false
+        },
+        {
+          "allocation": 5,
+          "bytes": 32,
+          "shared": true
+        },
+        {
+          "allocation": 6,
+          "bytes": 64,
+          "shared": true
+        },
+        {
+          "allocation": 7,
+          "bytes": 704,
+          "shared": true
+        },
+        {
+          "allocation": 8,
+          "bytes": 1536,
+          "shared": false
+        },
+        {
+          "allocation": 9,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 10,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 11,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 12,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 13,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 14,
+          "bytes": 6144,
+          "shared": false
+        },
+        {
+          "allocation": 15,
+          "bytes": 1536,
+          "shared": false
+        },
+        {
+          "allocation": 16,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 17,
+          "bytes": 4608,
+          "shared": false
+        },
+        {
+          "allocation": 18,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 19,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 20,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 21,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 22,
+          "bytes": 6144,
+          "shared": false
+        },
+        {
+          "allocation": 23,
+          "bytes": 1536,
+          "shared": false
+        },
+        {
+          "allocation": 24,
+          "bytes": 3264,
+          "shared": false
+        },
+        {
+          "allocation": 25,
+          "bytes": 4224,
+          "shared": true
+        },
+        {
+          "allocation": 26,
+          "bytes": 1536,
+          "shared": false
+        },
+        {
+          "allocation": 27,
+          "bytes": 64,
+          "shared": true
+        },
+        {
+          "allocation": 28,
+          "bytes": 7680,
+          "shared": false
+        },
+        {
+          "allocation": 29,
+          "bytes": 6144,
+          "shared": false
+        },
+        {
+          "allocation": 30,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 31,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 32,
+          "bytes": 3840,
+          "shared": false
+        },
+        {
+          "allocation": 33,
+          "bytes": 12672,
+          "shared": false
+        },
+        {
+          "allocation": 34,
+          "bytes": 24,
+          "shared": false
+        },
+        {
+          "allocation": 35,
+          "bytes": 67584,
+          "shared": false
+        },
+        {
+          "allocation": 36,
+          "bytes": 1536,
+          "shared": false
+        },
+        {
+          "allocation": 37,
+          "bytes": 768,
+          "shared": false
+        },
+        {
+          "allocation": 38,
+          "bytes": 1920,
+          "shared": false
+        },
+        {
+          "allocation": 39,
+          "bytes": 1536,
+          "shared": false
+        },
+        {
+          "allocation": 40,
+          "bytes": 1920,
+          "shared": false
+        },
+        {
+          "allocation": 41,
+          "bytes": 1920,
+          "shared": false
+        },
+        {
+          "allocation": 42,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 43,
+          "bytes": 24,
+          "shared": false
+        },
+        {
+          "allocation": 44,
+          "bytes": 32768,
+          "shared": true
+        },
+        {
+          "allocation": 45,
+          "bytes": 384,
+          "shared": false
+        },
+        {
+          "allocation": 46,
+          "bytes": 6144,
+          "shared": false
+        },
+        {
+          "allocation": 47,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 48,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 49,
+          "bytes": 12672,
+          "shared": false
+        },
+        {
+          "allocation": 50,
+          "bytes": 12288,
+          "shared": false
+        },
+        {
+          "allocation": 51,
+          "bytes": 64,
+          "shared": true
+        },
+        {
+          "allocation": 52,
+          "bytes": 72,
+          "shared": false
+        },
+        {
+          "allocation": 53,
+          "bytes": 624,
+          "shared": false
+        },
+        {
+          "allocation": 54,
+          "bytes": 96,
+          "shared": false
+        },
+        {
+          "allocation": 55,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 56,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 57,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 58,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 59,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 60,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 61,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 62,
+          "bytes": 6144,
+          "shared": false
+        },
+        {
+          "allocation": 63,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 64,
+          "bytes": 6144,
+          "shared": false
+        },
+        {
+          "allocation": 65,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 66,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 67,
+          "bytes": 6144,
+          "shared": false
+        },
+        {
+          "allocation": 68,
+          "bytes": 6144,
+          "shared": false
+        },
+        {
+          "allocation": 69,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 70,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 71,
+          "bytes": 6144,
+          "shared": false
+        },
+        {
+          "allocation": 72,
+          "bytes": 384,
+          "shared": false
+        },
+        {
+          "allocation": 73,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 74,
+          "bytes": 6144,
+          "shared": false
+        },
+        {
+          "allocation": 75,
+          "bytes": 384,
+          "shared": false
+        },
+        {
+          "allocation": 76,
+          "bytes": 16,
+          "shared": true
+        },
+        {
+          "allocation": 77,
+          "bytes": 16,
+          "shared": true
+        },
+        {
+          "allocation": 78,
+          "bytes": 34992,
+          "shared": false
+        },
+        {
+          "allocation": 79,
+          "bytes": 1920,
+          "shared": false
+        },
+        {
+          "allocation": 80,
+          "bytes": 384,
+          "shared": false
+        },
+        {
+          "allocation": 81,
+          "bytes": 1152,
+          "shared": false
+        },
+        {
+          "allocation": 82,
+          "bytes": 1152,
+          "shared": false
+        },
+        {
+          "allocation": 83,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 84,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 85,
+          "bytes": 7680,
+          "shared": false
+        },
+        {
+          "allocation": 86,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 87,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 88,
+          "bytes": 6144,
+          "shared": false
+        },
+        {
+          "allocation": 89,
+          "bytes": 6144,
+          "shared": false
+        },
+        {
+          "allocation": 90,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 91,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 92,
+          "bytes": 704,
+          "shared": true
+        },
+        {
+          "allocation": 93,
+          "bytes": 64,
+          "shared": true
+        },
+        {
+          "allocation": 94,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 95,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 96,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 97,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 98,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 99,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 100,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 101,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 102,
+          "bytes": 96,
+          "shared": false
+        },
+        {
+          "allocation": 103,
+          "bytes": 8,
+          "shared": true
+        },
+        {
+          "allocation": 104,
+          "bytes": 12672,
+          "shared": false
+        },
+        {
+          "allocation": 105,
+          "bytes": 12288,
+          "shared": false
+        },
+        {
+          "allocation": 106,
+          "bytes": 12672,
+          "shared": false
+        },
+        {
+          "allocation": 107,
+          "bytes": 1536,
+          "shared": false
+        },
+        {
+          "allocation": 108,
+          "bytes": 2304,
+          "shared": false
+        },
+        {
+          "allocation": 109,
+          "bytes": 1920,
+          "shared": false
+        },
+        {
+          "allocation": 110,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 111,
+          "bytes": 1536,
+          "shared": false
+        },
+        {
+          "allocation": 112,
+          "bytes": 1920,
+          "shared": false
+        },
+        {
+          "allocation": 113,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 114,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 115,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 116,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 117,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 118,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 119,
+          "bytes": 6144,
+          "shared": false
+        },
+        {
+          "allocation": 120,
+          "bytes": 3840,
+          "shared": false
+        },
+        {
+          "allocation": 121,
+          "bytes": 12672,
+          "shared": false
+        },
+        {
+          "allocation": 122,
+          "bytes": 768,
+          "shared": false
+        },
+        {
+          "allocation": 123,
+          "bytes": 8,
+          "shared": true
+        },
+        {
+          "allocation": 124,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 125,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 126,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 127,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 128,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 129,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 130,
+          "bytes": 1920,
+          "shared": false
+        },
+        {
+          "allocation": 131,
+          "bytes": 384,
+          "shared": false
+        },
+        {
+          "allocation": 132,
+          "bytes": 1152,
+          "shared": false
+        },
+        {
+          "allocation": 133,
+          "bytes": 1152,
+          "shared": false
+        },
+        {
+          "allocation": 134,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 135,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 136,
+          "bytes": 7680,
+          "shared": false
+        },
+        {
+          "allocation": 137,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 138,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 139,
+          "bytes": 6144,
+          "shared": false
+        },
+        {
+          "allocation": 140,
+          "bytes": 6144,
+          "shared": false
+        },
+        {
+          "allocation": 141,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 142,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 143,
+          "bytes": 704,
+          "shared": true
+        },
+        {
+          "allocation": 144,
+          "bytes": 64,
+          "shared": true
+        },
+        {
+          "allocation": 145,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 146,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 147,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 148,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 149,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 150,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 151,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 152,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 153,
+          "bytes": 96,
+          "shared": false
+        },
+        {
+          "allocation": 154,
+          "bytes": 8,
+          "shared": true
+        },
+        {
+          "allocation": 155,
+          "bytes": 12672,
+          "shared": false
+        },
+        {
+          "allocation": 156,
+          "bytes": 12288,
+          "shared": false
+        },
+        {
+          "allocation": 157,
+          "bytes": 12672,
+          "shared": false
+        },
+        {
+          "allocation": 158,
+          "bytes": 1536,
+          "shared": false
+        },
+        {
+          "allocation": 159,
+          "bytes": 2304,
+          "shared": false
+        },
+        {
+          "allocation": 160,
+          "bytes": 1920,
+          "shared": false
+        },
+        {
+          "allocation": 161,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 162,
+          "bytes": 1536,
+          "shared": false
+        },
+        {
+          "allocation": 163,
+          "bytes": 1920,
+          "shared": false
+        },
+        {
+          "allocation": 164,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 165,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 166,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 167,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 168,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 169,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 170,
+          "bytes": 6144,
+          "shared": false
+        },
+        {
+          "allocation": 171,
+          "bytes": 3840,
+          "shared": false
+        },
+        {
+          "allocation": 172,
+          "bytes": 12672,
+          "shared": false
+        },
+        {
+          "allocation": 173,
+          "bytes": 768,
+          "shared": false
+        },
+        {
+          "allocation": 174,
+          "bytes": 8,
+          "shared": true
+        },
+        {
+          "allocation": 175,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 176,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 177,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 178,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 179,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 180,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 181,
+          "bytes": 1920,
+          "shared": false
+        },
+        {
+          "allocation": 182,
+          "bytes": 384,
+          "shared": false
+        },
+        {
+          "allocation": 183,
+          "bytes": 1152,
+          "shared": false
+        },
+        {
+          "allocation": 184,
+          "bytes": 1152,
+          "shared": false
+        },
+        {
+          "allocation": 185,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 186,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 187,
+          "bytes": 7680,
+          "shared": false
+        },
+        {
+          "allocation": 188,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 189,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 190,
+          "bytes": 6144,
+          "shared": false
+        },
+        {
+          "allocation": 191,
+          "bytes": 6144,
+          "shared": false
+        },
+        {
+          "allocation": 192,
+          "bytes": 3072,
+          "shared": false
+        },
+        {
+          "allocation": 193,
+          "bytes": 3072,
+          "shared": false
+        }
+      ],
+      "rawAllocations": [
+        {
+          "bytes": 768,
+          "usage": 136
+        },
+        {
+          "bytes": 192,
+          "usage": 136
+        },
+        {
+          "bytes": 1536,
+          "usage": 132
+        },
+        {
+          "bytes": 384,
+          "usage": 128
+        },
+        {
+          "bytes": 192,
+          "usage": 136
+        },
+        {
+          "bytes": 768,
+          "usage": 136
+        },
+        {
+          "bytes": 12,
+          "usage": 136
+        },
+        {
+          "bytes": 16,
+          "usage": 136
+        },
+        {
+          "bytes": 2304,
+          "usage": 132
+        },
+        {
+          "bytes": 192,
+          "usage": 132
+        }
+      ]
+    },
+    {
+      "width": 32,
+      "gpuExecutionQualified": false,
+      "worldBytes": 7092224,
+      "rawBytes": 52880,
+      "faultAndIdsBytes": 256,
+      "compactReadbackBytes": 512,
+      "diagnosticReadbackBytes": 373248,
+      "totalExplicitBufferBytesCompact": 7145872,
+      "totalExplicitBufferBytesDiagnostic": 7518608,
+      "maximumAllocationBytes": 720896,
+      "maximumStorageBindingBytes": 720896,
+      "maximumWordAddress": 180223,
+      "addressMetricScope": "largest allocated last-word index, not a complete computed-index proof",
+      "maximumConservativeRawPaddedWordAddress": 6143,
+      "rawPaddedInvocationCount": 32,
+      "rawMaximumPreGuardRowBase": 496,
+      "finalGateIntermediateWords": 93312,
+      "finalGateMaximumWordAddress": 93311,
+      "nonzeroStorageBindingOffsetGCD": 256,
+      "observedWorkgroupSizeX": [
+        1,
+        16,
+        32
+      ],
+      "runtimeResourcePreflightImplemented": false,
+      "dispatch": {
+        "worldY": 32,
+        "finalGateX": 32,
+        "rawX": 1,
+        "maxPhaseX": 44
+      },
+      "requiredDeviceLimits": {
+        "maxBufferSize": 720896,
+        "maxStorageBufferBindingSize": 720896,
+        "maxBindGroups": 1,
+        "maxBindingsPerBindGroup": 10,
+        "maxStorageBuffersPerShaderStage": 10,
+        "maxComputeWorkgroupsPerDimension": 44,
+        "maxComputeWorkgroupSizeX": 32,
+        "maxComputeInvocationsPerWorkgroup": 32
+      },
+      "actualDeviceLimits": null,
+      "worldAllocations": [
+        {
+          "allocation": 2,
+          "bytes": 512,
+          "shared": true
+        },
+        {
+          "allocation": 3,
+          "bytes": 20480,
+          "shared": false
+        },
+        {
+          "allocation": 4,
+          "bytes": 20480,
+          "shared": false
+        },
+        {
+          "allocation": 5,
+          "bytes": 32,
+          "shared": true
+        },
+        {
+          "allocation": 6,
+          "bytes": 64,
+          "shared": true
+        },
+        {
+          "allocation": 7,
+          "bytes": 704,
+          "shared": true
+        },
+        {
+          "allocation": 8,
+          "bytes": 16384,
+          "shared": false
+        },
+        {
+          "allocation": 9,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 10,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 11,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 12,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 13,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 14,
+          "bytes": 65536,
+          "shared": false
+        },
+        {
+          "allocation": 15,
+          "bytes": 16384,
+          "shared": false
+        },
+        {
+          "allocation": 16,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 17,
+          "bytes": 49152,
+          "shared": false
+        },
+        {
+          "allocation": 18,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 19,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 20,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 21,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 22,
+          "bytes": 65536,
+          "shared": false
+        },
+        {
+          "allocation": 23,
+          "bytes": 16384,
+          "shared": false
+        },
+        {
+          "allocation": 24,
+          "bytes": 34816,
+          "shared": false
+        },
+        {
+          "allocation": 25,
+          "bytes": 4224,
+          "shared": true
+        },
+        {
+          "allocation": 26,
+          "bytes": 16384,
+          "shared": false
+        },
+        {
+          "allocation": 27,
+          "bytes": 64,
+          "shared": true
+        },
+        {
+          "allocation": 28,
+          "bytes": 81920,
+          "shared": false
+        },
+        {
+          "allocation": 29,
+          "bytes": 65536,
+          "shared": false
+        },
+        {
+          "allocation": 30,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 31,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 32,
+          "bytes": 40960,
+          "shared": false
+        },
+        {
+          "allocation": 33,
+          "bytes": 135168,
+          "shared": false
+        },
+        {
+          "allocation": 34,
+          "bytes": 256,
+          "shared": false
+        },
+        {
+          "allocation": 35,
+          "bytes": 720896,
+          "shared": false
+        },
+        {
+          "allocation": 36,
+          "bytes": 16384,
+          "shared": false
+        },
+        {
+          "allocation": 37,
+          "bytes": 8192,
+          "shared": false
+        },
+        {
+          "allocation": 38,
+          "bytes": 20480,
+          "shared": false
+        },
+        {
+          "allocation": 39,
+          "bytes": 16384,
+          "shared": false
+        },
+        {
+          "allocation": 40,
+          "bytes": 20480,
+          "shared": false
+        },
+        {
+          "allocation": 41,
+          "bytes": 20480,
+          "shared": false
+        },
+        {
+          "allocation": 42,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 43,
+          "bytes": 256,
+          "shared": false
+        },
+        {
+          "allocation": 44,
+          "bytes": 32768,
+          "shared": true
+        },
+        {
+          "allocation": 45,
+          "bytes": 4096,
+          "shared": false
+        },
+        {
+          "allocation": 46,
+          "bytes": 65536,
+          "shared": false
+        },
+        {
+          "allocation": 47,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 48,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 49,
+          "bytes": 135168,
+          "shared": false
+        },
+        {
+          "allocation": 50,
+          "bytes": 131072,
+          "shared": false
+        },
+        {
+          "allocation": 51,
+          "bytes": 64,
+          "shared": true
+        },
+        {
+          "allocation": 52,
+          "bytes": 768,
+          "shared": false
+        },
+        {
+          "allocation": 53,
+          "bytes": 6656,
+          "shared": false
+        },
+        {
+          "allocation": 54,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 55,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 56,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 57,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 58,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 59,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 60,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 61,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 62,
+          "bytes": 65536,
+          "shared": false
+        },
+        {
+          "allocation": 63,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 64,
+          "bytes": 65536,
+          "shared": false
+        },
+        {
+          "allocation": 65,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 66,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 67,
+          "bytes": 65536,
+          "shared": false
+        },
+        {
+          "allocation": 68,
+          "bytes": 65536,
+          "shared": false
+        },
+        {
+          "allocation": 69,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 70,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 71,
+          "bytes": 65536,
+          "shared": false
+        },
+        {
+          "allocation": 72,
+          "bytes": 4096,
+          "shared": false
+        },
+        {
+          "allocation": 73,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 74,
+          "bytes": 65536,
+          "shared": false
+        },
+        {
+          "allocation": 75,
+          "bytes": 4096,
+          "shared": false
+        },
+        {
+          "allocation": 76,
+          "bytes": 16,
+          "shared": true
+        },
+        {
+          "allocation": 77,
+          "bytes": 16,
+          "shared": true
+        },
+        {
+          "allocation": 78,
+          "bytes": 373248,
+          "shared": false
+        },
+        {
+          "allocation": 79,
+          "bytes": 20480,
+          "shared": false
+        },
+        {
+          "allocation": 80,
+          "bytes": 4096,
+          "shared": false
+        },
+        {
+          "allocation": 81,
+          "bytes": 12288,
+          "shared": false
+        },
+        {
+          "allocation": 82,
+          "bytes": 12288,
+          "shared": false
+        },
+        {
+          "allocation": 83,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 84,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 85,
+          "bytes": 81920,
+          "shared": false
+        },
+        {
+          "allocation": 86,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 87,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 88,
+          "bytes": 65536,
+          "shared": false
+        },
+        {
+          "allocation": 89,
+          "bytes": 65536,
+          "shared": false
+        },
+        {
+          "allocation": 90,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 91,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 92,
+          "bytes": 704,
+          "shared": true
+        },
+        {
+          "allocation": 93,
+          "bytes": 64,
+          "shared": true
+        },
+        {
+          "allocation": 94,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 95,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 96,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 97,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 98,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 99,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 100,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 101,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 102,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 103,
+          "bytes": 8,
+          "shared": true
+        },
+        {
+          "allocation": 104,
+          "bytes": 135168,
+          "shared": false
+        },
+        {
+          "allocation": 105,
+          "bytes": 131072,
+          "shared": false
+        },
+        {
+          "allocation": 106,
+          "bytes": 135168,
+          "shared": false
+        },
+        {
+          "allocation": 107,
+          "bytes": 16384,
+          "shared": false
+        },
+        {
+          "allocation": 108,
+          "bytes": 24576,
+          "shared": false
+        },
+        {
+          "allocation": 109,
+          "bytes": 20480,
+          "shared": false
+        },
+        {
+          "allocation": 110,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 111,
+          "bytes": 16384,
+          "shared": false
+        },
+        {
+          "allocation": 112,
+          "bytes": 20480,
+          "shared": false
+        },
+        {
+          "allocation": 113,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 114,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 115,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 116,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 117,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 118,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 119,
+          "bytes": 65536,
+          "shared": false
+        },
+        {
+          "allocation": 120,
+          "bytes": 40960,
+          "shared": false
+        },
+        {
+          "allocation": 121,
+          "bytes": 135168,
+          "shared": false
+        },
+        {
+          "allocation": 122,
+          "bytes": 8192,
+          "shared": false
+        },
+        {
+          "allocation": 123,
+          "bytes": 8,
+          "shared": true
+        },
+        {
+          "allocation": 124,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 125,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 126,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 127,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 128,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 129,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 130,
+          "bytes": 20480,
+          "shared": false
+        },
+        {
+          "allocation": 131,
+          "bytes": 4096,
+          "shared": false
+        },
+        {
+          "allocation": 132,
+          "bytes": 12288,
+          "shared": false
+        },
+        {
+          "allocation": 133,
+          "bytes": 12288,
+          "shared": false
+        },
+        {
+          "allocation": 134,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 135,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 136,
+          "bytes": 81920,
+          "shared": false
+        },
+        {
+          "allocation": 137,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 138,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 139,
+          "bytes": 65536,
+          "shared": false
+        },
+        {
+          "allocation": 140,
+          "bytes": 65536,
+          "shared": false
+        },
+        {
+          "allocation": 141,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 142,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 143,
+          "bytes": 704,
+          "shared": true
+        },
+        {
+          "allocation": 144,
+          "bytes": 64,
+          "shared": true
+        },
+        {
+          "allocation": 145,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 146,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 147,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 148,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 149,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 150,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 151,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 152,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 153,
+          "bytes": 1024,
+          "shared": false
+        },
+        {
+          "allocation": 154,
+          "bytes": 8,
+          "shared": true
+        },
+        {
+          "allocation": 155,
+          "bytes": 135168,
+          "shared": false
+        },
+        {
+          "allocation": 156,
+          "bytes": 131072,
+          "shared": false
+        },
+        {
+          "allocation": 157,
+          "bytes": 135168,
+          "shared": false
+        },
+        {
+          "allocation": 158,
+          "bytes": 16384,
+          "shared": false
+        },
+        {
+          "allocation": 159,
+          "bytes": 24576,
+          "shared": false
+        },
+        {
+          "allocation": 160,
+          "bytes": 20480,
+          "shared": false
+        },
+        {
+          "allocation": 161,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 162,
+          "bytes": 16384,
+          "shared": false
+        },
+        {
+          "allocation": 163,
+          "bytes": 20480,
+          "shared": false
+        },
+        {
+          "allocation": 164,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 165,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 166,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 167,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 168,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 169,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 170,
+          "bytes": 65536,
+          "shared": false
+        },
+        {
+          "allocation": 171,
+          "bytes": 40960,
+          "shared": false
+        },
+        {
+          "allocation": 172,
+          "bytes": 135168,
+          "shared": false
+        },
+        {
+          "allocation": 173,
+          "bytes": 8192,
+          "shared": false
+        },
+        {
+          "allocation": 174,
+          "bytes": 8,
+          "shared": true
+        },
+        {
+          "allocation": 175,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 176,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 177,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 178,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 179,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 180,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 181,
+          "bytes": 20480,
+          "shared": false
+        },
+        {
+          "allocation": 182,
+          "bytes": 4096,
+          "shared": false
+        },
+        {
+          "allocation": 183,
+          "bytes": 12288,
+          "shared": false
+        },
+        {
+          "allocation": 184,
+          "bytes": 12288,
+          "shared": false
+        },
+        {
+          "allocation": 185,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 186,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 187,
+          "bytes": 81920,
+          "shared": false
+        },
+        {
+          "allocation": 188,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 189,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 190,
+          "bytes": 65536,
+          "shared": false
+        },
+        {
+          "allocation": 191,
+          "bytes": 65536,
+          "shared": false
+        },
+        {
+          "allocation": 192,
+          "bytes": 32768,
+          "shared": false
+        },
+        {
+          "allocation": 193,
+          "bytes": 32768,
+          "shared": false
+        }
+      ],
+      "rawAllocations": [
+        {
+          "bytes": 768,
+          "usage": 136
+        },
+        {
+          "bytes": 2048,
+          "usage": 136
+        },
+        {
+          "bytes": 16384,
+          "usage": 132
+        },
+        {
+          "bytes": 4096,
+          "usage": 128
+        },
+        {
+          "bytes": 2048,
+          "usage": 136
+        },
+        {
+          "bytes": 768,
+          "usage": 136
+        },
+        {
+          "bytes": 128,
+          "usage": 136
+        },
+        {
+          "bytes": 16,
+          "usage": 136
+        },
+        {
+          "bytes": 24576,
+          "usage": 132
+        },
+        {
+          "bytes": 2048,
+          "usage": 132
+        }
+      ]
+    },
+    {
+      "width": 33,
+      "gpuExecutionQualified": false,
+      "worldBytes": 7310120,
+      "rawBytes": 54484,
+      "faultAndIdsBytes": 264,
+      "compactReadbackBytes": 528,
+      "diagnosticReadbackBytes": 384912,
+      "totalExplicitBufferBytesCompact": 7365396,
+      "totalExplicitBufferBytesDiagnostic": 7749780,
+      "maximumAllocationBytes": 743424,
+      "maximumStorageBindingBytes": 743424,
+      "maximumWordAddress": 185855,
+      "addressMetricScope": "largest allocated last-word index, not a complete computed-index proof",
+      "maximumConservativeRawPaddedWordAddress": 12287,
+      "rawPaddedInvocationCount": 64,
+      "rawMaximumPreGuardRowBase": 1008,
+      "finalGateIntermediateWords": 96228,
+      "finalGateMaximumWordAddress": 96227,
+      "nonzeroStorageBindingOffsetGCD": 256,
+      "observedWorkgroupSizeX": [
+        1,
+        16,
+        32
+      ],
+      "runtimeResourcePreflightImplemented": false,
+      "dispatch": {
+        "worldY": 33,
+        "finalGateX": 33,
+        "rawX": 2,
+        "maxPhaseX": 44
+      },
+      "requiredDeviceLimits": {
+        "maxBufferSize": 743424,
+        "maxStorageBufferBindingSize": 743424,
+        "maxBindGroups": 1,
+        "maxBindingsPerBindGroup": 10,
+        "maxStorageBuffersPerShaderStage": 10,
+        "maxComputeWorkgroupsPerDimension": 44,
+        "maxComputeWorkgroupSizeX": 32,
+        "maxComputeInvocationsPerWorkgroup": 32
+      },
+      "actualDeviceLimits": null,
+      "worldAllocations": [
+        {
+          "allocation": 2,
+          "bytes": 512,
+          "shared": true
+        },
+        {
+          "allocation": 3,
+          "bytes": 21120,
+          "shared": false
+        },
+        {
+          "allocation": 4,
+          "bytes": 21120,
+          "shared": false
+        },
+        {
+          "allocation": 5,
+          "bytes": 32,
+          "shared": true
+        },
+        {
+          "allocation": 6,
+          "bytes": 64,
+          "shared": true
+        },
+        {
+          "allocation": 7,
+          "bytes": 704,
+          "shared": true
+        },
+        {
+          "allocation": 8,
+          "bytes": 16896,
+          "shared": false
+        },
+        {
+          "allocation": 9,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 10,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 11,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 12,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 13,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 14,
+          "bytes": 67584,
+          "shared": false
+        },
+        {
+          "allocation": 15,
+          "bytes": 16896,
+          "shared": false
+        },
+        {
+          "allocation": 16,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 17,
+          "bytes": 50688,
+          "shared": false
+        },
+        {
+          "allocation": 18,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 19,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 20,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 21,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 22,
+          "bytes": 67584,
+          "shared": false
+        },
+        {
+          "allocation": 23,
+          "bytes": 16896,
+          "shared": false
+        },
+        {
+          "allocation": 24,
+          "bytes": 35904,
+          "shared": false
+        },
+        {
+          "allocation": 25,
+          "bytes": 4224,
+          "shared": true
+        },
+        {
+          "allocation": 26,
+          "bytes": 16896,
+          "shared": false
+        },
+        {
+          "allocation": 27,
+          "bytes": 64,
+          "shared": true
+        },
+        {
+          "allocation": 28,
+          "bytes": 84480,
+          "shared": false
+        },
+        {
+          "allocation": 29,
+          "bytes": 67584,
+          "shared": false
+        },
+        {
+          "allocation": 30,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 31,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 32,
+          "bytes": 42240,
+          "shared": false
+        },
+        {
+          "allocation": 33,
+          "bytes": 139392,
+          "shared": false
+        },
+        {
+          "allocation": 34,
+          "bytes": 264,
+          "shared": false
+        },
+        {
+          "allocation": 35,
+          "bytes": 743424,
+          "shared": false
+        },
+        {
+          "allocation": 36,
+          "bytes": 16896,
+          "shared": false
+        },
+        {
+          "allocation": 37,
+          "bytes": 8448,
+          "shared": false
+        },
+        {
+          "allocation": 38,
+          "bytes": 21120,
+          "shared": false
+        },
+        {
+          "allocation": 39,
+          "bytes": 16896,
+          "shared": false
+        },
+        {
+          "allocation": 40,
+          "bytes": 21120,
+          "shared": false
+        },
+        {
+          "allocation": 41,
+          "bytes": 21120,
+          "shared": false
+        },
+        {
+          "allocation": 42,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 43,
+          "bytes": 264,
+          "shared": false
+        },
+        {
+          "allocation": 44,
+          "bytes": 32768,
+          "shared": true
+        },
+        {
+          "allocation": 45,
+          "bytes": 4224,
+          "shared": false
+        },
+        {
+          "allocation": 46,
+          "bytes": 67584,
+          "shared": false
+        },
+        {
+          "allocation": 47,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 48,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 49,
+          "bytes": 139392,
+          "shared": false
+        },
+        {
+          "allocation": 50,
+          "bytes": 135168,
+          "shared": false
+        },
+        {
+          "allocation": 51,
+          "bytes": 64,
+          "shared": true
+        },
+        {
+          "allocation": 52,
+          "bytes": 792,
+          "shared": false
+        },
+        {
+          "allocation": 53,
+          "bytes": 6864,
+          "shared": false
+        },
+        {
+          "allocation": 54,
+          "bytes": 1056,
+          "shared": false
+        },
+        {
+          "allocation": 55,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 56,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 57,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 58,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 59,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 60,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 61,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 62,
+          "bytes": 67584,
+          "shared": false
+        },
+        {
+          "allocation": 63,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 64,
+          "bytes": 67584,
+          "shared": false
+        },
+        {
+          "allocation": 65,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 66,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 67,
+          "bytes": 67584,
+          "shared": false
+        },
+        {
+          "allocation": 68,
+          "bytes": 67584,
+          "shared": false
+        },
+        {
+          "allocation": 69,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 70,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 71,
+          "bytes": 67584,
+          "shared": false
+        },
+        {
+          "allocation": 72,
+          "bytes": 4224,
+          "shared": false
+        },
+        {
+          "allocation": 73,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 74,
+          "bytes": 67584,
+          "shared": false
+        },
+        {
+          "allocation": 75,
+          "bytes": 4224,
+          "shared": false
+        },
+        {
+          "allocation": 76,
+          "bytes": 16,
+          "shared": true
+        },
+        {
+          "allocation": 77,
+          "bytes": 16,
+          "shared": true
+        },
+        {
+          "allocation": 78,
+          "bytes": 384912,
+          "shared": false
+        },
+        {
+          "allocation": 79,
+          "bytes": 21120,
+          "shared": false
+        },
+        {
+          "allocation": 80,
+          "bytes": 4224,
+          "shared": false
+        },
+        {
+          "allocation": 81,
+          "bytes": 12672,
+          "shared": false
+        },
+        {
+          "allocation": 82,
+          "bytes": 12672,
+          "shared": false
+        },
+        {
+          "allocation": 83,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 84,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 85,
+          "bytes": 84480,
+          "shared": false
+        },
+        {
+          "allocation": 86,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 87,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 88,
+          "bytes": 67584,
+          "shared": false
+        },
+        {
+          "allocation": 89,
+          "bytes": 67584,
+          "shared": false
+        },
+        {
+          "allocation": 90,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 91,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 92,
+          "bytes": 704,
+          "shared": true
+        },
+        {
+          "allocation": 93,
+          "bytes": 64,
+          "shared": true
+        },
+        {
+          "allocation": 94,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 95,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 96,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 97,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 98,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 99,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 100,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 101,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 102,
+          "bytes": 1056,
+          "shared": false
+        },
+        {
+          "allocation": 103,
+          "bytes": 8,
+          "shared": true
+        },
+        {
+          "allocation": 104,
+          "bytes": 139392,
+          "shared": false
+        },
+        {
+          "allocation": 105,
+          "bytes": 135168,
+          "shared": false
+        },
+        {
+          "allocation": 106,
+          "bytes": 139392,
+          "shared": false
+        },
+        {
+          "allocation": 107,
+          "bytes": 16896,
+          "shared": false
+        },
+        {
+          "allocation": 108,
+          "bytes": 25344,
+          "shared": false
+        },
+        {
+          "allocation": 109,
+          "bytes": 21120,
+          "shared": false
+        },
+        {
+          "allocation": 110,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 111,
+          "bytes": 16896,
+          "shared": false
+        },
+        {
+          "allocation": 112,
+          "bytes": 21120,
+          "shared": false
+        },
+        {
+          "allocation": 113,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 114,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 115,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 116,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 117,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 118,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 119,
+          "bytes": 67584,
+          "shared": false
+        },
+        {
+          "allocation": 120,
+          "bytes": 42240,
+          "shared": false
+        },
+        {
+          "allocation": 121,
+          "bytes": 139392,
+          "shared": false
+        },
+        {
+          "allocation": 122,
+          "bytes": 8448,
+          "shared": false
+        },
+        {
+          "allocation": 123,
+          "bytes": 8,
+          "shared": true
+        },
+        {
+          "allocation": 124,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 125,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 126,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 127,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 128,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 129,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 130,
+          "bytes": 21120,
+          "shared": false
+        },
+        {
+          "allocation": 131,
+          "bytes": 4224,
+          "shared": false
+        },
+        {
+          "allocation": 132,
+          "bytes": 12672,
+          "shared": false
+        },
+        {
+          "allocation": 133,
+          "bytes": 12672,
+          "shared": false
+        },
+        {
+          "allocation": 134,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 135,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 136,
+          "bytes": 84480,
+          "shared": false
+        },
+        {
+          "allocation": 137,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 138,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 139,
+          "bytes": 67584,
+          "shared": false
+        },
+        {
+          "allocation": 140,
+          "bytes": 67584,
+          "shared": false
+        },
+        {
+          "allocation": 141,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 142,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 143,
+          "bytes": 704,
+          "shared": true
+        },
+        {
+          "allocation": 144,
+          "bytes": 64,
+          "shared": true
+        },
+        {
+          "allocation": 145,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 146,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 147,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 148,
+          "bytes": 9792,
+          "shared": true
+        },
+        {
+          "allocation": 149,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 150,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 151,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 152,
+          "bytes": 128,
+          "shared": true
+        },
+        {
+          "allocation": 153,
+          "bytes": 1056,
+          "shared": false
+        },
+        {
+          "allocation": 154,
+          "bytes": 8,
+          "shared": true
+        },
+        {
+          "allocation": 155,
+          "bytes": 139392,
+          "shared": false
+        },
+        {
+          "allocation": 156,
+          "bytes": 135168,
+          "shared": false
+        },
+        {
+          "allocation": 157,
+          "bytes": 139392,
+          "shared": false
+        },
+        {
+          "allocation": 158,
+          "bytes": 16896,
+          "shared": false
+        },
+        {
+          "allocation": 159,
+          "bytes": 25344,
+          "shared": false
+        },
+        {
+          "allocation": 160,
+          "bytes": 21120,
+          "shared": false
+        },
+        {
+          "allocation": 161,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 162,
+          "bytes": 16896,
+          "shared": false
+        },
+        {
+          "allocation": 163,
+          "bytes": 21120,
+          "shared": false
+        },
+        {
+          "allocation": 164,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 165,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 166,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 167,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 168,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 169,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 170,
+          "bytes": 67584,
+          "shared": false
+        },
+        {
+          "allocation": 171,
+          "bytes": 42240,
+          "shared": false
+        },
+        {
+          "allocation": 172,
+          "bytes": 139392,
+          "shared": false
+        },
+        {
+          "allocation": 173,
+          "bytes": 8448,
+          "shared": false
+        },
+        {
+          "allocation": 174,
+          "bytes": 8,
+          "shared": true
+        },
+        {
+          "allocation": 175,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 176,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 177,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 178,
+          "bytes": 20,
+          "shared": true
+        },
+        {
+          "allocation": 179,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 180,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 181,
+          "bytes": 21120,
+          "shared": false
+        },
+        {
+          "allocation": 182,
+          "bytes": 4224,
+          "shared": false
+        },
+        {
+          "allocation": 183,
+          "bytes": 12672,
+          "shared": false
+        },
+        {
+          "allocation": 184,
+          "bytes": 12672,
+          "shared": false
+        },
+        {
+          "allocation": 185,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 186,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 187,
+          "bytes": 84480,
+          "shared": false
+        },
+        {
+          "allocation": 188,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 189,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 190,
+          "bytes": 67584,
+          "shared": false
+        },
+        {
+          "allocation": 191,
+          "bytes": 67584,
+          "shared": false
+        },
+        {
+          "allocation": 192,
+          "bytes": 33792,
+          "shared": false
+        },
+        {
+          "allocation": 193,
+          "bytes": 33792,
+          "shared": false
+        }
+      ],
+      "rawAllocations": [
+        {
+          "bytes": 768,
+          "usage": 136
+        },
+        {
+          "bytes": 2112,
+          "usage": 136
+        },
+        {
+          "bytes": 16896,
+          "usage": 132
+        },
+        {
+          "bytes": 4224,
+          "usage": 128
+        },
+        {
+          "bytes": 2112,
+          "usage": 136
+        },
+        {
+          "bytes": 768,
+          "usage": 136
+        },
+        {
+          "bytes": 132,
+          "usage": 136
+        },
+        {
+          "bytes": 16,
+          "usage": 136
+        },
+        {
+          "bytes": 25344,
+          "usage": 132
+        },
+        {
+          "bytes": 2112,
+          "usage": 132
+        }
+      ]
+    }
+  ],
+  "physicalGPUExecuted": false,
+  "gpuSpeedupClaim": false,
+  "widthGateChanged": false
+}

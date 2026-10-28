@@ -1,0 +1,15 @@
+{
+  "elapsedSeconds": 55.31919879699126,
+  "returnCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "maximumChildRSSKiB": 2339108,
+  "cgroupBefore": {
+    "available": false
+  },
+  "cgroupAfter": {
+    "available": false
+  },
+  "processGroup": 6,
+  "terminatedAndReaped": true
+}

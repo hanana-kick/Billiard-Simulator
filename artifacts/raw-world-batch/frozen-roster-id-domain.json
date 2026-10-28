@@ -1,0 +1,119 @@
+{
+  "sourceCommit": "0850a4d",
+  "sourceSHA256": "fd1af44ac621cc61620d2468480f2d3b76fd464a0ea8aa556c2c53bb8b19fb66",
+  "fixture": "actual raw angle0/elevation25/speed.5/tipX0/tipY.2 hit in same four-ball scene, changed first red stable ID only; candidate ID remains4294967294",
+  "cases": [
+    {
+      "stableRosterId": 8,
+      "candidateId": 4294967294,
+      "outcome": "returned",
+      "rawStatus": [
+        4294967294,
+        1,
+        0,
+        1,
+        0,
+        1398034945,
+        1347899905,
+        26576,
+        11,
+        23,
+        27810,
+        1381455617,
+        0,
+        0,
+        0,
+        0
+      ],
+      "state": [
+        4294967294,
+        9,
+        0,
+        4,
+        385,
+        3526937,
+        4294967295,
+        0
+      ],
+      "compact": [
+        4294967294,
+        2,
+        1,
+        0
+      ]
+    },
+    {
+      "stableRosterId": 2147483647,
+      "candidateId": 4294967294,
+      "outcome": "returned",
+      "rawStatus": [
+        4294967294,
+        1,
+        0,
+        1,
+        0,
+        1398034945,
+        1347899905,
+        26576,
+        11,
+        23,
+        27810,
+        1381455617,
+        0,
+        0,
+        0,
+        0
+      ],
+      "state": [
+        4294967294,
+        9,
+        0,
+        4,
+        385,
+        3526937,
+        4294967295,
+        0
+      ],
+      "compact": [
+        4294967294,
+        2,
+        1,
+        0
+      ]
+    },
+    {
+      "stableRosterId": 2147483648,
+      "candidateId": 4294967294,
+      "outcome": "threw",
+      "name": "Error",
+      "message": "Smooth input range",
+      "stack": [
+        "Error: Smooth input range",
+        "    at integer (file://<frozen0850a4d>/src/direct-candidate/deterministic-smooth-segment.mjs:41:247)",
+        "    at packSmoothSegments (file://<frozen0850a4d>/src/direct-candidate/deterministic-smooth-segment.mjs:41:295)",
+        "    at smoothRow (file://<frozen0850a4d>/src/direct-candidate/deterministic-recurring-world.mjs:19:45)",
+        "    at advanceMixedWorldCPU (file://<frozen0850a4d>/src/direct-candidate/deterministic-recurring-world.mjs:22:688)",
+        "    at runPreparedWorldCPU (file://<frozen0850a4d>/src/direct-candidate/deterministic-recurring-world.mjs:28:4956)",
+        "    at runCanonicalRawWorldContinuationCPU (file://<frozen0850a4d>/src/direct-candidate/canonical-world-continuation.mjs:58:397)",
+        "    at cpu (file://<frozen0850a4d>/probe-2147483648.mjs:25:35)"
+      ]
+    },
+    {
+      "stableRosterId": 4294967295,
+      "candidateId": 4294967294,
+      "outcome": "threw",
+      "name": "Error",
+      "message": "Smooth input range",
+      "stack": [
+        "Error: Smooth input range",
+        "    at integer (file://<frozen0850a4d>/src/direct-candidate/deterministic-smooth-segment.mjs:41:247)",
+        "    at packSmoothSegments (file://<frozen0850a4d>/src/direct-candidate/deterministic-smooth-segment.mjs:41:295)",
+        "    at smoothRow (file://<frozen0850a4d>/src/direct-candidate/deterministic-recurring-world.mjs:19:45)",
+        "    at advanceMixedWorldCPU (file://<frozen0850a4d>/src/direct-candidate/deterministic-recurring-world.mjs:22:688)",
+        "    at runPreparedWorldCPU (file://<frozen0850a4d>/src/direct-candidate/deterministic-recurring-world.mjs:28:4956)",
+        "    at runCanonicalRawWorldContinuationCPU (file://<frozen0850a4d>/src/direct-candidate/canonical-world-continuation.mjs:58:397)",
+        "    at cpu (file://<frozen0850a4d>/probe-4294967295.mjs:25:35)"
+      ]
+    }
+  ]
+}

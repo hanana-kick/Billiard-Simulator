@@ -1,0 +1,746 @@
+{
+  "note": "Explicit diagnostic probe sets only; not configured search grid or domain maximum theorem",
+  "parameters": {
+    "speeds": [
+      0.5,
+      2,
+      4.5
+    ],
+    "angles": [
+      0,
+      33,
+      90
+    ],
+    "elevations": [
+      0,
+      5,
+      15,
+      30,
+      45,
+      60,
+      75,
+      85
+    ],
+    "tipXs": [
+      -0.5,
+      -0.3,
+      0,
+      0.3,
+      0.5
+    ],
+    "tipYs": [
+      -0.3,
+      0,
+      0.3
+    ],
+    "radialMaximum": 0.6
+  },
+  "cases": 1080,
+  "accepted": 921,
+  "aboveDownstreamComponent4": 195,
+  "statusReasonCounts": {
+    "4/3": 159,
+    "1/0": 921
+  },
+  "stepCounts": {
+    "approachTotal": 664365,
+    "contactTotal": 91673,
+    "integratedTotal": 756038,
+    "approachMinimum": 175,
+    "approachMaximum": 1573,
+    "contactMinimum": 59,
+    "contactMaximum": 151,
+    "approachFraction": 0.8787455127916851,
+    "averageApproach": 721.3517915309446,
+    "averageContact": 99.53637350705755
+  },
+  "maxObserved": {
+    "velocityComponent": 5.4805997014045715,
+    "qComponent": 7.723329186439514,
+    "velocityNorm": 5.4805997014045715,
+    "qNorm": 7.886813563598133,
+    "clothSlipNorm": 8.919872999191284
+  },
+  "witness": {
+    "velocityComponent": {
+      "input": {
+        "id": 772,
+        "angle": 0,
+        "elevation": 30,
+        "speed": 4.5,
+        "tipX": 0,
+        "tipY": 0
+      },
+      "result": {
+        "id": 772,
+        "status": 1,
+        "reason": 0,
+        "steps": 268,
+        "contactSteps": 93,
+        "slidingSteps": 7,
+        "time": 0.00408935546875,
+        "position": [
+          0.004594564437866211,
+          0.030749976634979248,
+          0
+        ],
+        "velocity": [
+          5.4805997014045715,
+          0,
+          0
+        ],
+        "q": [
+          0,
+          0,
+          -1.3897079229354858
+        ],
+        "direction": [
+          0.8660253286361694,
+          -0.5000001192092896,
+          0
+        ],
+        "surface": [
+          -0.8660253286361694,
+          0.5000001192092896,
+          0
+        ],
+        "initialTip": [
+          -0.042218685150146484,
+          0.05512499809265137,
+          0
+        ],
+        "head": [
+          -0.02661263942718506,
+          0.050161659717559814,
+          0
+        ],
+        "headVelocity": [
+          3.469760477542877,
+          2.755743145942688,
+          0
+        ],
+        "axialSpeed": 1.6270285248756409,
+        "normalImpulsePerBallMass": 7.387974560260773,
+        "maxCompression": 0.0016860365867614746,
+        "impulsePerBallMass": [
+          6.267354726791382,
+          -3.919901132583618,
+          0
+        ],
+        "torquePerBallMassRadius": [
+          0,
+          0,
+          0.23066818714141846
+        ],
+        "headTransverseVelocity": [
+          2.0607125759124756,
+          3.569257616996765,
+          0
+        ],
+        "headTransverseDisplacement": [
+          0.0017523765563964844,
+          0.003035128116607666,
+          0
+        ],
+        "axialDisplacement": 0.015996873378753662,
+        "clothImpulsePerBallMass": [
+          -0.7867550253868103,
+          3.9600119590759277,
+          0
+        ],
+        "clothTorquePerBallMassRadius": [
+          0,
+          0,
+          -0.7867550253868103
+        ],
+        "resistanceDeltaQ": [
+          0,
+          0,
+          0.0005099773406982422
+        ],
+        "supported": true,
+        "guideImpulsePerBallMass": [
+          -0.01277458667755127,
+          -0.02212226390838623,
+          0
+        ],
+        "guideTorquePerBallMass": [
+          0,
+          0,
+          -0.004688441753387451
+        ],
+        "tipTorquePerBallMass": [
+          0,
+          0,
+          0.003351569175720215
+        ],
+        "gravityTorquePerBallMass": [
+          0,
+          0,
+          -0.00002086162567138672
+        ],
+        "clothTorqueAboutOriginPerBallMass": [
+          0,
+          0,
+          -0.020430266857147217
+        ],
+        "patchTorquePerBallMass": [
+          0,
+          0,
+          0.000005543231964111328
+        ],
+        "outsideDownstreamFourMetresPerSecond": true,
+        "torqueOrigin": [
+          0,
+          0.030749976634979248,
+          0
+        ]
+      }
+    },
+    "qComponent": {
+      "input": {
+        "id": 948,
+        "angle": 33,
+        "elevation": 85,
+        "speed": 4.5,
+        "tipX": -0.3,
+        "tipY": -0.3
+      },
+      "result": {
+        "id": 948,
+        "status": 1,
+        "reason": 0,
+        "steps": 303,
+        "contactSteps": 128,
+        "slidingSteps": 8,
+        "time": 0.0046234130859375,
+        "position": [
+          0.00030547380447387695,
+          0.030749976634979248,
+          -0.001350700855255127
+        ],
+        "velocity": [
+          0.26476192474365234,
+          0,
+          -1.3119006156921387
+        ],
+        "q": [
+          -7.723329186439514,
+          -0.7657702565193176,
+          1.4020022749900818
+        ],
+        "direction": [
+          0.07309496402740479,
+          -0.9961947202682495,
+          0.047468483448028564
+        ],
+        "surface": [
+          -0.1534421443939209,
+          0.8759458661079407,
+          -0.4573557376861572
+        ],
+        "initialTip": [
+          -0.006516158580780029,
+          0.07489532232284546,
+          -0.01737743616104126
+        ],
+        "head": [
+          -0.005990207195281982,
+          0.05869781970977783,
+          -0.024397432804107666
+        ],
+        "headVelocity": [
+          -0.21632152795791626,
+          -0.23168480396270752,
+          -5.331330239772797
+        ],
+        "axialSpeed": -0.03807896375656128,
+        "normalImpulsePerBallMass": 10.223477125167847,
+        "maxCompression": 0.0017524361610412598,
+        "impulsePerBallMass": [
+          0.872251570224762,
+          -11.605532169342041,
+          0.9315037727355957
+        ],
+        "torquePerBallMassRadius": [
+          -5.332969129085541,
+          -0.3065241575241089,
+          1.1683149933815002
+        ],
+        "headTransverseVelocity": [
+          -0.21353816986083984,
+          -0.2696188688278198,
+          -5.329522669315338
+        ],
+        "headTransverseDisplacement": [
+          -0.0006319284439086914,
+          -0.00041675567626953125,
+          -0.007771968841552734
+        ],
+        "axialDisplacement": 0.015841007232666016,
+        "clothImpulsePerBallMass": [
+          -0.6074896454811096,
+          11.650881350040436,
+          -2.2434043884277344
+        ],
+        "clothTorquePerBallMassRadius": [
+          2.2434043884277344,
+          0,
+          -0.6074896454811096
+        ],
+        "resistanceDeltaQ": [
+          0.0005828142166137695,
+          0.00054168701171875,
+          -0.00006085634231567383
+        ],
+        "supported": true,
+        "guideImpulsePerBallMass": [
+          0.007079005241394043,
+          0.004001915454864502,
+          0.07303333282470703
+        ],
+        "guideTorquePerBallMass": [
+          0.001822352409362793,
+          -0.000014901161193847656,
+          -0.002624213695526123
+        ],
+        "tipTorquePerBallMass": [
+          -0.16686511039733887,
+          -0.009702146053314209,
+          0.03503870964050293
+        ],
+        "gravityTorquePerBallMass": [
+          -0.000007271766662597656,
+          0,
+          -0.0000015497207641601562
+        ],
+        "clothTorqueAboutOriginPerBallMass": [
+          0.07186836004257202,
+          0.00031954050064086914,
+          -0.01779085397720337
+        ],
+        "patchTorquePerBallMass": [
+          0.000006377696990966797,
+          0.00000762939453125,
+          4.76837158203125e-7
+        ],
+        "outsideDownstreamFourMetresPerSecond": true,
+        "torqueOrigin": [
+          0,
+          0.030749976634979248,
+          0
+        ]
+      }
+    },
+    "velocityNorm": {
+      "input": {
+        "id": 772,
+        "angle": 0,
+        "elevation": 30,
+        "speed": 4.5,
+        "tipX": 0,
+        "tipY": 0
+      },
+      "result": {
+        "id": 772,
+        "status": 1,
+        "reason": 0,
+        "steps": 268,
+        "contactSteps": 93,
+        "slidingSteps": 7,
+        "time": 0.00408935546875,
+        "position": [
+          0.004594564437866211,
+          0.030749976634979248,
+          0
+        ],
+        "velocity": [
+          5.4805997014045715,
+          0,
+          0
+        ],
+        "q": [
+          0,
+          0,
+          -1.3897079229354858
+        ],
+        "direction": [
+          0.8660253286361694,
+          -0.5000001192092896,
+          0
+        ],
+        "surface": [
+          -0.8660253286361694,
+          0.5000001192092896,
+          0
+        ],
+        "initialTip": [
+          -0.042218685150146484,
+          0.05512499809265137,
+          0
+        ],
+        "head": [
+          -0.02661263942718506,
+          0.050161659717559814,
+          0
+        ],
+        "headVelocity": [
+          3.469760477542877,
+          2.755743145942688,
+          0
+        ],
+        "axialSpeed": 1.6270285248756409,
+        "normalImpulsePerBallMass": 7.387974560260773,
+        "maxCompression": 0.0016860365867614746,
+        "impulsePerBallMass": [
+          6.267354726791382,
+          -3.919901132583618,
+          0
+        ],
+        "torquePerBallMassRadius": [
+          0,
+          0,
+          0.23066818714141846
+        ],
+        "headTransverseVelocity": [
+          2.0607125759124756,
+          3.569257616996765,
+          0
+        ],
+        "headTransverseDisplacement": [
+          0.0017523765563964844,
+          0.003035128116607666,
+          0
+        ],
+        "axialDisplacement": 0.015996873378753662,
+        "clothImpulsePerBallMass": [
+          -0.7867550253868103,
+          3.9600119590759277,
+          0
+        ],
+        "clothTorquePerBallMassRadius": [
+          0,
+          0,
+          -0.7867550253868103
+        ],
+        "resistanceDeltaQ": [
+          0,
+          0,
+          0.0005099773406982422
+        ],
+        "supported": true,
+        "guideImpulsePerBallMass": [
+          -0.01277458667755127,
+          -0.02212226390838623,
+          0
+        ],
+        "guideTorquePerBallMass": [
+          0,
+          0,
+          -0.004688441753387451
+        ],
+        "tipTorquePerBallMass": [
+          0,
+          0,
+          0.003351569175720215
+        ],
+        "gravityTorquePerBallMass": [
+          0,
+          0,
+          -0.00002086162567138672
+        ],
+        "clothTorqueAboutOriginPerBallMass": [
+          0,
+          0,
+          -0.020430266857147217
+        ],
+        "patchTorquePerBallMass": [
+          0,
+          0,
+          0.000005543231964111328
+        ],
+        "outsideDownstreamFourMetresPerSecond": true,
+        "torqueOrigin": [
+          0,
+          0.030749976634979248,
+          0
+        ]
+      }
+    },
+    "qNorm": {
+      "input": {
+        "id": 948,
+        "angle": 33,
+        "elevation": 85,
+        "speed": 4.5,
+        "tipX": -0.3,
+        "tipY": -0.3
+      },
+      "result": {
+        "id": 948,
+        "status": 1,
+        "reason": 0,
+        "steps": 303,
+        "contactSteps": 128,
+        "slidingSteps": 8,
+        "time": 0.0046234130859375,
+        "position": [
+          0.00030547380447387695,
+          0.030749976634979248,
+          -0.001350700855255127
+        ],
+        "velocity": [
+          0.26476192474365234,
+          0,
+          -1.3119006156921387
+        ],
+        "q": [
+          -7.723329186439514,
+          -0.7657702565193176,
+          1.4020022749900818
+        ],
+        "direction": [
+          0.07309496402740479,
+          -0.9961947202682495,
+          0.047468483448028564
+        ],
+        "surface": [
+          -0.1534421443939209,
+          0.8759458661079407,
+          -0.4573557376861572
+        ],
+        "initialTip": [
+          -0.006516158580780029,
+          0.07489532232284546,
+          -0.01737743616104126
+        ],
+        "head": [
+          -0.005990207195281982,
+          0.05869781970977783,
+          -0.024397432804107666
+        ],
+        "headVelocity": [
+          -0.21632152795791626,
+          -0.23168480396270752,
+          -5.331330239772797
+        ],
+        "axialSpeed": -0.03807896375656128,
+        "normalImpulsePerBallMass": 10.223477125167847,
+        "maxCompression": 0.0017524361610412598,
+        "impulsePerBallMass": [
+          0.872251570224762,
+          -11.605532169342041,
+          0.9315037727355957
+        ],
+        "torquePerBallMassRadius": [
+          -5.332969129085541,
+          -0.3065241575241089,
+          1.1683149933815002
+        ],
+        "headTransverseVelocity": [
+          -0.21353816986083984,
+          -0.2696188688278198,
+          -5.329522669315338
+        ],
+        "headTransverseDisplacement": [
+          -0.0006319284439086914,
+          -0.00041675567626953125,
+          -0.007771968841552734
+        ],
+        "axialDisplacement": 0.015841007232666016,
+        "clothImpulsePerBallMass": [
+          -0.6074896454811096,
+          11.650881350040436,
+          -2.2434043884277344
+        ],
+        "clothTorquePerBallMassRadius": [
+          2.2434043884277344,
+          0,
+          -0.6074896454811096
+        ],
+        "resistanceDeltaQ": [
+          0.0005828142166137695,
+          0.00054168701171875,
+          -0.00006085634231567383
+        ],
+        "supported": true,
+        "guideImpulsePerBallMass": [
+          0.007079005241394043,
+          0.004001915454864502,
+          0.07303333282470703
+        ],
+        "guideTorquePerBallMass": [
+          0.001822352409362793,
+          -0.000014901161193847656,
+          -0.002624213695526123
+        ],
+        "tipTorquePerBallMass": [
+          -0.16686511039733887,
+          -0.009702146053314209,
+          0.03503870964050293
+        ],
+        "gravityTorquePerBallMass": [
+          -0.000007271766662597656,
+          0,
+          -0.0000015497207641601562
+        ],
+        "clothTorqueAboutOriginPerBallMass": [
+          0.07186836004257202,
+          0.00031954050064086914,
+          -0.01779085397720337
+        ],
+        "patchTorquePerBallMass": [
+          0.000006377696990966797,
+          0.00000762939453125,
+          4.76837158203125e-7
+        ],
+        "outsideDownstreamFourMetresPerSecond": true,
+        "torqueOrigin": [
+          0,
+          0.030749976634979248,
+          0
+        ]
+      }
+    },
+    "clothSlipNorm": {
+      "input": {
+        "id": 801,
+        "angle": 0,
+        "elevation": 60,
+        "speed": 4.5,
+        "tipX": 0,
+        "tipY": -0.3
+      },
+      "result": {
+        "id": 801,
+        "status": 1,
+        "reason": 0,
+        "steps": 297,
+        "contactSteps": 122,
+        "slidingSteps": 7,
+        "time": 0.0045318603515625,
+        "position": [
+          0.004005730152130127,
+          0.030749976634979248,
+          0
+        ],
+        "velocity": [
+          3.720779299736023,
+          0,
+          0
+        ],
+        "q": [
+          0,
+          0,
+          5.199093699455261
+        ],
+        "direction": [
+          0.5,
+          -0.8660253882408142,
+          0
+        ],
+        "surface": [
+          -0.7367772459983826,
+          0.6761354804039001,
+          0
+        ],
+        "initialTip": [
+          -0.033076584339141846,
+          0.06599020957946777,
+          0
+        ],
+        "head": [
+          -0.0260351300239563,
+          0.05192446708679199,
+          0
+        ],
+        "headVelocity": [
+          0.5761985778808594,
+          0.28395670652389526,
+          0
+        ],
+        "axialSpeed": 0.04218554496765137,
+        "normalImpulsePerBallMass": 10.661969542503357,
+        "maxCompression": 0.0018813014030456543,
+        "impulsePerBallMass": [
+          5.712095379829407,
+          -9.938393294811249,
+          0
+        ],
+        "torquePerBallMassRadius": [
+          0,
+          0,
+          4.071160614490509
+        ],
+        "headTransverseVelocity": [
+          0.5551058053970337,
+          0.3204904794692993,
+          0
+        ],
+        "headTransverseDisplacement": [
+          -0.0008095502853393555,
+          -0.0004674196243286133,
+          0
+        ],
+        "axialDisplacement": 0.015702009201049805,
+        "clothImpulsePerBallMass": [
+          -1.9913160800933838,
+          9.982844471931458,
+          0
+        ],
+        "clothTorquePerBallMassRadius": [
+          0,
+          0,
+          -1.9913160800933838
+        ],
+        "resistanceDeltaQ": [
+          0,
+          0,
+          -0.0005173087120056152
+        ],
+        "supported": true,
+        "guideImpulsePerBallMass": [
+          0.012339949607849121,
+          0.007127583026885986,
+          0
+        ],
+        "guideTorquePerBallMass": [
+          0,
+          0,
+          -0.011503517627716064
+        ],
+        "tipTorquePerBallMass": [
+          0,
+          0,
+          0.11602210998535156
+        ],
+        "gravityTorquePerBallMass": [
+          0,
+          0,
+          -0.00002378225326538086
+        ],
+        "clothTorqueAboutOriginPerBallMass": [
+          0,
+          0,
+          -0.05204266309738159
+        ],
+        "patchTorquePerBallMass": [
+          0,
+          0,
+          -0.000005602836608886719
+        ],
+        "outsideDownstreamFourMetresPerSecond": true,
+        "torqueOrigin": [
+          0,
+          0.030749976634979248,
+          0
+        ]
+      }
+    }
+  },
+  "idealSupportedEnergyBounds": {
+    "velocityNorm": 7.216053531635459,
+    "qNorm": 11.409582438834974
+  },
+  "noClipping": true
+}

@@ -1,0 +1,350 @@
+{
+  "accepted": 6,
+  "unsupported": 17,
+  "disagreements": 0,
+  "scenes": [
+    {
+      "name": "airborne",
+      "obstacleCount": 20,
+      "selectedIndex": 16,
+      "metrics": {
+        "count": 7,
+        "shaderBytes": 5108,
+        "allocatedBufferBytes": 5408,
+        "compileAndAllocateMs": 96.21375700000002,
+        "sharedUploads": 1,
+        "rawUploads": 1,
+        "clearanceImplemented": false,
+        "fullShot": false
+      },
+      "submitToDoneMs": 3.3523810000000367,
+      "status": "clearance-certificate-only-no-physics",
+      "rows": [
+        {
+          "name": "center",
+          "certificate": "separated",
+          "originalClear": true,
+          "originalObstacle": null,
+          "code": 1,
+          "pairs": 59,
+          "obstacle": 4294967295,
+          "part": 4294967295,
+          "minimumMargin": 0.0011999988928437233
+        },
+        {
+          "name": "elevated",
+          "certificate": "unsupported-overlap",
+          "originalClear": true,
+          "originalObstacle": null,
+          "code": 2,
+          "pairs": 50,
+          "obstacle": 16,
+          "part": 1,
+          "minimumMargin": -0.002675018273293972
+        },
+        {
+          "name": "negative-angle",
+          "certificate": "unsupported-overlap",
+          "originalClear": true,
+          "originalObstacle": null,
+          "code": 2,
+          "pairs": 50,
+          "obstacle": 16,
+          "part": 1,
+          "minimumMargin": -0.006074837408959866
+        },
+        {
+          "name": "low-tip-cloth",
+          "certificate": "unsupported-overlap",
+          "originalClear": true,
+          "originalObstacle": null,
+          "code": 2,
+          "pairs": 50,
+          "obstacle": 16,
+          "part": 1,
+          "minimumMargin": -0.006637518294155598
+        },
+        {
+          "name": "near-edge-selected",
+          "certificate": "unsupported-overlap",
+          "originalClear": true,
+          "originalObstacle": null,
+          "code": 2,
+          "pairs": 50,
+          "obstacle": 16,
+          "part": 1,
+          "minimumMargin": -0.004836750216782093
+        },
+        {
+          "name": "high-elevation",
+          "certificate": "separated",
+          "originalClear": true,
+          "originalObstacle": null,
+          "code": 1,
+          "pairs": 59,
+          "obstacle": 4294967295,
+          "part": 4294967295,
+          "minimumMargin": 0.0008249534294009209
+        },
+        {
+          "name": "opposite-shaft",
+          "certificate": "separated",
+          "originalClear": true,
+          "originalObstacle": null,
+          "code": 1,
+          "pairs": 59,
+          "obstacle": 4294967295,
+          "part": 4294967295,
+          "minimumMargin": 0.0011999988928437233
+        }
+      ]
+    },
+    {
+      "name": "on-table",
+      "obstacleCount": 20,
+      "selectedIndex": 16,
+      "metrics": {
+        "count": 7,
+        "shaderBytes": 5108,
+        "allocatedBufferBytes": 5408,
+        "compileAndAllocateMs": 78.009909,
+        "sharedUploads": 1,
+        "rawUploads": 1,
+        "clearanceImplemented": false,
+        "fullShot": false
+      },
+      "submitToDoneMs": 0.23241999999999052,
+      "status": "clearance-certificate-only-no-physics",
+      "rows": [
+        {
+          "name": "center",
+          "certificate": "unsupported-overlap",
+          "originalClear": true,
+          "originalObstacle": null,
+          "code": 2,
+          "pairs": 19,
+          "obstacle": 6,
+          "part": 0,
+          "minimumMargin": -0.0007500695064663887
+        },
+        {
+          "name": "elevated",
+          "certificate": "unsupported-overlap",
+          "originalClear": true,
+          "originalObstacle": null,
+          "code": 2,
+          "pairs": 28,
+          "obstacle": 9,
+          "part": 0,
+          "minimumMargin": -0.014080648310482502
+        },
+        {
+          "name": "negative-angle",
+          "certificate": "unsupported-overlap",
+          "originalClear": true,
+          "originalObstacle": null,
+          "code": 2,
+          "pairs": 22,
+          "obstacle": 7,
+          "part": 0,
+          "minimumMargin": -0.02370508387684822
+        },
+        {
+          "name": "low-tip-cloth",
+          "certificate": "unsupported-overlap",
+          "originalClear": false,
+          "originalObstacle": "테이블 천",
+          "code": 2,
+          "pairs": 1,
+          "obstacle": 0,
+          "part": 0,
+          "minimumMargin": -0.020112499594688416
+        },
+        {
+          "name": "near-edge-selected",
+          "certificate": "unsupported-overlap",
+          "originalClear": true,
+          "originalObstacle": null,
+          "code": 2,
+          "pairs": 50,
+          "obstacle": 16,
+          "part": 1,
+          "minimumMargin": -0.004836750216782093
+        },
+        {
+          "name": "high-elevation",
+          "certificate": "separated",
+          "originalClear": true,
+          "originalObstacle": null,
+          "code": 1,
+          "pairs": 59,
+          "obstacle": 4294967295,
+          "part": 4294967295,
+          "minimumMargin": 0.0008249571546912193
+        },
+        {
+          "name": "opposite-shaft",
+          "certificate": "unsupported-overlap",
+          "originalClear": true,
+          "originalObstacle": null,
+          "code": 2,
+          "pairs": 13,
+          "obstacle": 4,
+          "part": 0,
+          "minimumMargin": -0.0007500695064663887
+        }
+      ]
+    },
+    {
+      "name": "shaft-obstruction",
+      "obstacleCount": 20,
+      "selectedIndex": 16,
+      "metrics": {
+        "count": 7,
+        "shaderBytes": 5108,
+        "allocatedBufferBytes": 5408,
+        "compileAndAllocateMs": 79.15376300000003,
+        "sharedUploads": 1,
+        "rawUploads": 1,
+        "clearanceImplemented": false,
+        "fullShot": false
+      },
+      "submitToDoneMs": 0.21205900000001066,
+      "status": "clearance-certificate-only-no-physics",
+      "rows": [
+        {
+          "name": "center",
+          "certificate": "unsupported-overlap",
+          "originalClear": false,
+          "originalObstacle": "노랑",
+          "code": 2,
+          "pairs": 51,
+          "obstacle": 17,
+          "part": 0,
+          "minimumMargin": -0.04674999788403511
+        },
+        {
+          "name": "elevated",
+          "certificate": "unsupported-overlap",
+          "originalClear": true,
+          "originalObstacle": null,
+          "code": 2,
+          "pairs": 50,
+          "obstacle": 16,
+          "part": 1,
+          "minimumMargin": -0.002675018273293972
+        },
+        {
+          "name": "negative-angle",
+          "certificate": "unsupported-overlap",
+          "originalClear": true,
+          "originalObstacle": null,
+          "code": 2,
+          "pairs": 50,
+          "obstacle": 16,
+          "part": 1,
+          "minimumMargin": -0.006074837408959866
+        },
+        {
+          "name": "low-tip-cloth",
+          "certificate": "unsupported-overlap",
+          "originalClear": false,
+          "originalObstacle": "노랑",
+          "code": 2,
+          "pairs": 50,
+          "obstacle": 16,
+          "part": 1,
+          "minimumMargin": -0.006637518294155598
+        },
+        {
+          "name": "near-edge-selected",
+          "certificate": "unsupported-overlap",
+          "originalClear": false,
+          "originalObstacle": "노랑",
+          "code": 2,
+          "pairs": 50,
+          "obstacle": 16,
+          "part": 1,
+          "minimumMargin": -0.004836750216782093
+        },
+        {
+          "name": "high-elevation",
+          "certificate": "separated",
+          "originalClear": true,
+          "originalObstacle": null,
+          "code": 1,
+          "pairs": 59,
+          "obstacle": 4294967295,
+          "part": 4294967295,
+          "minimumMargin": 0.0008249534294009209
+        },
+        {
+          "name": "opposite-shaft",
+          "certificate": "separated",
+          "originalClear": true,
+          "originalObstacle": null,
+          "code": 1,
+          "pairs": 59,
+          "obstacle": 4294967295,
+          "part": 4294967295,
+          "minimumMargin": 0.0011999988928437233
+        }
+      ]
+    },
+    {
+      "name": "large-selected-shaft-adversarial",
+      "obstacleCount": 20,
+      "selectedIndex": 16,
+      "metrics": {
+        "count": 2,
+        "shaderBytes": 5108,
+        "allocatedBufferBytes": 2048,
+        "compileAndAllocateMs": 78.29252399999996,
+        "sharedUploads": 1,
+        "rawUploads": 1,
+        "clearanceImplemented": false,
+        "fullShot": false
+      },
+      "submitToDoneMs": 0.5167289999999412,
+      "status": "clearance-certificate-only-no-physics",
+      "rows": [
+        {
+          "name": "selected-shaft-graze",
+          "certificate": "unsupported-overlap",
+          "originalClear": true,
+          "originalObstacle": null,
+          "code": 2,
+          "pairs": 49,
+          "obstacle": 16,
+          "part": 0,
+          "minimumMargin": -0.01002002228051424
+        },
+        {
+          "name": "selected-neck-graze",
+          "certificate": "unsupported-overlap",
+          "originalClear": true,
+          "originalObstacle": null,
+          "code": 2,
+          "pairs": 49,
+          "obstacle": 16,
+          "part": 0,
+          "minimumMargin": -0.010200743563473225
+        }
+      ]
+    }
+  ],
+  "guardMeters": 0.005,
+  "exactSignedDistanceOrCastShape": false,
+  "physicalIntegration": false,
+  "productionEnabled": false,
+  "hardwareSpeedClaim": false,
+  "referenceProvenance": {
+    "reference": "unmodified-original-PhysicsLab.cueClearance/native-Rapier",
+    "physicsSha256": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d",
+    "mathSha256": "ea76455919c3fb22557680c5422902cf631753215492e799b32791993a939046",
+    "rapierSha256": "fca22b2f33d4e88d2992215f42df6312093476db7fea4197816fb8e4ce17cba4",
+    "sourceOrder": "statics then objects; primary collider only",
+    "aabbArithmetic": "JS Number from actual native collider geometry/transform; GPU pack must round outward",
+    "wholeWorld": false
+  }
+}

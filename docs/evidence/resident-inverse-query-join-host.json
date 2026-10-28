@@ -1,0 +1,67 @@
+{
+  "kind": "resident-inverse-query-join-host-evidence-v1",
+  "dateUTC": "2026-10-26",
+  "baseProducerCommit": "851f676fd7b9cf757f977da34cec646a7b507a9e",
+  "scope": "Generated source scalar join / explicitly discrete terminal component witnesses; original initial-only native clearance read-set witnesses. No physical trajectory is inferred from component banks.",
+  "command": "node --test --test-concurrency=1 tests/resident-candidate-inverse-clearance-readset.mjs tests/resident-candidate-inverse-query-join.mjs",
+  "hostResult": {
+    "passed": 7,
+    "failed": 0,
+    "skipped": 0,
+    "wallMs": 11423.914839,
+    "timingUse": "correctness duration, not throughput benchmark"
+  },
+  "sourceNumericalProfile": "v8-13.6.233-fast-hypot-binary64-v1",
+  "component": {
+    "candidateRows": 4,
+    "recordWords": 64,
+    "recordBytes": 256,
+    "generatedJoinBytes": 19001,
+    "scalarInstructions": 2446,
+    "allRecordWordsExactAgainstOriginalProjectResult": true,
+    "sourcePhysicsBanksUnchanged": true,
+    "nullAndSignedZeroExact": true,
+    "tinyInputs": true,
+    "firstImpactCellJsonZeroCanonicalization": true,
+    "terminalIdempotence": true,
+    "malformedAndUnevaluatedValueless": true
+  },
+  "actualInitialClearance": {
+    "variedSettings": 4,
+    "callbacks": [
+      "FourBallGame.contact",
+      "ShotSearchCore.observePhysicalEvent"
+    ],
+    "witnesses": 8,
+    "forwardNativeSteps": 0,
+    "fullOrderedReadSetExact": true,
+    "beforeAfterClearanceExact": true
+  },
+  "storage": {
+    "sourceObserverBinding": 5,
+    "physicalObserverBinding": 7,
+    "totalPhysicalBindings": 8,
+    "originalViewsEnlarged": false,
+    "outputUsesDeadObserverQueryTail": true,
+    "simultaneousAuditObserverSupported": false
+  },
+  "qualification": {
+    "gpuExecuted": false,
+    "nativeProducerQualified": false,
+    "rawToTerminalQualified": false,
+    "fullRestQualified": false,
+    "finalGameplayQualified": false,
+    "solverAdapterImplemented": false,
+    "productionActivated": false,
+    "cpuForwardFallback": false
+  },
+  "sourceSha256": {
+    "src/resident-candidate/inverse-world-query-join.mjs": "f469c9289a05d7e200a8d2a8ea801b55a49a64c3aa1b4ad3bbbed7b0ba309454",
+    "src/resident-candidate/inverse-world-observation.mjs": "f4df7012489e0bd2a20636c9a63410a272e7de2ea6c45cf8fa2a2e0213ebd7c5",
+    "src/inverse-events.js": "5eff496a7baec8dcc108a61207877bd8c50fc303d6d66cb0dd1681a79022ec5e",
+    "src/optimizer-core.js": "c69770a36008eeb1e006c1bce8de4ae1722f12522f886690d1cb956fd291a40a",
+    "src/physics.js": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d",
+    "tests/resident-candidate-inverse-query-join.mjs": "759f5c0a95fcc3d85b54574b35809599fb7edbcb7cb21b25770c5008dea3ae9e",
+    "tests/resident-candidate-inverse-clearance-readset.mjs": "a2bae7e8e17f5dbc3042331290de83b98e1fc4aedc3ff7648d438eafb1cb222c"
+  }
+}

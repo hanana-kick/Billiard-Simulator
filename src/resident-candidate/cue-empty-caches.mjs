@@ -3,8 +3,10 @@
  * Source arithmetic and persistent-normal query are not rewritten. No graph
  * edge is created here, no contact is solved, and no separation is assumed.
  */
-import Pair from '../experimental-cue-empty-pair-cache.js';
-import Convex from '../experimental-cue-empty-convex-cache.js';
+import * as importedPair from '../experimental-cue-empty-pair-cache.js';
+const Pair=importedPair.default??globalThis.LabCueEmptyPairCacheExperimental;
+import * as importedConvex from '../experimental-cue-empty-convex-cache.js';
+const Convex=importedConvex.default??globalThis.LabCueEmptyConvexCacheExperimental;
 import {compileGraph,executeLowered} from './numeric-program.mjs';
 export const EMPTY_CUE_CACHE_LAYOUT=Object.freeze({words:48,headerWords:16,recurrence:16,recurrenceWords:20,normal:36,normalWords:10,inputWords:56,numericOutputWords:34,queryInputWords:28,queryOutputWords:8,queryScratchWords:116,queryLoopScratchWords:117,queryChunkScratchWords:118,gjkIterations:256,
  header:Object.freeze({magic:0,kind:1,status:2,valid:3,epoch:4,pendingEpoch:5,pair:6,hull:7,sphereRadius:8,cylinderRadius:9,cylinderHalfHeight:10,queryNeeded:11}),

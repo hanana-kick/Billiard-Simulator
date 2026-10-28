@@ -1,0 +1,14 @@
+{"nativeGpuLifetime":"free-body-graph-chunk","phase":"retained","memory":{"rss":52207616,"heapTotal":13160448,"heapUsed":9543240,"external":4336383,"arrayBuffers":146791}}
+{"nativeGpuLifetime":"free-body-graph-chunk","phase":"released","memory":{"rss":156721152,"heapTotal":95735808,"heapUsed":37631248,"external":4581240,"arrayBuffers":359807}}
+✔ chunk matches sequential original CPU component and original GPU component exactly (457.071024ms)
+ℹ {"substeps":1,"rows":2,"steps":8,"chunkSubmits":1,"chunkMaps":1,"sequentialOriginalGpuSubmits":16,"sequentialOriginalGpuMaps":16,"chunkMs":5.007382000000007,"sequentialCpuAndGpuMs":18.006672999999978,"chunkAllocatedBytes":19716,"peakLiveBytes":37644,"processMemory":{"rss":110641152,"heapTotal":31772672,"heapUsed":14172600,"external":4381004,"arrayBuffers":159571},"claim":"transport reduction only; no hardware speedup claim"}
+ℹ {"substeps":3,"rows":2,"steps":8,"chunkSubmits":1,"chunkMaps":1,"sequentialOriginalGpuSubmits":16,"sequentialOriginalGpuMaps":16,"chunkMs":3.3727700000000027,"sequentialCpuAndGpuMs":18.43251399999997,"chunkAllocatedBytes":37164,"peakLiveBytes":71076,"processMemory":{"rss":136642560,"heapTotal":53006336,"heapUsed":11480624,"external":4375728,"arrayBuffers":154295},"claim":"transport reduction only; no hardware speedup claim"}
+ℹ {"substeps":12,"rows":2,"steps":8,"chunkSubmits":1,"chunkMaps":1,"sequentialOriginalGpuSubmits":16,"sequentialOriginalGpuMaps":16,"chunkMs":7.491464000000008,"sequentialCpuAndGpuMs":67.34168199999999,"chunkAllocatedBytes":115680,"peakLiveBytes":221520,"processMemory":{"rss":165666816,"heapTotal":95735808,"heapUsed":37609880,"external":4581240,"arrayBuffers":359807},"claim":"transport reduction only; no hardware speedup claim"}
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 653.037192

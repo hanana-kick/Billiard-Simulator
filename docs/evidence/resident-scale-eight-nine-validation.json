@@ -1,0 +1,461 @@
+{
+  "kind": "resident-eight-nine-exact-source-diagnostic-validation-v1",
+  "status": "four-exact-profiles-independently-pass",
+  "scope": {
+    "referenceAuthority": "original-js-number-v1",
+    "boundaries": [
+      "original-created-t0-after-raw-init-and-sourcePCbegin-VMbegin-before-pump",
+      "isolated-two-source-h-outer0"
+    ],
+    "owners": [
+      "balls",
+      "cue",
+      "caches",
+      "cueCloth",
+      "journal",
+      "roster",
+      "scene",
+      "bvh",
+      "clock",
+      "rules",
+      "game"
+    ],
+    "dt": 0.0010416666666666667,
+    "subdivisions": 64,
+    "maxHSteps": 2,
+    "cycles": 512,
+    "coreInstructionBudget": 65536,
+    "sourceMacroInstructionBudget": 32768,
+    "producer": "actual-raw-initialization-and-four-source-macro-native-diagnostics",
+    "sourcePreparationDisabled": true,
+    "eventAudit": false,
+    "diagnosticsOnly": true,
+    "compactPublicationQualified": false,
+    "fullRestQualified": false,
+    "native1024Qualified": false,
+    "hardwarePerformanceQualified": false,
+    "defaultBackendChanged": false,
+    "externalPublication": false
+  },
+  "sourceCommits": {
+    "initialSourceBuilder": "470e11d712a6ac2ee6d45e8fa013f16cb8bde691",
+    "heldNative": "704829a89470bbd335dc9664a36d86a332824b54",
+    "assertionOnlyRepair": "c8eea120c4557870f710db9a4dd26948a11ecef5",
+    "freshDeviceRecovery": "751c3644d99dbacf5fcafabc75284d4bbbb6df88"
+  },
+  "adapter": {
+    "vendor": "google",
+    "architecture": "swiftshader",
+    "device": "swiftshader-device-subzero-",
+    "description": "SwiftShader driver 5.0.0",
+    "isFallbackAdapter": true
+  },
+  "queriedGrantedLimits": {
+    "maxStorageBufferBindingSize": 134217728,
+    "maxBufferSize": 268435456,
+    "maxStorageBuffersPerShaderStage": 8,
+    "maxBindingsPerBindGroup": 1000,
+    "maxBindGroups": 4,
+    "maxComputeInvocationsPerWorkgroup": 256,
+    "maxComputeWorkgroupSizeX": 256,
+    "maxComputeWorkgroupsPerDimension": 65535
+  },
+  "runs": [
+    {
+      "count": 8,
+      "macroWorkgroupSize": 1,
+      "processContext": "retained",
+      "gateSha256": "5256fea5d39dcfec53a22dd803b7b6e0cf6e65a1d2b790e2bd2d892275409ef2",
+      "runtimeSha256": "c60729f0a9956ef377c6f76fd5f61511a12fe5856575c6d68b1ca4296520123f",
+      "runtimeDataSha256": "5961beebc8e33bdec6273acb5973d891e940dfe88b52f919d2a89a2aab3ae1d5",
+      "sourceSha256": "125fe36f8c3a11f1d2b46d2b854e893dd0ce49f48e76e8b634aee614d854b7d8",
+      "bytecodeSha256": "83e4d333bcbd32a37b8bd8ca71457187c87f2d9d101e9f9c3082520d963dfaec",
+      "coreShaderSha256": "fa2289f8f57ac9db4e130368cb469dbe964ae91a827b96d4372714f0349be2db",
+      "generationIdentity": "e3db44310046f27af4914984c85ae6e6802aa453a67c96a7293f7ee53adaa84c",
+      "referenceSha256": "646e192d7b0394f4f753c0e54318d1e995bd6971fa5c8a8981d238feb4ee6532",
+      "bindingReceiptSha256": "b7485bd283f0110caf9dcde29fdc6ca2e3b528380d1a88af1f91a8cb4cc7b53a",
+      "actualSha256": "cdde4e1f86a89420a906f40cf82a9761e786337bb52fc9abac8907175e7f746c",
+      "independentPassReceiptSha256": "e549ab8ba6e0c4f41eb0866c4f640151303054f3e9b2eaa236d7a23fc008baba",
+      "compileReceiptSha256": "b6252029d3b0611d6bca154ab19756dee2356580805e2e06456aec540f5dfa3c",
+      "orderedIds": [
+        17,
+        118,
+        219,
+        320,
+        421,
+        522,
+        623,
+        724
+      ],
+      "acceptedRows": [
+        17,
+        118,
+        219,
+        320,
+        623,
+        724
+      ],
+      "rejectedRows": [
+        421,
+        522
+      ],
+      "macroWorkgroups": 8,
+      "paddingLanes": 0,
+      "coreWorkgroupSize": 64,
+      "coreWorkgroups": 1,
+      "all11T0AndH2": true,
+      "fullAcceptedRejectedHistory": true,
+      "allVmRowsComplete": true,
+      "baselineBitParity": false,
+      "pipelineCacheDelta": {
+        "coldCompiles": 26,
+        "warmHits": 0
+      },
+      "pipelineCompileWallMs": 154142.21971600002,
+      "execution": {
+        "dispatches": 70875,
+        "submissions": 72,
+        "copies": 6,
+        "mappings": 1,
+        "initialWrites": 8,
+        "encodeWallMs": 459.1603139943909,
+        "submitWallMs": 29.954751999874134,
+        "drainWallMs": 215763.84354700023,
+        "groups": [
+          {
+            "name": "initialization",
+            "wallMs": 9323.192336999986,
+            "dispatches": 68315,
+            "submissions": 67,
+            "encodeWallMs": 451.0943919941783,
+            "submitWallMs": 28.270916999928886,
+            "drainWallMs": 8829.854062000173
+          },
+          {
+            "name": "continuation",
+            "wallMs": 206980.243992,
+            "dispatches": 2560,
+            "submissions": 3,
+            "encodeWallMs": 8.065922000212595,
+            "submitWallMs": 1.504465999925742,
+            "drainWallMs": 206932.98714500002
+          }
+        ]
+      },
+      "plannedLiveBufferBytes": 16306420,
+      "assertionProfile": "eight-nine-source-bound-original-t0-native-scene-and-h2-v2",
+      "assertionComparatorSha256": "421dd48a7fb9470b36a521f3020ea510ec271ed746dfa5a803794c7df9311780",
+      "h2ComparatorSha256": "56cf1781e008d93197111ed1b4942d4ac4545b9547e6c89173e2e49720e96818"
+    },
+    {
+      "count": 8,
+      "macroWorkgroupSize": 8,
+      "processContext": "retained",
+      "gateSha256": "694a82ec41dc1f3133860764b3d60ba706fe8ac0debeb54cf81e776aa9765f37",
+      "runtimeSha256": "c60729f0a9956ef377c6f76fd5f61511a12fe5856575c6d68b1ca4296520123f",
+      "runtimeDataSha256": "5961beebc8e33bdec6273acb5973d891e940dfe88b52f919d2a89a2aab3ae1d5",
+      "sourceSha256": "125fe36f8c3a11f1d2b46d2b854e893dd0ce49f48e76e8b634aee614d854b7d8",
+      "bytecodeSha256": "83e4d333bcbd32a37b8bd8ca71457187c87f2d9d101e9f9c3082520d963dfaec",
+      "coreShaderSha256": "fa2289f8f57ac9db4e130368cb469dbe964ae91a827b96d4372714f0349be2db",
+      "generationIdentity": "e3db44310046f27af4914984c85ae6e6802aa453a67c96a7293f7ee53adaa84c",
+      "referenceSha256": "646e192d7b0394f4f753c0e54318d1e995bd6971fa5c8a8981d238feb4ee6532",
+      "bindingReceiptSha256": "b7485bd283f0110caf9dcde29fdc6ca2e3b528380d1a88af1f91a8cb4cc7b53a",
+      "actualSha256": "b4266cfc5272ddb2f9cb1569f93a2aeee3fbef26e7699c77bffa37cf1fe35063",
+      "independentPassReceiptSha256": "4be0ef06fd64007a2adf263533174089abb8cfd386c93d22d2f9e9d9f3df9d91",
+      "compileReceiptSha256": "f4ed7d929e6cb427710e2ed024d035c9cc6e3ce3b497980af1080699c33fca50",
+      "orderedIds": [
+        17,
+        118,
+        219,
+        320,
+        421,
+        522,
+        623,
+        724
+      ],
+      "acceptedRows": [
+        17,
+        118,
+        219,
+        320,
+        623,
+        724
+      ],
+      "rejectedRows": [
+        421,
+        522
+      ],
+      "macroWorkgroups": 1,
+      "paddingLanes": 0,
+      "coreWorkgroupSize": 64,
+      "coreWorkgroups": 1,
+      "all11T0AndH2": true,
+      "fullAcceptedRejectedHistory": true,
+      "allVmRowsComplete": true,
+      "baselineBitParity": true,
+      "pipelineCacheDelta": {
+        "coldCompiles": 4,
+        "warmHits": 22
+      },
+      "pipelineCompileWallMs": 109117.94076100003,
+      "execution": {
+        "dispatches": 70875,
+        "submissions": 72,
+        "copies": 6,
+        "mappings": 1,
+        "initialWrites": 8,
+        "encodeWallMs": 429.59725294145755,
+        "submitWallMs": 34.38753299904056,
+        "drainWallMs": 290985.1493539994,
+        "groups": [
+          {
+            "name": "initialization",
+            "wallMs": 9830.455074999947,
+            "dispatches": 68315,
+            "submissions": 67,
+            "encodeWallMs": 415.5491029457189,
+            "submitWallMs": 31.625331999268383,
+            "drainWallMs": 9362.613731999649
+          },
+          {
+            "name": "continuation",
+            "wallMs": 281645.09556399984,
+            "dispatches": 2560,
+            "submissions": 3,
+            "encodeWallMs": 14.04814999573864,
+            "submitWallMs": 2.548848999897018,
+            "drainWallMs": 281620.13857199973
+          }
+        ]
+      },
+      "plannedLiveBufferBytes": 16306420,
+      "assertionProfile": "eight-nine-source-bound-original-t0-native-scene-and-h2-v2",
+      "assertionComparatorSha256": "421dd48a7fb9470b36a521f3020ea510ec271ed746dfa5a803794c7df9311780",
+      "h2ComparatorSha256": "56cf1781e008d93197111ed1b4942d4ac4545b9547e6c89173e2e49720e96818",
+      "baselineActualSha256": "cdde4e1f86a89420a906f40cf82a9761e786337bb52fc9abac8907175e7f746c",
+      "baselinePassReceiptSha256": "e549ab8ba6e0c4f41eb0866c4f640151303054f3e9b2eaa236d7a23fc008baba"
+    },
+    {
+      "count": 9,
+      "macroWorkgroupSize": 1,
+      "processContext": "retained",
+      "gateSha256": "04d27df2f03cc7dd1239b3ff0675ddfeee01b1f08f1f5e414a4bb70565843978",
+      "runtimeSha256": "cb0e8cb37e09c4b48a58323e806d642e2885b00351ff4e9dde6889d28fe67663",
+      "runtimeDataSha256": "b62bc951ee80036ff366d23ad8e524fb3c1d2f81a06542bdeb000c7135379ca0",
+      "sourceSha256": "6ea4df039bdf9eb5d56cee7f55b5de5b38f2939600c16d0bd1b523ef652d6e67",
+      "bytecodeSha256": "7f64d6e5af572fd216ec4af3c92881ae7ec6b9de5d39a098f8ae4982a675dcf9",
+      "coreShaderSha256": "0f00e659805601e79fe44193b7aa3b21ef06d235a5b0cf0292b5e967accc2d36",
+      "generationIdentity": "8102979d238d6743097773590dfc41327d2ad6dc4fe068173ac1b7421e450bdf",
+      "referenceSha256": "524a49d67cffba378c5c8a65b77076e601351e23a429d66da1c7cb0ad97f815e",
+      "bindingReceiptSha256": "a6fd61cb4656894e59d29c069b3b0e9784a7fbb23dd25c3e30b156740a00de47",
+      "actualSha256": "d2182c1b9d31f1ea56f4b49efc9848fb6c51e2cd349d52f5f29de635aaf4a493",
+      "independentPassReceiptSha256": "e799a7fac42d30143288d70b71585ad66cdcff50170a4ada2c708fa6021293f0",
+      "compileReceiptSha256": "f4644e174f209d82a7a54187cade9a68e9138b2fe1a1cc5db6b36f35342b2609",
+      "orderedIds": [
+        17,
+        118,
+        219,
+        320,
+        421,
+        522,
+        623,
+        724,
+        825
+      ],
+      "acceptedRows": [
+        17,
+        118,
+        219,
+        320,
+        623,
+        724,
+        825
+      ],
+      "rejectedRows": [
+        421,
+        522
+      ],
+      "macroWorkgroups": 9,
+      "paddingLanes": 0,
+      "coreWorkgroupSize": 64,
+      "coreWorkgroups": 1,
+      "all11T0AndH2": true,
+      "fullAcceptedRejectedHistory": true,
+      "allVmRowsComplete": true,
+      "baselineBitParity": false,
+      "pipelineCacheDelta": {
+        "coldCompiles": 12,
+        "warmHits": 14
+      },
+      "pipelineCompileWallMs": 144076.6136480004,
+      "execution": {
+        "dispatches": 70875,
+        "submissions": 72,
+        "copies": 6,
+        "mappings": 1,
+        "initialWrites": 8,
+        "encodeWallMs": 707.0238669503015,
+        "submitWallMs": 32.45946200028993,
+        "drainWallMs": 292335.9119329995,
+        "groups": [
+          {
+            "name": "initialization",
+            "wallMs": 14119.553320999956,
+            "dispatches": 68315,
+            "submissions": 67,
+            "encodeWallMs": 699.8228839512449,
+            "submitWallMs": 30.679675000486895,
+            "drainWallMs": 13372.189649999607
+          },
+          {
+            "name": "continuation",
+            "wallMs": 279071.5795120001,
+            "dispatches": 2560,
+            "submissions": 3,
+            "encodeWallMs": 7.200982999056578,
+            "submitWallMs": 1.6182349999435246,
+            "drainWallMs": 278962.5964879999
+          }
+        ]
+      },
+      "plannedLiveBufferBytes": 17328836,
+      "assertionProfile": "eight-nine-source-bound-original-t0-native-scene-and-h2-v2",
+      "assertionComparatorSha256": "421dd48a7fb9470b36a521f3020ea510ec271ed746dfa5a803794c7df9311780",
+      "h2ComparatorSha256": "56cf1781e008d93197111ed1b4942d4ac4545b9547e6c89173e2e49720e96818"
+    },
+    {
+      "count": 9,
+      "macroWorkgroupSize": 8,
+      "processContext": "fresh",
+      "gateSha256": "679a2a921d0839f062ce524561277e90c77c4ef29c2bf6b0a48544f6ff945110",
+      "runtimeSha256": "cb0e8cb37e09c4b48a58323e806d642e2885b00351ff4e9dde6889d28fe67663",
+      "runtimeDataSha256": "b62bc951ee80036ff366d23ad8e524fb3c1d2f81a06542bdeb000c7135379ca0",
+      "sourceSha256": "6ea4df039bdf9eb5d56cee7f55b5de5b38f2939600c16d0bd1b523ef652d6e67",
+      "bytecodeSha256": "7f64d6e5af572fd216ec4af3c92881ae7ec6b9de5d39a098f8ae4982a675dcf9",
+      "coreShaderSha256": "0f00e659805601e79fe44193b7aa3b21ef06d235a5b0cf0292b5e967accc2d36",
+      "generationIdentity": "8102979d238d6743097773590dfc41327d2ad6dc4fe068173ac1b7421e450bdf",
+      "referenceSha256": "524a49d67cffba378c5c8a65b77076e601351e23a429d66da1c7cb0ad97f815e",
+      "bindingReceiptSha256": "a6fd61cb4656894e59d29c069b3b0e9784a7fbb23dd25c3e30b156740a00de47",
+      "actualSha256": "9f9a9d2a9dbd40e8c596862d51e72829a2e6343da61ecc58f6c2aa8ef062d055",
+      "independentPassReceiptSha256": "63f4af7774fd1048e5f6292bd6c790215e55b6c925bb8b6b27acbb4f379f8a81",
+      "compileReceiptSha256": "da382f5cbd250e61199256430c6638575fcdb9942ac63798312f2f5bdcae9621",
+      "orderedIds": [
+        17,
+        118,
+        219,
+        320,
+        421,
+        522,
+        623,
+        724,
+        825
+      ],
+      "acceptedRows": [
+        17,
+        118,
+        219,
+        320,
+        623,
+        724,
+        825
+      ],
+      "rejectedRows": [
+        421,
+        522
+      ],
+      "macroWorkgroups": 2,
+      "paddingLanes": 7,
+      "coreWorkgroupSize": 64,
+      "coreWorkgroups": 1,
+      "all11T0AndH2": true,
+      "fullAcceptedRejectedHistory": true,
+      "allVmRowsComplete": true,
+      "baselineBitParity": true,
+      "pipelineCacheDelta": {
+        "coldCompiles": 26,
+        "warmHits": 0
+      },
+      "pipelineCompileWallMs": 183271.59368199998,
+      "execution": {
+        "dispatches": 70875,
+        "submissions": 72,
+        "copies": 6,
+        "mappings": 1,
+        "initialWrites": 8,
+        "encodeWallMs": 613.6676250045421,
+        "submitWallMs": 31.102096999937203,
+        "drainWallMs": 332813.49742699985,
+        "groups": [
+          {
+            "name": "initialization",
+            "wallMs": 10387.262197999982,
+            "dispatches": 68315,
+            "submissions": 67,
+            "encodeWallMs": 559.0245230017463,
+            "submitWallMs": 28.293387999932747,
+            "drainWallMs": 9780.411841999972
+          },
+          {
+            "name": "continuation",
+            "wallMs": 323139.275197,
+            "dispatches": 2560,
+            "submissions": 3,
+            "encodeWallMs": 54.643102002795786,
+            "submitWallMs": 2.6294200000702403,
+            "drainWallMs": 323031.9734299999
+          }
+        ]
+      },
+      "plannedLiveBufferBytes": 17328836,
+      "assertionProfile": "eight-nine-source-bound-original-t0-native-scene-and-h2-v2",
+      "assertionComparatorSha256": "421dd48a7fb9470b36a521f3020ea510ec271ed746dfa5a803794c7df9311780",
+      "h2ComparatorSha256": "56cf1781e008d93197111ed1b4942d4ac4545b9547e6c89173e2e49720e96818",
+      "baselineActualSha256": "d2182c1b9d31f1ea56f4b49efc9848fb6c51e2cd349d52f5f29de635aaf4a493",
+      "baselinePassReceiptSha256": "e799a7fac42d30143288d70b71585ad66cdcff50170a4ada2c708fa6021293f0"
+    }
+  ],
+  "completedWorkTotals": {
+    "runs": 4,
+    "dispatches": 283500,
+    "submissions": 288,
+    "initialWrites": 32,
+    "copies": 24,
+    "finalMappings": 4
+  },
+  "retainedFailure": {
+    "phase": "count9-WGS8-first-broad-pipeline-creation-after-all26-preflight",
+    "gateSha256": "679a2a921d0839f062ce524561277e90c77c4ef29c2bf6b0a48544f6ff945110",
+    "signal": 9,
+    "cause": "unproven; not diagnosed OOM",
+    "count9Wgs8NumericalDispatches": 0,
+    "supervisorReceiptSha256": "4f88440467129ad3d437ddbeab70fd8ccb90d34394dfd0fa0670cd248bbf986b",
+    "failureObservationSha256": "6fe31fead14e7e884f450c8150b973a84d2474cb489352d9400951a56bee9fff",
+    "sessionPeakRssKiB": 1934112,
+    "successfulPriorRunsPreserved": 3
+  },
+  "freshDeviceRecovery": {
+    "attempts": 1,
+    "sameGateShaderInputSchedule": true,
+    "priorCacheReused": false,
+    "priorSuccessfulRunsRepeated": false,
+    "supervisorReturncode": 0,
+    "supervisorReceiptSha256": "dc3b8abf65f9f6f1786e833f424fbc1c053c517a7d2c3b3d84ca3252312b56ba",
+    "sessionPeakRssKiB": 1670976,
+    "contractSha256": "a4e925c2bf7d3af2a9f68f03f1c165cc821494187b052dcc56c3ec75e2d407e7"
+  },
+  "assertionAdmissionFailure": {
+    "phase": "first-count8-WGS1-independent-comparison-before-h2",
+    "cause": "scale adapter called intentionally fixed-six historical helper",
+    "failedLogSha256": "576058d68cf7c7a79f54c49e639d0e2103086b645b55b733ca180d7dd4ab91e6",
+    "historicalSixComparatorUnchanged": true,
+    "repair": "separate closed8/9 source-roster admission; byte-identical historical comparison body",
+    "repairTests": {
+      "groups": 3,
+      "pass": 3,
+      "skip": 0
+    },
+    "correctedReplayReceiptSha256": "e549ab8ba6e0c4f41eb0866c4f640151303054f3e9b2eaa236d7a23fc008baba"
+  },
+  "timingInterpretation": "Host wall only on fallback SwiftShader; cold/incremental pipeline sums, fresh raw init and continuation reported separately. Ordered pair and differing process contexts are not calibrated performance comparisons. WGS8 did not demonstrate a speed win.",
+  "artifactPolicy": "Curated hashes/metadata only; no raw banks, raw logs, candidate futures, absolute private paths or external publication."
+}

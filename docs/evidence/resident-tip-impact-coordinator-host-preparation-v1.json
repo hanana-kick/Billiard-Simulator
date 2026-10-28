@@ -1,0 +1,67 @@
+{
+  "kind": "resident-tip-impact-coordinator-host-preparation-v1",
+  "status": "pass",
+  "scope": "authentic initial-only artifact generation, lowering and serialization; not GPU execution",
+  "sourceHead": "4b1f4e24e9e05613f0280b79852cc58d40e4b67b",
+  "count": 2,
+  "rows": [
+    219,
+    522
+  ],
+  "requestedH": 192,
+  "work": [
+    1
+  ],
+  "workScope": "one-cycle host preparation probe only; not a selected native execution budget",
+  "runtimeSha256": "40caaf88e243b73f639c2e83fa9f3826eddde5c81f5fcc0c3e37a3ba9449c0de",
+  "runtimeBytes": 13781490,
+  "expectedSha256": "e054a4716c97ce55762db484adcb70392a8d9ca2504e3305e259d5ffb3c43861",
+  "expectedBytes": 1252523,
+  "expectedRuntimeAuthority": false,
+  "sourceSha256": "5a18bbbbd646454f2e00f7b1422773b2851b64d5ff165626f2a9f835ff86c0e7",
+  "bytecodeSha256": "f69fed561bc145fb685f59b78fc5891314030cacf82d66e6bdc67e1a09cd438a",
+  "vmShaderSha256": "db59be1a923fb589d2310a22ed72f04c9da4f8525aa7b31424044f1b08f9f1a4",
+  "handlers": [
+    {
+      "id": 0,
+      "name": "rc_cue_flat_advance",
+      "sha256": "a7d02936846e8c2e488c3344291602599024cfd3a6fbbe11ce95e077e89395e2"
+    },
+    {
+      "id": 1,
+      "name": "rc_num_eval",
+      "sha256": "76eb6b634325fb9fd5ca897da228ed4b8f1d503cf0360ee00942107c4f54bb28"
+    },
+    {
+      "id": 2,
+      "name": "rc_world_broad_commit_collision",
+      "sha256": "b86d7ad13e734dac90366b494a4eb3878699055f9ee9cf0e85317da55a84d75b"
+    }
+  ],
+  "staticInstructionCount": 135571,
+  "packedLocalWords": 7786,
+  "stackCapacity": 15,
+  "auditBytes": 1016096,
+  "auditCapacityPerCandidate": 64,
+  "auditWords": 2056,
+  "observationPoints": [
+    {
+      "name": "before-tip",
+      "h": 128,
+      "outer": 2
+    },
+    {
+      "name": "after-tip",
+      "h": 192,
+      "outer": 3
+    }
+  ],
+  "initialIdentityDigest": "canonical exact finite plain values; complete artifact bytes separately SHA256-bound",
+  "recoveredPreparationFailure": "First preparation rejected noncanonical V8 metadata round-trip hash; canonical value encoding and negative/round-trip regression fixed coordinator-only check. No numerical source or running native program changed.",
+  "hostControlGroups": 6,
+  "nativeExecuted": false,
+  "rawToStrike": false,
+  "fullRest": false,
+  "native1024": false,
+  "hardwarePerformance": false
+}

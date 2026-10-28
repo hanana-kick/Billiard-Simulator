@@ -1,0 +1,870 @@
+{
+  "kind": "resident-mixed-six-coupled-budget-source-proof-v1",
+  "runtimeSha256": "780872cc0105e20375dcbd2f84a2e1962176133feefb23fdaa0a0778b312b4de",
+  "runtimeDataSha256": "5a114404df0eb616c8b112b553f484d837171bdfbef9f9b7c138686b30aaf958",
+  "sourceSha256": "c2aded677c03f8db550530c39df80a5591057f892a2f44aa4f6fe99d956baa20",
+  "bytecodeSha256": "30f7e7aae2258d01bdcb98811024f314592351f83ced1ffadfde2cda36c825e4",
+  "descriptorsSha256": "0157d62557e895a1007d749fab2cb9914d18edc3d56dc3683f7800ec83d1c548",
+  "transportSha256": "fad788059d2d4475dd96b5017a1959b68b6b446c6db829ffb6fa73c0ac3a6099",
+  "coupledClosureSha256": "a0f505125ff256e4d0ef12493ca9770e54ffa9d26260b631b771edaeef204742",
+  "coupledSignatureSha256": "c81c76839fef9fc3597b905ec5da394f208db1b11352d49e1ccea886bc31d045",
+  "coupledBodySha256": "489de183316fa5e0e2742b32921853a89a83983809e3a31b74b15275138bb758",
+  "count": 6,
+  "frames": 2,
+  "sourceInstructionBudget": 32768,
+  "sourceMaximumInstructionBudget": 1000000,
+  "bankWords": 62976,
+  "scratchWords": 13632,
+  "budgetOffset": 62744,
+  "guardLoadPC": 40016,
+  "guardBranchPC": 40019,
+  "argumentReloadPC": 40065,
+  "argumentSlot": 2968,
+  "coupledCallPC": 40072,
+  "coupledEntryPC": 40076,
+  "sourceBudgetStorePC": 97346,
+  "cueCallPC": 43200,
+  "cueEntryPC": 43203,
+  "sourceOnlyProof": true,
+  "physicalExecution": false,
+  "nativeQualified": false,
+  "fullRestQualified": false,
+  "hostCases": [
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 0,
+      "budget": 32768,
+      "active": true,
+      "invocations": [
+        {
+          "id": 3,
+          "args": [
+            49728,
+            50912,
+            54368,
+            793032,
+            0,
+            32768
+          ]
+        }
+      ],
+      "status": 1,
+      "reason": 0,
+      "detail": 0
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 0,
+      "budget": 0,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 0,
+      "budget": 1,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 0,
+      "budget": 32767,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 0,
+      "budget": 32769,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 0,
+      "budget": 1000000,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 0,
+      "budget": 1000001,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 0,
+      "budget": 4294967295,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 0,
+      "budget": 32768,
+      "active": false,
+      "invocations": [],
+      "status": 1,
+      "reason": 0,
+      "detail": 0
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 1,
+      "budget": 32768,
+      "active": true,
+      "invocations": [
+        {
+          "id": 3,
+          "args": [
+            112704,
+            113888,
+            117344,
+            793032,
+            13632,
+            32768
+          ]
+        }
+      ],
+      "status": 1,
+      "reason": 0,
+      "detail": 0
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 1,
+      "budget": 0,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 1,
+      "budget": 1,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 1,
+      "budget": 32767,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 1,
+      "budget": 32769,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 1,
+      "budget": 1000000,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 1,
+      "budget": 1000001,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 1,
+      "budget": 4294967295,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 1,
+      "budget": 32768,
+      "active": false,
+      "invocations": [],
+      "status": 1,
+      "reason": 0,
+      "detail": 0
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 2,
+      "budget": 32768,
+      "active": true,
+      "invocations": [
+        {
+          "id": 3,
+          "args": [
+            175680,
+            176864,
+            180320,
+            793032,
+            27264,
+            32768
+          ]
+        }
+      ],
+      "status": 1,
+      "reason": 0,
+      "detail": 0
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 2,
+      "budget": 0,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 2,
+      "budget": 1,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 2,
+      "budget": 32767,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 2,
+      "budget": 32769,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 2,
+      "budget": 1000000,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 2,
+      "budget": 1000001,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 2,
+      "budget": 4294967295,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 2,
+      "budget": 32768,
+      "active": false,
+      "invocations": [],
+      "status": 1,
+      "reason": 0,
+      "detail": 0
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 3,
+      "budget": 32768,
+      "active": true,
+      "invocations": [
+        {
+          "id": 3,
+          "args": [
+            238656,
+            239840,
+            243296,
+            793032,
+            40896,
+            32768
+          ]
+        }
+      ],
+      "status": 1,
+      "reason": 0,
+      "detail": 0
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 3,
+      "budget": 0,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 3,
+      "budget": 1,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 3,
+      "budget": 32767,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 3,
+      "budget": 32769,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 3,
+      "budget": 1000000,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 3,
+      "budget": 1000001,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 3,
+      "budget": 4294967295,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 3,
+      "budget": 32768,
+      "active": false,
+      "invocations": [],
+      "status": 1,
+      "reason": 0,
+      "detail": 0
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 4,
+      "budget": 32768,
+      "active": true,
+      "invocations": [
+        {
+          "id": 3,
+          "args": [
+            301632,
+            302816,
+            306272,
+            793032,
+            54528,
+            32768
+          ]
+        }
+      ],
+      "status": 1,
+      "reason": 0,
+      "detail": 0
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 4,
+      "budget": 0,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 4,
+      "budget": 1,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 4,
+      "budget": 32767,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 4,
+      "budget": 32769,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 4,
+      "budget": 1000000,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 4,
+      "budget": 1000001,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 4,
+      "budget": 4294967295,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 4,
+      "budget": 32768,
+      "active": false,
+      "invocations": [],
+      "status": 1,
+      "reason": 0,
+      "detail": 0
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 5,
+      "budget": 32768,
+      "active": true,
+      "invocations": [
+        {
+          "id": 3,
+          "args": [
+            364608,
+            365792,
+            369248,
+            793032,
+            68160,
+            32768
+          ]
+        }
+      ],
+      "status": 1,
+      "reason": 0,
+      "detail": 0
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 5,
+      "budget": 0,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 5,
+      "budget": 1,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 5,
+      "budget": 32767,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 5,
+      "budget": 32769,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 5,
+      "budget": 1000000,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 5,
+      "budget": 1000001,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 5,
+      "budget": 4294967295,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_coupled_body_1",
+      "lane": 5,
+      "budget": 32768,
+      "active": false,
+      "invocations": [],
+      "status": 1,
+      "reason": 0,
+      "detail": 0
+    },
+    {
+      "name": "rc_owner_cue_body_1",
+      "lane": 0,
+      "budget": 32768,
+      "active": true,
+      "invocations": [
+        {
+          "id": 0,
+          "args": [
+            448,
+            128,
+            55872,
+            3,
+            6603,
+            0,
+            62728,
+            32768
+          ]
+        }
+      ],
+      "status": 1,
+      "reason": 0,
+      "detail": 0
+    },
+    {
+      "name": "rc_owner_cue_body_1",
+      "lane": 0,
+      "budget": 32769,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_cue_body_1",
+      "lane": 1,
+      "budget": 32768,
+      "active": true,
+      "invocations": [
+        {
+          "id": 0,
+          "args": [
+            63424,
+            63104,
+            118848,
+            3,
+            6603,
+            13632,
+            125704,
+            32768
+          ]
+        }
+      ],
+      "status": 1,
+      "reason": 0,
+      "detail": 0
+    },
+    {
+      "name": "rc_owner_cue_body_1",
+      "lane": 1,
+      "budget": 32769,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_cue_body_1",
+      "lane": 2,
+      "budget": 32768,
+      "active": true,
+      "invocations": [
+        {
+          "id": 0,
+          "args": [
+            126400,
+            126080,
+            181824,
+            3,
+            6603,
+            27264,
+            188680,
+            32768
+          ]
+        }
+      ],
+      "status": 1,
+      "reason": 0,
+      "detail": 0
+    },
+    {
+      "name": "rc_owner_cue_body_1",
+      "lane": 2,
+      "budget": 32769,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_cue_body_1",
+      "lane": 3,
+      "budget": 32768,
+      "active": true,
+      "invocations": [
+        {
+          "id": 0,
+          "args": [
+            189376,
+            189056,
+            244800,
+            3,
+            6603,
+            40896,
+            251656,
+            32768
+          ]
+        }
+      ],
+      "status": 1,
+      "reason": 0,
+      "detail": 0
+    },
+    {
+      "name": "rc_owner_cue_body_1",
+      "lane": 3,
+      "budget": 32769,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_cue_body_1",
+      "lane": 4,
+      "budget": 32768,
+      "active": true,
+      "invocations": [
+        {
+          "id": 0,
+          "args": [
+            252352,
+            252032,
+            307776,
+            3,
+            6603,
+            54528,
+            314632,
+            32768
+          ]
+        }
+      ],
+      "status": 1,
+      "reason": 0,
+      "detail": 0
+    },
+    {
+      "name": "rc_owner_cue_body_1",
+      "lane": 4,
+      "budget": 32769,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    },
+    {
+      "name": "rc_owner_cue_body_1",
+      "lane": 5,
+      "budget": 32768,
+      "active": true,
+      "invocations": [
+        {
+          "id": 0,
+          "args": [
+            315328,
+            315008,
+            370752,
+            3,
+            6603,
+            68160,
+            377608,
+            32768
+          ]
+        }
+      ],
+      "status": 1,
+      "reason": 0,
+      "detail": 0
+    },
+    {
+      "name": "rc_owner_cue_body_1",
+      "lane": 5,
+      "budget": 32769,
+      "active": true,
+      "invocations": [],
+      "status": 4,
+      "reason": 6,
+      "detail": 15
+    }
+  ],
+  "sourceAstFunctions": [
+    "rc_owner_coupled_body_1",
+    "rc_owner_cue_body_1",
+    "rc_pc_source_stage_owner_phase_1",
+    "rc_coupled_transport_advance",
+    "rc_owner_coupled_guard"
+  ],
+  "coupledSourceCalls": 1,
+  "sourceBudgetInitializer": "rc_state[gid.x*62976+62744]=32768",
+  "callBudgetExpression": "rc_state[bank+62744]",
+  "literalSubstitution": false,
+  "wrongBudgetSourceFailure": {
+    "status": 4,
+    "reason": 6,
+    "detail": 15
+  },
+  "actualMacroBodiesExecuted": false,
+  "arbitraryPointerSafetyQualified": false,
+  "oldArtifactModified": false,
+  "wholeHOrShotExecuted": false
+}

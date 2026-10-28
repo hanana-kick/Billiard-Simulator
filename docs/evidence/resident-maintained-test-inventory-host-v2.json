@@ -1,0 +1,259 @@
+{
+  "kind": "resident-maintained-test-inventory-host-v2",
+  "baseCommit": "5333749",
+  "scope": "Explicit runner inventory and HOST/source admission contracts; no source suites/browser/GPU launched",
+  "sourceSha256": {
+    "tools/run-resident-qualification.cjs": "16662b95df9d56e9850a35920af814bedc77a4dfe2e216d320cd78d29ff18b2e",
+    "tools/run-resident-source-qualification.cjs": "fa592180ee9b8c0de41ee0dd22b65ff37afabf939820725494906c40d2e030bc",
+    "tests/resident-qualification-runners.cjs": "5a0030bc4b102b0c89a08c5e3b8d5a505743a67147eee8beaf515af829bd184a",
+    "tests/resident-source-qualification-runners.cjs": "9d7f4e787c1220f11390beaabec07333fc0b85219720397982305986d96fbe00"
+  },
+  "inventory": {
+    "hostModules": [
+      "tests/resident-candidate-abi.mjs",
+      "tests/resident-candidate-owned-buffers.mjs",
+      "tests/resident-candidate-space-counts.mjs",
+      "tests/resident-candidate-source-event-history.mjs",
+      "tests/resident-candidate-inverse-terminal-observation.mjs",
+      "tests/resident-candidate-inverse-reducer.mjs",
+      "tests/resident-candidate-source-sha256.mjs",
+      "tests/resident-candidate-inverse-portable-hash.mjs",
+      "tests/resident-candidate-microcode-coupled-macro.mjs",
+      "tests/resident-candidate-microcode-number-macro.mjs",
+      "tests/resident-candidate-number-program-handoff-tests.mjs",
+      "tests/resident-candidate-number-macro-created-host-tests.mjs",
+      "tests/resident-candidate-launch-view-ownership.mjs",
+      "tests/resident-candidate-microcode-vm.mjs",
+      "tests/resident-candidate-microcode-external.mjs",
+      "tests/resident-candidate-microcode-control-cache.mjs",
+      "tests/resident-candidate-microcode-source-intrinsics.mjs",
+      "tests/resident-candidate-microcode-operand-loads.mjs",
+      "tests/resident-candidate-word-predicates.mjs",
+      "tests/resident-candidate-microcode-resources.mjs",
+      "tests/resident-candidate-live-allocation.mjs",
+      "tests/resident-candidate-batch-protocol.mjs",
+      "tests/resident-candidate-invocation-identity-tests.mjs",
+      "tests/resident-candidate-host-continuation-store-tests.mjs",
+      "tests/resident-candidate-worker-host.mjs",
+      "tests/resident-candidate-worker-client.mjs",
+      "tests/resident-candidate-worker-backend.mjs",
+      "tests/resident-candidate-microcode-numeric-continuation.mjs",
+      "tests/resident-candidate-microcode-numeric-vm.mjs",
+      "tests/resident-candidate-inline-graph-compile-tests.mjs",
+      "tests/resident-candidate-phased-graph-compile-tests.mjs",
+      "tests/resident-candidate-inline-graph-pilot-tests.mjs",
+      "tests/resident-candidate-microcode-variant-contract-tests.mjs",
+      "tests/resident-candidate-native-session-tests.mjs",
+      "tests/resident-candidate-scale-validation-evidence.mjs",
+      "tests/resident-candidate-raw-cast-loop-host-tests.mjs",
+      "tests/resident-candidate-post-impact-profile-tests.mjs",
+      "tests/resident-candidate-coupled-created-h192-evidence.test.mjs",
+      "tests/resident-source-qualification-runners.cjs",
+      "tests/resident-three-ball-game.mjs",
+      "tests/resident-three-ball-search-semantics.mjs",
+      "tests/source-query-finalization-policy.mjs",
+      "tests/source-finalization-request.mjs",
+      "tests/source-gameplay-finalization-owner.mjs",
+      "tests/source-gameplay-inverse-admission.mjs",
+      "tests/source-finalization-plumbing.mjs",
+      "tests/source-finalization-native-receipt.mjs",
+      "tests/source-gameplay-full-rest.mjs",
+      "tests/resident-qualification-runners.cjs"
+    ],
+    "sourceSuites": {
+      "three-components": {
+        "tests": [
+          "tests/resident-three-ball-initial-pre-ccd.mjs",
+          "tests/resident-three-ball-produced-roster-broad-post.mjs"
+        ],
+        "inputs": [
+          "decoder-provenance",
+          "three-capture-prefix"
+        ],
+        "scope": "Exact split pre-CCD and produced-roster/legacy-byte HOST components; not complete h or GPU."
+      },
+      "three-first-h": {
+        "tests": [
+          "tests/resident-three-ball-first-h.mjs"
+        ],
+        "inputs": [
+          "decoder-provenance",
+          "three-capture-prefix"
+        ],
+        "scope": "Same-bank initial genuine-three source h1, fresh plus authenticated after-turn; not recurrence/full-rest/GPU."
+      },
+      "three-native-represented": {
+        "tests": [
+          "tests/resident-three-ball-first-h-native.mjs"
+        ],
+        "inputs": [
+          "decoder-provenance"
+        ],
+        "scope": "Independent original Rapier CPU/WASM represented h1 comparator; native means CPU WASM here, never GPU."
+      },
+      "retained-owner": {
+        "tests": [
+          "tests/resident-candidate-retained-microcode.mjs"
+        ],
+        "dependencies": [
+          "tests/resident-candidate-initial-microcode-batch-fixture.mjs",
+          "tests/resident-candidate-original-fixture.mjs"
+        ],
+        "inputs": [
+          "decoder-provenance",
+          "original-capture"
+        ],
+        "scope": "Genuine original initial source construction plus fake-device retained lifetime/compact negatives; not GPU or physical trajectory execution."
+      },
+      "three-second-prefix": {
+        "tests": [
+          "tests/resident-three-ball-second-prefix.mjs"
+        ],
+        "dependencies": [
+          "tests/resident-three-ball-two-h-native-fixture.cjs"
+        ],
+        "inputs": [
+          "decoder-provenance"
+        ],
+        "scope": "Original CPU/WASM two-h observer versus source second-h prefix only; no complete second-h publication or GPU."
+      },
+      "three-current-empty-pairs": {
+        "tests": [
+          "tests/resident-three-ball-current-empty-pairs.mjs"
+        ],
+        "dependencies": [
+          "tests/resident-three-ball-two-h-native-fixture.cjs"
+        ],
+        "inputs": [
+          "decoder-provenance"
+        ],
+        "scope": "Source current guard/BVH birth/empty-manifold components after genuine h1; not complete second h or GPU."
+      },
+      "three-second-collision": {
+        "tests": [
+          "tests/resident-three-ball-second-collision.mjs"
+        ],
+        "dependencies": [
+          "tests/resident-three-ball-two-h-native-fixture.cjs"
+        ],
+        "inputs": [
+          "decoder-provenance"
+        ],
+        "scope": "Same-bank source second collision/energy/current roster against original CPU/WASM; secondH remains false."
+      },
+      "three-second-numerical": {
+        "tests": [
+          "tests/resident-three-ball-second-numerical.mjs"
+        ],
+        "dependencies": [
+          "tests/resident-three-ball-two-h-native-fixture.cjs"
+        ],
+        "inputs": [
+          "decoder-provenance"
+        ],
+        "scope": "Current joint/spheres/post-CCD source components against original CPU/WASM; no second-h publication or GPU."
+      },
+      "three-second-physical": {
+        "tests": [
+          "tests/resident-three-ball-second-physical.mjs"
+        ],
+        "dependencies": [
+          "tests/resident-three-ball-two-h-native-fixture.cjs"
+        ],
+        "inputs": [
+          "decoder-provenance"
+        ],
+        "scope": "Source-order mass/BVH/current journal physical seal against original CPU/WASM; application adoption and complete second-h publication remain deferred."
+      },
+      "worker-http-assets": {
+        "tests": [
+          "tests/resident-worker-http-assets.cjs"
+        ],
+        "inputs": [
+          "decoder-provenance"
+        ],
+        "packageProvenance": true,
+        "scope": "Local HTTP package bytes/MIME/hash/activation-false checks using original decoder; no browser, module Worker or GPU."
+      },
+      "browser-runtime-assets": {
+        "tests": [
+          "tests/resident-browser-runtime-assets.cjs"
+        ],
+        "inputs": [
+          "decoder-provenance",
+          "original-capture",
+          "baseline-runtime"
+        ],
+        "packageProvenance": true,
+        "nodeArgs": [
+          "--experimental-vm-modules"
+        ],
+        "scope": "Node VM browser-like ESM plus genuine original initial-source construction compared with explicit mixed-six baseline; not an actual browser/Worker or GPU."
+      },
+      "post-impact-represented": {
+        "tests": [
+          "tests/resident-candidate-post-impact-native-projection-tests.mjs"
+        ],
+        "inputs": [
+          "decoder-provenance",
+          "original-capture",
+          "post-impact-root"
+        ],
+        "scope": "Fresh original CPU/WASM h193 partial-outer projection compared with frozen HOST evidence; not GPU, outer4 completion, full rest or long source recurrence."
+      },
+      "scale-artifacts": {
+        "tests": [
+          "tests/resident-candidate-scale-gate-tests.mjs",
+          "tests/resident-candidate-scale-comparison-repair-tests.mjs",
+          "tests/resident-candidate-scale-recovery-tests.mjs"
+        ],
+        "inputs": [
+          "artifact-root"
+        ],
+        "scope": "Frozen8/9 admission/comparator replay and compile/decision mocks only; no numerical execution or new parity qualification."
+      }
+    }
+  },
+  "focused": {
+    "passed": 16,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 1026.563634
+  },
+  "defaultHost": {
+    "tests": 275,
+    "passed": 267,
+    "failed": 1,
+    "skipped": 7,
+    "exit": 1,
+    "durationMs": 18107.424262,
+    "logSha256": "5ab3304603475ae5a01ffb3a66fb750b8e4771f0caa2daf92a5e075d17dd9635",
+    "skips": [
+      "﹣ optional exact current initial-only runtime derives pinned descriptor and rejects2-row source reused at512 # SKIP",
+      "﹣ optional actual h192 retained-session allocations match the descriptor using fake cache/device only # SKIP",
+      "﹣ optional pinned initial-only runtime produces the checked-in shape, with malformed metadata rejected # SKIP",
+      "﹣ optional existing retained-session allocator matches every calculated buffer byte with a fake device # SKIP",
+      "﹣ native source-number bytecode runs in compact GPU chunks with exact retained control and no intermediate map # Coordinator exclusive numerical slot required",
+      "﹣ fresh real preparation retains exact original t0, source, physical horizon and no evolved VM input # SKIP",
+      "﹣ three actual post-impact source calls retain original20000 budget and every state effect # SKIP"
+    ],
+    "failure": {
+      "test": "tests/resident-candidate-microcode-operand-loads.mjs:27",
+      "expected": "f8b3c9ba3f255a549563f255765f7fabfed710c7c3cf21195a69a96c5df4e54b",
+      "actual": "a4cc6687791fec3417f0734016eef24619d70ec4e8b2769e18a7053657b9173d",
+      "sourceBoundary": "bc1258664c2b0f13e792dd9f3cde17c67a54c238",
+      "testAndHistoricalEvidenceUnchanged": true
+    }
+  },
+  "capability": {
+    "sourceSuitesExecuted": false,
+    "actualBrowser": false,
+    "moduleWorker": false,
+    "gpuExecution": false,
+    "releaseQualified": false
+  },
+  "pending": [
+    "Separately reviewed historical HOST function-text provenance repair",
+    "Separate second-h application suite requires later source dependency integration"
+  ]
+}

@@ -1,0 +1,5 @@
+import {fixture as baseFixture} from './canonical-selected-source.mjs';
+import {createCanonicalCandidate} from '../../src/direct-candidate/canonical-engine-contract.mjs';
+import {prepareRawWorldBinding,prepareRawWorldBatch} from '../../src/direct-candidate/deterministic-raw-world.mjs';
+import {prepareCanonicalWorldContinuation} from '../../src/direct-candidate/canonical-world-continuation.mjs';
+export function mmq2RawFixture({durationTicks=8192,x=1.37,shot={angle:0,elevation:25,speed:.5,tipX:0,tipY:0}}={}){const R=.03075,{request}=baseFixture([[x,R,0],[.7,R,.3],[-.6,R,.45],[.9,R,-.4]]),candidate=createCanonicalCandidate(request,100,shot),rawBinding=prepareRawWorldBinding(request,{absoluteTick:1234,sceneKey:11,requestKey:23}),batch=prepareRawWorldBatch(rawBinding,[candidate],{maximumSteps:2048}),binding=prepareCanonicalWorldContinuation(request,rawBinding.shotClock,{sceneKey:11,requestKey:23,durationTicks,budgets:[2000,2000,20000,20000,20000,20000,20000],maxWorldSteps:128,enableCushionContinuation:true,mixedMotionRevision:'mmq2'});return{request,candidate,batch,binding};}

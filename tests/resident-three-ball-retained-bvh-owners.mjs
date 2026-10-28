@@ -1,0 +1,54 @@
+// HOST-only source/transport tests. Synthetic control headers below exercise
+// rearm guards only; they are never physical admission or h3 parity evidence.
+import {test,before,after} from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';import os from 'node:os';import path from 'node:path';
+import v8 from 'node:v8';import {spawnSync} from 'node:child_process';import {createHash} from 'node:crypto';
+import * as D from '../tools/rapier-snapshot-decoder/browser.mjs';
+import {admitThreeBallHost,createThreeBallCreatedOwnerSeed} from '../src/resident-candidate/three-ball-host-admission.mjs';
+import {packThreeBallCreatedOwnerTemplate} from '../src/resident-candidate/three-ball-created-owner.mjs';
+import * as Guard from '../src/resident-candidate/three-ball-initial-rigid-exclusion.mjs';
+import * as Empty from '../src/resident-candidate/three-ball-current-empty-pairs.mjs';
+import * as Physical from '../src/resident-candidate/three-ball-second-physical.mjs';
+import {createThreeBallSecondCollisionPlan} from '../src/resident-candidate/three-ball-second-collision.mjs';
+import {createThreeBallSecondNumericalPlan} from '../src/resident-candidate/three-ball-second-numerical.mjs';
+import {THREE_BALL_RETAINED_CONTROL as C} from '../src/resident-candidate/three-ball-retained-control.mjs';
+import {compileMicrocodeWGSL} from '../src/resident-candidate/microcode-compiler.mjs';
+import {createMicrocodeVmReferenceForTest} from '../src/resident-candidate/microcode-vm.mjs';
+import {linkResidentWGSL} from '../src/resident-candidate/wgsl-linker.mjs';
+import {generateProfiledNumericWGSL,NUMERIC_PROFILE} from '../src/resident-candidate/numeric-profile.mjs';
+const root=path.resolve(import.meta.dirname,'..'),align=n=>Math.ceil(n/64)*64,sha=x=>createHash('sha256').update(typeof x==='string'?x:Buffer.from(x.buffer,x.byteOffset,x.byteLength)).digest('hex');
+const globals='@group(0) @binding(0) var<storage,read_write> rc_state:array<u32>;';
+let temp,template,guard,empty,physical,fixed,controlBase,ga,ea,sources;
+before(async()=>{
+ temp=fs.mkdtempSync(path.join(os.tmpdir(),'three-retained-bvh-'));const file=path.join(temp,'initial.v8'),child=spawnSync(process.execPath,['tests/resident-three-ball-initialization-source-fixture.cjs',file],{cwd:root,encoding:'utf8',timeout:30000});assert.equal(child.status,0,child.stdout+'\n'+child.stderr);const raw=v8.deserialize(fs.readFileSync(file)).rows.find(x=>x.name==='selected-2').raw;
+ const provenance=JSON.parse(fs.readFileSync(process.env.RAPIER_WASM_PROVENANCE??path.join(root,'../billiard-browser-snapshot-decoder/.browser-decoder-build/snapshot-wasm-decoder-provenance.json'))),decoder=await D.createSnapshotDecoder({engineVersion:'0.21.0',engineBytes:new Uint8Array(fs.readFileSync(path.join(root,'vendor/rapier.cjs'))),wasmBytes:new Uint8Array(fs.readFileSync(provenance.wasmPath)),provenance,expectedWasmSha256:provenance.wasmSha256});
+ template=await packThreeBallCreatedOwnerTemplate(await createThreeBallCreatedOwnerSeed(await admitThreeBallHost(decoder,raw)));fixed=Physical.createThreeBallSecondPhysicalPlan(createThreeBallSecondNumericalPlan(createThreeBallSecondCollisionPlan(template)));physical=Physical.createThreeBallRetainedPhysicalPlan(fixed);guard=Guard.createThreeBallRetainedRigidExclusionPlan(template);empty=Empty.createThreeBallRetainedEmptyPairsPlan(template,guard);controlBase=align(physical.layout.words);
+ ga={stateBase:fixed.layout.currentGuard,programBase:fixed.first.programOffsets.guard,geometryBase:0,scratchBase:0,controlBase};ea={stateBase:fixed.layout.currentEmpty,guardBase:ga.stateBase,programBase:fixed.collision.emptyProgram,scratchBase:0,factsBase:fixed.first.first.initialBroad.layout.geometry,controlBase};
+ sources={guard:Guard.buildThreeBallRetainedRigidExclusionSource(guard,ga),empty:Empty.buildThreeBallRetainedEmptyPairsSource(empty,ea),physical:Physical.buildThreeBallRetainedPhysicalSource(physical,{controlBase})};
+});
+after(()=>{if(temp)fs.rmSync(temp,{recursive:true});});
+function run(source,entry,words){const code=compileMicrocodeWGSL(linkResidentWGSL([globals,source,`fn run(){${entry}();}`],{entry:'run'}).code,{entry:'run'}),vm=createMicrocodeVmReferenceForTest({testOnly:true,code:code.instructions,count:1,localWords:code.localWords,stackCapacity:code.callDepth,entryPc:code.entryPc,bindings:[words,new Uint32Array(1),new Uint32Array(1),new Uint32Array(1),new Uint32Array(1)]});vm.begin();let status=1,n=0;while(status===1){status=vm.advance(0,65536);assert.ok(++n<256);}assert.equal(status,2,'unit rearm VM '+vm.state[3]);}
+function unitBank(){const w=new Uint32Array(controlBase+C.words);w.set(physical.initialWords);w.set(guard.initialWords,ga.stateBase);w.set(empty.initialWords,ea.stateBase);w.set([C.magicValue,1,1,2,1,1,2,1,2],controlBase);w[controlBase+C.inAdvance]=1;w[controlBase+C.bootstrapCompleted]=1;w[fixed.layout.journal+4]=1;w[fixed.layout.cue+7]=2;return w;}
+test('retained owners reuse exact programs/layout, with distinct sealed profile and explicit rearm reachability',()=>{
+ assert.deepEqual(guard.program,fixed.collision.guard.program);assert.deepEqual(guard.geometryWords,fixed.collision.guard.geometryWords);assert.deepEqual(empty.program,fixed.collision.empty.program);assert.equal(physical.layout,fixed.layout);assert.equal(physical.program,fixed.program);assert.equal(physical.initialWords.length,fixed.initialWords.length);
+ assert.throws(()=>Guard.assertThreeBallInitialRigidExclusionPlan(guard));assert.throws(()=>Guard.assertThreeBallCurrentRigidExclusionPlan(guard));assert.throws(()=>Empty.assertThreeBallCurrentEmptyPairsPlan(empty));assert.throws(()=>Physical.assertThreeBallSecondPhysicalPlan(physical));assert.throws(()=>Physical.assertThreeBallRetainedPhysicalPlan({...physical}));
+ for(const[name,entry]of[['guard','rc_three_guard_rearm'],['empty','rc_three_empty_rearm'],['physical','rc_three_second_physical_rearm']]){assert.match(sources[name].rearmSource,new RegExp('fn '+entry+'\\('));run(sources[name].rearmSource,entry,unitBank());}
+ assert.equal(sources.guard.commands[1].cycles,54);assert.equal(sources.guard.commands[3].stages[2].repeat,256);assert.equal(sources.physical.commands[1].cycles,25);assert.equal(physical.capability.gpuQualified,false);
+});
+test('rearm is single-use, sticky-failure, and never touches physical/caches/native metadata',()=>{
+ const pairs=[['guard','rc_three_guard_rearm',ga.stateBase,19,guard.layout.words],['empty','rc_three_empty_rearm',ea.stateBase,14,empty.layout.words],['physical','rc_three_second_physical_rearm',physical.layout.physicalControl,13,32]];
+ for(const[name,entry,base,marker]of pairs){const w=unitBank(),before=w.slice();run(sources[name].rearmSource,entry,w);assert.equal(w[base+2],1,name);assert.equal(w[base+marker],2,name);assert.deepEqual(w.slice(0,template.initialWords.length),before.slice(0,template.initialWords.length),name+' canonical persistence');if(name==='empty'){assert.deepEqual(w.slice(base+empty.layout.descriptors,base+empty.layout.order),before.slice(base+empty.layout.descriptors,base+empty.layout.order));assert.equal(w[base+8],0);}if(name==='physical')assert.deepEqual(w.slice(physical.layout.massState+32,physical.layout.massState+112),before.slice(physical.layout.massState+32,physical.layout.massState+112));run(sources[name].rearmSource,entry,w);assert.equal(w[base+2],4,name+' duplicate rearm');run(sources[name].rearmSource,entry,w);assert.equal(w[base+2],4,name+' sticky failure');
+  for(const mutate of[a=>a[controlBase+C.sequence]++,a=>a[controlBase+C.status]=4,a=>a[controlBase+C.bootstrapCompleted]=0,a=>a[base+marker]=7,a=>a[base+2]=4]){const a=unitBank();mutate(a);run(sources[name].rearmSource,entry,a);assert.equal(a[base+2],4,name+' invalid root/prior frame');}
+ }
+});
+test('retained cache rearm preserves source previous order/recurrence and snapshots entry lifetime',()=>{
+ const w=unitBank(),c=ea.stateBase,L=empty.layout,n=2,cache=c+L.caches+n*48;w.set([2,2,3,2,3],controlBase+4);w[controlBase+C.advances]=1;w[fixed.layout.journal+4]=2;w[c+14]=2;w[c+3]=3;w[c+4]=1;w[c+5]=1;w[c+6]=1;w[c+7]=2;w[c+8]=1;w[c+L.previous]=n;w[cache+3]=1;w[cache+4]=2;w[cache+5]=2;w[c+L.rows]=3;w[c+L.rows+1]=4;w[c+L.rows+12]=n;for(let i=16;i<36;i++)w[cache+i]=0x3e800000+i;const before=w.slice();run(sources.empty.rearmSource,'rc_three_empty_rearm',w);assert.equal(w[c+2],1);assert.equal(w[c+14],3);assert.equal(w[c+28],1<<n);assert.equal(w[c+16+n*2],4);assert.equal(w[c+8],1);assert.equal(w[c+L.previous],n);assert.deepEqual(w.slice(c+L.caches,c+L.order),before.slice(c+L.caches,c+L.order));assert.equal(w[c+L.rows],0,'only current edge view is rearmed');
+ const bad=before.slice();bad[c+L.rows+12]=1;run(sources.empty.rearmSource,'rc_three_empty_rearm',bad);assert.equal(bad[c+2],4,'missing previous lifetime row');
+});
+test('old initial and fixed-h2 generated bytes remain exactly the frozen source baseline',()=>{
+ const oldGuard=Guard.createThreeBallInitialRigidExclusionPlan(template),current=fixed.collision.guard,at={stateBase:100000,programBase:0,geometryBase:0,scratchBase:0},guardSource=Guard.buildThreeBallInitialRigidExclusionSource(oldGuard,at),currentSource=Guard.buildThreeBallCurrentRigidExclusionSource(current,at),emptyAt={stateBase:110000,guardBase:100000,programBase:0,scratchBase:0,factsBase:120000},emptySource=Empty.buildThreeBallCurrentEmptyPairsSource(fixed.collision.empty,emptyAt),physicalSource=Physical.buildThreeBallSecondPhysicalSource(fixed),signature=s=>({source:sha(s.source??s.code),stages:s.stages.map(x=>sha(x.code))}),actual={initial:signature(guardSource),current:signature(currentSource),empty:signature(emptySource),physical:signature(physicalSource),initialWords:sha(fixed.initialWords),program:sha(fixed.program),geometry:sha(fixed.geometry),layout:JSON.stringify(fixed.layout)},expected=JSON.parse(fs.readFileSync(new URL('./fixtures/three-ball-retained-bvh-legacy-fingerprint.json',import.meta.url)));assert.equal(expected.sourceCommit,'7512e3a');assert.deepEqual(actual,expected.signature);
+});
+test('all retained control paths compile through the HOST source interpreter without reducing caps',()=>{
+ for(const[source,entry]of [[sources.guard.source,'rc_three_guard_run'],[sources.physical.source,'rc_three_h2p_run'],[linkResidentWGSL([globals,'@group(0) @binding(1) var<storage,read> rc_program:array<u32>;@group(0) @binding(3) var<storage,read_write> rc_scratch:array<u32>;',generateProfiledNumericWGSL(NUMERIC_PROFILE.PRESERVED_F32),sources.empty.code,'fn run(){rc_three_empty_geometry();rc_three_empty_begin();for(var i=0u;i<6u;i++){rc_three_empty_gather();rc_three_empty_evaluate();rc_three_empty_scatter();}rc_three_empty_finish();}'],{entry:'run'}).code,'run']]){const code=compileMicrocodeWGSL(source,{entry,intrinsics:'source-numeric-v1',intrinsicFunctions:['rc_num_eval']});assert.ok(code.instructions.length>0);}
+});

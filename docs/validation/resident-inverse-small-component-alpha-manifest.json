@@ -1,0 +1,73 @@
+{
+  "kind": "inverse-small-components-separated-manifest-v1",
+  "sourceHead": "591706b33c34986f541330fa742addcdc51a4b39",
+  "runnerHashes": {
+    "tests/resident-candidate-inverse-component-runtime.mjs": "49ffa56763cc9d0bcbee90801c1dcdf1257ed44d621576eac53fc6b1f5ee8439",
+    "tests/resident-candidate-gpu-support.mjs": "59bfd1b6a3e1951b2b35e89c705204d5e21fbbdbf05d9f588d4d2795ea6f4679",
+    "tests/native-gpu-test-owner.cjs": "50290d4f6bbd9bd6c0eee944f55ce8775e07d39dcf6b20305c6b37ac450c1f97"
+  },
+  "assertionRunnerSha256": "a3d6b8886bdb2db8f4239b0ab77a49e3ab120387fd69add8bee6dff2ec526679",
+  "sourceClosureSha256": "c227b59e6ce0de67948b5838199643262715a75c55b5aa159406cc6b0a1da6ec",
+  "payloadSha256": "aeebc3187e1ec23664c86599631f54a02dc2f1bfc922f57a72d8ca8e6a1f0672",
+  "expectedSha256": "5ba3e6ef2d30a11d052a7750b952f07ad8f466dc1811ed49a3af2262f56e8cd4",
+  "runtime": {
+    "file": "/tmp/inverse-native-components-alpha-final.plan.v8",
+    "sha256": "83632352585ae212ce0024767fc85966032e3372bb2d48595e8b3ba85415a3d2",
+    "bytes": 102324
+  },
+  "inputs": {
+    "file": "/tmp/inverse-native-components-alpha-final.inputs.v8",
+    "sha256": "912f35a8a6c101c01f12c6429653fbdb44bd0aadf234ee82fcb403308f4916a0",
+    "bytes": 35545261
+  },
+  "expected": {
+    "file": "/tmp/inverse-native-components-alpha-final.expected.v8",
+    "sha256": "961eb77371bf24f8ee1c782aad2fdd099e1db0434be778d7126bf046e311066e",
+    "bytes": 35770922
+  },
+  "metrics": {
+    "dispatches": 32,
+    "uploadBytes": 35542260,
+    "readbackBytes": 35749044,
+    "maxBindingBytes": 1036288,
+    "jobCount": 26,
+    "programCount": 4,
+    "peakOwnedDeviceBufferBytes": 71291304
+  },
+  "scope": {
+    "componentOnly": true,
+    "physicalTrajectory": false,
+    "worldProducerNativeQualified": false,
+    "rawToTerminalQualified": false,
+    "solverAdapterQualified": false,
+    "fullRestQualified": false,
+    "finalGameplayQualified": false,
+    "defaultEnabled": false
+  },
+  "programs": [
+    {
+      "id": "reducer-observe",
+      "sha256": "dff7e70f90aed9fe4508cab96bcf110170e24e89ce667a37109e29b91f2be2c2",
+      "bytes": 21151,
+      "functions": 47
+    },
+    {
+      "id": "reducer-project",
+      "sha256": "fbd20f04bd8817f5c3441813cad824b43414424d4255e795c83a20e0de72ad4d",
+      "bytes": 11842,
+      "functions": 26
+    },
+    {
+      "id": "audited-join-standard",
+      "sha256": "fc063bddd24c2adb95f50decc69d50e4e561fb0dd5c47c587d9dfece671be0df",
+      "bytes": 21140,
+      "functions": 35
+    },
+    {
+      "id": "audited-join-signed-zero-subnormal-spin-off-fixed",
+      "sha256": "e76fedc65653dc0b768c85ff72d36b849448103118226092ff9c61a51b7e115b",
+      "bytes": 21162,
+      "functions": 35
+    }
+  ]
+}

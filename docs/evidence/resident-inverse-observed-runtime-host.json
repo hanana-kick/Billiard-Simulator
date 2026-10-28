@@ -1,0 +1,194 @@
+{
+  "kind": "resident-inverse-observed-runtime-host-evidence-v1",
+  "scope": "source-only count2/born-h192 profile and HOST transport; genuine same-world recurrence bounded to created-t0/two h",
+  "initialCapture": {
+    "sha256": "11f41cd9c11ff47911f14afc084b27f32a15fc69db1f26d7970eb864f35f2262",
+    "sourceIdentity": "a93473fceb1da27bb580a2981d3e536057eb30856e49d64405ad2b96f8b51e0f",
+    "preStrikeIdentity": "2d5a2cbf1b7dc481cb90a19de8fa5cee7ea389c7dbbede645324afbcb87279c8"
+  },
+  "profile": "source-coupled-inverse-observation-v1",
+  "proof": {
+    "sourceSha256": "22cfd8c2a23758f79fdcba9a2be8c8fe9bf5e594934b0c3f70caf8912a5e2b61",
+    "bytecodeSha256": "4f42d9f9abc9050c8bf8184f103b79e22fed9a371c42a9824d51e8cf23e533bb",
+    "vmShaderSha256": "e2b0b60bd7a4d8222228c3cde9a543403eb52b90d16080ab87ebab8799fe70d7",
+    "descriptorsSha256": "9ed519beef25b7fe5f38a8f70672d2b8f38636212e5d585f4f9209e0ffb881fa",
+    "handlersSha256": "38f1c7413d32d506efa4ab8b15f077d29488d09234d3ff607ce7bd0e7f42dba0",
+    "vmShapeSha256": "595ec3789bc791e8af4571bf4e76a1dcc44209bce09183b19fca95e9fa1d6a3e",
+    "initialSourceSha256": "a12e7862307f460351c0e41bb5620067e513bcd2fcff19b0c689903583125e1e",
+    "observationSha256": "9de577747b360ce1aacd0d1c774587668edca17f87f874257f3ebf2617b2dc26"
+  },
+  "compiled": {
+    "instructionCount": 154099,
+    "localWords": 8158,
+    "stackCapacity": 17,
+    "stride": 8191,
+    "vmWords": 16382,
+    "workgroupSize": 64,
+    "instructionBudget": 65536,
+    "macroIds": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  "views": {
+    "kind": "source-four-ball-inverse-audited-storage-v1",
+    "count": 2,
+    "auditViewWords": 254024,
+    "observerBase": 254080,
+    "observerStride": 2496,
+    "observerWords": 4992,
+    "paddingWords": 56,
+    "totalWords": 259072,
+    "bytes": 1036288,
+    "sourceBinding": 5,
+    "gpuBinding": 7,
+    "physicalBindings": 8,
+    "qualificationAllocationOnly": true,
+    "compactProductionBudget": false,
+    "measured": false,
+    "limits": {
+      "maxStorageBufferBindingSize": 134217728,
+      "maxBufferSize": 268435456,
+      "maxStorageBuffersPerShaderStage": 8
+    }
+  },
+  "allocationForTwoDiagnosticCaptures": {
+    "kind": "resident-observed-diagnostic-allocation-v1",
+    "rows": [
+      {
+        "name": "scratch",
+        "words": 27264,
+        "bytes": 109056,
+        "storage": true
+      },
+      {
+        "name": "inputs",
+        "words": 32,
+        "bytes": 128,
+        "storage": true
+      },
+      {
+        "name": "rawState",
+        "words": 4020,
+        "bytes": 16080,
+        "storage": true
+      },
+      {
+        "name": "rawProgram",
+        "words": 5071,
+        "bytes": 20284,
+        "storage": true
+      },
+      {
+        "name": "rawGeometry",
+        "words": 11368,
+        "bytes": 45472,
+        "storage": true
+      },
+      {
+        "name": "worldState",
+        "words": 127176,
+        "bytes": 508704,
+        "storage": true
+      },
+      {
+        "name": "worldTemplate",
+        "words": 62990,
+        "bytes": 251960,
+        "storage": true
+      },
+      {
+        "name": "worldProgram",
+        "words": 874992,
+        "bytes": 3499968,
+        "storage": true
+      },
+      {
+        "name": "worldGeometry",
+        "words": 25408,
+        "bytes": 101632,
+        "storage": true
+      },
+      {
+        "name": "microcode",
+        "words": 1232792,
+        "bytes": 4931168,
+        "storage": true
+      },
+      {
+        "name": "vmState",
+        "words": 16382,
+        "bytes": 65528,
+        "storage": true
+      },
+      {
+        "name": "eventAudit",
+        "words": 259072,
+        "bytes": 1036288,
+        "storage": true
+      },
+      {
+        "name": "final-only-diagnostics",
+        "words": 805260,
+        "bytes": 3221040,
+        "storage": false
+      }
+    ],
+    "totalBytes": 13807308,
+    "aliases": {
+      "rawScratch": "scratch",
+      "numericScratch": "scratch"
+    },
+    "measured": false,
+    "compactProductionBudget": false
+  },
+  "hostGates": [
+    {
+      "files": [
+        "tests/resident-candidate-inverse-observed-runtime.mjs"
+      ],
+      "pass": 3,
+      "fail": 0,
+      "skip": 0,
+      "durationMs": 15009.822427,
+      "sourceFresh": true,
+      "gpuExecuted": false
+    },
+    {
+      "files": [
+        "tests/resident-candidate-microcode-world-runtime-tests.mjs",
+        "tests/resident-candidate-tip-impact-runtime-tests.mjs",
+        "tests/resident-candidate-inverse-audited-world.mjs"
+      ],
+      "pass": 19,
+      "fail": 0,
+      "skip": 0,
+      "durationMs": 35528.321073,
+      "genuineCreatedFrames": [
+        0,
+        1,
+        2
+      ],
+      "all11SourceGroups": true,
+      "wholeAuditPrefix": true,
+      "activeTipEvent": false,
+      "gpuExecuted": false
+    }
+  ],
+  "claims": {
+    "oldFourMacroCodeAndApprovalPinsUnchanged": true,
+    "noPerHHostMaps": true,
+    "noFutureRuntimeInputs": true,
+    "initialOnlySourceBuffers": true,
+    "originalPhysicalViewsUnchanged": true,
+    "sourceHookOrderPreserved": true,
+    "terminalJoinScheduled": false,
+    "rawToH192Observed": false,
+    "nativeObservedTrajectoryQualified": false,
+    "fullRestQualified": false,
+    "publicSolverCommitEnabled": false,
+    "capacity1024Qualified": false
+  }
+}

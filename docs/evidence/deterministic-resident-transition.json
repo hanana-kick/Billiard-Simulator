@@ -1,0 +1,29 @@
+{
+  "profile": "prepared-resident-event-contact-transition-v1",
+  "cases": 74,
+  "comparedWords": 22496,
+  "exactWords": true,
+  "compileMs": 1041.744825,
+  "shaderBytes": [
+    4116,
+    8418,
+    5991,
+    2073
+  ],
+  "metrics": {
+    "count": 74,
+    "dispatches": 4,
+    "intermediateReadbacks": 0,
+    "hostPhysicsBetweenPhases": 0,
+    "finalReadbacks": 1,
+    "immutableSceneBytes": 512,
+    "allocatedBytes": 194688,
+    "readbackBytes": 89984,
+    "submitToDoneMs": 3.464979000000085,
+    "physicalAcceptance": false,
+    "fullShot": false,
+    "hardwareSpeedClaim": false
+  },
+  "completedTransitions": 67,
+  "fullShot": false
+}

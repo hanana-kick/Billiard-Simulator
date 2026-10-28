@@ -1,0 +1,49 @@
+{
+  "scope": "HOST-only original-created2h source-versus-external-macro transport",
+  "status": "pass",
+  "handoffs": 145,
+  "counts": {
+    "rc_cue_flat_advance": 8,
+    "rc_num_eval": 137
+  },
+  "allStateAndDirtyScratchWordsEqual": true,
+  "argumentAndReturnWordsEqual": true,
+  "cueBeforeWordsEqual": true,
+  "arithmeticReferenceShared": true,
+  "independentOriginalCpuComparisons": [
+    "source all11 exact",
+    "external all11 exact"
+  ],
+  "originalDtAndSourceBudgetsUnchanged": true,
+  "expectedFutureRuntimeInput": false,
+  "rawInput": false,
+  "gpuExecuted": false,
+  "fullRest": false,
+  "source": {
+    "steps": "12621891",
+    "pumps": 193,
+    "hostWallMs": 14306.721532
+  },
+  "external": {
+    "steps": "4710762",
+    "pumps": 186,
+    "vmYields": 40,
+    "handoffs": {
+      "rc_cue_flat_advance": 8,
+      "rc_num_eval": 137
+    },
+    "hostWallMs": 13504.298788000004
+  },
+  "traces": [
+    {
+      "path": "/tmp/resident-microcode-external-pair-source.v8",
+      "bytes": 47586346,
+      "sha256": "14ccd7992330e36b74a9e56c382402799fa1d2578d64f7cbc81a1fad15c0d535"
+    },
+    {
+      "path": "/tmp/resident-microcode-external-pair-external.v8",
+      "bytes": 47586346,
+      "sha256": "8f5b351e2dd08740fcc44729f77d7f041c653af8e97153d12df97fe0eb079567"
+    }
+  ]
+}

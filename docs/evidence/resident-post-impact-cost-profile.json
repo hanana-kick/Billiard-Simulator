@@ -1,0 +1,329 @@
+{
+  "kind": "owned-host-h192-one-h-diagnostic-v1",
+  "status": "pass",
+  "resultSha256": "413e4032cb6a4beb5da01a911f9ac41f4d95e26f57aaf4d6a4f02da8325e0152",
+  "initialSha256": "05f78ef994c2b69960e8e64c07d03cd17c0947656d573afee82820d764a5ff5e",
+  "pins": {
+    "initialSourceRuntime": "7cf2c1be3dc3c6736ed07a89d5df92fb01df416df519e86532f1f008839c9f1e",
+    "fourInitial": "74c67de5efd476cbbe394678cfc927ac5ed6d70a3b38c5e24697dd735895eb75",
+    "fiveInitial": "58563faa553e52826dd9adb9d4b198301b4c164fdfa1b9d1f52160f92ecdf3d2",
+    "fourFinal": "51df3ee40d56d9cd9b5c27637d93655e491d78800c0bbcc9d80235abf531c605",
+    "fiveFinal": "fbadfa2b0342918c3faaf6b4c1a98e5ef95ed02cc3df33faeba1f2d61271ea98",
+    "fiveAssertion": "05461ffccc4195529a96a9254a6a19fa7f9f8e6033f7bcfd4994f799398db44e"
+  },
+  "scope": {
+    "diagnosticT0H": 192,
+    "additionalH": 1,
+    "acceptedCandidateId": 219,
+    "rejectedCandidateId": 522,
+    "rawInput": false,
+    "gpuExecuted": false,
+    "rawRecurrenceQualified": false,
+    "fullRestQualified": false,
+    "nativePhysicsLabH193Qualified": false,
+    "hardwarePerformance": false
+  },
+  "allSixFinalBindingWordsEqual": true,
+  "noCpuFutureInput": true,
+  "physicalT0Unchanged": true,
+  "runs": [
+    {
+      "name": "four",
+      "pumps": 108,
+      "coreSteps": [
+        2752256,
+        2511
+      ],
+      "calls": {
+        "rc_cue_flat_advance": 4,
+        "rc_num_eval": 77,
+        "rc_world_broad_commit_collision": 1,
+        "rc_coupled_transport_advance": 3
+      },
+      "hostWallMs": 32116.126597,
+      "theoreticalFixedCommands": 540,
+      "actualGpuCommands": 0,
+      "finalSha256": "893b7ed95bbf2881b4fb518421ef37339ca8857944603c898391237f125996a5",
+      "summary": {
+        "total": 2754767,
+        "topFunctions": [
+          {
+            "name": "rc_u128_shl",
+            "instructions": 361017,
+            "fraction": 0.131051736861956
+          },
+          {
+            "name": "rc_pc_guard",
+            "instructions": 181063,
+            "fraction": 0.06572715587198481
+          },
+          {
+            "name": "rc_gn_prepare_rc_world_cue_geometry_pose",
+            "instructions": 138065,
+            "fraction": 0.05011857627160482
+          },
+          {
+            "name": "rc_geometry_numeric_prepare",
+            "instructions": 108420,
+            "fraction": 0.03935723057521743
+          },
+          {
+            "name": "rc_pc_advance",
+            "instructions": 105078,
+            "fraction": 0.03814406082256685
+          },
+          {
+            "name": "rc_micro_world_run",
+            "instructions": 103332,
+            "fraction": 0.03751025041319284
+          },
+          {
+            "name": "rc_u128_add",
+            "instructions": 100494,
+            "fraction": 0.0364800362426296
+          },
+          {
+            "name": "rc_u128_blen",
+            "instructions": 88897,
+            "fraction": 0.03227024281908415
+          },
+          {
+            "name": "rc_world_solver_gather",
+            "instructions": 79297,
+            "fraction": 0.028785374588849076
+          },
+          {
+            "name": "rc_gn_address",
+            "instructions": 77112,
+            "fraction": 0.027992204059363278
+          },
+          {
+            "name": "rc_u128_lt",
+            "instructions": 74245,
+            "fraction": 0.026951462682687864
+          },
+          {
+            "name": "rc_world_broad_begin_post",
+            "instructions": 71217,
+            "fraction": 0.02585227716173455
+          },
+          {
+            "name": "rc_micro_reset_private",
+            "instructions": 56620,
+            "fraction": 0.020553462416240648
+          },
+          {
+            "name": "rc_world_cue_geometry_gather",
+            "instructions": 52929,
+            "fraction": 0.019213603183136724
+          },
+          {
+            "name": "rc_u128_div",
+            "instructions": 49208,
+            "fraction": 0.017862853736813313
+          }
+        ],
+        "topOpcodes": [
+          {
+            "name": "MOV",
+            "instructions": 1003201,
+            "fraction": 0.36416909306667317
+          },
+          {
+            "name": "SET",
+            "instructions": 540912,
+            "fraction": 0.19635490043259557
+          },
+          {
+            "name": "BRANCH",
+            "instructions": 249514,
+            "fraction": 0.09057535537488288
+          },
+          {
+            "name": "UADD",
+            "instructions": 248992,
+            "fraction": 0.09038586566486385
+          },
+          {
+            "name": "EQ",
+            "instructions": 109167,
+            "fraction": 0.0396283968843826
+          },
+          {
+            "name": "ULT",
+            "instructions": 100973,
+            "fraction": 0.03665391664703403
+          },
+          {
+            "name": "LOAD",
+            "instructions": 80591,
+            "fraction": 0.02925510578571618
+          },
+          {
+            "name": "JUMP",
+            "instructions": 69293,
+            "fraction": 0.02515385148725827
+          }
+        ],
+        "memory": {
+          "sourceReads": 80591,
+          "sourceWrites": 43259,
+          "explicitLocalReads": 2765255,
+          "indirectLocalReads": 32521,
+          "indirectLocalWrites": 11473,
+          "scope": "executed source opcodes and case-specific operand reads; excludes VM control/instruction fetch/stack/guard and native macro memory"
+        }
+      }
+    },
+    {
+      "name": "five",
+      "pumps": 96,
+      "coreSteps": [
+        1861651,
+        2511
+      ],
+      "calls": {
+        "rc_cue_flat_advance": 4,
+        "rc_num_eval": 77,
+        "rc_world_broad_commit_collision": 1,
+        "rc_coupled_transport_advance": 3,
+        "rc_raw_program_step": 2
+      },
+      "hostWallMs": 28810.354824,
+      "theoreticalFixedCommands": 576,
+      "actualGpuCommands": 0,
+      "finalSha256": "6f9a78247e38d3fa4470c9f5c681706f2923d29bf84f5836d7e1ff6b6b07a236",
+      "summary": {
+        "total": 1864162,
+        "topFunctions": [
+          {
+            "name": "rc_pc_guard",
+            "instructions": 181063,
+            "fraction": 0.09712836116174453
+          },
+          {
+            "name": "rc_gn_prepare_rc_world_cue_geometry_pose",
+            "instructions": 138065,
+            "fraction": 0.0740627692228465
+          },
+          {
+            "name": "rc_geometry_numeric_prepare",
+            "instructions": 108420,
+            "fraction": 0.05816018135762879
+          },
+          {
+            "name": "rc_pc_advance",
+            "instructions": 105078,
+            "fraction": 0.05636741871146392
+          },
+          {
+            "name": "rc_micro_world_run",
+            "instructions": 103332,
+            "fraction": 0.0554308048334855
+          },
+          {
+            "name": "rc_world_solver_gather",
+            "instructions": 79297,
+            "fraction": 0.042537612074487086
+          },
+          {
+            "name": "rc_gn_address",
+            "instructions": 77112,
+            "fraction": 0.04136550364185087
+          },
+          {
+            "name": "rc_world_broad_begin_post",
+            "instructions": 71217,
+            "fraction": 0.03820322482702684
+          },
+          {
+            "name": "rc_micro_reset_private",
+            "instructions": 56620,
+            "fraction": 0.030372896776138556
+          },
+          {
+            "name": "rc_world_cue_geometry_gather",
+            "instructions": 52929,
+            "fraction": 0.028392918641191055
+          },
+          {
+            "name": "rc_micro_original_owner_7",
+            "instructions": 47354,
+            "fraction": 0.025402298727256536
+          },
+          {
+            "name": "rc_world_scene_capture_entry",
+            "instructions": 41939,
+            "fraction": 0.022497508263766775
+          },
+          {
+            "name": "rc_gn_identity",
+            "instructions": 40936,
+            "fraction": 0.021959464896291202
+          },
+          {
+            "name": "rc_micro_original_owner_6",
+            "instructions": 40306,
+            "fraction": 0.02162151143516497
+          },
+          {
+            "name": "rc_world_geometry_begin",
+            "instructions": 39569,
+            "fraction": 0.021226159529053806
+          }
+        ],
+        "topOpcodes": [
+          {
+            "name": "MOV",
+            "instructions": 650727,
+            "fraction": 0.34907212999728565
+          },
+          {
+            "name": "SET",
+            "instructions": 375959,
+            "fraction": 0.2016772147485036
+          },
+          {
+            "name": "BRANCH",
+            "instructions": 198536,
+            "fraction": 0.10650147358437732
+          },
+          {
+            "name": "UADD",
+            "instructions": 193152,
+            "fraction": 0.10361331257691124
+          },
+          {
+            "name": "EQ",
+            "instructions": 102742,
+            "fraction": 0.05511430873497046
+          },
+          {
+            "name": "LOAD",
+            "instructions": 76899,
+            "fraction": 0.041251243185946286
+          },
+          {
+            "name": "ULT",
+            "instructions": 48192,
+            "fraction": 0.025851830473960953
+          },
+          {
+            "name": "JUMP",
+            "instructions": 47015,
+            "fraction": 0.02522044757912671
+          }
+        ],
+        "memory": {
+          "sourceReads": 76899,
+          "sourceWrites": 42607,
+          "explicitLocalReads": 1859366,
+          "indirectLocalReads": 2823,
+          "indirectLocalWrites": 1074,
+          "scope": "executed source opcodes and case-specific operand reads; excludes VM control/instruction fetch/stack/guard and native macro memory"
+        }
+      }
+    }
+  ],
+  "decision": "Keep the four-macro native baseline. The optional fifth macro lowers HOST core instructions but increases fixed command count. Investigate the already source-bound rc_num_eval-only intrinsic separately before any native adoption."
+}

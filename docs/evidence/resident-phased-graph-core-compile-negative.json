@@ -1,0 +1,59 @@
+{
+  "kind": "resident-phased-graph-core-compile-negative-v1",
+  "sourceHead": "b2e114efecaf2b24e2b5522b278c92597c1c13c9",
+  "payloadSha256": "df64ed8c3d921a0442f084c4c1211d5597b7ca10d3c04ac635ee964bc273ff90",
+  "shaderSha256": "fc7d4b912d3ddd72b801f5749531084a94c8a7169e07eaf29972521aac598fe4",
+  "shaderBytes": 58822,
+  "adapter": {
+    "vendor": "google",
+    "architecture": "swiftshader",
+    "device": "swiftshader-device-subzero-",
+    "description": "SwiftShader driver 5.0.0",
+    "isFallbackAdapter": true
+  },
+  "work": {
+    "pipelines": 1,
+    "entryPoint": "main",
+    "bindings": 8,
+    "candidateCount": 2,
+    "workgroupSize": 1,
+    "instructionBudget": 65536,
+    "initialUploads": 0,
+    "computeDispatches": 0,
+    "mappings": 0
+  },
+  "preflight": "pass-zero-errors",
+  "lastPhase": "createComputePipelineAsync main",
+  "terminal": {
+    "stage": "owned-compile-child-terminal",
+    "returncode": -9,
+    "signal": 9,
+    "wallSeconds": 32.626075590989785,
+    "maxRssKiB": 1924332,
+    "userSeconds": 63.412758,
+    "systemSeconds": 2.9565479999999997,
+    "supervisorInterruption": null,
+    "computeDispatchesAuthorized": 0
+  },
+  "terminalReceiptSha256": "79c6d01241181d0fb9e9d2cb690c4825147cde379fba24ffd11bfeb0cb299bde",
+  "execution": {
+    "allocatedBuffers": 0,
+    "initialUploads": 0,
+    "computeDispatches": 0,
+    "mappings": 0
+  },
+  "interpretation": {
+    "nativeCompilationQualified": false,
+    "numericalFailure": false,
+    "oomCauseProven": false,
+    "hardwarePerformance": false,
+    "profileAdopted": false
+  },
+  "fullWorldHost": {
+    "status": "incomplete-wall-cap",
+    "wallCapMs": 240000,
+    "numericalMismatchReported": false,
+    "workCountsAvailable": false
+  },
+  "next": "No identical retry or further long nested-HOST run. Preserve proven separate-macro baseline and measure optional fifth macro independently."
+}

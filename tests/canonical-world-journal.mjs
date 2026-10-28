@@ -1,0 +1,42 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {pathToFileURL} from 'node:url';
+import {createWorldJournalCPU,createWorldJournalGPU,inspectWorldJournal,validateWorldJournalAux} from '../src/direct-candidate/canonical-world-journal.mjs';
+function fixture(){const world=new Uint32Array(192);world.set([0x50575201,77,4,100,1,1,2,0,42,9]);const initial=new Uint32Array(256);initial.set([77,1,0,4,0,100,0xffffffff,0]);initial[41]=42;initial[42]=9;for(let i=0;i<4;i++){world[32+40*i]=10+i;initial[64+48*i]=10+i;}const pair=initial.slice();pair[5]=200;pair[6]=2;pair[45]=1;pair[46]=200;const land=pair.slice();land[5]=300;land[6]=0xffffffff;land[21]=1;land[22]=2;land[23]=300;const rest=land.slice();rest[5]=400;rest[1]=9;return {world,initial,pair,land,rest};}
+const cases=[];function check(name,mutate,expected,capacity=128){const p=fixture(),frames=mutate(p),journal=createWorldJournalCPU(p.world,{capacity});for(let i=0;i<frames.length;i++)journal.capture(frames[i],{final:i===frames.length-1});const view=inspectWorldJournal(journal.words,journal.auxWords);cases.push({name,world:p.world,frames,capacity,words:journal.words.slice(),auxWords:journal.auxWords.slice()});assert.equal(view.complete,expected,name);return view;}
+test('bounded actual-commit recorder distinguishes continuation interval from whole shot',()=>{const r=check('pair landing rest',p=>[p.initial,p.pair,p.land,p.rest],true);assert.deepEqual(r.events.map(x=>Array.from(x)),[[1,0,2,0,200,1,1,0],[5,2,0,0,300,2,1,0],[6,15,15,1,400,3,1,0]]);assert.equal(r.wholeShotOriginBound,false);assert.equal(r.kissCoverage,false);assert.equal(r.startingTick,100);assert.equal(r.endingTick,400);});
+test('missing capture, ambiguous order, stale identities, nonrest and capacity cannot fabricate complete journal',()=>{
+ check('missing pair stage',p=>[p.initial,p.land,p.rest],false);
+ check('missed two pairs',p=>{p.pair[45]=2;return [p.initial,p.pair,p.rest];},false);
+ check('missing pair slot',p=>{p.pair[6]=0xffffffff;return [p.initial,p.pair,p.rest];},false);
+ check('pair self collision',p=>{p.pair[6]=5;return [p.initial,p.pair,p.rest];},false);
+ check('invalid landing slot',p=>{p.land[22]=4;return [p.initial,p.pair,p.land,p.rest];},false);
+ check('stale pair time',p=>{p.pair[46]--;return [p.initial,p.pair,p.rest];},false);
+ check('stale landing time',p=>{p.land[23]--;return [p.initial,p.pair,p.land,p.rest];},false);
+ for(const field of [0,3,41,42,44,64])check('identity '+field,p=>{p.pair[field]++;return [p.initial,p.pair,p.rest];},false);
+ check('clock regressed',p=>{p.pair[5]=99;return [p.initial,p.pair,p.rest];},false);
+ check('moving body at rest',p=>{p.rest[64+27]=1;return [p.initial,p.pair,p.land,p.rest];},false);
+ check('nonrest mode',p=>{p.rest[64+40]=3;return [p.initial,p.pair,p.land,p.rest];},false);
+ check('unresolved pair at rest',p=>{p.rest[6]=2;return [p.initial,p.pair,p.land,p.rest];},false);
+ check('event overflow',p=>[p.initial,p.pair,p.land,p.rest],false,1);
+ const budget=check('work budget',p=>{p.rest[1]=5;return [p.initial,p.pair,p.land,p.rest];},false);assert.equal(budget.events.at(-1)[0],7);
+ const pending=check('unresolved',p=>{p.rest[1]=7;return [p.initial,p.pair,p.land,p.rest];},false);assert.equal(pending.events.at(-1)[0],10);
+ check('already rest',p=>{p.initial[1]=9;return [p.initial];},true);
+});
+test('every committed all-body episode is retained without presentation debounce',()=>{const view=check('repeated all-body pair episodes',p=>{const a=p.pair.slice(),b=p.pair.slice(),c=p.pair.slice(),end=p.rest.slice();a[6]=6;a[5]=a[46]=200;b[6]=3;b[45]=2;b[5]=b[46]=201;c[6]=1;c[45]=3;c[5]=c[46]=202;end[21]=0;end[45]=3;end[5]=203;return [p.initial,a,b,c,end];},true);assert.deepEqual(view.events.map(e=>Array.from(e.slice(0,5))),[[1,1,2,0,200],[1,0,3,0,201],[1,0,1,0,202],[6,15,15,1,203]]);});
+test('recorder does not duplicate snapshots or restart an incomplete journal',()=>{const p=fixture(),j=createWorldJournalCPU(p.world);j.capture(p.pair);j.capture(p.pair);assert.equal(j.words[3],1);j.capture(p.land);j.capture(p.rest,{final:true});const terminal=j.words.slice();j.capture(p.pair);assert.deepEqual(j.words,terminal);assert.throws(()=>createWorldJournalCPU(p.world,{capacity:0}));assert.throws(()=>j.capture(new Uint32Array(255)));});
+test('composite cloth episodes retain exact physical impact metadata and reject missing or corrupt sidecars',()=>{
+ const view=check('composite valid',p=>{p.land[51]=1;p.land[53]=3;p.land[54]=299;p.land[55]=300;p.land[58]=14;p.land[59]=164583260;return [p.initial,p.pair,p.land,p.rest];},true);
+ assert.equal(view.events[1][0],5);assert.equal(view.events[1][3],1);const valid=cases.at(-1);assert.equal(validateWorldJournalAux(valid.words,null),false);assert.equal(inspectWorldJournal(valid.words).complete,false);
+ for(const field of[0,1,2,3,4,5,6,7]){const aux=valid.auxWords.slice();aux[8+field]=field===3?3:0;assert.equal(validateWorldJournalAux(valid.words,aux),false,'sidecar field '+field);}
+ for(const [field,value]of[[51,2],[53,0],[53,129],[54,298],[55,301],[58,0],[58,2],[58,3],[58,32514],[59,0],[59,268435457]])check('invalid composite '+field+'/'+value,p=>{p.land[51]=1;p.land[53]=3;p.land[54]=299;p.land[55]=300;p.land[58]=14;p.land[59]=164583260;p.land[field]=value;return[p.initial,p.pair,p.land,p.rest];},false);
+ check('composite before prior event',p=>{p.land[51]=1;p.land[53]=128;p.land[54]=299;p.land[55]=300;p.land[58]=32512;p.land[59]=268435456;p.pair[5]=p.pair[46]=290;return[p.initial,p.pair,p.land,p.rest];},false);
+});
+test('actual cushion snapshots retain rail identity before release and pending failure',()=>{
+ function cushion(p,rail=1,body=0){const hit=p.initial.slice();hit[5]=180;hit[61]=1;hit[62]=180;hit[63]=body*8+rail;return hit;}
+ for(let rail=1;rail<=4;rail++){const r=check('cushion rail '+rail,p=>{const hit=cushion(p,rail,rail-1),rest=hit.slice();rest[5]=400;rest[1]=9;return[p.initial,hit,hit,rest];},true);assert.deepEqual(Array.from(r.events[0]),[2,rail-1,rail,0,180,1,1,0]);assert.equal(r.events.length,2);}
+ const pending=check('impact then failed release',p=>{const hit=cushion(p),end=hit.slice();end[1]=7;end[2]=88;return[p.initial,hit,end];},false);assert.equal(pending.events[0][0],2);assert.equal(pending.events[1][0],10);
+ for(const [field,value]of[[61,2],[62,179],[63,0],[63,5],[63,33]])check('bad cushion '+field+'/'+value,p=>{const hit=cushion(p);hit[field]=value;return[p.initial,hit];},false);
+ check('ambiguous cushion pair',p=>{p.pair[61]=1;p.pair[62]=p.pair[5];p.pair[63]=1;return[p.initial,p.pair];},false);
+ check('missed impact clock',p=>{const hit=cushion(p);hit[5]++;return[p.initial,hit];},false);
+ check('cushion counter regressed',p=>{const hit=cushion(p),end=hit.slice();end[61]=0;return[p.initial,hit,end];},false);
+});
+test('native resident recorder matches CPU including overflow and terminal guards',{skip:process.env.REQUIRE_WEBGPU!=='1',timeout:60000},async t=>{const {create,globals}=await import(pathToFileURL(process.env.GPU_NATIVE_MODULE).href);Object.assign(globalThis,globals);const gpu=create(['backend=vulkan']),adapter=await gpu.requestAdapter(),device=await adapter.requestDevice();let words=0;try{const engine=await createWorldJournalGPU(device);for(const c of cases){const input=device.createBuffer({size:768,usage:128|8}),states=c.frames.map(()=>device.createBuffer({size:1024,usage:128|8})),bank=engine.createBank(input,{capacity:c.capacity}),read=device.createBuffer({size:bank.byteLength+bank.auxByteLength,usage:1|8});try{device.queue.writeBuffer(input,0,c.world);states.forEach((buffer,i)=>device.queue.writeBuffer(buffer,0,c.frames[i]));const encoder=device.createCommandEncoder();bank.encodeInitialize(encoder);states.forEach((buffer,i)=>bank.encodeCapture(encoder,buffer,{final:i===states.length-1}));encoder.copyBufferToBuffer(bank.buffer,0,read,0,bank.byteLength);encoder.copyBufferToBuffer(bank.auxBuffer,0,read,bank.byteLength,bank.auxByteLength);device.queue.submit([encoder.finish()]);await device.queue.onSubmittedWorkDone();await read.mapAsync(1);const actual=new Uint32Array(read.getMappedRange()).slice();read.unmap();assert.deepEqual(actual,Uint32Array.from([...c.words,...c.auxWords]),c.name);words+=actual.length;}finally{input.destroy();states.forEach(x=>x.destroy());bank.destroy();read.destroy();}}t.diagnostic(JSON.stringify({cases:cases.length,words,exact:true,physicalFixtures:false,wholeShot:false}));}finally{device.destroy();}});

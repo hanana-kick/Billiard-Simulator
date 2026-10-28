@@ -1,0 +1,2 @@
+023e3349ce3a94b712ce5367f496b65d55c80a94269b23997f7db17445fb4375  src/direct-candidate/deterministic-raw-strike.mjs
+0fca3fa7592d7da78b03ec96a0b98f663a9efa7f77dbccb127620b1aa536b2dd  tests/deterministic-raw-strike.mjs

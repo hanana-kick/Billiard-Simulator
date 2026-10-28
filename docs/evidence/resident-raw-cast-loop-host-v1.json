@@ -1,0 +1,388 @@
+{
+  "kind": "resident-raw-cast-loop-host-evidence-v1",
+  "gpuExecuted": false,
+  "productionLoopEnabled": false,
+  "nativeCompilationQualified": false,
+  "arbitraryMalformedMetadataEquivalent": false,
+  "physicalH": 0,
+  "reports": [
+    {
+      "artifactName": "row219-pilot-v2.json",
+      "artifactSha256": "d74a44c9f60958ff71074414bf40090d6b7252364eba5dd783b1ee0a02440fdc",
+      "artifactBytes": 44977,
+      "captureCount": 60,
+      "activeCaptures": [],
+      "status": "pass",
+      "sourceArtifactSha256": "11f41cd9c11ff47911f14afc084b27f32a15fc69db1f26d7970eb864f35f2262",
+      "sourceIdentity": "a93473fceb1da27bb580a2981d3e536057eb30856e49d64405ad2b96f8b51e0f",
+      "preStrikeIdentity": "2d5a2cbf1b7dc481cb90a19de8fa5cee7ea389c7dbbede645324afbcb87279c8",
+      "row": {
+        "id": 219,
+        "settings": {
+          "angle": 310,
+          "elevation": 85,
+          "speed": 4.5,
+          "tipX": 0.2,
+          "tipY": -0.1
+        }
+      },
+      "bounds": {
+        "maxMilliseconds": 120000,
+        "maxInstructions": 200000000
+      },
+      "layout": {
+        "registers": 0,
+        "programControl": 1790,
+        "raw": 1802,
+        "clearance": 1930,
+        "query": 1946,
+        "output": 1978,
+        "metadata": 1994,
+        "stateWords": 2010,
+        "scratchWords": 13632
+      },
+      "initialHashes": [
+        "c144ba3382068429b845688c22b0081551ff78acaafb21dd2475402a8abd3472",
+        "d23b4933f398f9fd60f078ce0501b1406108ac362fe29e263404fdd158de9878",
+        "ef4037fcc79e2d1e3a1e13acffb8501e28e9722331b4f463b0e2d2f09f940c92",
+        "77c8e8ef1ed3653204600072a73ca32574f0f6c458f1df5bde2171618cc5daf4",
+        "6b12491afcf8f193125a488bdc24fc81ee8695677afd0c29c9b2048b3927e689"
+      ],
+      "stageIdentities": {
+        "raw-init": {
+          "sourceSha256": "416a99e2cedecacbec21fa253cc146b3288e363a7148f465c941169d84d376a3",
+          "bytecodeSha256": "987d93bfdf9cfb37175240685f86cb6bf1eb18e2f9161214193196ee753a4db1",
+          "instructions": 281,
+          "locals": 242
+        },
+        "raw-step": {
+          "sourceSha256": "0155d0338ef9544f886d63bad37f316f4675c0e3f70ae3bc2258de1654971bcc",
+          "bytecodeSha256": "bdba71155212c7ed38e9c4a553fdf8d1e1699ea4f39d3ba4571f4e8982d7b91f",
+          "instructions": 2246,
+          "locals": 977
+        },
+        "raw-finish": {
+          "sourceSha256": "130c012adb4ed5946843b3565fcc3b6a9a6ee1be5e48d4f0b7f12804ebc1849c",
+          "bytecodeSha256": "82cac979e3c76be7711a529f7d9477fa04fee34f69790dfba66259df96fe92df",
+          "instructions": 1016,
+          "locals": 607
+        },
+        "contact-init": {
+          "sourceSha256": "b44186841cea87116a8e8f737aea577b1fc074a2bd6dd4a15d4269ea99c3096e",
+          "bytecodeSha256": "aaa04bbc0cb378bdebcaf01c1ae2983a1b1704dc58f3e9d427934d0925e682f3",
+          "instructions": 14101,
+          "locals": 2346
+        },
+        "contact-gjk": {
+          "sourceSha256": "cc620d8c5c157d55299152448808e9b82c58a4c54911d899f59c56da10b91c46",
+          "bytecodeSha256": "b5b54a9da16245c1a5a069edc2884ebfb1f1a5b25a29cf5116e800552d7d997c",
+          "instructions": 14127,
+          "locals": 2207
+        },
+        "contact-epa": {
+          "sourceSha256": "17f5acfe42ab9dd39cf532dc51750e585292ae15d5d3e8e5ec2f9164070ab86e",
+          "bytecodeSha256": "64f40c375611276837b3b8ab683416ca5e93b845ade3fe7caa655ffb6cbae681",
+          "instructions": 12376,
+          "locals": 2262
+        },
+        "contact-finish": {
+          "sourceSha256": "e021ca95bcaa54f4b85364ce27a7c3863ffec6da43a25e2df033d5521e6e4fce",
+          "bytecodeSha256": "2ff5e47d45deabf385f363bacf0a7c1b7b80c042acea670d45f9ba4fde8d9e27",
+          "instructions": 2477,
+          "locals": 534
+        },
+        "cast-init": {
+          "sourceSha256": "83ad898dd098a5ad5fcf6964decb723036231515b43db860c787a53336701dec",
+          "bytecodeSha256": "15622fc2e53ad863c5002b29a4bcbcd1c159192bafcf1483bca1986ae523725e",
+          "instructions": 7314,
+          "locals": 2375
+        },
+        "cast-cast": {
+          "sourceSha256": "8c24b3b449b7158e28e71b6d646915fa12c141d9fed14db9497b3c58dd3246f0",
+          "bytecodeSha256": "beac6238026ff6c7bfac5a7ab7634199d05c7a61293f62b000dae1a582305410",
+          "instructions": 7487,
+          "locals": 2302
+        },
+        "cast-contact-init": {
+          "sourceSha256": "928a22d535a6702cbef1c6f44b4de6138e6bf30a31ff03f35611f54d95fbb675",
+          "bytecodeSha256": "a5078897cad8958dc83d098599e6c6d1d3caccfd91583261efb25e516c6c5340",
+          "instructions": 6602,
+          "locals": 2108
+        },
+        "cast-contact-gjk": {
+          "sourceSha256": "f873d0259c2c4dce9659b1c427bff6ebb458f416c269156940181c78fe3392f3",
+          "bytecodeSha256": "62a2c17434b1bb3aeffc14f8a9feaa363544434955168697206d4a1973dea3a1",
+          "instructions": 7207,
+          "locals": 2147
+        },
+        "cast-contact-epa": {
+          "sourceSha256": "20ed52a29d1e1be659067d114627231b87030bdabbd13229509e8b2cf679f17b",
+          "bytecodeSha256": "1d25fdd7940accc042ac22d40b9af35b179c5785405c811cdfa707ba05716cda",
+          "instructions": 6287,
+          "locals": 2165
+        },
+        "cast-finish": {
+          "sourceSha256": "0cb4f75bc9b0664abc4b5079e5344d6324fd976fa3537e416f982fa4744276ba",
+          "bytecodeSha256": "d58caa6186d0b79291c4b949b3926458a1f9a1e1d008dbac65635900e2acc9fb",
+          "instructions": 1413,
+          "locals": 439
+        },
+        "cast-contact-gjk-loop": {
+          "sourceSha256": "acd9d20589429451d18d1a161270c63b434cdbcdc444f9eb273ad6b34aeff137",
+          "bytecodeSha256": "a52e32e16be98d9c04f634fe23459146b1b69925946d135f5532767b897668f6",
+          "instructions": 7262,
+          "locals": 2185
+        }
+      },
+      "sourceInstructions": 75648110,
+      "loopInstructions": 10199,
+      "sourceDispatches": 68361,
+      "loopDispatches": 60,
+      "activeFallbacks": 0,
+      "activeNonterminalFallbacks": 0,
+      "terminalNoopRemainders": 60,
+      "completedPairs": 60,
+      "finalHashes": [
+        "8a2a599b703a305353078f4332f6269f1c416903d372324b38b66ed444a8e8f8",
+        "d23b4933f398f9fd60f078ce0501b1406108ac362fe29e263404fdd158de9878",
+        "ef4037fcc79e2d1e3a1e13acffb8501e28e9722331b4f463b0e2d2f09f940c92",
+        "7e74c3340f5cad37aa198936db2f5405943e4d8a399a36db178e095a7075f64f",
+        "6b12491afcf8f193125a488bdc24fc81ee8695677afd0c29c9b2048b3927e689"
+      ],
+      "rawStatus": 1,
+      "clearance": [
+        1,
+        60,
+        0,
+        17,
+        1073741824,
+        1065799734,
+        2576980378,
+        1069128089,
+        0,
+        4294967295,
+        177,
+        59,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "artifactName": "row421-pilot-v1.json",
+      "artifactSha256": "494ec9cfef9e55ed0038164854a66be99d3380fdbb182637200eeee673c1a912",
+      "artifactBytes": 44968,
+      "captureCount": 60,
+      "activeCaptures": [
+        {
+          "pair": 9,
+          "clearanceActive": true,
+          "fallback": true,
+          "initialScratchStatus": 0,
+          "finalScratchStatus": 1073741824,
+          "sourceBound": 256,
+          "firstTerminal": 4,
+          "sourceStateSha256Before": "399d12837eced93a021eb892e4802d91c56df52def465d596d82c6cc2b4a3c47",
+          "sourceScratchSha256Before": "01de02b394a23c768f775d77bc161d51ab311ccdf8d850f0d83fee4e6a6442ef",
+          "sourceStateSha256After": "399d12837eced93a021eb892e4802d91c56df52def465d596d82c6cc2b4a3c47",
+          "sourceScratchSha256After": "3d2ced2324178c31036030a89e3acc813d8b9afbf4239deaed919212459c7f83",
+          "allFiveBindingsExact": true
+        },
+        {
+          "pair": 10,
+          "clearanceActive": true,
+          "fallback": true,
+          "initialScratchStatus": 0,
+          "finalScratchStatus": 1073741824,
+          "sourceBound": 256,
+          "firstTerminal": 4,
+          "sourceStateSha256Before": "6c3582129b0cdf7ee3eb1895556eb7432b46cab918463da7b9fe76a069a99470",
+          "sourceScratchSha256Before": "b987c98f0234ddfc145fec637723d0516f12cbe5693bbbf2da9fadfc0abfe3ba",
+          "sourceStateSha256After": "6c3582129b0cdf7ee3eb1895556eb7432b46cab918463da7b9fe76a069a99470",
+          "sourceScratchSha256After": "b87002dfe5f80800ffce3f01d9521416c6098d9541394217b24888bf80243c14",
+          "allFiveBindingsExact": true
+        },
+        {
+          "pair": 13,
+          "clearanceActive": true,
+          "fallback": true,
+          "initialScratchStatus": 0,
+          "finalScratchStatus": 1073741824,
+          "sourceBound": 256,
+          "firstTerminal": 3,
+          "sourceStateSha256Before": "cbe057c79b70509d50cd74c42c1e4e75d7f37c2ac259677be92372fcc37c60ad",
+          "sourceScratchSha256Before": "a805213fc8e5f2eaf65cfe6032712c25c0fdcb96fad0a000f9fd721fead740aa",
+          "sourceStateSha256After": "cbe057c79b70509d50cd74c42c1e4e75d7f37c2ac259677be92372fcc37c60ad",
+          "sourceScratchSha256After": "72575772673be8ac2911b3c0928a32629438c0893f4407339364ee971f820afe",
+          "allFiveBindingsExact": true
+        }
+      ],
+      "status": "pass",
+      "sourceArtifactSha256": "11f41cd9c11ff47911f14afc084b27f32a15fc69db1f26d7970eb864f35f2262",
+      "sourceIdentity": "a93473fceb1da27bb580a2981d3e536057eb30856e49d64405ad2b96f8b51e0f",
+      "preStrikeIdentity": "2d5a2cbf1b7dc481cb90a19de8fa5cee7ea389c7dbbede645324afbcb87279c8",
+      "row": {
+        "id": 421,
+        "settings": {
+          "angle": 180,
+          "elevation": 8,
+          "speed": 2,
+          "tipX": 0,
+          "tipY": 0
+        }
+      },
+      "bounds": {
+        "maxMilliseconds": 120000,
+        "maxInstructions": 200000000
+      },
+      "layout": {
+        "registers": 0,
+        "programControl": 1790,
+        "raw": 1802,
+        "clearance": 1930,
+        "query": 1946,
+        "output": 1978,
+        "metadata": 1994,
+        "stateWords": 2010,
+        "scratchWords": 13632
+      },
+      "initialHashes": [
+        "c144ba3382068429b845688c22b0081551ff78acaafb21dd2475402a8abd3472",
+        "d23b4933f398f9fd60f078ce0501b1406108ac362fe29e263404fdd158de9878",
+        "ef4037fcc79e2d1e3a1e13acffb8501e28e9722331b4f463b0e2d2f09f940c92",
+        "77c8e8ef1ed3653204600072a73ca32574f0f6c458f1df5bde2171618cc5daf4",
+        "808bc2fabeb7a8207bf218adeea4d02b1954419f90aa2bf891fddeb4cdeb1711"
+      ],
+      "stageIdentities": {
+        "raw-init": {
+          "sourceSha256": "416a99e2cedecacbec21fa253cc146b3288e363a7148f465c941169d84d376a3",
+          "bytecodeSha256": "987d93bfdf9cfb37175240685f86cb6bf1eb18e2f9161214193196ee753a4db1",
+          "instructions": 281,
+          "locals": 242
+        },
+        "raw-step": {
+          "sourceSha256": "0155d0338ef9544f886d63bad37f316f4675c0e3f70ae3bc2258de1654971bcc",
+          "bytecodeSha256": "bdba71155212c7ed38e9c4a553fdf8d1e1699ea4f39d3ba4571f4e8982d7b91f",
+          "instructions": 2246,
+          "locals": 977
+        },
+        "raw-finish": {
+          "sourceSha256": "130c012adb4ed5946843b3565fcc3b6a9a6ee1be5e48d4f0b7f12804ebc1849c",
+          "bytecodeSha256": "82cac979e3c76be7711a529f7d9477fa04fee34f69790dfba66259df96fe92df",
+          "instructions": 1016,
+          "locals": 607
+        },
+        "contact-init": {
+          "sourceSha256": "b44186841cea87116a8e8f737aea577b1fc074a2bd6dd4a15d4269ea99c3096e",
+          "bytecodeSha256": "aaa04bbc0cb378bdebcaf01c1ae2983a1b1704dc58f3e9d427934d0925e682f3",
+          "instructions": 14101,
+          "locals": 2346
+        },
+        "contact-gjk": {
+          "sourceSha256": "cc620d8c5c157d55299152448808e9b82c58a4c54911d899f59c56da10b91c46",
+          "bytecodeSha256": "b5b54a9da16245c1a5a069edc2884ebfb1f1a5b25a29cf5116e800552d7d997c",
+          "instructions": 14127,
+          "locals": 2207
+        },
+        "contact-epa": {
+          "sourceSha256": "17f5acfe42ab9dd39cf532dc51750e585292ae15d5d3e8e5ec2f9164070ab86e",
+          "bytecodeSha256": "64f40c375611276837b3b8ab683416ca5e93b845ade3fe7caa655ffb6cbae681",
+          "instructions": 12376,
+          "locals": 2262
+        },
+        "contact-finish": {
+          "sourceSha256": "e021ca95bcaa54f4b85364ce27a7c3863ffec6da43a25e2df033d5521e6e4fce",
+          "bytecodeSha256": "2ff5e47d45deabf385f363bacf0a7c1b7b80c042acea670d45f9ba4fde8d9e27",
+          "instructions": 2477,
+          "locals": 534
+        },
+        "cast-init": {
+          "sourceSha256": "83ad898dd098a5ad5fcf6964decb723036231515b43db860c787a53336701dec",
+          "bytecodeSha256": "15622fc2e53ad863c5002b29a4bcbcd1c159192bafcf1483bca1986ae523725e",
+          "instructions": 7314,
+          "locals": 2375
+        },
+        "cast-cast": {
+          "sourceSha256": "8c24b3b449b7158e28e71b6d646915fa12c141d9fed14db9497b3c58dd3246f0",
+          "bytecodeSha256": "beac6238026ff6c7bfac5a7ab7634199d05c7a61293f62b000dae1a582305410",
+          "instructions": 7487,
+          "locals": 2302
+        },
+        "cast-contact-init": {
+          "sourceSha256": "928a22d535a6702cbef1c6f44b4de6138e6bf30a31ff03f35611f54d95fbb675",
+          "bytecodeSha256": "a5078897cad8958dc83d098599e6c6d1d3caccfd91583261efb25e516c6c5340",
+          "instructions": 6602,
+          "locals": 2108
+        },
+        "cast-contact-gjk": {
+          "sourceSha256": "f873d0259c2c4dce9659b1c427bff6ebb458f416c269156940181c78fe3392f3",
+          "bytecodeSha256": "62a2c17434b1bb3aeffc14f8a9feaa363544434955168697206d4a1973dea3a1",
+          "instructions": 7207,
+          "locals": 2147
+        },
+        "cast-contact-epa": {
+          "sourceSha256": "20ed52a29d1e1be659067d114627231b87030bdabbd13229509e8b2cf679f17b",
+          "bytecodeSha256": "1d25fdd7940accc042ac22d40b9af35b179c5785405c811cdfa707ba05716cda",
+          "instructions": 6287,
+          "locals": 2165
+        },
+        "cast-finish": {
+          "sourceSha256": "0cb4f75bc9b0664abc4b5079e5344d6324fd976fa3537e416f982fa4744276ba",
+          "bytecodeSha256": "d58caa6186d0b79291c4b949b3926458a1f9a1e1d008dbac65635900e2acc9fb",
+          "instructions": 1413,
+          "locals": 439
+        },
+        "cast-contact-gjk-loop": {
+          "sourceSha256": "acd9d20589429451d18d1a161270c63b434cdbcdc444f9eb273ad6b34aeff137",
+          "bytecodeSha256": "a52e32e16be98d9c04f634fe23459146b1b69925946d135f5532767b897668f6",
+          "instructions": 7262,
+          "locals": 2185
+        }
+      },
+      "sourceInstructions": 79034276,
+      "loopInstructions": 155756,
+      "sourceDispatches": 68361,
+      "loopDispatches": 60,
+      "activeFallbacks": 3,
+      "activeNonterminalFallbacks": 3,
+      "terminalNoopRemainders": 60,
+      "completedPairs": 60,
+      "finalHashes": [
+        "577c366ddf2907a5583a8fe791ff2907719f11d9b8de83c99d9170254eac5228",
+        "d23b4933f398f9fd60f078ce0501b1406108ac362fe29e263404fdd158de9878",
+        "ef4037fcc79e2d1e3a1e13acffb8501e28e9722331b4f463b0e2d2f09f940c92",
+        "6ef960162efb5cf8957e5b07bfb24bc20825915da29994dd0598a6fa5ca894e7",
+        "808bc2fabeb7a8207bf218adeea4d02b1954419f90aa2bf891fddeb4cdeb1711"
+      ],
+      "rawStatus": 1,
+      "clearance": [
+        2,
+        60,
+        0,
+        17,
+        3221225472,
+        3214552325,
+        2576980378,
+        1069128089,
+        1,
+        3,
+        177,
+        59,
+        3,
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "assertionGroups": 2,
+  "failureHistory": [
+    {
+      "artifact": "row219-pilot.log",
+      "scope": "test input projection before compilation/execution",
+      "error": "Candidate requires exactly id, settings",
+      "recovery": "project fixture metadata to exact id/settings; source and parameter values unchanged"
+    }
+  ]
+}

@@ -1,0 +1,324 @@
+{
+  "kind": "resident-preparation-component-host-preparation-v1",
+  "status": "pass",
+  "inputSha256": "58236191ca257eee9071c2158a1b18a11a13fe4203dee58d710959e83fb479a0",
+  "inputBytes": 10801139,
+  "assertionSha256": "9ba7996d7772ba400b1f9a22756cfdd0867c4761e2ed31aa3119819dc995f66e",
+  "assertionBytes": 10911023,
+  "sourceSha256": "5a18bbbbd646454f2e00f7b1422773b2851b64d5ff165626f2a9f835ff86c0e7",
+  "selection": {
+    "method": "max-source-writes-earliest-tie",
+    "kinds": {
+      "1": {
+        "ordinal": 1,
+        "reads": 20,
+        "writes": 42,
+        "ready": false,
+        "calls": 26,
+        "readyCalls": 0
+      },
+      "2": {
+        "ordinal": 18,
+        "reads": 20,
+        "writes": 62,
+        "ready": false,
+        "calls": 26,
+        "readyCalls": 0
+      },
+      "3": {
+        "ordinal": 43,
+        "reads": 20,
+        "writes": 64,
+        "ready": false,
+        "calls": 26,
+        "readyCalls": 0
+      },
+      "4": {
+        "ordinal": 4,
+        "reads": 12,
+        "writes": 34,
+        "ready": false,
+        "calls": 26,
+        "readyCalls": 0
+      },
+      "5": {
+        "ordinal": 105,
+        "reads": 164,
+        "writes": 188,
+        "ready": true,
+        "calls": 56,
+        "readyCalls": 55
+      },
+      "6": {
+        "ordinal": 106,
+        "reads": 9,
+        "writes": 35,
+        "ready": false,
+        "calls": 56,
+        "readyCalls": 0
+      }
+    }
+  },
+  "descriptor": {
+    "kind": "source-geometry-preparation-descriptor-v1",
+    "profile": "source-geometry-preparation-count2-v1",
+    "name": "rc_geometry_numeric_prepare",
+    "opcode": "GEOMETRY_NUMERIC_PREPARE",
+    "parameterWords": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "resultWords": 1,
+    "family": "preparation",
+    "layout": {
+      "count": 2,
+      "bankWords": 62976,
+      "requestBase": 127128,
+      "requestWords": 24,
+      "scratchWords": 13632,
+      "stateWords": 127176,
+      "programWords": 874992,
+      "geometryWords": 25408,
+      "scratchBindingWords": 27264,
+      "numericProfile": "source-f32-preserved-v1",
+      "numericProfileCode": 2
+    },
+    "sourceSha256": "5a18bbbbd646454f2e00f7b1422773b2851b64d5ff165626f2a9f835ff86c0e7",
+    "nativeSourceSha256": "6e16f188778849dff8df7a37a51c160e758ef2747f3f8bc2a57ad48be8ebde45",
+    "signatureSha256": "355da04ddf7941045634b3aa775f25a4967c502d30a7c42bf955b7730117c415",
+    "bodySha256": "140d2cc1d12e3186123c5e554ec95aedf54433cceb461ffdc30c3a0e187b4118",
+    "dependencies": {
+      "rc_empty_fail": "3b52f64cb92bbc59b4a5baea3509f78dbeb0b8be9b69d6bce305c2f06fcc7c42",
+      "rc_geometry_numeric_prepare": "38b5782f564645a138ce4683de8c534b6a2d9a933a0ab536a5dbbd25887b4ad3",
+      "rc_gn_address": "72ed097c6575d9ba4e0b753a3778c6931dedcfb7e594b61fc9459ceb57c945de",
+      "rc_gn_fail": "d96c6174c6566ecf177e038767323833e4e4f2300dc8d99e7c3118d432796cf6",
+      "rc_gn_identity": "6a1b6a9000c421e21a8f53e7044748d2afd128c9f46fe46c62b71e6d5400103a",
+      "rc_gn_mark": "493ddfd7bbc89bace5552536ca6da6220acd45a0cb22e8db48e2cf5c473bb46c",
+      "rc_gn_prepare_rc_empty_cache_numeric": "d01933c86d75aba7ea88c7fb901651a1aeefe9fc2fc8ef52646ba581494bc336",
+      "rc_gn_prepare_rc_narrow_convex_finish": "725c90a186a8ba1b38c58e46dc89e88b1c30556427d76069b3eaee09e50b160a",
+      "rc_gn_prepare_rc_narrow_convex_prepare": "062f0cade38046e728e76358fbc9b2c0f4bdea9e46b15e9c415327e9f8fb0067",
+      "rc_gn_prepare_rc_narrow_floor": "799f9242d62c83b0d33afb007106183c90050df455c22658ae8162166df470e4",
+      "rc_gn_prepare_rc_narrow_pair": "0b3478efe5d85f097043eb6944274112e91adecc36ae000280079fa40f22537c",
+      "rc_gn_prepare_rc_world_cue_geometry_pose": "f0fadae88abea4c56a3f3de2c0afcfbf57164a65a4255dadeedc1667a505b746",
+      "rc_gn_source_result": "109d4e1ddc76087d5d11b914ec65fba9ee5ca065ae387c027f627ec07a192b86",
+      "rc_gn_span": "23bb738775b38679c0774a26e247801e3518c3ca72454465b1915c1cd96a425d",
+      "rc_narrow_convex_clear": "e8a92c9d2d60f2dd3bfba14b82a9e1488d29f93e8be75a99b5bfb0cfa8d1eef2",
+      "rc_narrow_copy_input": "dc849a3407fef060835105aa1ac881de7974e6d3a591f9ea9ac6106b17fd919c",
+      "rc_narrow_floor_clear_manifold": "faff71efeec43ffb4a0adb475efb2b9ce5248000e9fa5bfb7166d1ecd4091631",
+      "rc_narrow_floor_clear_point": "8ea65b08312681f73f18ebe620e7f3e2acd7e92fe5ab59be7c003af25a53e148",
+      "rc_narrow_pair_clear": "c3b5674e0e8f5d3e15775d2b0a71e96c284ab2c285b7632076063ef04a01a84c",
+      "rc_narrow_zero": "7118c826932b9e58871ea04e37032054c01da0cae329ad64bdee834757cee681",
+      "rc_wcg_cache": "bed94e1e76eb0033f4141efeae32762484011a07f36963f5f2699ca91dff20b2",
+      "rc_wcg_descriptor": "81596fc88e3e3f6a73d3446b3ad36838e8f400bde82dde14c8aec5afdcc96234",
+      "rc_wcg_fail": "e1055e681340c3a83adf8986916a806e9c804faf2cfbf8e9da6ab0bab13a3861",
+      "rc_world_geometry_fail": "a07aa81d129c07785909bde534b8aa3c1874ae522c872b865446b93d87dcd898",
+      "rc_world_geometry_point_ready": "83b16e752627009243ee1ff93bc05aea935d24528c055e12c3c51c5b359345f3",
+      "rc_world_geometry_ready": "da8fd8443f5f7a4cd7d50c3b852ebdac70883c08f344efa7880d6040702fe504",
+      "rc_world_geometry_row": "f48b9310aff3855bdfb0a86405a2a32a2db2dfff2bff8d6956e674cf2a62b2f1"
+    },
+    "closureSha256": "c16938d4ab763a09c65b13e077418a3dbda4ec937d8dd49ac9b29bc5d2f8f7ab",
+    "declarationsSha256": "1d949b3860415e9e098de1f12d4f3207845065cadc06533f8187ba88573e9eb8",
+    "layoutSha256": "1ac47e1e91b83bd3c867326dc71c828e8c80ac7046701e6d524ea7ef67590b6e",
+    "profileSha256": "4e5441b2d07f32013e4b25d743cf32b439d05366791655918ddd5c8fd1878411",
+    "storageBindingsSha256": "c93644aa633a2b11db2644b51acdaab59a735c02d40e191e74f6309c74233db0"
+  },
+  "bytecodeSha256": "58cf045ecb691ef5423e15795da74f72e1ef7fde32713d6f9324689632e7e2a7",
+  "instructions": 30,
+  "localWords": 23,
+  "callDepth": 2,
+  "vmWords": 82,
+  "shaderBytes": 49588,
+  "shaderSha256": "f881bcaee17ba61cd09c2f29d3e63767a1d24ce33d5c54068240ddf88114e0bf",
+  "cases": [
+    {
+      "index": 0,
+      "name": "kind-1",
+      "capturedKind": 1,
+      "capturedOrdinal": 1,
+      "args": [
+        0,
+        0,
+        127128,
+        27,
+        19,
+        1
+      ]
+    },
+    {
+      "index": 1,
+      "name": "kind-2",
+      "capturedKind": 2,
+      "capturedOrdinal": 18,
+      "args": [
+        0,
+        0,
+        127128,
+        28,
+        20,
+        2
+      ]
+    },
+    {
+      "index": 2,
+      "name": "kind-3",
+      "capturedKind": 3,
+      "capturedOrdinal": 43,
+      "args": [
+        0,
+        0,
+        127128,
+        29,
+        21,
+        3
+      ]
+    },
+    {
+      "index": 3,
+      "name": "kind-4",
+      "capturedKind": 4,
+      "capturedOrdinal": 4,
+      "args": [
+        0,
+        0,
+        127128,
+        36,
+        26,
+        4
+      ]
+    },
+    {
+      "index": 4,
+      "name": "kind-5",
+      "capturedKind": 5,
+      "capturedOrdinal": 105,
+      "args": [
+        0,
+        0,
+        127128,
+        46,
+        34,
+        5
+      ]
+    },
+    {
+      "index": 5,
+      "name": "kind-6",
+      "capturedKind": 6,
+      "capturedOrdinal": 106,
+      "args": [
+        0,
+        0,
+        127128,
+        55,
+        41,
+        6
+      ]
+    },
+    {
+      "index": 6,
+      "name": "source-negative-kind",
+      "capturedKind": 1,
+      "capturedOrdinal": 1,
+      "args": [
+        0,
+        0,
+        127128,
+        27,
+        19,
+        0
+      ]
+    },
+    {
+      "index": 7,
+      "name": "partial-geometry-read-fault",
+      "capturedKind": 5,
+      "capturedOrdinal": 105,
+      "args": [
+        0,
+        0,
+        127128,
+        46,
+        34,
+        5
+      ]
+    },
+    {
+      "index": 8,
+      "name": "cross-candidate-read-fault",
+      "capturedKind": 6,
+      "capturedOrdinal": 106,
+      "args": [
+        0,
+        0,
+        127128,
+        55,
+        41,
+        6
+      ]
+    },
+    {
+      "index": 9,
+      "name": "unsigned-bank-admission",
+      "capturedKind": 1,
+      "capturedOrdinal": 1,
+      "args": [
+        4294967295,
+        0,
+        127128,
+        27,
+        19,
+        1
+      ]
+    }
+  ],
+  "returns": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    4294967295,
+    null,
+    null,
+    null
+  ],
+  "statuses": [
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    3,
+    3,
+    4
+  ],
+  "errors": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    5,
+    5,
+    8
+  ],
+  "pipelines": 2,
+  "passes": 2,
+  "dispatchesPerCase": 3,
+  "totalDispatches": 60,
+  "totalMaps": 20,
+  "totalSubmissions": 20,
+  "expectedFilesRuntimeAuthority": false,
+  "gpuExecuted": false,
+  "componentOnly": true,
+  "rawWorldInput": false
+}

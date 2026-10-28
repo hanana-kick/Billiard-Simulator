@@ -1,0 +1,103 @@
+{
+  "kind": "resident-microcode-continuation-compile-diagnostic-v1",
+  "outcome": "failed-before-submission",
+  "codeCheckpoint": "b81bad2",
+  "adapter": {
+    "vendor": "google",
+    "architecture": "swiftshader",
+    "description": "SwiftShader driver 5.0.0",
+    "isFallbackAdapter": true
+  },
+  "resources": {
+    "command": [
+      "node",
+      "tests/resident-candidate-microcode-continuation-native.mjs"
+    ],
+    "cwd": "/workspace/scratch/f887f82f638e/billiard-resident-candidate-v1",
+    "timeout": null,
+    "directNodeNoTestChild": true,
+    "exitCode": null,
+    "signal": 9,
+    "rawReturnCode": -9,
+    "wallSeconds": 66.02374636298919,
+    "maxChildRssKiB": 2496340,
+    "samples": 33
+  },
+  "manifest": {
+    "sourceSha256": "2d0944de1a9e4ce1e6abf483e9285a7f18f4ed6e5931d3f04e8721eac24862ba",
+    "programSha256": "78ecb833913ba140407a2ad4721d788b8d8a94eb18ee808787b55ccda0662f09",
+    "shaderSha256": "e08e2a1010a54f48a06050bc238da1853462a455c4a5dc073602a9ff065c8c05",
+    "rows": 48,
+    "groups": 39,
+    "logicalCalls": 49,
+    "options": {
+      "count": 1,
+      "localWords": 23,
+      "stackCapacity": 2,
+      "instructionCount": 29,
+      "entryPc": 0,
+      "intrinsics": "source-continuations-v1",
+      "intrinsicFunctions": [
+        "rc_source_program_instruction",
+        "rc_num_cont_instruction"
+      ],
+      "workgroupSize": 64,
+      "instructionBudget": 1
+    },
+    "chunks": 128,
+    "shaderBytes": 48820,
+    "sourceCapsUnchanged": true,
+    "scope": "original continuation component, not whole world/strike/full-rest",
+    "futureSnapshotsUploaded": false,
+    "hardwarePerformance": false
+  },
+  "staticComparison": {
+    "rows": 48,
+    "groups": 39,
+    "logicalCalls": 49,
+    "names": [
+      "rc_source_program_instruction",
+      "rc_num_cont_instruction"
+    ],
+    "variants": [
+      {
+        "intrinsicFunctions": null,
+        "shaderBytes": 57615,
+        "helperBytes": 23786,
+        "helperFunctions": 48,
+        "nativeIntrinsicCalls": 17,
+        "shaderSha256": "c9875cb5d38a9f306e4c627bda9b90be31b7023c7a28369aff119e3fe51f95ba"
+      },
+      {
+        "intrinsicFunctions": [
+          "rc_source_program_instruction",
+          "rc_num_cont_instruction"
+        ],
+        "shaderBytes": 48820,
+        "helperBytes": 18598,
+        "helperFunctions": 47,
+        "nativeIntrinsicCalls": 2,
+        "shaderSha256": "e08e2a1010a54f48a06050bc238da1853462a455c4a5dc073602a9ff065c8c05"
+      }
+    ]
+  },
+  "preflightMs": 15.830617999999959,
+  "lastCompletedPhase": "begin-pipeline",
+  "lastStartedPhase": "main-pipeline",
+  "observedSignal": 9,
+  "oomProven": false,
+  "numericalResult": null,
+  "unchangedEarlierFailure": {
+    "exitCode": 1,
+    "wallSeconds": 55.075791627998115,
+    "maxChildRssKiB": 2489828,
+    "childSignalCaptured": false
+  },
+  "logs": {
+    "pruned": "/tmp/resident-microcode-continuation-native-pruned.log",
+    "resources": "/tmp/resident-microcode-continuation-native-pruned.resources",
+    "rss": "/tmp/resident-microcode-continuation-native-pruned.rss.jsonl",
+    "unfilteredArtifact": "/tmp/resident-microcode-continuation-native-unfiltered-artifact"
+  },
+  "scope": "Component compilation diagnosis only; no whole-world, strike, full-rest, 1024-lane or hardware-performance qualification."
+}

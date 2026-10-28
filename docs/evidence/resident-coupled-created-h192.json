@@ -1,0 +1,112 @@
+{
+  "kind": "resident-coupled-created-h192-evidence-v1",
+  "status": "pass",
+  "sourceHead": "8174eace67adcaf005ab79144bd89fd148461ade",
+  "artifactHashes": {
+    "coupled": "51df3ee40d56d9cd9b5c27637d93655e491d78800c0bbcc9d80235abf531c605",
+    "scalar": "c1013531a239adb273544bbf39e2840821131c89fb555f059416c67c2a0f051c",
+    "initial": "74c67de5efd476cbbe394678cfc927ac5ed6d70a3b38c5e24697dd735895eb75",
+    "expected": "c04be6c729651540a1993f0f4addbc7f4c1338851a5d141e5e107688e65e2b23"
+  },
+  "inputs": {
+    "createdT0": true,
+    "rawInput": false,
+    "rows": [
+      219,
+      522
+    ],
+    "frames": 192,
+    "physicalDtChanged": false,
+    "physicalQueryHorizonChanged": false,
+    "futureRuntimeInputs": false
+  },
+  "gates": {
+    "all11SourceGroups": true,
+    "nativePhysicsLabOuter": true,
+    "fullAcceptedEmissionTapeQualified": true,
+    "checkpoints": [
+      128,
+      192
+    ],
+    "acceptedEvents": 1,
+    "exactFinalBindings": [
+      {
+        "binding": 0,
+        "words": 127176,
+        "sha256": "65b4444a14e50668873d4df8cd5431517da45638be70da8832ec036a157448a1",
+        "exact": true
+      },
+      {
+        "binding": 1,
+        "words": 874992,
+        "sha256": "0e9d167032eff0534780b1406f118adb52a99eb82c21f7fad6ef6cee6926b0a5",
+        "exact": true
+      },
+      {
+        "binding": 2,
+        "words": 25408,
+        "sha256": "cc501878c2ad2005b2d49955dfc8d814a11ad992f44949be03345e880b973c05",
+        "exact": true
+      },
+      {
+        "binding": 3,
+        "words": 27264,
+        "sha256": "f6db87fb62862ee9c45542bc372e14fa65282bec06d2f539b829d989c5e8afde",
+        "exact": true
+      },
+      {
+        "binding": 4,
+        "words": 32,
+        "sha256": "baae8062e2022e0a96bac46b5077ceb008b6c5928acf35bc95e38bcd86e9bab6",
+        "exact": true
+      },
+      {
+        "binding": 5,
+        "words": 254024,
+        "sha256": "cbe3518b7027d6e494895262340f432097d6f747c49c5c0d469acae6180c8155",
+        "exact": true
+      }
+    ],
+    "vmLayoutRelocated": false
+  },
+  "observedHost": {
+    "totalPumps": 16529,
+    "acceptedCoreInstructions": 361168594,
+    "rejectedCoreInstructions": 2511,
+    "calls": {
+      "rc_cue_flat_advance": 768,
+      "rc_num_eval": 13309,
+      "rc_world_broad_commit_collision": 192,
+      "rc_coupled_transport_advance": 84
+    },
+    "wallMs": 1811152.089735,
+    "includesPrefix": true,
+    "macroCallbacksExecuteCanonicalScalarSource": true
+  },
+  "scheduleCounts": {
+    "priorPumps": 21457,
+    "currentPumps": 16529,
+    "priorCoreInstructions": 690143272,
+    "currentCoreInstructions": 361168594,
+    "coreInstructionReductionFraction": 0.47667591838814594,
+    "priorPumpDispatches": 85828,
+    "currentPumpDispatches": 82645,
+    "pumpDispatchReductionFraction": 0.03708579950598867,
+    "initializationAndCaptureExcluded": true,
+    "notMeasuredGpuTime": true
+  },
+  "qualification": {
+    "gpuExecuted": false,
+    "rawToStrike": false,
+    "fullRest": false,
+    "queryTerminal": false,
+    "native1024": false,
+    "hardwarePerformance": false
+  },
+  "limitations": [
+    "HOST source macro callbacks still execute canonical scalar math; core counts exclude that work.",
+    "Every source binding equals the previous qualified three-macro final, but this equality alone is not an independent original-physics oracle. The separate all11/native/tape gates remain mandatory.",
+    "Added fifth handler leaves only 3.71% fewer pump commands; no whole-runtime speed claim or long-shot extrapolation.",
+    "The separately passed three-call native component gate does not qualify this complete GPU trajectory."
+  ]
+}

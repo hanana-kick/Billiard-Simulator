@@ -1,0 +1,60 @@
+{
+  "kind": "resident-1024-allocation-compact-host-v1",
+  "scope": "TEST-only historical25-buffer API allocation and compact ABI; native NOT RUN",
+  "sourceBase": "b6b5eba7cfa24b9c27756386508e81b2d76b8cd8",
+  "sourceSha256": {
+    "tests/resident-candidate-1024-allocation-plan.mjs": "cc2f9469ef4b5226056bc8bafb4dee66ffb136266e82006ca593ab67fb3a6541",
+    "tests/resident-candidate-1024-allocation-owner.mjs": "3474c2975e81ceeeb3f55204faa0a997d9edadfb4dcbdf2049dce1786a6b8de5",
+    "tests/resident-candidate-1024-allocation-native.mjs": "19076d4c6c37b18c345389ec1a447ebb79a429305a3071e5158e8f56ea9b5adf",
+    "tests/resident-candidate-1024-allocation-tests.mjs": "4926e5c7edb451df6f58d75b4c0cce3406232d073986d7de629cbbd18e22b977"
+  },
+  "prepared": {
+    "manifestSha256": "2ddc053e99c10b324a33aefa2951fbfb6a6d738e46be8faa2cdd696738499aeb",
+    "payloadSha256": "8b9aabf947e812f6060a3448a78ed3c8af3bd2cb0fdefefc2fa7fc04bb263c15",
+    "inputFileSha256": "9a76a7204c21f639b61bfdcd2b38b437ae8866678fb6088ea163134d9fc7b55f",
+    "inputBytes": 130607,
+    "expectedFileSha256": "4b2b96086dca86e7397e6ced669e66794840aa523d031114c00c3ce5ec905fa2",
+    "expectedBytes": 20873,
+    "shaderSha256": "db08dadde00cb78a8315a01f0bd25eb2ca1c49ea786b57e7a241b1d2570cf2c4",
+    "shaderBytes": 1308,
+    "decisionTimeoutMs": 900000,
+    "privatePathsOmitted": true
+  },
+  "host": {
+    "tests": 10,
+    "passed": 10,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 807.496666,
+    "logSha256": "cae04d9edafda872687fdfef37c68126b161984903964789f207262fbf462714",
+    "fakeDeviceNoncomputing": true,
+    "maximumFakePayloadBytesPerWave": 98304
+  },
+  "plannedNative": {
+    "banks": 2,
+    "count": 1024,
+    "rowsPerBank": 512,
+    "peakBuffers": 25,
+    "peakLogicalBufferBytes": 370787688,
+    "pipelines": 1,
+    "bufferCreations": 75,
+    "clearCommands": 60,
+    "writes": 12,
+    "guardDispatches": 4,
+    "copies": 4,
+    "submissions": 3,
+    "maps": 2,
+    "compactMapBytesPerFullWave": 16384,
+    "physicsDispatches": 0
+  },
+  "capability": {
+    "nativeExecuted": false,
+    "browserExecuted": false,
+    "productionClassifierExecuted": false,
+    "currentPhysicsRuntimeConstructed": false,
+    "sourceRowsAdmitted": false,
+    "physicalResidencyProven": false,
+    "physicsQualified": false,
+    "releaseQualified": false
+  }
+}

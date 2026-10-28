@@ -1,0 +1,251 @@
+{
+  "kind": "resident-coupled-optional-profile-source-report-v1",
+  "status": "source-only-proof-pass",
+  "sourceSha256": "5a18bbbbd646454f2e00f7b1422773b2851b64d5ff165626f2a9f835ff86c0e7",
+  "sourceUnchanged": true,
+  "defaultProfileUnchanged": true,
+  "oldVmWordsLoaded": false,
+  "oldStateRelocated": false,
+  "physicsExecuted": false,
+  "gpuExecuted": false,
+  "wholeWorldRecurrenceQualified": false,
+  "hardwarePerformance": false,
+  "baseline": {
+    "bytecodeInstructions": 135571,
+    "bytecodeBytes": 4338272,
+    "bytecodeSha256": "f69fed561bc145fb685f59b78fc5891314030cacf82d66e6bdc67e1a09cd438a",
+    "functionCount": 826,
+    "unallocatedLocalWords": 95665,
+    "localWords": 7786,
+    "callDepth": 15,
+    "vmStrideWords": 7817,
+    "vmBytesPerCandidate": 31268,
+    "vmBytesCount2": 62536,
+    "entryPc": 0,
+    "coreShaderBytes": 37454,
+    "coreShaderSha256": "db59be1a923fb589d2310a22ed72f04c9da4f8525aa7b31424044f1b08f9f1a4",
+    "handlers": [
+      {
+        "id": 0,
+        "name": "rc_cue_flat_advance",
+        "bytes": 32733,
+        "sha256": "a7d02936846e8c2e488c3344291602599024cfd3a6fbbe11ce95e077e89395e2",
+        "canonicalClosureBytes": 29808,
+        "canonicalClosureSha256": "76c63dfeb531eb33ba19585890664149e250ddd192b3cd7d6f191973e4642c31"
+      },
+      {
+        "id": 1,
+        "name": "rc_num_eval",
+        "bytes": 17153,
+        "sha256": "76eb6b634325fb9fd5ca897da228ed4b8f1d503cf0360ee00942107c4f54bb28",
+        "canonicalClosureBytes": 14376,
+        "canonicalClosureSha256": "3d0ef416360ff29f80dcbc898ea7223ac10af420e3e9343434812ebfa3b89178"
+      },
+      {
+        "id": 2,
+        "name": "rc_world_broad_commit_collision",
+        "bytes": 42230,
+        "sha256": "b86d7ad13e734dac90366b494a4eb3878699055f9ee9cf0e85317da55a84d75b",
+        "canonicalClosureBytes": 39431,
+        "canonicalClosureSha256": "0de60543033b9627f40338422489f4fa57b6e96263af8b8f32b482c160802417"
+      }
+    ],
+    "coreWorkgroupSize": 64,
+    "handlerWorkgroupSize": 1,
+    "instructionBudget": 65536,
+    "controlMode": "invocation-cache-v1",
+    "sourceBindingsUnchanged": true
+  },
+  "optional": {
+    "bytecodeInstructions": 131908,
+    "bytecodeBytes": 4221056,
+    "bytecodeSha256": "d0241fb5daa61ea4923cde61881beb799f3407d2c686f3661a22dea36c79cde5",
+    "functionCount": 808,
+    "unallocatedLocalWords": 93100,
+    "localWords": 7786,
+    "callDepth": 15,
+    "vmStrideWords": 7817,
+    "vmBytesPerCandidate": 31268,
+    "vmBytesCount2": 62536,
+    "entryPc": 0,
+    "coreShaderBytes": 37493,
+    "coreShaderSha256": "ef96bff912862f7c0ac42486aa949a29152142d5fcec6bb54a4c388b5224e5b5",
+    "handlers": [
+      {
+        "id": 0,
+        "name": "rc_cue_flat_advance",
+        "bytes": 32772,
+        "sha256": "7d2017869c5a74c8954a9754eff5a9dcfc56134dc0a33a45768992f07aaf1558",
+        "canonicalClosureBytes": 29808,
+        "canonicalClosureSha256": "76c63dfeb531eb33ba19585890664149e250ddd192b3cd7d6f191973e4642c31"
+      },
+      {
+        "id": 1,
+        "name": "rc_num_eval",
+        "bytes": 17192,
+        "sha256": "ee97d6d478490dca55c3f4581258f22d56f9f3e8622ffe08e6f7a55e19d2ec87",
+        "canonicalClosureBytes": 14376,
+        "canonicalClosureSha256": "3d0ef416360ff29f80dcbc898ea7223ac10af420e3e9343434812ebfa3b89178"
+      },
+      {
+        "id": 2,
+        "name": "rc_world_broad_commit_collision",
+        "bytes": 42269,
+        "sha256": "150206ab929970662a127fbfc3efedacad42e307fb164a83aecf4f0e159c5a36",
+        "canonicalClosureBytes": 39431,
+        "canonicalClosureSha256": "0de60543033b9627f40338422489f4fa57b6e96263af8b8f32b482c160802417"
+      },
+      {
+        "id": 3,
+        "name": "rc_coupled_transport_advance",
+        "bytes": 27722,
+        "sha256": "3ab3b48ed24b789d113eb9daf5ce5fc0655ab37f1cecd2ad97a78ef0242aab45",
+        "canonicalClosureBytes": 24784,
+        "canonicalClosureSha256": "8ec1d2d84fdf6d574e48bda2e27e9a14788d51605a9bef1611062dd9d425e1dc"
+      }
+    ],
+    "coreWorkgroupSize": 64,
+    "handlerWorkgroupSize": 1,
+    "instructionBudget": 65536,
+    "controlMode": "invocation-cache-v1",
+    "sourceBindingsUnchanged": true
+  },
+  "transportProof": {
+    "method": "unallocated compiler-certified owner-relative local/address slots; source-relative branches; exact named CALL targets; all other operands exact",
+    "retainedFunctions": 808,
+    "removedFunctions": [
+      {
+        "name": "rc_num_fail",
+        "instructions": 9
+      },
+      {
+        "name": "rc_num_finite",
+        "instructions": 8
+      },
+      {
+        "name": "rc_num_lt_bits",
+        "instructions": 42
+      },
+      {
+        "name": "rc_num_eq_bits",
+        "instructions": 16
+      },
+      {
+        "name": "rc_num_zero",
+        "instructions": 8
+      },
+      {
+        "name": "rc_num_soft_arithmetic",
+        "instructions": 150
+      },
+      {
+        "name": "rc_num_widen",
+        "instructions": 102
+      },
+      {
+        "name": "rc_num_soft_required",
+        "instructions": 195
+      },
+      {
+        "name": "rc_num_subnormal",
+        "instructions": 16
+      },
+      {
+        "name": "rc_ct_fail",
+        "instructions": 9
+      },
+      {
+        "name": "rc_ct_base",
+        "instructions": 54
+      },
+      {
+        "name": "rc_num_cont_instruction",
+        "instructions": 70
+      },
+      {
+        "name": "rc_num_cont_instruction_inner",
+        "instructions": 835
+      },
+      {
+        "name": "rc_ct_num_begin",
+        "instructions": 269
+      },
+      {
+        "name": "rc_ct_substep_word",
+        "instructions": 21
+      },
+      {
+        "name": "rc_ct_select",
+        "instructions": 626
+      },
+      {
+        "name": "rc_ct_initialize",
+        "instructions": 308
+      },
+      {
+        "name": "rc_ct_overlap",
+        "instructions": 28
+      }
+    ],
+    "rootOldInstructions": 899,
+    "rootNewInstructions": 2,
+    "allRetainedInstructionsSourceEquivalent": true
+  },
+  "knownSegment": {
+    "sourceH": [
+      191,
+      192
+    ],
+    "startWorldPc": 83,
+    "endWorldPc": 123,
+    "measuredCoreInstructions": 15418956,
+    "measuredBodyInstructions": 11748617,
+    "measuredCompleteRootCalls": 3,
+    "newStubInstructions": 6,
+    "mandatoryNewHandlerCalls": 3,
+    "newHandlerOriginalWorkBudget": 32768,
+    "newHandlerControllerWorkUnitsRange": [
+      65537,
+      98304
+    ],
+    "controllerWorkUnitRangeReason": "first two returns0 exhaust original32768 budget; third enters with prior status0 and returns completion after1..32768 original controller units; not a numeric primitive count",
+    "conditionalRemainingCoreInstructions": 3670345,
+    "conditionalSavedCoreInstructions": 11748611,
+    "condition": "each native macro preserves every original return/state/scratch/readonly effect; unchanged remaining source paths then execute source-equivalent instructions",
+    "notMeasuredNewRecurrence": true
+  },
+  "commands": {
+    "schedule": "one core then every approved handler per fixed pump",
+    "baselineMeasuredHostPumps": 244,
+    "baselineScheduleImpliedDispatches": 976,
+    "baselineDispatchesNotGpuMeasured": true,
+    "optionalActiveServices": 14,
+    "conditionalMinimumPumps": 57,
+    "conditionalMaximumPumps": 71,
+    "conditionalDispatchRange": [
+      285,
+      355
+    ],
+    "same244PumpComparison": {
+      "baselineDispatches": 976,
+      "optionalDispatches": 1220,
+      "addedHandlerDispatches": 244,
+      "newHandlerActiveCalls": 3,
+      "newHandlerInertCalls": 241
+    },
+    "boundsScope": "known captured segment, unchanged instruction budget and macro control flow only; not a general horizon/work bound or chosen production budget"
+  },
+  "breakEven": {
+    "fixedPumpCount": "P",
+    "condition": "net core time saved after stub work > (P-3)*newHandlerInertTime + 3*newHandlerActiveTime + incremental host encoding/submission cost",
+    "compileExcludedFromSteady": true,
+    "unknown": [
+      "separate whole-profile coupled active/inert handler time (component queue drain combines six commands)",
+      "new generic core steady time/cache behavior",
+      "new actual pump/command count",
+      "native compiler resource cost",
+      "raw-to-impact/full-rest recurrence and throughput"
+    ],
+    "noNumericalTimePrediction": true
+  }
+}

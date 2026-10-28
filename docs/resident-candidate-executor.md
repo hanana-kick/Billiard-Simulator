@@ -3,6 +3,10 @@
 Base: `e0a8275`. Experimental implementation only; the original CPU application,
 inverse planner, public build and deployment remain unchanged.
 
+Current release/mode/API gates are tracked in
+[`resident-release-gates.md`](resident-release-gates.md). Dated entries below
+remain bounded historical evidence; none promotes the backend by itself.
+
 ## Endpoint and non-goals
 
 One authenticated original registered four-ball pre-strike world, immutable

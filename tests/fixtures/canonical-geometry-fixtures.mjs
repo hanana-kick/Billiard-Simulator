@@ -1,0 +1,13 @@
+import {createRequire} from 'node:module';
+import {packCushionHull} from '../../src/direct-candidate/deterministic-cushion-geometry.mjs';
+import {packGlobalCushionCandidate} from '../../src/direct-candidate/deterministic-global-cushion.mjs';
+import {packLandingCloth,packLanding3D} from '../../src/direct-candidate/deterministic-landing-3d.mjs';
+const require=createRequire(import.meta.url),R=require('../../vendor/rapier.cjs');await R.init();require('../../src/math.js');require('../../src/physics.js');const lab=new PhysicsLab(R);
+export const hulls=lab.statics.filter(x=>x.kind==='cushion').map((x,i)=>packCushionHull({id:20+i,vertices:x.vertices,indices:x.indices}));lab.dispose();
+export const Q=2**24,r=Math.round(.03075*Q)/Q,config={maxPenetrationQuanta:64,approachMarginQuanta:1};
+export const body=(extraMotion={},extraState={})=>({motion:{id:1,position:[1.34001,r,0],velocity:[1,0,0],acceleration:[0,0,0],radius:r,maxNodes:256,...extraMotion},state:{id:1,provenance:'prepared-isolated-static-cushion-cloth',mass:.21,clothTop:0,clothBounds:[-1.42,1.42,-.71,.71],clothActive:true,clothOverlapQuanta:0,q:[0,0,0],qRate:[0,0,0],cushionRestitution:.82,cushionFriction:0,clothRestitution:.2,clothFriction:0,maxIterations:128,residualBudgetQuanta:64,maxPointErrorQuanta:8,maxNormalErrorQuanta:256,...extraState}});
+export const candidate=(selected=body(),extra={})=>packGlobalCushionCandidate({profile:'prepared-exact-polynomial-v1',bodies:[selected],horizonTicks:65535,boundaries:[],staticBounds:[],exclusionNodes:256,...extra});
+export const cloth=(extra={})=>packLandingCloth({provenance:'immutable-finite-cloth-face',id:5,top:0,bounds:[-1.42,1.42,-.71,.71],gravity:10,restitution:.2,friction:.2,...extra});
+export const flight=(extra={})=>({id:1,profile:'canonical-ballistic-landing-v1',position:[0,1/32+.005,0],velocity:[.6,-.1,-.4],q:[.3,.7,-.2],radius:1/32,mass:.21,horizonTicks:65535,maxCorrectionQuanta:64,maxVelocityCorrectionQuanta:512,...extra});
+export const oldGlobals=[candidate(),candidate(body({velocity:[1,0,.3]},{q:[.1,.2,-.5],cushionFriction:.15,clothFriction:.2})),candidate(body(),{boundaries:[{body:0,kind:1,value:.02,rate:-1}]})];
+export const oldLandings=packLanding3D([flight(),flight({id:2,position:[0,1/32+1/256,0],velocity:[0,0,0],q:[0,.7,0]}),flight({id:3,position:[1.41,1/32+.005,0],velocity:[1,-.1,0]}),flight({id:4,position:[0,1/32,0],velocity:[0,1/Q,0]})]);

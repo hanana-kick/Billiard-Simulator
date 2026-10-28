@@ -1,0 +1,57 @@
+/** Encoded canonical state-domain regressions. No sampled energy claim. */
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {pathToFileURL} from 'node:url';
+import {packContacts3D,runContacts3DCPU,createContacts3DGPU,CONTACT_3D_VERSION} from '../src/direct-candidate/deterministic-contact-3d.mjs';
+import {buildContact3DBridgeCPU} from '../src/direct-candidate/deterministic-contact-3d-bridge.mjs';
+import {packDirectionalCandidates,prepareDirectionalCPU,validateDirectionalRows} from '../src/direct-candidate/deterministic-directional-event.mjs';
+import {prepareTubePrefixCPU,mergeAndClearTubePrefixCPU} from '../src/direct-candidate/deterministic-tube-prefix.mjs';
+import {prepareLandingCycleCPU,commitLandingCycleCPU} from '../src/direct-candidate/deterministic-landing-chain.mjs';
+const Q=2**24,R=Math.round(.03075*Q),V=8*Q,S=16*Q;
+const padded=words=>{const out=new Uint32Array(words.length+8);out.set(words,3);return out.subarray(3,3+words.length);};
+function contact(id=1){return {id,provenance:'prepared-isolated-3d-pair-cloth',bodies:[{position:[0,.3,0],velocity:[5.4805997014045715,0,0],q:[7.723329186439514,0,0],radius:R/Q,mass:.21},{position:[(2*R-16)/Q,.3,0],velocity:[0,0,0],q:[0,0,0],radius:R/Q,mass:.21}],floorTop:0,overlapBudget:32/Q,pairRestitution:.4,pairFriction:.2,clothRestitution:.2,clothFriction:.2,floorMask:0,maxIterations:256,residualBudgetQuanta:256};}
+test('contact v8/q16 ±1 quanta and exact norms reject without clipping or narrowing',()=>{
+ for(const [field,limit,index] of [['velocity',V,22],['q',S,25]])for(const sign of [-1,1]){
+  for(const delta of [-1,0]){const c=contact();c.bodies[0][field]=[sign*(limit+delta)/Q,0,0];const rows=packContacts3D([c]);assert.equal(new Int32Array(rows.buffer)[index],sign*(limit+delta));}
+  const c=contact();c.bodies[0][field]=[sign*(limit+1)/Q,0,0];assert.throws(()=>packContacts3D([c]),/norm domain/);
+  c.bodies[0][field]=[sign*limit/Q,1/Q,0];assert.throws(()=>packContacts3D([c]),/norm domain/);
+ }
+ for(const index of [22,25,28,31]){const rows=packContacts3D([contact()]);rows[index]=0x80000000;assert.throws(()=>runContacts3DCPU(rows),/norm domain/);}
+ const rows=packContacts3D([contact()]),out=runContacts3DCPU(rows);assert.equal(out[1],1);assert.deepEqual(runContacts3DCPU(padded(rows)),out);assert.equal(new Int32Array(out.buffer)[11],new Int32Array(rows.buffer)[25],'normal-axis spin remains unprojected');
+ const c=contact();c.bodies[0].position[0]=8+1/Q;assert.throws(()=>packContacts3D([c]),/Position domain/);c.bodies[0].position[0]=0;c.pairFriction=1+1/Q;assert.throws(()=>packContacts3D([c]),/material coefficient/);
+});
+const scene={motionMaterial:{gravity:9.81,clothFriction:.2,rollingLength:.00045,spinLength:.00035},provenance:'prepared-finite-cloth-and-static-bounds',ballCount:3,radius:R/Q,mass:.21,y:R/Q,z:0,clothTop:0,clothFootprint:[-1.42,1.42,-.71,.71],restitution:.8,pairFriction:.2,clothFriction:.2,staticBounds:[]};
+function directional(){return {id:1,provenance:'prepared-supported-collinear-direction',horizonTicks:16,clothRestitution:.2,bodies:[-.5,0,.5].map((x,i)=>({position:[x,R/Q,0],direction:[1,0],speed:i?0:8,surfaceSpeed:i?0:16,radius:R/Q,mass:.21}))};}
+test('directional range widens scalars only and retains generic-state exclusion',()=>{
+ const packed=packDirectionalCandidates([directional()],scene),state=prepareDirectionalCPU(packed.rows,packed.scene),s=new Int32Array(state.buffer);assert.equal(state[1],0);assert.equal(s[67],V);assert.equal(s[72],-S);assert.deepEqual(prepareDirectionalCPU(padded(packed.rows),padded(packed.scene)),state);
+ for(const [index,limit] of [[21,V],[22,S]])for(const value of [limit+1,-limit-1,-2147483648]){const rows=packed.rows.slice();new Int32Array(rows.buffer)[index]=value;assert.throws(()=>validateDirectionalRows(rows));}
+ const c=directional();c.bodies[0].position[0]=4+1/Q;assert.throws(()=>packDirectionalCandidates([c],scene));c.bodies[0].position[0]=0;c.bodies[0].q=[0,0,0];assert.throws(()=>packDirectionalCandidates([c],scene),/not generic/);
+});
+function prefixFixture(){const state=new Uint32Array(256),s=new Int32Array(state.buffer),responses=new Uint32Array(128),context=new Uint32Array(160),c=new Int32Array(context.buffer);state.set([1,8,0,3]);state[6]=1;responses[1]=1;c[3]=16;c[4]=10*Q;c[5]=2*Q;c[6]=Q/16;c[9]=-4*Q;c[10]=4*Q;c[11]=-4*Q;c[12]=4*Q;c[14]=16;c.fill(Q/16,16,23);for(let i=0;i<3;i++){const a=64+i*48;s[a+22]=R;s[a+23]=Math.round(.21*Q);s.set([(i-1)*Q/2,R,0],a+24);}return {source:{state,responses},context};}
+test('tube preparation and commit retain high full q and refuse out-of-norm states',()=>{
+ const {source,context}=prefixFixture(),s=new Int32Array(source.state.buffer);s.set([5*Q,0,0],91);s.set([0,7*Q,-Q],94);const prepared=prepareTubePrefixCPU(source,context),rows=new Int32Array(prepared.rows.buffer);assert.equal(prepared.state[1],0);assert.equal(rows[10],5*Q);assert.equal(rows[14],7*Q);assert.equal(rows[13],-Q);
+ for(const [offset,values] of [[91,[V,0,1]],[94,[S,0,1]],[94,[-2147483648,0,0]]]){const f=prefixFixture();new Int32Array(f.source.state.buffer).set(values,offset);assert.equal(prepareTubePrefixCPU(f.source,f.context).state[2],2);}
+ const f=prefixFixture(),ready=prepareTubePrefixCPU(f.source,f.context);new Int32Array(ready.dense.buffer)[25]=S+1;assert.doesNotThrow(()=>mergeAndClearTubePrefixCPU(ready,new Uint32Array(256),f.context));assert.deepEqual(Array.from(ready.state.slice(1,3)),[7,9]);assert.equal(new Int32Array(ready.state.buffer)[95],0,'refusal does not commit offending spin');
+ const tiny=prefixFixture();new Int32Array(tiny.source.state.buffer)[92]=V;new Int32Array(tiny.context.buffer)[4]=1;assert.doesNotThrow(()=>prepareTubePrefixCPU(tiny.source,tiny.context));assert.equal(prepareTubePrefixCPU(tiny.source,tiny.context).state[2],4,'wide ratio failure is an unsupported packet, not a host exception');
+});
+test('landing chain gates keep q16, reject bad norms, and do not accept forged high-spin responses',()=>{
+ const f=prefixFixture(),state=f.source.state;state[1]=1;const s=new Int32Array(state.buffer);s[95]=S;const current={state,dense:new Uint32Array(256)},prepared=prepareLandingCycleCPU(current,new Uint32Array(256),f.context);assert.equal(prepared.state[1],0);assert.equal(new Int32Array(prepared.dense.buffer)[25],S);
+ s[95]=S+1;assert.equal(prepareLandingCycleCPU(current,new Uint32Array(256),f.context).state[2],23);s[95]=0;
+ const p={state:state.slice(),dense:new Uint32Array(256),rows:new Uint32Array(256),context:f.context};p.state[17]=1;p.state[19]=1;p.state[20]=2;const result=new Uint32Array(384),r=new Int32Array(result.buffer);result[1]=8;result[3]=1;result[4]=2;r.set(s.slice(88,91),24);r[68]=S+1;commitLandingCycleCPU(p,new Uint32Array(256),new Uint32Array(256),result);assert.deepEqual(Array.from(p.state.slice(1,3)),[7,24]);assert.equal(new Int32Array(p.state.buffer)[95],0);
+});
+test('planar contact bridge applies v norm and q domain separately',()=>{
+ const packets=new Uint32Array(64),p=new Int32Array(packets.buffer),sc=new Uint32Array(64);packets.set([1,128,64,1]);p[4]=R;p[6]=2*R-16;p[7]=R;p[10]=Q/2;p[11]=p[12]=Q/5;p[13]=32;p[16]=5*Q;p[18]=S;p[22]=Math.round(.21*Q);const rows=buildContact3DBridgeCPU(padded(packets),sc,Math.round(Q/5));assert.equal(rows[1],CONTACT_3D_VERSION);assert.equal(new Int32Array(rows.buffer)[27],-S);p[16]=V;p[17]=1;assert.equal(buildContact3DBridgeCPU(packets,sc,Math.round(Q/5))[1],0);p[16]=5*Q;p[17]=0;p[18]=-2147483648;assert.equal(buildContact3DBridgeCPU(packets,sc,Math.round(Q/5))[1],0);
+});
+test('high admitted contact states match every native word across workgroups',{skip:process.env.REQUIRE_WEBGPU!=='1',timeout:90000},async()=>{
+ const {create,globals}=await import(pathToFileURL(process.env.GPU_NATIVE_MODULE).href);Object.assign(globalThis,globals);const gpu=create(['backend=vulkan']),adapter=await gpu.requestAdapter(),device=await adapter.requestDevice();try{const engine=await createContacts3DGPU(device),cases=Array.from({length:67},(_,i)=>{const c=contact(i+10);c.bodies[0].velocity[0]=i%2?8:5.4805997014045715;c.bodies[0].q[0]=i%3?16:7.723329186439514;return c;}),rows=packContacts3D(cases),cpu=runContacts3DCPU(rows),actual=await engine.run(padded(rows));assert.deepEqual(actual.result,cpu);assert.ok(Array.from({length:67},(_,i)=>cpu[i*128+1]).every(x=>x===1));}finally{device.destroy();gpu.destroy?.();}
+});
+
+import {TUBE_PREPARE_WGSL,TUBE_CLEAR_WGSL} from '../src/direct-candidate/deterministic-tube-prefix.mjs';
+test('resident tube range and checked arithmetic refusals mirror every native word',{skip:process.env.REQUIRE_WEBGPU!=='1',timeout:90000},async()=>{
+ const {create,globals}=await import(pathToFileURL(process.env.GPU_NATIVE_MODULE).href);Object.assign(globalThis,globals);const gpu=create(['backend=vulkan']),adapter=await gpu.requestAdapter(),device=await adapter.requestDevice();try{
+  const pipelines=[];for(const code of [TUBE_PREPARE_WGSL,TUBE_CLEAR_WGSL]){const module=device.createShaderModule({code}),info=await module.getCompilationInfo();assert.ok(!info.messages.some(x=>x.type==='error'),info.messages.map(x=>x.message).join('\n'));pipelines.push(await device.createComputePipelineAsync({layout:'auto',compute:{module,entryPoint:'main'}}));}
+  async function dispatch(pipeline,entries,outputIndices){const buffers=entries.map(words=>{const b=device.createBuffer({size:words.byteLength,usage:128|4|8});device.queue.writeBuffer(b,0,words);return b;}),length=outputIndices.reduce((sum,i)=>sum+entries[i].length,0),read=device.createBuffer({size:length*4,usage:1|8});try{const encoder=device.createCommandEncoder(),pass=encoder.beginComputePass();pass.setPipeline(pipeline);pass.setBindGroup(0,device.createBindGroup({layout:pipeline.getBindGroupLayout(0),entries:buffers.map((buffer,binding)=>({binding,resource:{buffer}}))}));pass.dispatchWorkgroups(1);pass.end();let offset=0;for(const i of outputIndices){encoder.copyBufferToBuffer(buffers[i],0,read,offset,entries[i].byteLength);offset+=entries[i].byteLength;}device.queue.submit([encoder.finish()]);await read.mapAsync(1);const result=new Uint32Array(read.getMappedRange()).slice();read.unmap();return result;}finally{buffers.forEach(b=>b.destroy());read.destroy();}}
+  for(let i=0;i<7;i++){const f=prefixFixture(),s=new Int32Array(f.source.state.buffer);if(i===1){s[91]=5*Q;s[95]=7*Q;s[96]=-Q;}if(i===2){s[91]=V;s[93]=1;}if(i===3)s[95]=S+1;if(i===4)s[94]=-2147483648;if(i===5){s[92]=V;new Int32Array(f.context.buffer)[4]=1;}if(i===6)s[92]=Q;const expected=prepareTubePrefixCPU(f.source,f.context),actual=await dispatch(pipelines[0],[f.source.state,f.source.responses,f.context,new Uint32Array(256),new Uint32Array(256),new Uint32Array(256)],[4,3,5]);assert.deepEqual(actual,new Uint32Array([...expected.state,...expected.rows,...expected.dense]),`prepare case ${i}`);}
+  for(const invalid of ['spin','polynomial']){const f=prefixFixture(),prepared=prepareTubePrefixCPU(f.source,f.context),d=new Int32Array(prepared.dense.buffer);if(invalid==='spin')d[25]=S+1;else{d[8]=2147483647;d[12]=2147483647;}const original={state:prepared.state.slice(),dense:prepared.dense.slice()},smooth=new Uint32Array(256);mergeAndClearTubePrefixCPU(prepared,smooth,f.context);assert.deepEqual(Array.from(prepared.state.slice(1,3)),[7,9]);const actual=await dispatch(pipelines[1],[original.state,original.dense,smooth,f.context],[0,1]);assert.deepEqual(actual,new Uint32Array([...prepared.state,...prepared.dense]),`clear ${invalid}`);}
+ }finally{device.destroy();gpu.destroy?.();}
+});

@@ -1,0 +1,86 @@
+{
+  "kind": "resident-inverse-observation-host-evidence-v1",
+  "status": "pass",
+  "profile": "source-inverse-observation-reducer-v1",
+  "numbers": "v8-13.6.233-fast-hypot-binary64-v1",
+  "node": "24.22.1",
+  "v8": "13.6.233.17-node.58",
+  "scope": "HOST generated-WGSL reducer only; native CPU frames are independent TEST inputs",
+  "sourceHashes": {
+    "src/inverse-events.js": "5eff496a7baec8dcc108a61207877bd8c50fc303d6d66cb0dd1681a79022ec5e",
+    "src/resident-candidate/source-number.mjs": "608f397b5131453881b184395b63a939bbd55951153eaaa535a7b29d452193da",
+    "src/resident-candidate/raw-strike.mjs": "2a3f70d84762fd456f826a8734b1bfa47926ca6cbdda7fe2f2a61fafebdd59a7",
+    "src/resident-candidate/inverse-observation-layout.mjs": "4e964644297e4eb361e527d1fd9a3bd234a0ab49f54169a2a7b029dce90a7cae",
+    "src/resident-candidate/inverse-observation-reducer.mjs": "27a2dc353b8b109d4705f05ddfe38fcb7feda199ac5cc50d2003bb585e0cb8b1"
+  },
+  "shape": {
+    "stages": 2,
+    "spheres": 3,
+    "rails": 4,
+    "eventCapacity": 256,
+    "stateWords": 2150,
+    "frameWords": 108,
+    "configWords": 23
+  },
+  "shaderShapeNote": "standalone count1/WGS1 shape; rail order chosen here is explicit metadata, not a new native producer",
+  "shaders": {
+    "observe": {
+      "bytes": 21092,
+      "sha256": "a231c5232f26148f9acdec3329fc55ccb077cf06165897cf4d19bfffc44cb5fd",
+      "instructions": 3862,
+      "localWords": 2959,
+      "bytecodeSha256": "447bf0022de5a748eb7332eb1ab4d6ea9475e54dd2a3c2074fc666fa325a8c4d"
+    },
+    "project": {
+      "bytes": 11842,
+      "sha256": "b48eb9ad2613f2b31ef0715b76b4ca23c78f6c5a88c89717e0d301cbb5354ee9",
+      "instructions": 893,
+      "localWords": 806,
+      "bytecodeSha256": "08cd019bd01c3d8e3c356a992ed084456a34398f2aeb80d1c8eb72faef4d6fe0"
+    }
+  },
+  "tests": {
+    "shortGroups": 9,
+    "fullOriginalStreams": 2,
+    "allRetainedSourceFieldsEveryNativeStep": true,
+    "finalObservationProjectionExact": true,
+    "frameArraysRetained": false,
+    "perInstructionBankLogs": false
+  },
+  "streams": [
+    {
+      "input": "positive",
+      "h": 5480,
+      "outer": 5039,
+      "queryDoneAt": 5480,
+      "events": 2,
+      "eventPrefix": 2,
+      "streamSha256": "95e2ec97ece3b7b6d40f8daa6aff0d21e9855cd8c4bfc82d129312ea9dd8b744",
+      "reducerVmInstructions": 20034984,
+      "wallMs": 25355.434738
+    },
+    {
+      "input": "late-opponent-foul",
+      "h": 5415,
+      "outer": 4974,
+      "queryDoneAt": 1427,
+      "events": 3,
+      "eventPrefix": 2,
+      "streamSha256": "e8b345ae9a4fe4bbc99e5589917ef0a7b98950379248fd9f479dae640d545efc",
+      "reducerVmInstructions": 19836767,
+      "wallMs": 24416.122008
+    }
+  ],
+  "qualification": {
+    "gpuExecuted": false,
+    "gpuNumericallyQualified": false,
+    "worldProducerImplemented": false,
+    "convexQueryImplemented": false,
+    "scorerJoinImplemented": false,
+    "finalGameplayQualified": false,
+    "rawGpuFullRest": false,
+    "native1024": false,
+    "hardwarePerformance": false,
+    "defaultActivation": false
+  }
+}

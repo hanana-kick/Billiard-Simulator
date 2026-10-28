@@ -1,0 +1,6 @@
+// Historical-test text proof only. Never executes projected code or regenerates
+// an earlier expected hash; exactly two source-owned additions are removed.
+import assert from'node:assert/strict';import{readFileSync}from'node:fs';import{createHash}from'node:crypto';
+export const committedReturnProjection=JSON.parse(readFileSync(new URL('./fixtures/resident-microcode-committed-return-projection.json',import.meta.url)));
+const sha=s=>createHash('sha256').update(s).digest('hex');
+export function beforeCommittedReturnHostProjection(source){const p=committedReturnProjection;assert.equal(p.kind,'resident-committed-return-host-legacy-projection-v1');assert.equal(p.sourceBoundary,'d1ef30a460637de31848f994ae2dddd51d1617b2');assert.equal(sha(source),p.currentHostReferenceSha256,'exact current canonical HOST text with committed-RET stop');assert.equal(p.patches.length,2);for(const x of p.patches){assert.equal(sha(x.current),x.currentSha256,x.label+' exact reviewed addition');assert.equal(source.split(x.current).length,2,x.label+' exactly once');source=source.replace(x.current,'');}assert.equal(sha(source),p.beforeHostReferenceSha256,'entire earlier canonical HOST text unchanged');return source;}

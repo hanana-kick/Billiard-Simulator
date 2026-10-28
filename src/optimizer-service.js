@@ -32,13 +32,15 @@ class OptimizerService{
  request(req){
   this.cancel();const id=this.version;this.latest=req;this.started=performance.now();this.mode='worker';
   this.plan={...workerPlan(req),startupTimeoutMs:45000,progressTimeoutMs:30000};this.retryOverhead={tested:0,physicsSteps:0};this.workerFallbackReason=null;
-  try{this.api=req.options.searchAlgorithm==='inverse-constraints'?G.LabInversePlanner:G.LabOptimizer;this.search=this.api.createStagedSearch(G.RAPIER,req);this.loadWave();this.startPool(req,id,this.plan.requestedWorkers);}catch(e){this.fail(e,id);}
+  const start=finalizationAdmission=>{if(id!==this.version||this.latest!==req)return;try{this.api=req.options.searchAlgorithm==='inverse-constraints'?G.LabInversePlanner:G.LabOptimizer;this.search=this.api.createStagedSearch(G.RAPIER,req,...(Object.hasOwn(req,'finalization')?[{finalizationAdmission}]:[]));this.loadWave();this.startPool(req,id,this.plan.requestedWorkers);}catch(e){this.fail(e,id);}};
+  if(Object.hasOwn(req,'finalization')){if((req.finalization?.policy==='source-gameplay-finalization-v1'&&req.options.searchAlgorithm!=='inverse-constraints')||!G.LabSourceFinalizationRequest){this.fail(Error('Explicit source finalization requires the inverse source modules'),id);return;}return G.LabSourceFinalizationRequest.admit(req).then(start,e=>this.fail(e,id));}
+  start();
  }
  loadWave(){this.jobs=this.api.planWave(this.search);this.queue=this.jobs.slice();this.outcomes=new Map();}
  startPool(req,id,wanted){
   let count=wanted;
   try{
-   const code=['engine','math','physics','forecast','route-rules','route-sampler','optimizer-core','optimizer',...(req.options.searchAlgorithm==='inverse-constraints'?['inverse-events']:[]),'optimizer-worker'].map(k=>document.getElementById('source-'+k).textContent).join('\n');
+   const code=['engine','math','physics','forecast','route-rules','route-sampler','optimizer-core','optimizer',...(req.options.searchAlgorithm==='inverse-constraints'?['game-rules','source-query-finalization-policy','source-finalization-request','source-gameplay-finalization-owner','inverse-events']:[]),'optimizer-worker'].map(k=>document.getElementById('source-'+k).textContent).join('\n');
    const url=URL.createObjectURL(new Blob([code],{type:'text/javascript'}));
    try{
     while(count>=1){try{for(let i=0;i<count;i++)this.workers.push(new Worker(url));break;}catch{this.stopWorkers();if(count===1)throw Error('Worker construction unavailable');count=Math.max(1,Math.floor(count/2));}}
@@ -59,7 +61,7 @@ class OptimizerService{
  }
  pump(req,id){
   if(id!==this.version||this.mode==='cooperative')return;
-  if(this.outcomes.size===this.jobs.length){if(this.completeWave())return;}
+  if(this.outcomes.size===this.jobs.length){try{if(this.completeWave())return;}catch(error){this.fail(error,id);return;}}
   if(id!==this.version||this.mode==='cooperative')return;
   if(!this.jobs.length){setTimeout(()=>this.pump(req,id),0);return;}
   for(const worker of this.workers){if(this.busy.has(worker)||!this.queue.length)continue;const job=this.queue.shift();this.busy.set(worker,{job,steps:0});this.armWatchdog(worker,req,id,true);worker.postMessage({type:'evaluate',requestId:id,candidateId:job.id,job});}
@@ -94,19 +96,21 @@ class OptimizerService{
    while(id===this.version){
     for(const job of this.queue){
      if(id!==this.version)return;
-     evaluation=job.kind==='inverse-constraint'?G.LabInverseEvents.begin(G.RAPIER,job.req,job.topology,job.settings,{purpose:job.purpose}):G.ShotSearchCore.beginCandidate(G.RAPIER,job);
+     const beginOptions={purpose:job.purpose};
+     if(job.kind==='inverse-constraint'&&Object.hasOwn(job.req,'finalization')){if(!G.LabSourceFinalizationRequest)throw Error('Explicit source finalization modules unavailable');if(G.LabSourceFinalizationRequest.needsAdmission(job.req,job.purpose)){beginOptions.finalizationAdmission=await G.LabSourceFinalizationRequest.admit(job.req);if(id!==this.version)return;}}
+     evaluation=job.kind==='inverse-constraint'?G.LabInverseEvents.begin(G.RAPIER,job.req,job.topology,job.settings,beginOptions):G.ShotSearchCore.beginCandidate(G.RAPIER,job);
      let done=job.kind==='inverse-constraint'?false:!evaluation.trial;
      while(!done){const until=performance.now()+8;do{done=job.kind==='inverse-constraint'?G.LabInverseEvents.advance(evaluation,16):G.ShotSearchCore.stepTrial(evaluation.search,evaluation.trial,16);}while(!done&&performance.now()<until);if(performance.now()-lastReport>160){this.report(false);lastReport=performance.now();}if(!done)await new Promise(r=>setTimeout(r,0));if(id!==this.version){if(job.kind==='inverse-constraint')G.LabInverseEvents.dispose(evaluation);else evaluation.trial?.lab.dispose();return;}}
      this.outcomes.set(job.id,job.kind==='inverse-constraint'?G.LabInverseEvents.finish(evaluation):G.ShotSearchCore.finishCandidate(evaluation));evaluation=null;this.report(false);
     }
     if(id!==this.version)return;if(this.completeWave())return;if(req.options.searchAlgorithm==='inverse-constraints')await new Promise(r=>setTimeout(r,0));
    }
-  }catch(e){try{evaluation?.trial?.lab.dispose();}catch{}this.fail(e,id);}
+  }catch(e){try{if(evaluation&&this.latest?.options.searchAlgorithm==='inverse-constraints')G.LabInverseEvents.dispose(evaluation);else evaluation?.trial?.lab.dispose();}catch{}this.fail(e,id);}
  }
  fail(error,id){if(id!==this.version)return;this.stopWorkers();this.latest=null;this.onError(error.message||String(error));}
  resume(){
   if(this.api!==G.LabInversePlanner||!this.search)return false;
-  this.cancel();if(!this.api.resume(this.search))return false;const id=this.version,req=this.search.req;this.latest=req;this.started=performance.now();this.recovering=null;
+  this.cancel();try{if(!this.api.resume(this.search))return false;}catch(error){this.onError(error.message||String(error));return false;}const id=this.version,req=this.search.req;this.latest=req;this.started=performance.now();this.recovering=null;
   if(this.search.pending.length){this.queue=this.jobs.filter(j=>!this.outcomes.has(j.id));}else this.loadWave();
   this.startPool(req,id,this.plan.requestedWorkers);return true;
  }

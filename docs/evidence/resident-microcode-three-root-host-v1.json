@@ -1,0 +1,715 @@
+{
+  "scope": "host-only-created-source-world-microcode",
+  "createdInput": true,
+  "rawInput": false,
+  "frames": 2,
+  "instructionBudget": 65536,
+  "maxChunks": 512,
+  "intrinsics": "source-continuations-v1",
+  "intrinsicFunctions": [
+    "rc_num_eval",
+    "rc_num_cont_instruction",
+    "rc_source_program_instruction"
+  ],
+  "allocation": "call-frames-v1",
+  "unallocatedLocalWords": 99389,
+  "bytecodeSha256": "7ca5f127f3836fbb7fad136ce4fd635af181b933802ed84485abf2d8f4263983",
+  "sourceSha256": "df676add37bca889876fd21682953e314505cdcf7601c16d3fdbf3990855c6e5",
+  "sourceIdentity": "a93473fceb1da27bb580a2981d3e536057eb30856e49d64405ad2b96f8b51e0f",
+  "instructions": 141213,
+  "localWords": 7820,
+  "callDepth": 16,
+  "functions": 831,
+  "originalOwnerCount": 16,
+  "expectedFutureRuntimeInput": false,
+  "gpuExecuted": false,
+  "fullRest": false,
+  "hardwarePerformance": false,
+  "status": "completed",
+  "vmStatus": 2,
+  "vmError": 0,
+  "worldStatus": 1,
+  "worldReason": 0,
+  "worldH": 2,
+  "chunks": 193,
+  "totalChunks": 193,
+  "scalarInstructions": "12621891",
+  "hostWallMs": 13827.767946,
+  "priorHostWallMs": 0,
+  "sourceParity": "all11-source-groups-exact",
+  "intrinsicCalls": {
+    "rc_num_cont_instruction": 146608,
+    "rc_source_program_instruction": 1623,
+    "rc_num_eval": 137
+  },
+  "intrinsicGraphNodes": {
+    "785146": 208,
+    "785429": 2212,
+    "788234": 196,
+    "788498": 912,
+    "789300": 6660,
+    "840958": 569360
+  },
+  "intrinsicCallers": {
+    "rc_num_cont_instruction|rc_cue_flat_advance|cue-application-flat": 1516,
+    "rc_source_program_instruction|rc_cue_flat_advance|cue-application-flat": 1623,
+    "rc_num_eval|rc_numeric_request_evaluate|cue-pre-ccd-0": 2,
+    "rc_num_eval|rc_numeric_request_evaluate|cue-pre-ccd-1": 2,
+    "rc_num_eval|rc_numeric_request_evaluate|collision-broad-evaluate": 3,
+    "rc_num_eval|rc_numeric_request_evaluate|cue-geometry-pose": 110,
+    "rc_num_eval|rc_numeric_request_evaluate|scene-energy-evaluate": 10,
+    "rc_num_cont_instruction|rc_cue_flat_advance|cue-joint-flat": 145092,
+    "rc_num_eval|rc_numeric_request_evaluate|cue-post-ccd-0": 2,
+    "rc_num_eval|rc_numeric_request_evaluate|cue-post-ccd-1": 2,
+    "rc_num_eval|rc_numeric_request_evaluate|post-broad-evaluate": 6
+  },
+  "functionCalls": {
+    "rc_micro_host_created_run": 1,
+    "rc_cue_to_canonical": 7,
+    "rc_cue_bridge_copy": 156,
+    "rc_micro_host_source_begin": 1,
+    "rc_pc_advance": 1140,
+    "rc_pc_guard": 2484,
+    "rc_micro_world_run": 1,
+    "rc_micro_reset_private": 1139,
+    "rc_micro_original_owner_5": 8,
+    "rc_pc_source_stage_owner_phase_0": 2,
+    "rc_world_application_begin_outer": 1,
+    "rc_world_application_live": 13,
+    "rc_application_begin_outer": 1,
+    "rc_app_number": 39,
+    "rc_f64_from_u32": 19,
+    "rc_f64_pack": 184,
+    "rc_u128_zero": 401,
+    "rc_u128_blen": 307,
+    "rc_u128_round": 166,
+    "rc_u128_shl": 300,
+    "rc_f64_div": 1,
+    "rc_f64_decode": 128,
+    "rc_u128_div": 1,
+    "rc_u128_bit": 140,
+    "rc_u128_lt": 113,
+    "rc_u128_sub": 18,
+    "rc_u128_shr": 74,
+    "rc_app_put_number": 1,
+    "rc_world_application_check": 15,
+    "rc_owner_complete": 1139,
+    "rc_pc_source_stage_owner_phase_1": 2,
+    "rc_world_application_begin_h": 2,
+    "rc_f64_eq": 14,
+    "rc_f64_sub": 6,
+    "rc_f64_neg": 6,
+    "rc_f64_add": 10,
+    "rc_f64_le": 2,
+    "rc_f64_zero": 28,
+    "rc_f64_lt": 6,
+    "rc_f64_to_f32_bits": 50,
+    "rc_u128_add": 10,
+    "rc_micro_original_owner_11": 16,
+    "rc_owner_cue": 16,
+    "rc_owner_cue_guard": 16,
+    "rc_owner_cue_body_0": 2,
+    "rc_cue_flat_begin": 4,
+    "rc_cue_begin": 4,
+    "rc_cue_valid": 50,
+    "rc_pc_skip": 571,
+    "rc_owner_cue_body_1": 8,
+    "rc_cue_flat_advance": 8,
+    "rc_cue_prepare": 19,
+    "rc_cue_np": 13,
+    "rc_num_cont_begin": 13,
+    "rc_num_finite": 508,
+    "rc_cue_scatter": 19,
+    "rc_cue_copy": 39,
+    "rc_source_program_init": 8,
+    "rc_rsp_set": 278,
+    "rc_f64_from_f32_bits": 156,
+    "rc_source_program_input": 234,
+    "rc_source_program_finish": 8,
+    "rc_rsp_get": 188,
+    "rc_rsp_int": 16,
+    "rc_cue_result_f32": 8,
+    "rc_cue_nonzero": 4,
+    "rc_cue_mutable": 4,
+    "rc_owner_cue_body_2": 2,
+    "rc_micro_original_owner_2": 10,
+    "rc_pc_source_stage_owner_phase_5": 2,
+    "rc_world_scene_after_cue_pre": 2,
+    "rc_world_scene_live": 16,
+    "rc_scene_created_initialize": 1,
+    "rc_scene_ok": 56,
+    "rc_scene_valid_body": 125,
+    "rc_scene_bp": 1766,
+    "rc_scene_created_register_body": 3,
+    "rc_scene_add": 8,
+    "rc_scene_cp": 8,
+    "rc_scene_alloc_persistent": 2,
+    "rc_scene_pp": 59,
+    "rc_scene_created_event": 13,
+    "rc_scene_created_joint_link": 9,
+    "rc_scene_jp": 159,
+    "rc_scene_merge": 1,
+    "rc_scene_free_persistent": 1,
+    "rc_scene_created_joint_unlink": 4,
+    "rc_scene_capacity": 3,
+    "rc_scene_ep": 20,
+    "rc_world_scene_capture_entry": 2,
+    "rc_world_application_after_cue_pre": 2,
+    "rc_u128_jam": 8,
+    "rc_micro_original_owner_7": 463,
+    "rc_world_shared_graph_owner": 463,
+    "rc_gn_address": 1852,
+    "rc_gn_span": 1852,
+    "rc_remaining_numeric_prepare": 31,
+    "rc_rn_cue_prepare": 8,
+    "rc_gn_mark": 137,
+    "rc_numeric_request_evaluate": 463,
+    "rc_gn_identity": 926,
+    "rc_numeric_request_validate_owner": 137,
+    "rc_remaining_numeric_request_valid": 54,
+    "rc_remaining_numeric_finish": 31,
+    "rc_rn_cue_finish": 8,
+    "rc_rn_source_result": 29,
+    "rc_pc_source_stage_owner_phase_8": 2,
+    "rc_world_ccd_inactive_begin": 2,
+    "rc_world_ccd_adapter": 12,
+    "rc_world_ccd_scene_body": 24,
+    "rc_ccd_copy": 64,
+    "rc_world_ccd_inactive_next": 6,
+    "rc_wh_check": 22,
+    "rc_pc_source_stage_owner_phase_11": 2,
+    "rc_pc_source_stage_owner_phase_12": 8,
+    "rc_micro_original_owner_6": 572,
+    "rc_pc_source_stage_owner_phase_13": 2,
+    "rc_world_broad_begin_collision": 2,
+    "rc_wb_ready": 12,
+    "rc_journal_begin": 2,
+    "rc_jr": 21468,
+    "rc_jw": 1496,
+    "rc_wb_check_collider": 63,
+    "rc_wb_c": 3051,
+    "rc_jc": 10016,
+    "rc_pc_source_stage_owner_phase_14": 3,
+    "rc_world_broad_gather": 9,
+    "rc_wb_body": 35,
+    "rc_pc_source_stage_owner_phase_16": 3,
+    "rc_world_broad_scatter": 9,
+    "rc_micro_original_owner_0": 2,
+    "rc_pc_source_stage_owner_phase_17": 2,
+    "rc_world_broad_commit_collision": 2,
+    "rc_bvh_prepare_update": 2,
+    "rc_bvh_join": 6,
+    "rc_bvh_s": 4956,
+    "rc_bvh_update_node": 9,
+    "rc_bvh_insert": 3,
+    "rc_bvh_valid_box": 12,
+    "rc_bvh_rotate": 16,
+    "rc_bvh_node": 1494,
+    "rc_bvh_leaf": 604,
+    "rc_bvh_count": 1492,
+    "rc_bvh_score": 171,
+    "rc_bvh_volume": 342,
+    "rc_bvh_sub": 1150,
+    "rc_bvh_mul": 1204,
+    "rc_bvh_add": 306,
+    "rc_bvh_merge": 230,
+    "rc_bvh_min": 816,
+    "rc_bvh_max": 816,
+    "rc_bvh_put": 250,
+    "rc_bvh_relocate": 19,
+    "rc_bvh_full_refit": 3,
+    "rc_bvh_mem_put": 488,
+    "rc_bvh_mem_node": 646,
+    "rc_bvh_resolve": 54,
+    "rc_bvh_pending": 63,
+    "rc_bvh_sat_add": 5,
+    "rc_wb_bvh_error": 6,
+    "rc_journal_prepare_bvh": 2,
+    "rc_jeligible": 1408,
+    "rc_jleaf": 504,
+    "rc_bvh_hit": 376,
+    "rc_jcue": 252,
+    "rc_jfind": 150,
+    "rc_je": 592,
+    "rc_bvh_bvtt": 2,
+    "rc_bvh_changed": 382,
+    "rc_jslot": 8,
+    "rc_world_broad_before_queries": 2,
+    "rc_world_scene_after_broad": 2,
+    "rc_world_geometry_begin": 2,
+    "rc_pc_source_stage_owner_phase_18": 52,
+    "rc_world_geometry_stage_owner_phase_18": 52,
+    "rc_world_geometry_row": 312,
+    "rc_world_scene_geometry_visited": 62,
+    "rc_world_scene_geometry_dynamic_awake": 8,
+    "rc_geometry_gather": 52,
+    "rc_geo_row": 80,
+    "rc_geometry_numeric_prepare": 432,
+    "rc_world_geometry_ready": 208,
+    "rc_gn_prepare_rc_narrow_floor": 8,
+    "rc_gn_source_result": 164,
+    "rc_geometry_numeric_finish": 432,
+    "rc_world_geometry_point_ready": 52,
+    "rc_pc_source_stage_owner_phase_27": 52,
+    "rc_world_geometry_stage_owner_phase_27": 52,
+    "rc_geometry_publish_edge": 8,
+    "rc_geometry_find": 8,
+    "rc_gn_prepare_rc_narrow_pair": 12,
+    "rc_narrow_zero": 132,
+    "rc_narrow_pair_clear": 12,
+    "rc_gn_prepare_rc_narrow_convex_prepare": 32,
+    "rc_narrow_convex_clear": 32,
+    "rc_pc_source_stage_owner_phase_28": 2,
+    "rc_wh_cloth_visit": 2,
+    "rc_cloth_prepare": 2,
+    "rc_cloth_begin": 2,
+    "rc_cloth_transition": 2,
+    "rc_cloth_clear": 2,
+    "rc_pc_source_stage_owner_phase_29": 2,
+    "rc_cloth_gather": 2,
+    "rc_pc_source_stage_owner_phase_31": 2,
+    "rc_cloth_scatter": 2,
+    "rc_pc_source_stage_owner_phase_32": 2,
+    "rc_cloth_publish": 2,
+    "rc_world_cue_geometry_begin": 2,
+    "rc_wcg_collider": 494,
+    "rc_pc_source_stage_owner_phase_33": 112,
+    "rc_world_cue_geometry_stage_owner_phase_33": 112,
+    "rc_world_cue_geometry_gather": 112,
+    "rc_wcg_descriptor": 442,
+    "rc_wcg_cache": 334,
+    "rc_wcg_reset": 112,
+    "rc_gn_prepare_rc_world_cue_geometry_pose": 112,
+    "rc_gn_request_valid": 220,
+    "rc_gn_finish_rc_world_cue_geometry_pose": 110,
+    "rc_pc_source_stage_owner_phase_35": 112,
+    "rc_world_cue_geometry_stage_owner_phase_35": 112,
+    "rc_world_cue_geometry_query_input": 112,
+    "rc_pc_source_stage_owner_phase_40": 112,
+    "rc_world_cue_geometry_stage_owner_phase_40": 112,
+    "rc_world_cue_geometry_after_query": 112,
+    "rc_pc_source_stage_owner_phase_45": 112,
+    "rc_world_cue_geometry_stage_owner_phase_45": 112,
+    "rc_world_cue_geometry_finish_row": 112,
+    "rc_micro_original_owner_3": 4,
+    "rc_pc_source_stage_owner_phase_46": 2,
+    "rc_world_geometry_complete": 2,
+    "rc_world_broad_narrow": 2,
+    "rc_journal_narrow": 2,
+    "rc_world_scene_after_narrow": 2,
+    "rc_scene_world_prepare": 2,
+    "rc_scene_world_first_collision": 1,
+    "rc_scene_begin": 2,
+    "rc_scene_world_apply_operations": 3,
+    "rc_scene_apply_journal": 3,
+    "rc_scene_collisions_done": 2,
+    "rc_scene_incidence_from_journal": 2,
+    "rc_scene_incidence_begin": 2,
+    "rc_scene_incidence_body": 12,
+    "rc_scene_journal_body": 8,
+    "rc_scene_find_body": 8,
+    "rc_scene_incidence_append": 8,
+    "rc_scene_incidence_end": 2,
+    "rc_micro_original_owner_4": 26,
+    "rc_pc_source_stage_owner_phase_50": 2,
+    "rc_world_scene_begin_energy": 2,
+    "rc_scene_world_begin_observe": 2,
+    "rc_scene_begin_energy": 2,
+    "rc_pc_source_stage_owner_phase_51": 12,
+    "rc_world_scene_energy_gather": 12,
+    "rc_scene_world_gather": 12,
+    "rc_sw_force_input": 4,
+    "rc_sw_body": 14,
+    "rc_sw_clear_input": 10,
+    "rc_rn_scene_result": 10,
+    "rc_pc_source_stage_owner_phase_53": 12,
+    "rc_world_scene_energy_scatter": 12,
+    "rc_scene_world_scatter": 10,
+    "rc_sw_output": 104,
+    "rc_scene_force_fact": 4,
+    "rc_scene_active_member": 8,
+    "rc_scene_before_energy_updates": 2,
+    "rc_scene_global_split": 2,
+    "rc_sw_energy_input": 6,
+    "rc_sw_gather_activation": 6,
+    "rc_scene_adopt_energy": 4,
+    "rc_scene_select_sleep": 2,
+    "rc_sw_finish_continuation": 2,
+    "rc_scene_finish_energy": 2,
+    "rc_scene_world_orders": 2,
+    "rc_pc_source_stage_owner_phase_54": 2,
+    "rc_world_scene_prepare_roster": 2,
+    "rc_journal_apply_roster": 2,
+    "rc_r": 1542,
+    "rc_roster_begin": 2,
+    "rc_w": 744,
+    "rc_edge": 40,
+    "rc_roster_finish_transitions": 2,
+    "rc_world_scene_hint": 8,
+    "rc_roster_metadata": 8,
+    "rc_scene_world_roster": 2,
+    "rc_roster_begin_awake": 2,
+    "rc_roster_awake": 4,
+    "rc_body": 44,
+    "rc_roster_finish": 2,
+    "rc_reconcile": 8,
+    "rc_world_ccd_inactive_newly_awake_begin": 2,
+    "rc_cloth_ownership": 2,
+    "rc_pc_source_stage_owner_phase_57": 2,
+    "rc_cue_capture_pre_solve": 2,
+    "rc_cloth_bind_cue": 2,
+    "rc_owner_cue_body_3": 2,
+    "rc_owner_cue_body_4": 2,
+    "rc_pc_source_stage_owner_phase_61": 2,
+    "rc_cloth_complete": 2,
+    "rc_micro_original_owner_12": 4,
+    "rc_owner_coupled": 4,
+    "rc_owner_coupled_guard": 4,
+    "rc_owner_coupled_body_0": 2,
+    "rc_world_solver_gather": 2,
+    "rc_ws_epoch": 4,
+    "rc_ws_scene_body": 8,
+    "rc_ws_edge": 8,
+    "rc_ws_body": 16,
+    "rc_world_solver_roster": 4,
+    "rc_owner_coupled_body_2": 2,
+    "rc_world_solver_scatter": 2,
+    "rc_ws_local": 8,
+    "rc_world_scene_after_solve": 2,
+    "rc_world_ccd_inactive_post_begin": 2,
+    "rc_micro_original_owner_1": 16,
+    "rc_pc_source_stage_owner_phase_71": 2,
+    "rc_world_broad_begin_post": 2,
+    "rc_wb_binding": 4,
+    "rc_pc_source_stage_owner_phase_72": 6,
+    "rc_pc_source_stage_owner_phase_74": 6,
+    "rc_pc_source_stage_owner_phase_75": 2,
+    "rc_world_broad_commit_post": 2,
+    "rc_bvh_set_aabbs": 2,
+    "rc_bvh_update_leaf": 6,
+    "rc_bvh_contains": 10,
+    "rc_world_application_capture_events": 2,
+    "rc_cloth_finish": 2,
+    "rc_micro_original_owner_13": 18,
+    "rc_owner_application": 18,
+    "rc_owner_application_guard": 18,
+    "rc_owner_application_body_0": 2,
+    "rc_world_application_begin_post_h": 2,
+    "rc_application_stage_begin": 2,
+    "rc_owner_application_body_1": 4,
+    "rc_world_application_gather": 4,
+    "rc_world_application_work": 12,
+    "rc_application_stage_gather": 4,
+    "rc_app_job": 2,
+    "rc_app_input": 8,
+    "rc_owner_application_body_2": 4,
+    "rc_world_application_evaluate": 4,
+    "rc_application_stage_evaluate": 4,
+    "rc_source_program_step": 2,
+    "rc_raw_program_step": 2,
+    "rc_owner_application_body_3": 4,
+    "rc_world_application_scatter": 4,
+    "rc_application_stage_scatter": 4,
+    "rc_app_next_phase": 12,
+    "rc_application_cue_obstructions": 2,
+    "rc_app_object": 18,
+    "rc_app_sleeping": 8,
+    "rc_scene_finish_application": 2,
+    "rc_owner_application_body_4": 2,
+    "rc_world_application_finish_post_h": 2,
+    "rc_world_application_expire_cue": 2,
+    "rc_world_scene_after_application": 2,
+    "rc_world_broad_finish": 2,
+    "rc_journal_finish": 2,
+    "rc_world_scene_finish": 2,
+    "rc_world_application_finish_h": 2,
+    "rc_owner_application_body_5": 2,
+    "rc_scene_api_call": 2,
+    "rc_scene_enqueue": 2,
+    "rc_scene_drain_modified": 1,
+    "rc_scene_world_begin_pass": 1,
+    "rc_bvh_optimize": 1,
+    "rc_bvh_optimizer_target": 1,
+    "rc_bvh_optimizer_subtree": 1,
+    "rc_bvh_rebuild_binned": 1,
+    "rc_bvh_div": 10,
+    "rc_bvh_zero": 136,
+    "rc_sw_adopt_reset": 2
+  },
+  "macroCalls": [
+    {
+      "name": "rc_cue_flat_advance",
+      "worldH": 0,
+      "worldPc": 4,
+      "phase": "cue-application-flat",
+      "parameters": {
+        "b": [
+          448
+        ],
+        "ball": [
+          128
+        ],
+        "others": [
+          55872
+        ],
+        "otherCount": [
+          3
+        ],
+        "p": [
+          6603
+        ],
+        "scratch": [
+          0
+        ],
+        "control": [
+          62728
+        ],
+        "instructionBudget": [
+          32768
+        ]
+      }
+    },
+    {
+      "name": "rc_cue_flat_advance",
+      "worldH": 0,
+      "worldPc": 83,
+      "phase": "cue-joint-flat",
+      "parameters": {
+        "b": [
+          448
+        ],
+        "ball": [
+          128
+        ],
+        "others": [
+          55872
+        ],
+        "otherCount": [
+          3
+        ],
+        "p": [
+          6603
+        ],
+        "scratch": [
+          0
+        ],
+        "control": [
+          62728
+        ],
+        "instructionBudget": [
+          32768
+        ]
+      }
+    },
+    {
+      "name": "rc_cue_flat_advance",
+      "worldH": 0,
+      "worldPc": 83,
+      "phase": "cue-joint-flat",
+      "parameters": {
+        "b": [
+          448
+        ],
+        "ball": [
+          128
+        ],
+        "others": [
+          55872
+        ],
+        "otherCount": [
+          3
+        ],
+        "p": [
+          6603
+        ],
+        "scratch": [
+          0
+        ],
+        "control": [
+          62728
+        ],
+        "instructionBudget": [
+          32768
+        ]
+      }
+    },
+    {
+      "name": "rc_cue_flat_advance",
+      "worldH": 0,
+      "worldPc": 83,
+      "phase": "cue-joint-flat",
+      "parameters": {
+        "b": [
+          448
+        ],
+        "ball": [
+          128
+        ],
+        "others": [
+          55872
+        ],
+        "otherCount": [
+          3
+        ],
+        "p": [
+          6603
+        ],
+        "scratch": [
+          0
+        ],
+        "control": [
+          62728
+        ],
+        "instructionBudget": [
+          32768
+        ]
+      }
+    },
+    {
+      "name": "rc_cue_flat_advance",
+      "worldH": 1,
+      "worldPc": 4,
+      "phase": "cue-application-flat",
+      "parameters": {
+        "b": [
+          448
+        ],
+        "ball": [
+          128
+        ],
+        "others": [
+          55872
+        ],
+        "otherCount": [
+          3
+        ],
+        "p": [
+          6603
+        ],
+        "scratch": [
+          0
+        ],
+        "control": [
+          62728
+        ],
+        "instructionBudget": [
+          32768
+        ]
+      }
+    },
+    {
+      "name": "rc_cue_flat_advance",
+      "worldH": 1,
+      "worldPc": 83,
+      "phase": "cue-joint-flat",
+      "parameters": {
+        "b": [
+          448
+        ],
+        "ball": [
+          128
+        ],
+        "others": [
+          55872
+        ],
+        "otherCount": [
+          3
+        ],
+        "p": [
+          6603
+        ],
+        "scratch": [
+          0
+        ],
+        "control": [
+          62728
+        ],
+        "instructionBudget": [
+          32768
+        ]
+      }
+    },
+    {
+      "name": "rc_cue_flat_advance",
+      "worldH": 1,
+      "worldPc": 83,
+      "phase": "cue-joint-flat",
+      "parameters": {
+        "b": [
+          448
+        ],
+        "ball": [
+          128
+        ],
+        "others": [
+          55872
+        ],
+        "otherCount": [
+          3
+        ],
+        "p": [
+          6603
+        ],
+        "scratch": [
+          0
+        ],
+        "control": [
+          62728
+        ],
+        "instructionBudget": [
+          32768
+        ]
+      }
+    },
+    {
+      "name": "rc_cue_flat_advance",
+      "worldH": 1,
+      "worldPc": 83,
+      "phase": "cue-joint-flat",
+      "parameters": {
+        "b": [
+          448
+        ],
+        "ball": [
+          128
+        ],
+        "others": [
+          55872
+        ],
+        "otherCount": [
+          3
+        ],
+        "p": [
+          6603
+        ],
+        "scratch": [
+          0
+        ],
+        "control": [
+          62728
+        ],
+        "instructionBudget": [
+          32768
+        ]
+      }
+    }
+  ],
+  "worldControl": [
+    1380143171,
+    1,
+    123,
+    0,
+    2,
+    0,
+    2,
+    2,
+    1139,
+    844,
+    366,
+    2564,
+    84,
+    0,
+    1139,
+    0
+  ]
+}

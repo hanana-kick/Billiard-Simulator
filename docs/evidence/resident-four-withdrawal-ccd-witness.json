@@ -1,0 +1,97 @@
+{
+  "kind": "authentic-row219-withdrawal-source-evidence-v1",
+  "captureSha256": "6267c7572f1e2404c065a5b171e413edcf51a149606fb47a1d5290b5d7cf6019",
+  "inspectionSha256": "84671a673700fa66c6086bd6afd0a2ca009b2035dcc5a76a5cfabf712278068f",
+  "sourceIdentity": "feb6b6eea9a0d29236df73680e79d3cbedf84dee702f3dae0c1e80a33ef9c2ef",
+  "probe": {
+    "binary": "/tmp/billiard-n4-scene-probe-target/debug/four-ball-scene-probe",
+    "provenance": "/tmp/billiard-n4-scene-probe-target/scene-probe-provenance.json",
+    "sha256": "86dca271e2dee02b417b75f1ac9c406cffe0f2b0a184be0d6262362f6f114e84",
+    "provenanceSha256": "e34dc7a451467a1b45f08fcc33893dd918bad59a83d7119b4dfce07a9bf5b7d3",
+    "sourceRevision": "b716d375efc0201003f0cd9ef7168eee0b62c177",
+    "sourceManifestSha256": "eacece29d3563cbeb6c02fbdeb8c1b2dbf9f092704364fb991085f45353ab057"
+  },
+  "sourceRun": "six complete original outer calls, 321 native h",
+  "retainedInspectionMetadataNote": "Initial inspection scope sourceRun inherited the five-outer default label; actual capture has six complete outers and nativeSteps321. Neither historical artifact was rewritten; subsequent helper uses capture.scope.",
+  "rows": [
+    {
+      "h": 306,
+      "inputSha256": "c5bcca4a11f3fbc0ffe0ac77f38722606fc7f66467ad898c65773b710bf5825f",
+      "actualNativePostSha256": "57768b1755de80e6192c5fb869887ee282041de57c8b73191436ded4aae6914f",
+      "independentNativePostSha256": "57768b1755de80e6192c5fb869887ee282041de57c8b73191436ded4aae6914f",
+      "order": [
+        {
+          "index": 22,
+          "generation": 3
+        },
+        {
+          "index": 20,
+          "generation": 3
+        },
+        {
+          "index": 17,
+          "generation": 0
+        }
+      ],
+      "allPreInactive": true,
+      "allPostInactive": true
+    },
+    {
+      "h": 307,
+      "inputSha256": "45096def68a1a8c48ddeeba041057a808e113b384d8ad65e53f630660efe6402",
+      "actualNativePostSha256": "621d65f1b1c6c0cfecf16f8b425e2eef4e4722e1f24dc4e9eca9ab097453039b",
+      "independentNativePostSha256": "621d65f1b1c6c0cfecf16f8b425e2eef4e4722e1f24dc4e9eca9ab097453039b",
+      "order": [
+        {
+          "index": 17,
+          "generation": 0
+        }
+      ],
+      "allPreInactive": true,
+      "allPostInactive": true
+    },
+    {
+      "h": 308,
+      "inputSha256": "a7dbad4dca22efe0b09ecb8e4bb1af1f9dee804cf9f23d43e497a5de51539e09",
+      "actualNativePostSha256": "14f43b67fbc2c4f3088ef15ff35a29f52abe7e32245d530a6e3beeab4d7f59bd",
+      "independentNativePostSha256": "14f43b67fbc2c4f3088ef15ff35a29f52abe7e32245d530a6e3beeab4d7f59bd",
+      "order": [
+        {
+          "index": 17,
+          "generation": 0
+        }
+      ],
+      "allPreInactive": true,
+      "allPostInactive": true
+    }
+  ],
+  "endpoints": [
+    {
+      "h": 320,
+      "outer": 5,
+      "time": 5.634374999999685,
+      "applicationSteps": 5409,
+      "nativeSnapshotSha256": "e9b233b804a7bcd8e8317e616d082fd6f816f9920f5a7a367792c966de0839fd",
+      "nativeDtWord": 982026377,
+      "innerDtWord": 931694729,
+      "subdivisions": 64,
+      "cuePresent": false
+    },
+    {
+      "h": 321,
+      "outer": 6,
+      "time": 5.635416666666352,
+      "applicationSteps": 5410,
+      "nativeSnapshotSha256": "9cf27a1997adc33a8cefde97ac5aa49589b8f12b1b4d0b814755d20d817ffde4",
+      "nativeDtWord": 982026377,
+      "innerDtWord": 982026377,
+      "subdivisions": 1,
+      "cuePresent": false
+    }
+  ],
+  "sameHWithdrawalResidentQualified": false,
+  "numericalQualified": false,
+  "nativeNewProfileQualified": false,
+  "defaultChanged": false,
+  "rawRuntimeInput": false
+}

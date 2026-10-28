@@ -1,0 +1,89 @@
+{
+  "profile": {
+    "name": "native-f32-raw-pose-v1",
+    "maxAbsAngleDegrees": 3600,
+    "absoluteTolerance": 0.00002,
+    "relativeTolerance": 0.00002,
+    "clearanceImplemented": false,
+    "physicalAdmission": false,
+    "rawRowBytes": 32,
+    "stateBytes": 320,
+    "sharedBytes": 64
+  },
+  "count": 12,
+  "shaderBytes": 3515,
+  "allocatedBufferBytes": 8128,
+  "compileAndAllocateMs": 54.11776099999997,
+  "sharedUploads": 1,
+  "rawUploads": 1,
+  "clearanceImplemented": false,
+  "fullShot": false,
+  "submitToDoneMs": 1.841543999999999,
+  "status": "unsupported-clearance",
+  "adapter": {
+    "vendor": "google",
+    "architecture": "swiftshader",
+    "description": "SwiftShader driver 5.0.0",
+    "isFallbackAdapter": true
+  },
+  "referenceProvenance": {
+    "reference": "unmodified-original-PhysicsLab-JS-Number/native-Rapier-pose-strike",
+    "physicsSha256": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d",
+    "mathSha256": "ea76455919c3fb22557680c5422902cf631753215492e799b32791993a939046",
+    "rapierSha256": "fca22b2f33d4e88d2992215f42df6312093476db7fea4197816fb8e4ce17cba4",
+    "wholeWorld": false,
+    "directClearanceImplemented": false
+  },
+  "errors": [
+    {
+      "name": "center",
+      "maxAbsoluteError": 2.2411346445316838e-8,
+      "originalClearance": true,
+      "directClearance": "unsupported"
+    },
+    {
+      "name": "elevated-offset",
+      "maxAbsoluteError": 2.384185791015625e-7,
+      "originalClearance": true,
+      "directClearance": "unsupported"
+    },
+    {
+      "name": "negative-angle",
+      "maxAbsoluteError": 1.1920928955078125e-7,
+      "originalClearance": true,
+      "directClearance": "unsupported"
+    },
+    {
+      "name": "near-vertical",
+      "maxAbsoluteError": 0.000011516131573685584,
+      "originalClearance": true,
+      "directClearance": "unsupported"
+    },
+    {
+      "name": "wrap-positive",
+      "maxAbsoluteError": 2.39481405817088e-8,
+      "originalClearance": true,
+      "directClearance": "unsupported"
+    },
+    {
+      "name": "wrap-negative",
+      "maxAbsoluteError": 9.5367431640625e-7,
+      "originalClearance": true,
+      "directClearance": "unsupported"
+    },
+    {
+      "name": "quadrant",
+      "maxAbsoluteError": 2.9151070194951546e-7,
+      "originalClearance": true,
+      "directClearance": "unsupported"
+    },
+    {
+      "name": "fine-angle",
+      "maxAbsoluteError": 3.455457597834055e-8,
+      "originalClearance": true,
+      "directClearance": "unsupported"
+    }
+  ],
+  "hardwareSpeedClaim": false,
+  "productionEnabled": false
+}

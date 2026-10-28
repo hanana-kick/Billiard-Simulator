@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import {runPreparedWorldCPU} from '../src/direct-candidate/deterministic-recurring-world.mjs';
+import {rollingCushionFixture} from '../tests/fixtures/world-mixed-v2.mjs';
+import {runExperimentalEarlyQtWorldCPU} from '../src/direct-candidate/experimental-early-qt-world.mjs';
+const outDir=process.argv[2];if(!outDir)throw new Error('Usage: node scripts/export-early-qt-reference.mjs OUTPUT_DIRECTORY');fs.mkdirSync(outDir,{recursive:true});
+const rows=[];for(const [speed,x] of [[2,0],[4,1.3]]){const f=rollingCushionFixture(speed,{x}),r=runExperimentalEarlyQtWorldCPU(f.world,f.scene,f.hulls,f.options);for(const [step,item] of r.history.entries()){if(!item.experimentalEarlyQt)continue;for(let i=0;i<r.state[3];i++)if(item.mask&(1<<i))rows.push({speed,x,step,tick:item.priorState[5],row:Array.from(new Int32Array(item.probeRows.buffer).slice(i*64,i*64+64)),smooth:Array.from(new Int32Array(item.proposals.buffer).slice(i*64,i*64+64)),qt:Array.from(new Int32Array(item.bridges.buffer).slice(i*128,i*128+128))});}}
+fs.writeFileSync(outDir+'/qt-reference-input.json',JSON.stringify(rows));
+
+const f=rollingCushionFixture(2,{x:0}),out={hulls:f.hulls.map(x=>Array.from(new Int32Array(x.buffer)))};for(const [name,fn]of [['original',runPreparedWorldCPU],['early',runExperimentalEarlyQtWorldCPU]]){const r=fn(f.world,f.scene,f.hulls,f.options);const anchor=r.history.find(x=>x.priorState?.[5]===rows[0].tick&&x.probeRows);assert.ok(anchor,'shared source anchor');assert.deepEqual(Array.from(new Int32Array(anchor.probeRows.buffer).slice(0,64)),rows[0].row,'exact shared row');if(out.commonState){assert.deepEqual(Array.from(anchor.priorState.slice(64)),out.commonState.slice(64),'all exact body sources');for(const k of[0,3,5,41,42])assert.equal(anchor.priorState[k],out.commonState[k],'source identity/clock');}else out.commonState=Array.from(anchor.priorState);out[name]=r.history.filter(x=>x.kind==='finite-cushion-v2').map(x=>({tick:x.impact.state[5],state:Array.from(new Int32Array(x.impact.state.buffer)),entry:Array.from(x.cushion.entry)}));}fs.writeFileSync(outDir+'/contact-reference-input.json',JSON.stringify(out));
+console.log(JSON.stringify({outputDirectory:outDir,anchors:rows.length}));

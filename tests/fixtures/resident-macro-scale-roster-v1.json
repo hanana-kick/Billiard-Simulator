@@ -1,0 +1,21 @@
+{
+  "kind": "resident-macro-scale-fixed-raw-roster-v1",
+  "scope": "Raw input settings only; no physical outcome or admission labels",
+  "sourceArtifactSha256": "11f41cd9c11ff47911f14afc084b27f32a15fc69db1f26d7970eb864f35f2262",
+  "preservedPrefixIds": [17, 118, 219, 320, 421, 522],
+  "stagedCounts": [8, 9],
+  "hSteps": 2,
+  "instructionBudget": 65536,
+  "dispatchChunks": 512,
+  "rows": [
+    {"id":17,"settings":{"angle":0,"elevation":8,"speed":2,"tipX":0,"tipY":0}},
+    {"id":118,"settings":{"angle":23,"elevation":37,"speed":1.7,"tipX":0.2,"tipY":-0.1}},
+    {"id":219,"settings":{"angle":310,"elevation":85,"speed":4.5,"tipX":0.2,"tipY":-0.1}},
+    {"id":320,"settings":{"angle":180,"elevation":37,"speed":0.5,"tipX":-0.3,"tipY":0.15}},
+    {"id":421,"settings":{"angle":180,"elevation":8,"speed":2,"tipX":0,"tipY":0}},
+    {"id":522,"settings":{"angle":9,"elevation":8,"speed":0,"tipX":0,"tipY":0}},
+    {"id":623,"settings":{"angle":120,"elevation":60,"speed":2.8,"tipX":-0.1,"tipY":0.2}},
+    {"id":724,"settings":{"angle":45,"elevation":70,"speed":3.1,"tipX":0.1,"tipY":0.25}},
+    {"id":825,"settings":{"angle":275,"elevation":55,"speed":1.1,"tipX":-0.2,"tipY":-0.1}}
+  ]
+}

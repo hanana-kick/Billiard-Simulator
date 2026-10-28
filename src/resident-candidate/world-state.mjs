@@ -3,7 +3,8 @@
  * This is not a fallback forward solver, evaluator, or raw-creation admission.
  * Every absolute address embedded in a bank has an explicit relocation entry.
  */
-import World from '../experimental-four-ball-world.js';
+import * as importedWorld from '../experimental-four-ball-world.js';
+const World=importedWorld.default??globalThis.LabFourBallWorldExperimental;
 import '../math.js';import '../physics.js';import '../route-rules.js';
 import '../experimental-ccd-bvh-world-bridge.js';
 import {packCreatedGeometry} from './geometry-state.mjs';
@@ -20,7 +21,8 @@ import {packBvhState,BVH_SCRATCH_WORDS} from './bvh.mjs';
 import {completeJournalBodyColliderOrder,encodeWorldBroad,createWorldBroadPrograms} from './world-broad.mjs';
 import {packRegisteredCcdSeed,createCcdPrograms,CCD_LAYOUT,packWorldCcdBody} from './ccd.mjs';
 import {encodeApplicationState,createApplicationPrograms,APPLICATION_LAYOUT} from './application.mjs';
-import {createRuleState,seedEventHistory,binary64Words} from './physical-rules.mjs';
+import {createRuleState,seedEventHistory,binary64Words,RULE_LAYOUT} from './physical-rules.mjs';
+import {createHistoryInitialization,validateSeedEventHistory} from '../source-event-history.mjs';
 import {createCoupledProgramBundle,coupledStateLayout} from './coupled-solver.mjs';
 import {packWorldSolverState} from './world-solver.mjs';
 import {packWorldCueGeometry} from './world-cue-geometry.mjs';
@@ -35,7 +37,7 @@ export const WORLD_HEADER=Object.freeze({magic:0,version:1,status:2,reason:3,can
 /** Common INITIAL data only. `rule` is an explicit caller query, not an
  * invented shot-priority catalog or replacement inverse planner. */
 export async function packCreatedWorldTemplate(initial,{rule}={}){
- const seed=World.validate(initial);if(seed.kind!=='original-live-registered-four-ball-created-world')throw new RangeError('Authenticated registered four-ball source required');
+ validateSeedEventHistory(initial);const seed=World.validate(initial);if(seed.kind!=='original-live-registered-four-ball-created-world')throw new RangeError('Authenticated registered four-ball source required');
  if(!rule||!Number.isInteger(rule.maxOuterSteps)||rule.maxOuterSteps<1)throw new RangeError('Explicit rule/horizon required');
  const geometry=packCreatedGeometry(seed),scene=encodeSceneInitialization(seed.cueInitial.sourceCreation,{bodyRegistry:seed.bodyRegistry});
  const roles=seed.cueBroadSeed.roles,slot=h=>{const i=scene.template.bodies.findIndex(b=>same(b.handle,h));if(i<0)throw new RangeError('Original scene generation missing');return i;};
@@ -68,16 +70,18 @@ export async function packCreatedWorldTemplate(initial,{rule}={}){
  state.set(app,segments.application.offset);objectRows.forEach((_,i)=>relocations.push(segments.application.offset+64+i*16+3));
  const [cueId,opponentId]=[a.selectedId,seed.game.cueIds.find(id=>id!==a.selectedId)];if(!seed.game.redIds.includes(rule.firstId)||!seed.game.redIds.includes(rule.secondId)||rule.firstId===rule.secondId)throw new RangeError('Rule requires the actual distinct red identities');
  const ruleState=createRuleState({...rule,cueId,opponentId,threeCushion:seed.game.threeCushion});
- // Current source emit history includes the stroke nonkey event. Contact keys
- // are handled by source pair slots, never a lossy Number handle conversion.
+ // Legacy artifacts retain their contact-only initialization unchanged. New
+ // source-full profiles carry EVERY original emit, including accepted stroke.
+ // Pair handles preserve their exact source Number bits and generations.
+ const historyInitialization=createHistoryInitialization(seed,metadata);
  const history=(seed.initialContactEvents??[]).slice(-8).map(e=>{let pairId=null;if(e.key!==undefined){const parts=String(e.key).split(':').map(Number);if(parts.length!==2||parts.some(x=>!Number.isFinite(x)))throw new RangeError('Unrecognized source contact key');const indices=parts.map(value=>{const b=new ArrayBuffer(8),d=new DataView(b);d.setFloat64(0,value,true);const h={index:d.getUint32(0,true),generation:d.getUint32(4,true)};const i=metadata.findIndex(c=>same(c.handle,h));if(i<0)throw new RangeError('Historical collider generation unavailable');return i;});pairId=Math.min(...indices)*27+Math.max(...indices);}return{pairId,time:binary64Words(e.time)};});
- seedEventHistory(ruleState,history);state.set(ruleState,segments.rules.offset);
+ if(historyInitialization){const h=historyInitialization.created;ruleState[RULE_LAYOUT.ringCount]=h.count;ruleState[RULE_LAYOUT.ringHead]=h.head;ruleState.set(h.words,RULE_LAYOUT.ring);}else seedEventHistory(ruleState,history);state.set(ruleState,segments.rules.offset);
  const others=seed.balls.flatMap((_,i)=>i===seed.selectedIndex?[]:[bodies+i*64]);state.set(others,segments.others.offset);others.forEach((_,i)=>relocations.push(segments.others.offset+i));
  seed.balls.forEach((b,i)=>state.set(packWorldCcdBody(b.state),segments.ccd.offset+CCD_LAYOUT.body+i*CCD_LAYOUT.bodyWords));
  const programParts=[],programOffsets={};let programWords=0;for(const[name,b]of Object.entries(bundles)){programOffsets[name]=programWords;programParts.push(b.program);programWords+=b.program.length;}const program=new Uint32Array(programWords);let at=0;for(const p of programParts){program.set(p,at);at+=p.length;}
  const catalogOffset=0,hullOffset=geometry.catalog.length,sharedGeometry=new Uint32Array(hullOffset+geometry.geometry.length+cueGeometry.geometryWords.length);sharedGeometry.set(geometry.catalog);sharedGeometry.set(geometry.geometry,hullOffset);sharedGeometry.set(cueGeometry.geometryWords,hullOffset+geometry.geometry.length);
  const minCcdDt=seed.cueInitial.sourceCreation.created.integration.min_ccd_dt;if(!Number.isFinite(minCcdDt)||minCcdDt<=0||Math.fround(minCcdDt)!==minCcdDt)throw new RangeError('Original native minimum CCD dt required');
- return Object.freeze({kind:'resident-created-world-layout',minimumCcdDtWord:bits(minCcdDt),sourceIdentity:seed.initialSnapshotSha256,capability:WORLD_STATE_CAPABILITY,state,segments:Object.freeze(segments),relocations:Uint32Array.from(relocations),program,programOffsets:Object.freeze(programOffsets),bundles,sharedGeometry,geometryOffsets:Object.freeze({catalog:catalogOffset,hulls:hullOffset}),fixedCcd:ccdSeed.words,coupledLayout:coupled,sceneTemplate:scene.template,bindings,selectedIndex:seed.selectedIndex,numericScratchWords:Math.max(CONVEX_POINT_LAYOUT.scratchWords,...Object.values(bundles).map(b=>b.scratchWords??b.numericScratchWords??0)),unfinishedOwners:Object.freeze(['raw-allocation-admission','canonical-cue-population','live-cue-cache','whole-h-stage-composition'])});
+ return Object.freeze({kind:'resident-created-world-layout',...(historyInitialization?{historyInitialization}:{}),minimumCcdDtWord:bits(minCcdDt),sourceIdentity:seed.initialSnapshotSha256,capability:WORLD_STATE_CAPABILITY,state,segments:Object.freeze(segments),relocations:Uint32Array.from(relocations),program,programOffsets:Object.freeze(programOffsets),bundles,sharedGeometry,geometryOffsets:Object.freeze({catalog:catalogOffset,hulls:hullOffset}),fixedCcd:ccdSeed.words,coupledLayout:coupled,sceneTemplate:scene.template,bindings,selectedIndex:seed.selectedIndex,numericScratchWords:Math.max(CONVEX_POINT_LAYOUT.scratchWords,...Object.values(bundles).map(b=>b.scratchWords??b.numericScratchWords??0)),unfinishedOwners:Object.freeze(['raw-allocation-admission','canonical-cue-population','live-cue-cache','whole-h-stage-composition'])});
 }
 
 /** Measured device limits are supplied by the caller. This is an allocation
