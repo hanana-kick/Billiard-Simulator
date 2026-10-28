@@ -3,6 +3,12 @@ on:
   push:
     branches: ['backup/**']
   workflow_dispatch:
+    inputs:
+      run_canonical_gpu:
+        description: Run optional canonical real-browser WebGPU validation
+        type: boolean
+        required: false
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -81,7 +87,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
   canonical-application:
     name: Opt-in canonical application (real browser WebGPU required)
-    if: startsWith(github.ref, 'refs/heads/backup/')
+    if: startsWith(github.ref, 'refs/heads/backup/') && github.event_name == 'workflow_dispatch' && inputs.run_canonical_gpu
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
