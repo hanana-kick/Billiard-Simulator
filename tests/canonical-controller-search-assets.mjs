@@ -14,6 +14,7 @@ async function fixture(){
  await write('src/direct-candidate/canonical-compact-search-service.mjs',`export {createCanonicalCompactSearchService as createCanonicalWasmCompactSearchService} from './experimental-live-world-sealed-entry.mjs';`);
  await write('src/direct-candidate/shared.mjs','export const shared=17;');
  await write(entry,await fs.readFile(path.join(rootHere,entry),'utf8'));
+ await write('src/direct-candidate/canonical-page-preparation.mjs',await fs.readFile(path.join(rootHere,'src/direct-candidate/canonical-page-preparation.mjs'),'utf8'));
  await write('src/direct-candidate/canonical-practice-entry.mjs','export async function startCanonicalPracticeInternal(c,options){return options.requestDevice();}');
  await write('src/direct-candidate/canonical-controller-integration.mjs',`import {shared} from './shared.mjs';export function installCanonicalController(controller,options){if(controller==='fail')throw Error('install fail');return {controller,options,shared};}`);
  await write('src/direct-candidate/canonical-state-store.mjs','export function createCanonicalStateStore(options){return options;}');
