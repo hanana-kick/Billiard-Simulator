@@ -41,6 +41,7 @@ function stateFor(device) {
   const lose = info => {
     if (state.lost) return;
     state.lost = new Error('Live pipeline cache device lost: ' + (info?.message ?? 'unknown'));
+    state.lost.deviceLoss = Object.freeze({reason: info?.reason ?? 'unknown', message: info?.message ?? 'unknown'});
     state.completed.clear(); state.keyBytes = 0;
     for (const reject of state.pending) reject(state.lost);
     state.pending.clear();
@@ -49,14 +50,23 @@ function stateFor(device) {
   return state;
 }
 function alive(state) { if (state.lost) throw state.lost; }
-function pending(state, work) {
+function pending(state, work, context) {
   alive(state);
+  const annotate = error => {
+    if (!context || error?.name === 'AbortError') return error;
+    const diagnostic = Object.freeze({...context, elapsedMs: Math.max(0, Date.now() - context.startedAt), ...(error?.deviceLoss ? {deviceLoss: error.deviceLoss} : {})});
+    const result = new Error((error?.message ?? String(error)) + ` [${context.label ?? 'unnamed'} · ${context.stage} · ${diagnostic.elapsedMs} ms${error?.deviceLoss ? ' · reason=' + error.deviceLoss.reason : ''}]`, {cause: error});
+    result.name = error?.name ?? 'Error'; result.gpuPreparation = diagnostic;
+    if (error?.deviceLoss) result.deviceLoss = error.deviceLoss;
+    return result;
+  };
   return new Promise((resolve, reject) => {
-    state.pending.add(reject);
+    const fail = error => reject(annotate(error));
+    state.pending.add(fail);
     Promise.resolve(work).then(value => {
-      state.pending.delete(reject);
-      if (state.lost) reject(state.lost); else resolve(value);
-    }, error => { state.pending.delete(reject); reject(error); });
+      state.pending.delete(fail);
+      if (state.lost) fail(state.lost); else resolve(value);
+    }, error => { state.pending.delete(fail); fail(error); });
   });
 }
 /** Opaque same-device/source receipt; callers cannot supply native modules. */
@@ -65,7 +75,7 @@ export async function prepareLiveWorldShader(device, {code, label, signal} = {})
   if (typeof code !== 'string') throw TypeError('Exact shader source required');
   const state = stateFor(device); alive(state);
   const module = device.createShaderModule({code, ...(label === undefined ? {} : {label})});
-  const info = await pending(state, module.getCompilationInfo());
+  const info = await pending(state, module.getCompilationInfo(), {stage: 'shader-info', label, entryPoint: 'main', shaderBytes: new TextEncoder().encode(code).byteLength, startedAt: Date.now()});
   if (info.messages.some(x => x.type === 'error')) throw Error(info.messages.map(x => x.message).join('\n'));
   abort(signal); alive(state);
   const receipt = Object.freeze({}); checkedShaders.set(receipt, {device, code, module}); return receipt;
@@ -83,14 +93,15 @@ export async function compileLiveWorldPipeline(device, {code, layout = 'auto', e
     return cached.pipeline;
   }
   // Pending calls stay independent: cancellation cannot poison another caller.
+  const context = {label, entryPoint, shaderBytes: new TextEncoder().encode(code).byteLength, startedAt: Date.now()};
   const module = checked?.module ?? device.createShaderModule({code, ...(label === undefined ? {} : {label})});
   if (preflight && !checked) {
-    const info = await pending(state, module.getCompilationInfo());
+    const info = await pending(state, module.getCompilationInfo(), {...context, stage: 'shader-info'});
     if (info.messages.some(x => x.type === 'error')) throw Error(info.messages.map(x => x.message).join('\n'));
   }
   abort(signal); alive(state);
   const nativeLayout = ownedLayout === 'auto' ? 'auto' : device.createPipelineLayout({bindGroupLayouts: ownedLayout.bindGroupLayouts.map(x => device.createBindGroupLayout(x))});
-  const pipeline = await pending(state, device.createComputePipelineAsync({layout: nativeLayout, compute: {module, entryPoint}}));
+  const pipeline = await pending(state, device.createComputePipelineAsync({layout: nativeLayout, compute: {module, entryPoint}}), {...context, stage: 'pipeline-create'});
   alive(state); abort(signal);
   // UTF-16 upper bound for retained exact-source key storage; oversized sources
   // still compile normally but do not evict the entire useful cache.

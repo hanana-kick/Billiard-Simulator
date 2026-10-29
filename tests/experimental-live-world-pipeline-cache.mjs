@@ -71,3 +71,19 @@ test('concurrent cancellation does not poison independent caller or its complete
  const rejected=assert.rejects(a,{name:'AbortError'});await Promise.resolve();await Promise.resolve();cancel.abort();hold.resolve();
  await rejected;const good=await b;assert.equal(await compile(f.device,{code:'shared'}),good);assert.equal(f.counts.pipelines,2);
 });
+
+
+test('loss diagnostics preserve native reason and exact asynchronous compilation phase without shader source',async()=>{
+ for(const stage of ['shader-info','pipeline-create']){
+  const f=fake(),hold=deferred();if(stage==='shader-info')f.infoWait(hold.promise);else f.compileWait(hold.promise);
+  const preparing=compile(f.device,{code:'secret WGSL source',label:'world-N3-7',entryPoint:'main'});
+  const rejected=assert.rejects(preparing,error=>{
+   assert.match(error.message,/A valid external Instance reference no longer exists/);assert.match(error.message,/reason=unknown/);
+   assert.equal(error.cause.message,'Live pipeline cache device lost: A valid external Instance reference no longer exists.');
+   assert.deepEqual(error.deviceLoss,{reason:'unknown',message:'A valid external Instance reference no longer exists.'});
+   assert.equal(error.gpuPreparation.stage,stage);assert.equal(error.gpuPreparation.label,'world-N3-7');assert.equal(error.gpuPreparation.entryPoint,'main');assert.equal(error.gpuPreparation.shaderBytes,18);
+   assert.ok(error.gpuPreparation.elapsedMs>=0);assert.ok(Object.isFrozen(error.gpuPreparation));assert.ok(!JSON.stringify(error.gpuPreparation).includes('secret'));return true;
+  });
+  await new Promise(resolve=>setImmediate(resolve));f.loss.resolve({reason:'unknown',message:'A valid external Instance reference no longer exists.'});await rejected;hold.resolve();
+ }
+});

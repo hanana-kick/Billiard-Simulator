@@ -49,3 +49,27 @@ test('durable device-loss alert renders localized stage and original compile/com
   }
  }finally{if(old===undefined)delete globalThis.CANONICAL_GPU_ENTRY_AVAILABLE;else globalThis.CANONICAL_GPU_ENTRY_AVAILABLE=old;}
 });
+
+
+test('preparation forwarding drops late progress after cancel, failure and completed handoff',async()=>{
+ const {loadAndStartCanonicalPractice}=await import('../src/components/canonical-practice-action.mjs');
+ for(const ending of ['cancel','failure','success']){
+  const abort=new AbortController(),seen=[];let callback,resolve,reject,entered;
+  const started=new Promise(r=>entered=r),wait=new Promise((a,b)=>{resolve=a;reject=b;});
+  const result=loadAndStartCanonicalPractice({},abort.signal,async()=>({startCanonicalPractice(c,o){callback=o.onProgress;entered();return wait;}}),undefined,p=>seen.push(p));
+  await started;callback({stage:'compile-start',pipelineIndex:1});assert.equal(seen.length,1);
+  if(ending==='cancel'){abort.abort();callback({pipelineIndex:2});resolve();await result;}
+  else if(ending==='failure'){const rejected=assert.rejects(result,/failed/);reject(Error('failed'));await rejected;}
+  else {resolve();await result;}
+  callback({pipelineIndex:3});assert.equal(seen.length,1);
+ }
+});
+test('preparation status describes program slots rather than claiming fresh native compilations',()=>{
+ const label=compiled.exports.canonicalPreparationLabel;
+ assert.match(label({phase:'loading',program:'manifest'}),/파일 목록 불러오는 중/);
+ assert.equal(label({program:'search-N3',stage:'compile-start',pipelineIndex:7,totalPipelines:112}),'3개 후보 배치 · GPU 프로그램 준비 6 / 112 · 현재 7번 처리 중');
+ assert.equal(label({program:'selected',stage:'compile',completedPipelines:115,totalPipelines:115}),'선택 타격 · GPU 프로그램 준비 115 / 115');
+ assert.match(label({program:'selected',stage:'allocate',allocatedBuffers:3,totalBuffers:226}),/계산 버퍼 준비 3 \/ 226/);
+ const source=fs.readFileSync(path.join(root,'src/components/canonical-practice-entry.tsx'),'utf8');
+ assert.match(source,/if\(pending.current!==request\|\|request.signal.aborted\)return\s+setProgress/);assert.ok(source.includes('setProgress(null)'));
+});

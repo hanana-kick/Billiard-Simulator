@@ -50,11 +50,11 @@ export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximum
  const rawCommands=rawEngine?.commands??[];validateWasmGpuCommandCount(worldCommands.length,rawCommands.length);
  const commands=[...rawCommands,...worldCommands];
  const pipelines=[],rawPipelines=[],totalPipelines=lowered.definitions.length+(rawEngine?.definitions.length??0)+1;let completedPipelines=0;
- const compile=async definition=>{checkPrepare();const pipeline=await compileLiveWorldPipeline(device,{...definition,signal});checkPrepare();progress({stage:'compile',completedPipelines:++completedPipelines,totalPipelines});return pipeline;};
- for(const definition of lowered.definitions)pipelines.push(await compile({code:definition.code,layout:definition.layout}));
- if(rawEngine)for(const definition of rawEngine.definitions)rawPipelines.push(await compile({code:definition.code,layout:definition.layout}));
+ const compile=async definition=>{checkPrepare();progress({stage:'compile-start',pipelineIndex:completedPipelines+1,totalPipelines,shaderBytes:new TextEncoder().encode(definition.code).byteLength,entryPoint:definition.entryPoint??'main',label:definition.label});const pipeline=await compileLiveWorldPipeline(device,{...definition,signal});checkPrepare();progress({stage:'compile',completedPipelines:++completedPipelines,totalPipelines});return pipeline;};
+ for(const [index,definition] of lowered.definitions.entries())pipelines.push(await compile({code:definition.code,layout:definition.layout,label:`world-N${count}-${index+1}`}));
+ if(rawEngine)for(const [index,definition] of rawEngine.definitions.entries())rawPipelines.push(await compile({code:definition.code,layout:definition.layout,label:`raw-N${count}-${index+1}`}));
  const stride=plan.allocations[plan.readback].size/4;
- const gate=await compile({code:liveBoundsResultGateSource(stride),preflight:false});
+ const gate=await compile({code:liveBoundsResultGateSource(stride),preflight:false,label:`result-gate-N${count}`});
  const buffers=[],rawBuffers=[],owned=[],pending=[];
  const internalGroups=createLiveWorldRunBindGroups(device);let externalGroups=createLiveWorldRunBindGroups(device);
  let lost=null,disposed=false,active=null,lastGeneration=0,busy=false;
