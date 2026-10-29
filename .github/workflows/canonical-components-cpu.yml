@@ -33,12 +33,24 @@ jobs:
         run: |
           set -o pipefail
           npm run test:canonical-components 2>&1 | tee canonical-components-cpu.log
+      - name: Install pinned CPU-only WASM build target
+        run: rustup toolchain install 1.99.1 --profile minimal --target wasm32-unknown-unknown
+      - name: WASM runtime and fake-device contracts (no GPU execution)
+        env:
+          RUSTUP_TOOLCHAIN: 1.99.1
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run test:wasm-gpu:host 2>&1 | tee wasm-gpu-host.log
+          git diff --exit-code -- artifacts/wasm-gpu-runtime.wasm artifacts/wasm-gpu-runtime.wasm.build.json
       - name: Preserve CPU results, including native SKIP records
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: canonical-components-cpu-evidence
-          path: canonical-components-cpu.log
+          path: |
+            canonical-components-cpu.log
+            wasm-gpu-host.log
           if-no-files-found: ignore
           retention-days: 14
       - name: Record qualification boundary

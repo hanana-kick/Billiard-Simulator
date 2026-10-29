@@ -28,7 +28,11 @@ export function validateWasmGpuCommandCount(worldCount,rawCount=0){
  return worldCount+rawCount;
 }
 
-export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximumOwnedBytes,maxInFlight=1}={}) {
+export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximumOwnedBytes,maxInFlight=1,signal,onPrepareProgress}={}) {
+ if(onPrepareProgress!==undefined&&typeof onPrepareProgress!=='function')throw TypeError('Synchronous preparation callback required');
+ const checkPrepare=()=>{if(signal?.aborted)throw new DOMException(String(signal.reason??'GPU preparation cancelled'),'AbortError');};
+ const progress=value=>{checkPrepare();const result=onPrepareProgress?.(Object.freeze(value));if(result&&typeof result.then==='function'){Promise.resolve(result).catch(()=>{});throw TypeError('Preparation callback must be synchronous');}checkPrepare();};
+ checkPrepare();
  if(typeof device?.pushErrorScope!=='function'||typeof device?.popErrorScope!=='function')throw TypeError('GPU error scopes required');
  if(typeof device?.lost?.then!=='function')throw TypeError('Device loss promise required');
  assertLoadedWasmGpuEngineArtifact(engine);
@@ -45,11 +49,12 @@ export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximum
  }
  const rawCommands=rawEngine?.commands??[];validateWasmGpuCommandCount(worldCommands.length,rawCommands.length);
  const commands=[...rawCommands,...worldCommands];
- const pipelines=[],rawPipelines=[];
- for(const definition of lowered.definitions)pipelines.push(await compileLiveWorldPipeline(device,{code:definition.code,layout:definition.layout}));
- if(rawEngine)for(const definition of rawEngine.definitions)rawPipelines.push(await compileLiveWorldPipeline(device,{code:definition.code,layout:definition.layout}));
+ const pipelines=[],rawPipelines=[],totalPipelines=lowered.definitions.length+(rawEngine?.definitions.length??0)+1;let completedPipelines=0;
+ const compile=async definition=>{checkPrepare();const pipeline=await compileLiveWorldPipeline(device,{...definition,signal});checkPrepare();progress({stage:'compile',completedPipelines:++completedPipelines,totalPipelines});return pipeline;};
+ for(const definition of lowered.definitions)pipelines.push(await compile({code:definition.code,layout:definition.layout}));
+ if(rawEngine)for(const definition of rawEngine.definitions)rawPipelines.push(await compile({code:definition.code,layout:definition.layout}));
  const stride=plan.allocations[plan.readback].size/4;
- const gate=await compileLiveWorldPipeline(device,{code:liveBoundsResultGateSource(stride),preflight:false});
+ const gate=await compile({code:liveBoundsResultGateSource(stride),preflight:false});
  const buffers=[],rawBuffers=[],owned=[],pending=[];
  const internalGroups=createLiveWorldRunBindGroups(device);let externalGroups=createLiveWorldRunBindGroups(device);
  let lost=null,disposed=false,active=null,lastGeneration=0,busy=false;
@@ -65,13 +70,16 @@ export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximum
   while(depth--){try{const error=await device.popErrorScope();if(error&&!gpuFailure)gpuFailure=Error('GPU operation error: '+(error.message??String(error)));}catch(error){gpuFailure??=error;}}
   if(gpuFailure)lose(gpuFailure);if(failure)throw failure;if(gpuFailure)throw gpuFailure;return result;
  };
- try {return await scoped(async()=>{
-  if(rawEngine)for(const a of rawEngine.allocations){const b=device.createBuffer({size:a.bytes,usage:a.usage});rawBuffers.push(b);owned.push(b);}
+ const totalBuffers=(rawEngine?.allocations.length??0)+plan.allocations.filter(a=>!a.external).length+3;
+ const allocated=()=>progress({stage:'allocate',allocatedBuffers:owned.length,totalBuffers});
+ try {const prepared=await scoped(async()=>{
+  checkPrepare();
+  if(rawEngine)for(const a of rawEngine.allocations){checkPrepare();const b=device.createBuffer({size:a.bytes,usage:a.usage});rawBuffers.push(b);owned.push(b);allocated();}
   for(let i=0;i<plan.allocations.length;i++){
    const a=plan.allocations[i];if(a.external){buffers.push(rawEngine?rawBuffers[rawEngine.outputs[a.external]]:null);continue;}
-   const b=device.createBuffer({size:a.size*(lowered.shared[i]?1:count),usage:128|4|8});buffers.push(b);owned.push(b);
+   checkPrepare();const b=device.createBuffer({size:a.size*(lowered.shared[i]?1:count),usage:128|4|8});buffers.push(b);owned.push(b);allocated();
   }
-  const make=(size,usage)=>{const b=device.createBuffer({size,usage});owned.push(b);return b;};
+  const make=(size,usage)=>{checkPrepare();const b=device.createBuffer({size,usage});owned.push(b);allocated();return b;};
   let fault=make(count*4,128|8),ids=make(count*4,128|8),read=make(count*16,1|8);
   if(rawEngine&&owned.reduce((sum,b)=>sum+b.size,0)!==engine.resources.totalOwnedBytes)throw Error('Combined raw/world allocation accounting mismatch');
   const guard=(generation)=>{alive();if(!active||active.generation!==generation||active.cancelled)throw Error('Stale or cancelled GPU generation');};
@@ -137,5 +145,5 @@ export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximum
    lose,
    async dispose(){return exclusive(async()=>{if(disposed)return;try{await drain();}finally{disposed=true;active=null;externalGroups.dispose();internalGroups.dispose();for(const b of owned)b.destroy();buffers.length=0;rawBuffers.length=0;owned.length=0;pipelines.length=0;rawPipelines.length=0;fault=null;ids=null;read=null;}});},
   });
- });}catch(error){externalGroups.dispose();internalGroups.dispose();for(const b of owned)b.destroy();buffers.length=0;rawBuffers.length=0;owned.length=0;throw error;}
+ });checkPrepare();return prepared;}catch(error){externalGroups.dispose();internalGroups.dispose();for(const b of owned)b.destroy();buffers.length=0;rawBuffers.length=0;owned.length=0;throw error;}
 }

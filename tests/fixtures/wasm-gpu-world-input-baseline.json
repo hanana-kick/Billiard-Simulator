@@ -1,0 +1,12 @@
+{
+  "kind": "independent-pre-extraction-world-capture-digests-v1",
+  "sourceRevision": "715b503f57f6962d99c7a85a787995284960ee8b",
+  "source": "Original captureLiveWorldPlan using source-owned bindings rebuilt independently in the preserved pre-extraction tree; no CPU or GPU physics executed.",
+  "encoding": "sha256(UTF8(JSON.stringify(plan))); includes complete WGSL/layout/ordered commands/allocation descriptors/all initial bytes",
+  "cases": {
+    "default": "5b76d3629ddb55829c9f3bbfe95f9635dcb0abd98381907743b91a730b429720",
+    "changed-geometry-clock-rules-ids": "380e25a210f50045873bb4e21569589735734fe8c46d342275e0515036e21511"
+  },
+  "publishedEquivalentSourceCommit": "080c75594e54d792ce5704ac2a885277e6e9e62c",
+  "publishedSourceVerification": "All tracked baseline blob SHAs match this published commit; the remote additionally contains four backup-only files."
+}

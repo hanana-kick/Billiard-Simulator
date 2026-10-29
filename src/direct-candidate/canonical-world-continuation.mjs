@@ -25,6 +25,13 @@ function staticGeometry(x){
  return {vertices,indices:x.indices,bounds:[0,1,2].map(i=>{const a=vertices.filter((_,k)=>k%3===i);return [Math.min(...a),Math.max(...a)];})};
 }
 function data(binding){const d=bindings.get(binding);if(!d)throw TypeError('Owned immutable world continuation binding required');return d;}
+/** Copy-only current-input view. This does not authorize a fabricated binding or
+ * expose mutable arrays retained by the source-owned continuation. */
+export function snapshotCanonicalWorldContinuation(binding){
+ const d=data(binding);
+ return {request:structuredClone(d.request),shotClock:structuredClone(d.shotClock),
+  scene:d.scene.slice(),hulls:d.hulls.map(hull=>hull.slice()),options:structuredClone(d.options)};
+}
 /** Explicit local numerical/work settings remain distinct from the elapsed clock.
  * maxWorldSteps is a component work cap, NOT request.maximumWorkItems accounting.
  */
@@ -58,9 +65,21 @@ export function runCanonicalWorldContinuationCPU(binding,world,{signal,selectedT
 }
 function admitRaw(binding,batch){const d=data(binding),snapshot=snapshotRawWorldBatch(batch),b=batch.binding;if(batch.count!==1||b.requestIdentity!==binding.requestIdentity||b.sceneId!==binding.sceneIdentity||b.sceneKey!==binding.sceneKey||b.requestKey!==binding.requestKey||b.shotClock.startingTick!==binding.shotClock.startingTick||b.shotClock.deadlineTick!==binding.shotClock.deadlineTick)throw RangeError('One owned raw batch with identical original shot/scene/request binding required');const template=snapshot.template;template[1]=snapshot.rawRows[0];admit(binding,template);return {...d,template};}
 function scoredReceipt(binding,result){const r=receipt(binding,result),compact=result.compactResult;return {...r,ruleTimeBasis:'shot-relative-q20',ruleTimeOrigin:binding.shotClock.startingTick,kissCoverage:result.ruleState?.[39]===1&&result.ruleState[38]===result.state[5]-binding.shotClock.startingTick,gameplayVerdict:compact&&compact[3]!==0x80000000?{status:'complete',score:compact[3]|0}:null};}
+/** Decode/receipt seam for the original GPU raw chain. This validates owned
+ * input bindings and packet shape; it does not manufacture physics authority.
+ * The selected session still checks output identity, roster, clock and trace. */
+export function decorateCanonicalRawWorldGPUResult(binding,batch,result){
+ admitRaw(binding,batch);
+ const words=(value,length)=>value instanceof Uint32Array&&value.length===length&&Object.prototype.toString.call(value.buffer)!=='[object SharedArrayBuffer]';
+ if(!result||!words(result.rawHandoffStatus,16))throw TypeError('Complete original GPU raw handoff packet required');
+ if(result.rawHandoffStatus[1]!==1)return {rawHandoffStatus:result.rawHandoffStatus,continuation:null};
+ if(!words(result.state,256)||!words(result.dense,256)||!words(result.words,768)||!words(result.firstPairEntry,128)||!words(result.firstPairResponse,128)||!words(result.ruleState,48)||!words(result.compactResult,4)||result.nominalRest!==(result.state[1]===9))throw TypeError('Complete original GPU continuation readback required');
+ if(result.selectedTraceGPU!==undefined&&(!['gpu-selected-world-source-v1','gpu-selected-world-source-v2'].includes(result.selectedTraceGPU?.kind)||result.selectedTraceGPU.gpuProduced!==true||!Array.isArray(result.selectedTraceGPU.records)))throw TypeError('Decoded original GPU selected source capture required');
+ return {rawHandoffStatus:result.rawHandoffStatus,continuation:scoredReceipt(binding,result)};
+}
 export function runCanonicalRawWorldContinuationCPU(binding,batch,{signal,selectedTraceCapture,selectedTraceMaxRecords}={}){const d=admitRaw(binding,batch);if(signal?.aborted)throw new DOMException('Cancelled','AbortError');const raw=runRawWorldCPU(batch);if(raw.status[1]!==1)return {rawHandoffStatus:raw.status,continuation:null};const journal=createWorldJournalCPU(raw.world);seedRawJournalPrefixCPU(journal.words,batch,raw);const result=runPreparedWorldCPU(raw.world,d.scene,d.hulls,{...d.options,signal,selectedTraceCapture,selectedTraceMaxRecords},journal),rules=reduceCanonicalJournalCPU(bindCanonicalJournalRules(d.request,batch),result.journalWords,result.journalAuxWords),continuation=scoredReceipt(binding,{...result,ruleState:rules.state,compactResult:rules.result});return {rawHandoffStatus:raw.status,continuation};}
 export async function createCanonicalWorldContinuationGPU(device,binding,{strikeBackend='staged'}={}){
  if(!['staged','chunked-16'].includes(strikeBackend))throw RangeError('Explicit staged or chunked-16 raw backend');
  const d=data(binding),engine=await createPreparedPairContinuationGPU(device,d.hulls,{mixedMotionRevision:d.options.mixedMotionRevision});let rawEngine;
- return {compileMs:engine.compileMs,strikeBackend,async run(world,{signal,selectedTrace,selectedTraceMaxRecords}={}){if(signal?.aborted)throw new DOMException('Cancelled','AbortError');admit(binding,world);const result=await engine.run(world,d.scene,{...d.options,signal,selectedTrace,selectedTraceMaxRecords});return receipt(binding,result);},async runRaw(batch,{signal,selectedTrace,selectedTraceMaxRecords}={}){if(signal?.aborted)throw new DOMException('Cancelled','AbortError');const admitted=admitRaw(binding,batch);rawEngine??=await createRawWorldGPU(device,{strikeBackend});if(signal?.aborted)throw new DOMException('Cancelled','AbortError');const bank=rawEngine.createBank(batch);try{const ruleBinding=bindCanonicalJournalRules(d.request,batch),result=await engine.run(admitted.template,d.scene,{...d.options,signal,selectedTrace,selectedTraceMaxRecords},bank,ruleBinding);return {rawHandoffStatus:result.rawHandoffStatus,continuation:result.rawHandoffStatus[1]===1?scoredReceipt(binding,result):null};}finally{bank.dispose();}}};
+ return {compileMs:engine.compileMs,strikeBackend,async run(world,{signal,selectedTrace,selectedTraceMaxRecords}={}){if(signal?.aborted)throw new DOMException('Cancelled','AbortError');admit(binding,world);const result=await engine.run(world,d.scene,{...d.options,signal,selectedTrace,selectedTraceMaxRecords});return receipt(binding,result);},async runRaw(batch,{signal,selectedTrace,selectedTraceMaxRecords}={}){if(signal?.aborted)throw new DOMException('Cancelled','AbortError');const admitted=admitRaw(binding,batch);rawEngine??=await createRawWorldGPU(device,{strikeBackend});if(signal?.aborted)throw new DOMException('Cancelled','AbortError');const bank=rawEngine.createBank(batch);try{const ruleBinding=bindCanonicalJournalRules(d.request,batch),result=await engine.run(admitted.template,d.scene,{...d.options,signal,selectedTrace,selectedTraceMaxRecords},bank,ruleBinding);return decorateCanonicalRawWorldGPUResult(binding,batch,result);}finally{bank.dispose();}}};
 }

@@ -2,13 +2,19 @@ import * as React from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
+import { canonicalSearchPhaseLabel } from '@/components/canonical-search-progress'
 import { loadAndStartCanonicalPractice } from '@/components/canonical-practice-action.mjs'
+
+const count=(value:unknown)=>Number.isSafeInteger(value)&&Number(value)>=0?String(value):'—'
+const playbackPhases:Record<string,string>={ready:'준비 완료',forecast:'타격 예측',calculating:'수동 타격 계산',playing:'타격 재생',rest:'정지 완료',refused:'계산 거부','forecast-unavailable':'예측 불가','source-changed':'소스 변경','stale-source':'소스 무효'}
 
 /** Optional build only. Opening or dismissing the dialog does not request a GPU. */
 export function CanonicalPracticeEntry({state:s,controller}:{state:any;controller:any}) {
  const [open,setOpen]=React.useState(false),[busy,setBusy]=React.useState(false),[error,setError]=React.useState('')
  const pending=React.useRef<AbortController|null>(null)
  React.useEffect(()=>()=>{pending.current?.abort();pending.current=null},[])
+ const loss=s.canonicalPlayback?.deviceLoss,lossProgress=loss?.searchProgress
+ const lossPhase=loss?.routeStatus==='searching'?canonicalSearchPhaseLabel(lossProgress):(playbackPhases[loss?.phase]??loss?.phase)
  const available=(globalThis as any).CANONICAL_GPU_ENTRY_AVAILABLE===true
  const disabled=busy||!s.ready||!s.paused||!s.canAim||!!s.activeStroke||s.routeStatus==='searching'||!!s.canonicalPlayback
  const changeOpen=(value:boolean)=>{
@@ -33,6 +39,15 @@ export function CanonicalPracticeEntry({state:s,controller}:{state:any;controlle
  if(!available)return null
  return <>
   <Button id="startCanonicalPractice" variant="outline" size="sm" disabled={disabled} onClick={()=>changeOpen(true)}>GPU 실험 새 게임</Button>
+  {loss?<Alert id="canonicalDeviceLoss" role="alert"><AlertTitle>GPU 장치를 사용할 수 없습니다</AlertTitle><AlertDescription>
+   <p>{loss.message||loss.reason}</p>
+   <p>마지막 단계: {lossPhase} · 이유: {loss.reason} · 발생 시각: {loss.timestamp}</p>
+   {lossProgress?.phase==='compiling'?<p>셰이더 준비 {count(lossProgress.compileCompleted)} / {count(lossProgress.compileTotal)}</p>:null}
+   {['encoding','submitted'].includes(lossProgress?.phase)&&(lossProgress?.encodedCommands!=null||lossProgress?.totalCommands!=null)?<p>명령 준비 {count(lossProgress.encodedCommands)} / {count(lossProgress.totalCommands)}</p>:null}
+   {lossProgress?<p>검색 진행: {count(lossProgress.tested)} / {count(lossProgress.total)}개</p>:null}
+   <p>GPU 작업을 중단했습니다. 이 오류와 브라우저 이름·버전, 직전 동작을 알려 주세요. 새로고침하면 기본 모드에서 다시 시작할 수 있지만 현재 게임 기록은 사라집니다.</p>
+  </AlertDescription></Alert>:null}
+  {s.canonicalPlayback?.entryWarning?<Alert role="alert"><AlertTitle>화면 갱신 경고</AlertTitle><AlertDescription>{s.canonicalPlayback.entryWarning}</AlertDescription></Alert>:null}
   <Dialog open={open} onOpenChange={changeOpen}><DialogContent>
    <DialogHeader><DialogTitle>GPU 실험 새 게임을 시작할까요?</DialogTitle>
     <DialogDescription>현재 배치와 점수를 새 4구 연습 배치로 교체합니다. 기존 기록은 옮기지 않습니다.</DialogDescription></DialogHeader>

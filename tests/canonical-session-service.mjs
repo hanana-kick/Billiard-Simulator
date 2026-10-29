@@ -38,7 +38,7 @@ test('selected lifecycle uses owned inputs, original clock, trace-only hydration
   assert.equal(r.implementation,'injected-test');assert.equal(r.physicsResultComplete,true);assert.equal(r.captureComplete,true);assert.equal(r.samplingComplete,false);
   assert.equal(r.cumulativeWorkBudgetEnforced,false);assert.equal(r.cumulativeEventBudgetEnforced,false);
   assert.equal(calls[0][1].localOptions.budgets[0],2000);assert.equal(calls[0][1].shotClock.startingTick,1234);
-  assert.equal(calls[2][1].candidate.settings.speed,.5);assert.equal(calls[1][2].selectedTrace,true);
+  assert.equal(calls[0][2].request.requestKey,calls[2][1].request.requestKey);assert.equal(calls[0][2].candidate.candidateKey,calls[2][1].candidate.candidateKey);assert.equal(calls[0][2].candidate.settings.speed,.5);assert.equal(calls[2][1].candidate.settings.speed,.5);assert.equal(calls[1][2].selectedTrace,true);
   const words=r.readCompact();words[3]=0;assert.equal(r.readCompact()[3],1);
   assert.deepEqual(r.sample(1500),{status:'unavailable',reason:'EVENT_BRACKET',tick:1500});
   s.cancel();assert.throws(()=>r.readCompact(),{code:'CANCELLED'});assert.throws(()=>r.sample(1500),{code:'CANCELLED'});
@@ -128,4 +128,11 @@ test('MMQ2 missing source capture stays incomplete without changing the physics 
   const {api}=v2Runtime(x=>({...x,rawStrikeSourceCaptured:false,captureComplete:false,sourceRecordCount:0}));
   const r=await createCanonicalSessionLifecycleHarness(api,v2Options).runSelected(input());
   assert.equal(r.physicsResultComplete,true);assert.equal(r.captureComplete,false);assert.equal(r.samplingComplete,false);
+});
+
+test('session disposal waits for active engine view cleanup and suppresses late selected receipts',async()=>{
+ const d=deferred(),entered=deferred(),standard=runtime();
+ const api={...standard.api,async createEngine(...args){const e=await standard.api.createEngine(...args);return {...e,async dispose(){entered.resolve();await d.promise;}};}};
+ const service=createCanonicalSessionLifecycleHarness(api),run=service.runSelected(input());await entered.promise;
+ const rejected=assert.rejects(run,{code:'SESSION_DISPOSED'});let drained=false;const disposal=service.dispose().then(()=>{drained=true;});await Promise.resolve();assert.equal(drained,false);d.resolve();await rejected;await disposal;assert.equal(drained,true);
 });

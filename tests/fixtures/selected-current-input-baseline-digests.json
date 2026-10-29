@@ -1,0 +1,19 @@
+{
+  "schema": "selected-current-input-baseline-digests-v1",
+  "sourceCommit": "715b503f57f6962d99c7a85a787995284960ee8b",
+  "method": "Independent original source selected factories, first postsubmit map sentinel; no physics",
+  "cases": {
+    "default": {
+      "buffers": "2c38a0601fdafe4be85c90ff97827e83750dac79969168bce49423093341bc07",
+      "commands": "34a03feb58b03a3c6e4b13c161a71f43b35e3962e66489b4d862b615718a38a7",
+      "modules": "ffa6de043afa81ab08c02c12bf12ef3205782acd1748a42d10ffec0284229353"
+    },
+    "changed": {
+      "buffers": "bef33adc7014673b3cd80a64cb3056e5bd10bc25ea1cbf2c613900a9c908ec06",
+      "commands": "34a03feb58b03a3c6e4b13c161a71f43b35e3962e66489b4d862b615718a38a7",
+      "modules": "ffa6de043afa81ab08c02c12bf12ef3205782acd1748a42d10ffec0284229353"
+    }
+  },
+  "publishedEquivalentSourceCommit": "080c75594e54d792ce5704ac2a885277e6e9e62c",
+  "publishedSourceVerification": "All tracked baseline blob SHAs match this published commit; the remote additionally contains four backup-only files."
+}

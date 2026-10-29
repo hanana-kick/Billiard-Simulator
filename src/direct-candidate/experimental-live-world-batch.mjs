@@ -1,6 +1,7 @@
 /** Bounded N1/N3 current-source prototype. Captures the actual live host graph;
  * no frozen WGSL refresh, hand-written world schedule, or CPU physics replay.
  * No app integration, release qualification, or large-N performance claim. */
+import {linkResidentWGSL} from '../resident-candidate/wgsl-linker.mjs';
 import {compileLiveWorldPipeline} from './experimental-live-world-pipeline-cache.mjs';
 import {createLiveWorldSubmissionQueue} from './experimental-live-world-submissions.mjs';
 import {createLiveWorldRunBindGroups} from './experimental-live-world-bind-groups.mjs';
@@ -29,7 +30,10 @@ export async function lowerLiveWorldPlans(plans,{faultPolicy='atomic-per-access'
  if(!Array.isArray(candidateLocalAllocations)||candidateLocalAllocations.some(i=>!Number.isInteger(i)||i<0||i>=base.allocations.length))throw Error('Exact candidate-local allocation roles required');
  for(const i of candidateLocalAllocations)shared[i]=false;
  shared[base.readback]=false;
- const definitions=[],keys=new Map(),variants=new Map(),intern=(code,layout='auto',faultBinding=null)=>{const key=JSON.stringify([code,layout,faultBinding]);let id=keys.get(key);if(id===undefined){id=definitions.length;keys.set(key,id);definitions.push({code,layout,faultBinding});}return id;};
+ const definitions=[],keys=new Map(),variants=new Map(),intern=(code,layout='auto',faultBinding=null)=>{
+  // Drop unreachable declarations before cold shader parsing. Retained function
+  // bodies, bindings, dispatch order and the arithmetic model stay unchanged.
+  code=linkResidentWGSL([code]).code;const key=JSON.stringify([code,layout,faultBinding]);let id=keys.get(key);if(id===undefined){id=definitions.length;keys.set(key,id);definitions.push({code,layout,faultBinding});}return id;};
  const commands=base.commands.map(c=>{
   if(c.kind==='dispatch'){
    const variantKey=JSON.stringify([c.definition,c.entries.map(e=>shared[e.buffer]),c.indirect?{offset:c.indirect.offset,bound:c.indirect.bound,stride:base.allocations[c.indirect.buffer].size/4}:null]);let definition=variants.get(variantKey);

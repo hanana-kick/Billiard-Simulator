@@ -70,12 +70,12 @@ export async function prepareLiveWorldShader(device, {code, label, signal} = {})
   abort(signal); alive(state);
   const receipt = Object.freeze({}); checkedShaders.set(receipt, {device, code, module}); return receipt;
 }
-export async function compileLiveWorldPipeline(device, {code, layout = 'auto', label, preflight = true, signal, preflightShader} = {}) {
+export async function compileLiveWorldPipeline(device, {code, layout = 'auto', entryPoint = 'main', label, preflight = true, signal, preflightShader} = {}) {
   abort(signal);
-  if (typeof code !== 'string' || typeof preflight !== 'boolean') throw TypeError('Exact shader source and preflight required');
+  if (typeof code !== 'string' || typeof entryPoint !== 'string' || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(entryPoint) || typeof preflight !== 'boolean') throw TypeError('Exact shader source and preflight required');
   const checked = preflightShader === undefined ? null : checkedShaders.get(preflightShader);
   if (preflightShader !== undefined && (!checked || checked.device !== device || checked.code !== code || !preflight)) throw TypeError('Owned same-device exact-source preflight receipt required');
-  const ownedLayout = snapshot(layout), key = JSON.stringify([code, ownedLayout, preflight]), state = stateFor(device);
+  const ownedLayout = snapshot(layout), key = JSON.stringify([code, ownedLayout, preflight, entryPoint]), state = stateFor(device);
   alive(state);
   const cached = state.completed.get(key);
   if (cached) {
@@ -90,7 +90,7 @@ export async function compileLiveWorldPipeline(device, {code, layout = 'auto', l
   }
   abort(signal); alive(state);
   const nativeLayout = ownedLayout === 'auto' ? 'auto' : device.createPipelineLayout({bindGroupLayouts: ownedLayout.bindGroupLayouts.map(x => device.createBindGroupLayout(x))});
-  const pipeline = await pending(state, device.createComputePipelineAsync({layout: nativeLayout, compute: {module, entryPoint: 'main'}}));
+  const pipeline = await pending(state, device.createComputePipelineAsync({layout: nativeLayout, compute: {module, entryPoint}}));
   alive(state); abort(signal);
   // UTF-16 upper bound for retained exact-source key storage; oversized sources
   // still compile normally but do not evict the entire useful cache.

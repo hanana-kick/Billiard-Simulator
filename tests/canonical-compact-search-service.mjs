@@ -3,10 +3,10 @@ import {threeBallFixture} from './fixtures/canonical-three-ball-source.mjs';
 import {fixture} from './fixtures/canonical-selected-source.mjs';
 import {createCanonicalCompactSearchService,createCanonicalCompactSearchServiceHarness} from '../src/direct-candidate/canonical-compact-search-service.mjs';
 const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return{promise,resolve};};
-function setup({count=7,profile='mmq1-ball-ball',beforeRun=()=>{},mutate=()=>{},beforeCompile=()=>{},packet=(c)=>[c.candidateId,1,0,1]}={}){
+function setup({count=7,profile='mmq1-ball-ball',beforeRun=()=>{},mutate=()=>{},beforeCompile=()=>{},expectedPreparation='sealed-uploads',packet=(c)=>[c.candidateId,1,0,1]}={}){
  const f=fixture(),request={scene:f.request.scene,requestId:71,selectedId:f.request.selectedId,purpose:'search',executionProfile:'canonical-local-v1',budget:f.request.budget,rules:{...f.request.rules,search:false}},calls=[],runs=[];
  const options={request,population:Array.from({length:count},(_,i)=>({candidateId:100+i,settings:{...f.candidate.settings,angle:i}})),raw:{absoluteTick:1234,sceneKey:11,requestKey:23,maximumSteps:2048},continuation:{durationTicks:65535,budgets:[2000,2000,20000,20000,20000,20000,20000],maxWorldSteps:128}};
- const runtime={sourceRevision:'test-revision',async createEngine(device,o){calls.push(o);await beforeCompile(o);return{buildRevision:runtime.sourceRevision,candidateCount:o.candidates.length,validationProfile:o.validationProfile,preparation:'sealed-uploads',async run({candidates,signal}){runs.push({candidates,signal});await beforeRun(candidates);const result={buildRevision:runtime.sourceRevision,requestIdentity:o.binding.requestIdentity,sceneIdentity:o.binding.sceneIdentity,epoch:o.request.epoch,candidateKeys:candidates.map(c=>c.candidateKey),compact:Uint32Array.from(candidates.flatMap(packet)),metrics:{readbackBytes:candidates.length*16}};mutate(result,o,candidates);return result;}};}};
+ const runtime={expectedPreparation,sourceRevision:'test-revision',async createEngine(device,o){calls.push(o);await beforeCompile(o);return{buildRevision:runtime.sourceRevision,candidateCount:o.candidates.length,validationProfile:o.validationProfile,preparation:expectedPreparation,async run({candidates,signal}){runs.push({candidates,signal});await beforeRun(candidates);const result={buildRevision:runtime.sourceRevision,requestIdentity:o.binding.requestIdentity,sceneIdentity:o.binding.sceneIdentity,epoch:o.request.epoch,candidateKeys:candidates.map(c=>c.candidateKey),compact:Uint32Array.from(candidates.flatMap(packet)),metrics:{readbackBytes:candidates.length*16}};mutate(result,o,candidates);return result;}};}};
  const service=createCanonicalCompactSearchServiceHarness({device:{},selectedWorldProfile:profile},runtime);return{service,options,calls,runs,runtime};
 }
 test('production cannot accept caller seal/factory; explicit host seam remains labelled',()=>{
@@ -80,3 +80,9 @@ test('repeated queued cancellation and throwing progress cannot overlap the acti
  const c=f.service.runSearch(f.options);await Promise.resolve();await Promise.resolve();assert.equal(f.calls.length,1);gate.resolve();await a;await b;await c;assert.equal(f.calls.length,2);assert.equal(f.runs.length,1);
 });
 test('run failure releases serialization for a clean restart with fresh engine ownership',async()=>{let first=true;const f=setup({count:1,beforeRun(){if(first){first=false;throw Error('mock submit failure');}}});await assert.rejects(f.service.runSearch(f.options),/mock submit failure/);const r=await f.service.runSearch(f.options);assert.equal(r.tested,1);assert.equal(f.calls.length,2);});
+
+test('WASM preparation seam preserves compact identity checks without granting production brand',async()=>{
+ const f=setup({count:4,profile:'mmq2-cushion',expectedPreparation:'wasm-program'}),r=await f.service.runSearch(f.options);
+ assert.deepEqual(r.batchWidths,[3,1]);assert.ok(f.calls.every(x=>x.preparation==='wasm-program'));assert.equal(f.service.capabilities.implementation,'injected-compact-search-test-v1');
+ const bad=setup({count:1,expectedPreparation:'wasm-program',mutate:r=>r.epoch++});await assert.rejects(bad.service.runSearch(bad.options),{code:'SEARCH_BACKEND_IDENTITY'});
+});

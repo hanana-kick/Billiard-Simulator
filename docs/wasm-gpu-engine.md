@@ -7,11 +7,13 @@ retaining GPU execution and the existing integer physics. This is **not** a
 Rapier/CPU fallback. Browser WebGPU objects still need a host bridge; GPU kernels
 remain GPU programs, not WASM instructions.
 
-This work is experimental and does not activate a new public backend. The initial
-implementation covers versioned raw-strike and world-command artifacts, a WASM
-command scheduler, and a persistent WebGPU arena for their combined ordered
-execution. It does not yet port all request packing, search/session ownership, or
-selected-trace integration. A successful host test is not physical-GPU qualification.
+This implementation remains experimental. The explicit GPU practice entry uses
+versioned raw/world search programs and a full selected-shot/trace program, a real
+WASM command scheduler, and retained WebGPU arenas. The default Rapier application
+remains unchanged. No GPU device is requested merely by importing the module.
+Request validation and packing still use source-owned JavaScript helpers; GPU
+arithmetic remains the original WGSL. A successful host test is not physical-GPU
+qualification.
 
 ## Source-backed precedents
 
@@ -94,10 +96,12 @@ GPU dispatches is a separate optimization requiring numerical equivalence.
 3. Persistent-arena host tests for reset, reuse, queue ordering, readback,
    disposal, and device loss.
 4. Differential command/upload comparisons against the existing producer.
-5. Integrate current input packing, search, and selected gameplay through one
-   engine owner. Remove runtime capture only after all
-   structural variants and mutable uploads are accounted for.
-6. Full application build/physics/UI verification before public activation.
+5. Current input packing, compact search, and selected full-state/trace evaluation
+   share one sealed runtime and device coordinator. Current public artifacts cover
+   four-ball MMQ2, raw 2,048 steps, world 128 steps, search N1/N3, selected N1 with
+   256 source records. Other structural configurations fail closed rather than
+   generating new programs or falling back to another simulator.
+6. Full application build/physics/UI verification remains required before release.
    Real GPU execution remains untested unless separately authorized.
 
 ## First-stage callable API
@@ -139,3 +143,45 @@ followed by 34,642 world commands, final guard and compact copies. Two runs veri
 unchanged command/binding order, current uploads, and reuse of 112 pipelines and
 all owned buffers. This does not evaluate the shader arithmetic or establish
 physical-GPU numerical equivalence.
+
+
+## Public preparation and lifecycle
+
+The explicit practice action loads locally bundled, hash-pinned programs and
+prewarms N3, N1, and selected programs before reporting readiness. Browser/driver
+pipeline preparation still occurs on that device. Candidate runs upload current
+inputs and replay prepared programs; they do not recapture or lower GPU factories.
+The legacy factories remain available for compatibility/reference and some of
+their static source text remains in the JavaScript import closure. They are not
+invoked by the public WASM execution path.
+
+One coordinator serializes preparation, searches, selected shots, and disposal on
+the GPUDevice. Its reservations enforce 8 MiB aggregate search arenas, 12 MiB for
+selected arenas, and 16 MiB combined. These limits cover **owned GPU buffers**, not
+JavaScript/WASM memory, browser rendering, pipeline caches, or opaque driver/compiler
+allocations. The selected source graph alone owns 8,772,676 bytes, including its
+full trace arena and two readback buffers.
+
+Cancellation prevents later submissions/compilations after the currently pending
+native operation settles. It cannot interrupt an individual native compilation or
+GPU shader invocation. Submitted work drains before arena reuse or destruction;
+loss invalidates the entire device owner. No CPU fallback invents a successful
+result. Public service factories accept only the runtime produced from the static
+verified build configuration, not caller-supplied libraries or fake owners.
+
+## Reviewed build boundary
+
+The source pin includes the full public controller/service graph plus all runtime
+and build-time capture helpers. A fixed auxiliary digest map covers build tools,
+Rapier's bundled dependency, Rust sources, WASM bytes, and their build record.
+Program capture executes in a private materialization of the verified source
+snapshot, not the mutable working checkout. The resulting immutable local assets
+are authenticated by the controller's static bootstrap manifest hash.
+
+The controller is bundled as **one module graph**, avoiding duplicate private
+WeakMaps between search, selected sessions, input ownership, and artifact loaders.
+`node build.cjs --canonical-controller-assets` explicitly includes the verified
+program assets. An unconfigured development stub fails closed; it does not silently
+fall back to the legacy GPU path. The CPU-only CI job rebuilds the scheduler with
+Rust 1.99.1 and checks artifact reproducibility, then runs host/mocked-device tests.
+Native GPU qualification is separate and remains opt-in.

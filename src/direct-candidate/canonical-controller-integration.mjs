@@ -4,10 +4,12 @@ import {validateCanonicalScene,CanonicalContractError} from './canonical-engine-
 import {createCanonicalStateApplicationAdapter,createCanonicalStateApplicationAdapterHarness,canonicalApplicationRules} from './canonical-application-adapter.mjs';
 import {createCanonicalRenderView,prepareCanonicalGameProjection} from './canonical-controller-projection.mjs';
 import {createCanonicalControllerSearch,canonicalSearchPopulation} from './canonical-controller-search.mjs';
+import {isCanonicalWasmCompactSearchService} from './canonical-compact-search-service.mjs';
+import {assertWasmGpuProductionRuntime} from '../wasm-gpu/production-runtime.mjs';
 const own=x=>structuredClone(x),Q20=2**20;
 const fail=(code,message)=>new CanonicalContractError(code,message);
 const stable=x=>Array.isArray(x)?'['+x.map(stable).join(',')+']':x&&typeof x==='object'?'{'+Object.keys(x).sort().map(k=>JSON.stringify(k)+':'+stable(x[k])).join(',')+'}':JSON.stringify(x);
-function install(controller,{stateStore,selectedWorldProfile,device,requestOptions,session,searchService,searchOptions},harness) {
+function install(controller,{stateStore,selectedWorldProfile,device,requestOptions,session,searchService,searchOptions,productionRuntime},harness) {
  const c=controller,G=globalThis;
  if(!G.LabController||!(c instanceof G.LabController)||!c.lab||!c.state.ready||c.disposed||c.canonicalPlayback)
   throw fail('CONTROLLER_NOT_READY','One mounted idle LabController without an existing canonical owner required');
@@ -24,8 +26,9 @@ function install(controller,{stateStore,selectedWorldProfile,device,requestOptio
    !Number.isInteger(requestOptions.maximumRecords)||requestOptions.maximumRecords<1||requestOptions.maximumRecords>512||
    ['purpose','requestId','candidateId','signal'].some(k=>Object.hasOwn(requestOptions,k)))
   throw TypeError('Explicit bounded request options required; controller owns purpose, request IDs, candidate IDs and cancellation');
+ if(productionRuntime!==undefined)assertWasmGpuProductionRuntime(productionRuntime,device);
  if(searchService){if(searchService.selectedWorldProfile!==selectedWorldProfile||typeof searchService.runSearch!=='function'||typeof searchService.cancel!=='function')throw TypeError('Matching canonical search service required');canonicalSearchPopulation(searchOptions);}
- if(searchService&&!harness&&(searchService.capabilities?.implementation!=='webgpu-sealed-compact-search-v1'||searchService.capabilities?.compactBatch!==true||!/^[a-f0-9]{64}$/.test(searchService.sourceRevision??'')))
+ if(searchService&&!harness&&((!isCanonicalWasmCompactSearchService(searchService)&&searchService.capabilities?.implementation!=='webgpu-sealed-compact-search-v1')||searchService.capabilities?.compactBatch!==true||!/^[a-f0-9]{64}$/.test(searchService.sourceRevision??'')))
   throw fail('CONTROLLER_SEARCH_SOURCE','Production search requires the packaged sealed GPU service; injected services belong to the harness');
  const options=own(requestOptions),legacy=c.lab,original={};
  let active=null,forecastIntent=null,sequence=0,generation=0,disposed=false,projection,shots=0,lastPoseTick=null,renderRevision=null,forecastReceipt=null,sourceUnavailable=false,search=null,resetting=false;
@@ -33,7 +36,7 @@ function install(controller,{stateStore,selectedWorldProfile,device,requestOptio
  const intent=()=>({selectedId:c.state.selectedId,settings:own(c.state.settings),game:c.game.snapshot()});
  // Freeze selected cue/aim for this shot, but never freeze away live game edits.
  const readContext=()=>{if(!gameRuleCompatible())throw fail('CONTROLLER_RULE_BOUNDARY','Live game and shot rule option disagree');const i=active?.intent??forecastIntent;return i?{selectedId:i.selectedId,settings:own(i.settings),game:c.game.snapshot()}:intent();};
- const adapter=(harness?createCanonicalStateApplicationAdapterHarness:createCanonicalStateApplicationAdapter)({stateStore,selectedWorldProfile,device,readContext,...(harness?{session}:{})});
+ const adapter=(harness?createCanonicalStateApplicationAdapterHarness:createCanonicalStateApplicationAdapter)({stateStore,selectedWorldProfile,device,readContext,productionRuntime,...(harness?{session}:{})});
  const status=patch=>{c.state.canonicalPlayback={...c.state.canonicalPlayback,...patch};};
  const refresh=()=>{sourceUnavailable=false;renderRevision=stateStore.readRevision();projection=createCanonicalRenderView({scene:stateStore.readScene(),pose:G.PhysicsLab.prototype.pose,isBusy:()=>!!active||sourceUnavailable});c.lab=projection.view;c.lab.shots=shots;lastPoseTick=stateStore.readClock()??null;c.lab.time=(lastPoseTick??0)/Q20;status({poseTick:lastPoseTick,playheadTick:lastPoseTick,sampleStatus:stateStore.readFinalState()?'authoritative-rest':'authored-rest',held:false,scoreAndTurnCommitted:false});c.dirty=true;};
  const report=(phase,message)=>{status({phase});c.state.forecastStatus=message;c.state.predictionBusy=false;c.notify();};
@@ -150,7 +153,10 @@ function install(controller,{stateStore,selectedWorldProfile,device,requestOptio
   capabilities:Object.freeze({search:!!search,sceneEdits:'resting-xz-only',legacyMigration:false,historyMigration:false,exactSourceSamplesOnly:true,browserVerified:false}),
   cancel(){if(active){const a=active;rollbackHistory(a);restore(a.before);}else{cancel('explicit cancellation');refresh();c.notify();}}});
  clearTimeout(c.predictionTimer);c.predictor?.dispose();c.optimizer?.dispose();c.predictor=null;c.optimizer=null;
- c.canonicalPlayback=owner;status({phase:'ready',selectedWorldProfile,experimental:true,productionEnabled:false,scoreAndTurnCommitted:false,searchEnabled:!!search,searchDomain:search?.domain??null});refresh();legacy.dispose();c.state.forecast=null;c.state.routeResult=null;c.state.routeStatus=search?'idle':'unavailable';c.state.routeError=search?'':'Canonical 같은 모델 배치 검색 미연결';c.notify();
+ c.canonicalPlayback=owner;status({phase:'ready',selectedWorldProfile,experimental:true,productionEnabled:false,scoreAndTurnCommitted:false,searchEnabled:!!search,searchDomain:search?.domain??null});refresh();legacy.dispose();c.state.forecast=null;c.state.routeResult=null;c.state.routeStatus=search?'idle':'unavailable';c.state.routeError=search?'':'Canonical 같은 모델 배치 검색 미연결';
+ // Ownership has committed and the legacy lab is disposed. Presentation errors
+ // must not escape as an installation failure and trigger entry resource rollback.
+ try{c.notify();}catch(error){status({entryWarning:'GPU 모드는 시작됐지만 화면 갱신에 실패했습니다: '+(error.message??String(error))});}
  return owner;
 }
 export function installCanonicalController(controller,options){return install(controller,options,false);}

@@ -3,7 +3,7 @@
  * PhysicsLab, mutates the game, or treats a selected-shot loop as batch search. */
 import {encodeCanonicalScene, createCanonicalRequest, createCanonicalCandidate,
   canonicalResultIdentity, CanonicalContractError} from './canonical-engine-contract.mjs';
-import {createCanonicalSessionService} from './canonical-session-service.mjs';
+import {createCanonicalSessionService,createCanonicalWasmSessionService} from './canonical-session-service.mjs';
 const own = x => structuredClone(x);
 const stable = x => Array.isArray(x) ? '['+x.map(stable).join(',')+']' : x && typeof x==='object'
   ? '{'+Object.keys(x).sort().map(k=>JSON.stringify(k)+':'+stable(x[k])).join(',')+'}' : JSON.stringify(x);
@@ -178,9 +178,9 @@ export function createCanonicalApplicationAdapterHarness({lab,readContext,sessio
 
 /** Explicit alternative source; never reads presentation/Rapier poses.
  * runSelected stays read-only; manual results offer an explicit commitState(). */
-export function createCanonicalStateApplicationAdapter({stateStore,selectedWorldProfile,readContext,device}={}) {
+export function createCanonicalStateApplicationAdapter({stateStore,selectedWorldProfile,readContext,device,productionRuntime}={}) {
   return core({stateStore,selectedWorldProfile,readContext,
-    session:createCanonicalSessionService({device,selectedWorldProfile})},'webgpu-state-session-adapter-v1');
+    session:productionRuntime===undefined?createCanonicalSessionService({device,selectedWorldProfile}):createCanonicalWasmSessionService({device,selectedWorldProfile,productionRuntime})},'webgpu-state-session-adapter-v1');
 }
 /** Injected lifecycle evidence only, not native GPU physics qualification. */
 export function createCanonicalStateApplicationAdapterHarness({stateStore,selectedWorldProfile,readContext,session}={}) {

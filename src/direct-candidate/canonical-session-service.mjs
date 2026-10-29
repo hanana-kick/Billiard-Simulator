@@ -8,6 +8,7 @@ import {hydrateCanonicalSelectedGPUTrace} from './canonical-selected-world-trace
 import {hydrateCanonicalSelectedV2GPUTrace} from './canonical-selected-world-trace-v2-hydrate.mjs';
 import {sampleSelectedShotTrace} from './canonical-selected-trace.mjs';
 
+import {assertWasmGpuProductionRuntime} from '../wasm-gpu/production-runtime.mjs';
 export const CANONICAL_SESSION_CAPABILITIES = Object.freeze({
   experimental: true, productionEnabled: false, selectedCandidateCount: 1,
   searchBatchImplemented: false, motionRevision: 'mmq1', cushionTraceImplemented: false,
@@ -34,7 +35,7 @@ function core(device, runtime, implementation, selectedWorldProfile = 'mmq1-ball
     selectedWorldProfile,
     capabilities: Object.freeze({...CANONICAL_SESSION_CAPABILITIES, ...profile, selectedWorldProfile, implementation}),
     cancel(reason = 'cancelled') { gate.cancel(reason); },
-    dispose() { disposed = true; gate.cancel('disposed'); },
+    dispose() { disposed = true; gate.cancel('disposed'); return submissionTail; },
     async runSelected({request: requestOptions, candidateId, settings, raw, continuation,
       maximumRecords = 128, strikeBackend = 'staged', signal} = {}) {
       assertOpen();
@@ -65,7 +66,7 @@ function core(device, runtime, implementation, selectedWorldProfile = 'mmq1-ball
       const current = () => { assertOpen(); if (signal?.aborted) throw error('CANCELLED', 'Discard externally cancelled output'); gate.assertCurrent(gateIdentity); };
       const cancel = () => { if (gate.validate(gateIdentity).ok) gate.cancel(signal.reason ?? 'cancelled'); };
       signal?.addEventListener('abort', cancel, {once: true});
-      let releaseTurn;
+      let releaseTurn,engine,resultReady=false;
       try {
         if (signal?.aborted) cancel();
         current();
@@ -84,7 +85,7 @@ function core(device, runtime, implementation, selectedWorldProfile = 'mmq1-ball
         submissionTail = new Promise(resolve => { releaseTurn = resolve; });
         await predecessor;
         current();
-        const engine = await runtime.createEngine(device, binding, {strikeBackend: input.strikeBackend});
+        engine = await runtime.createEngine(device, binding, {request,candidate,strikeBackend: input.strikeBackend});
         current();
         const run = await engine.runRaw(batch, {signal: epoch.signal, selectedTrace: true, selectedTraceMaxRecords: input.maximumRecords});
         current();
@@ -120,7 +121,7 @@ function core(device, runtime, implementation, selectedWorldProfile = 'mmq1-ball
           throw error('TRACE_RESULT_MISMATCH', 'Trace capture must not change the physical completion result');
         const compact = result.compactResult.slice(), finalState = state.slice();
         const submission = freeze({request, candidate, raw:own(input.raw)});
-        return Object.freeze({kind: 'canonical-session-selected-result-v1', identity, selectedWorldProfile,
+        resultReady=true;return Object.freeze({kind: 'canonical-session-selected-result-v1', identity, selectedWorldProfile,
           implementation, physicsResultComplete: trace.physicsResultComplete,
           captureComplete: trace.captureComplete, samplingComplete: trace.samplingComplete,
           timeBudgetEnforced: result.timeBudgetEnforced === true,
@@ -133,7 +134,7 @@ function core(device, runtime, implementation, selectedWorldProfile = 'mmq1-ball
           assertCurrent: current,
         });
       } catch (failure) { current(); throw failure; }
-      finally { releaseTurn?.(); signal?.removeEventListener('abort', cancel); }
+      finally { try { await engine?.dispose?.(); if(resultReady)current(); } finally { releaseTurn?.(); signal?.removeEventListener('abort', cancel); } }
     },
   });
 }
@@ -150,4 +151,11 @@ export function createCanonicalSessionService({device, selectedWorldProfile = 'm
 export function createCanonicalSessionLifecycleHarness(runtime, {selectedWorldProfile} = {}) {
   if (!runtime || ['createEngine', 'hydrate', 'sample'].some(k => typeof runtime[k] !== 'function')) throw TypeError('Complete lifecycle test runtime');
   return core(null, runtime, 'injected-test', selectedWorldProfile);
+}
+
+/** Full native readbacks through an owned, sealed WASM GPU runtime. */
+export function createCanonicalWasmSessionService({device,productionRuntime,selectedWorldProfile='mmq2-cushion'}={}){
+ const runtime=assertWasmGpuProductionRuntime(productionRuntime,device);
+ if(selectedWorldProfile!=='mmq2-cushion')throw error('UNSUPPORTED_SESSION_PROFILE','WASM public mode is MMQ2 only');
+ return core(device,{createEngine:runtime.createSelectedEngine,hydrate:hydrateCanonicalSelectedV2GPUTrace,sample:sampleSelectedShotTrace},'webgpu-wasm-selected-v2',selectedWorldProfile);
 }

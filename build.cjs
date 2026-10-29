@@ -10,7 +10,7 @@ if(process.argv.includes('--gpu-worker-assets')||process.argv.includes('--reside
 }else fs.rmSync(gpuAssets,{recursive:true,force:true});
 // Explicit local module packaging only; never inject or activate this bundle.
 const canonicalAssets=path.join(dist,'canonical-controller-assets');
-if(process.argv.includes('--canonical-controller-assets'))require('./tools/build-canonical-controller-assets.cjs').buildCanonicalControllerAssets({root,out:canonicalAssets});
+if(process.argv.includes('--canonical-controller-assets'))require('./tools/build-canonical-controller-assets.cjs').buildCanonicalControllerAssets({root,out:canonicalAssets,includeWasmGpuPrograms:true});
 else fs.rmSync(canonicalAssets,{recursive:true,force:true});
 const engine=fs.readFileSync(path.join(root,'vendor/rapier.cjs'),'utf8').replace(/\/\/# sourceMappingURL=.*$/mg,'');
 const script=(name,source,type='text/javascript')=>`<script id="source-${name}" type="${type}">\n${source.replace(/<\/script/gi,'<\\/script')}\n</script>`;
