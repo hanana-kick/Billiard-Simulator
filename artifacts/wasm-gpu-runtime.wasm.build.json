@@ -1,0 +1,99 @@
+{
+  "schema": "billiard-wasm-gpu-build-v1",
+  "abiVersion": 1,
+  "target": "wasm32-unknown-unknown",
+  "profile": "release",
+  "offline": true,
+  "locked": true,
+  "byteLength": 16343,
+  "sha256": "6a21a5c76918c333810915e6e039df8843a9cdec6d00995162c07a74344c0152",
+  "sourceSha256": {
+    "Cargo.toml": "edc81236447a56957b0390168ccefeafe710f94809e2da7082b29900626ef60b",
+    "Cargo.lock": "9b517f10d28a96db45e0a91e2a4ba4cbef31b3e3c788ae9fb8ebcfef84e82a31",
+    "src/lib.rs": "441008fd527fdf200f37ad75c617fbce5dd49e5066ba7c0c815d374cf1649f2a",
+    "build.mjs": "fbd64e5391f4f9fa6c0b5d3124422092860280593b9395a667e5d0ef4434a39c"
+  },
+  "cargoVersion": "cargo 1.99.1 (5f94df478 2026-08-27)",
+  "rustcVersion": "rustc 1.99.1 (58cf8f9c3 2026-10-13)\nbinary: rustc\ncommit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67\ncommit-date: 2026-10-13\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.1\nLLVM version: 23.1.1",
+  "imports": [
+    {
+      "module": "bridge",
+      "name": "submit",
+      "kind": "function"
+    }
+  ],
+  "exports": [
+    {
+      "name": "memory",
+      "kind": "memory"
+    },
+    {
+      "name": "abi_version",
+      "kind": "function"
+    },
+    {
+      "name": "cancel",
+      "kind": "function"
+    },
+    {
+      "name": "capacity",
+      "kind": "function"
+    },
+    {
+      "name": "commit",
+      "kind": "function"
+    },
+    {
+      "name": "configure",
+      "kind": "function"
+    },
+    {
+      "name": "cursor",
+      "kind": "function"
+    },
+    {
+      "name": "dispose",
+      "kind": "function"
+    },
+    {
+      "name": "generation",
+      "kind": "function"
+    },
+    {
+      "name": "input_ptr",
+      "kind": "function"
+    },
+    {
+      "name": "load",
+      "kind": "function"
+    },
+    {
+      "name": "lose",
+      "kind": "function"
+    },
+    {
+      "name": "max_chunk",
+      "kind": "function"
+    },
+    {
+      "name": "repeats_left",
+      "kind": "function"
+    },
+    {
+      "name": "start",
+      "kind": "function"
+    },
+    {
+      "name": "state",
+      "kind": "function"
+    },
+    {
+      "name": "step",
+      "kind": "function"
+    },
+    {
+      "name": "stream_len",
+      "kind": "function"
+    }
+  ]
+}
