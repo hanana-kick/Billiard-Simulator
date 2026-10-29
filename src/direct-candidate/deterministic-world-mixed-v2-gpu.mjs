@@ -35,7 +35,12 @@ import {TUBE_CLEAR_WGSL} from './deterministic-tube-prefix.mjs';
 import {WORLD_TAIL_MARK_WGSL} from './deterministic-world-stages.mjs';
 import {RECUR_TAIL_COMMIT_WGSL} from './deterministic-recurring-stages.mjs';
 /** Supported rolling paths use the original MMQ2 law, never a fitted tube. */
-export const WORLD_SUPPORTED_CLEAR_V2_WGSL=TUBE_CLEAR_WGSL.replace('if(state[1]!=0){return;}','if(state[1]!=0){return;}for(var body=0u;body<u32(state[3]);body++){if(state[64u+body*48u+40u]==3){state[1]=7;state[2]=select(6,98,state[40]!=0);return;}}');
+// A bridge+rolling prefix may commit only when ORIGINAL swept boxes clear every
+// object/rail for its whole duration. Failed boxes remain unresolved (98); the
+// no-bridge rolling route still uses original MMQ2 event queries.
+export const WORLD_SUPPORTED_CLEAR_V2_WGSL=TUBE_CLEAR_WGSL
+ .replace('if(state[1]!=0){return;}','if(state[1]!=0){return;}var mixedBridge=false;for(var body=0u;body<u32(state[3]);body++){if(state[64u+body*48u+40u]==3){if(state[40]==0){state[1]=7;state[2]=6;return;}mixedBridge=true;}}')
+ .replace('state[2]=reason;return;','state[2]=select(reason,98,mixedBridge);return;');
 export const WORLD_TAIL_MARK_V2_WGSL=WORLD_TAIL_MARK_WGSL.replace('if(mode==1){supportedSlip=true;}','if(mode==1){supportedSlip=true;}if(mode==3){state[50]=1;}');
 /** Only the original all-object-clear tail may skip directly to full rest. */
 export const WORLD_TAIL_COMMIT_V2_WGSL=RECUR_TAIL_COMMIT_WGSL.replace('dense[z+41u]=2;','').replace('if(state[1]!=10){return;}','if(state[1]!=10){return;}if(tail[1]!=1){state[1]=1;return;}if(state[5]>ctx[24]-tail[4]){state[1]=select(7,5,ctx[25]!=0);state[2]=select(79,84,ctx[25]!=0);return;}');

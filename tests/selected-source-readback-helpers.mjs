@@ -31,7 +31,11 @@ test('original selected source graph, all uploads, and output ranges match porta
  r.device.createBuffer=d=>{const b=create(d);if(d.usage&1)b.mapAsync=async()=>{assert.equal(r.submits,1);mapCount++;throw stop;};return b;};
  const f=mmq2RawFixture({durationTicks:65535}),engine=await createCanonicalWorldContinuationGPU(r.device,f.binding);let caught=false;try{await engine.runRaw(f.batch,{selectedTrace:true,selectedTraceMaxRecords:256});}catch(e){if(e!==stop)throw e;caught=true;}
  assert.equal(caught,true);assert.equal(mapCount,1);assert.equal(r.submits,1);
- for(const [name,records]of [['modules',r.modules.map(m=>({code:m.code,label:m.label}))],['pipelines',r.pipelines.map(p=>({entryPoint:p.entryPoint,layout:p.layout,constants:p.constants,module:p.module.id}))],['commands',r.commands]])assert.deepEqual({count:records.length,sha256:sha(JSON.stringify(records))},golden[name]);
+ const delta=JSON.parse(await readFile(new URL('./fixtures/prepared-world-input-reviewed-mmq2-module-delta.json',import.meta.url),'utf8'));
+ assert.equal(delta.baselineCommit,golden.sourceCommit);assert.equal(sha(delta.baselineModuleCode),delta.baselineModuleSHA256);
+ const modules=r.modules.map(m=>({code:m.code,label:m.label})),changed=modules.filter(m=>sha(m.code)===delta.reviewedModuleSHA256);
+ assert.equal(changed.length,1,'Only the separately reviewed MMQ2 module may change');changed[0].code=delta.baselineModuleCode;
+ for(const [name,records]of [['modules',modules],['pipelines',r.pipelines.map(p=>({entryPoint:p.entryPoint,layout:p.layout,constants:p.constants,module:p.module.id}))],['commands',r.commands]])assert.deepEqual({count:records.length,sha256:sha(JSON.stringify(records))},golden[name]);
  assert.deepEqual(r.buffers.map(b=>[b.size,b.usage,sha(b.bytes)]),golden.buffers.map(index=>golden.bufferRecords[index]));
  const world=r.buffers.find(b=>b.label==='wasm-output:world:read'),trace=r.buffers.find(b=>b.label==='wasm-output:trace-v2:read');assert.equal(world.size,11664);assert.equal(trace.size,4194368);assert.equal(r.commands.filter(c=>c.kind==='copy'&&c.target===world.id).length,8);assert.equal(r.commands.filter(c=>c.kind==='copy'&&c.target===trace.id).length,2);
  const control=r.buffers.find(b=>b.label==='wasm-input:trace-v2:control');assert.deepEqual(new Uint32Array(control.bytes.buffer),packSelectedWorldTraceV2Control({candidateCount:1,candidateId:f.candidate.candidateId,sceneKey:f.batch.binding.sceneKey,requestKey:f.batch.binding.requestKey,bodyCount:4,maximumRecords:256}));

@@ -62,3 +62,16 @@ test('stopped partial empty results do not announce completed unsuccessful searc
  const s=state();s.routeProgress={phase:'stopped',elapsedMs:2000};s.routeResult={...s.routeResult,partial:true,results:[],found:0};
  const html=render(s);assert.ok(html.includes('GPU 후보 계산 중단'));assert.ok(!html.includes('id="noRoute"'));
 });
+
+test('all incomplete output reports zero verdicts and actual broad reason instead of unsuccessful evaluated search',()=>{
+ const s=state();s.routeResult={...s.routeResult,total:9,tested:9,evaluated:0,found:0,miss:0,incomplete:9,results:[],reasonCounts:{incomplete:{11:9},unsupported:{}}};
+ const html=render(s);assert.ok(html.includes('판정 완료된 조합이 없습니다.'));assert.ok(html.includes('미완료 사유: 미해결 물리 이벤트 (코드 11) 9개'));assert.ok(!html.includes('평가한 조합에서 성공 후보를 찾지 못했습니다'));assert.ok(!html.includes('계산 예산 소진'));
+});
+test('mixed reason counts render from partial progress and final results including unknown code fallback',()=>{
+ const s=state();s.routeResult.reasonCounts={incomplete:{3:2,8:1,9:1,10:1,11:2,99:1},unsupported:{4:1,5:1,6:1,12:1}};
+ for(const busy of [false,true]){s.routeStatus=busy?'searching':'done';s.routeProgress=s.routeResult;const html=render(s);for(const text of ['계산 예산 소진 (코드 3) 2개','계산 취소 (코드 8) 1개','시간 범위 도달 (코드 9) 1개','수치 계산 문제 (코드 10) 1개','미해결 물리 이벤트 (코드 11) 2개','알 수 없는 사유 (코드 99) 1개','물리 처리 미지원 (코드 4) 1개','탐색 조건 미지원 (코드 5) 1개','게임 규칙 미지원 (코드 6) 1개','미구현 (코드 12) 1개'])assert.ok(html.includes(text),text);}
+});
+test('missing or malformed reason counts never invent causes and evaluated misses keep honest no-success wording',()=>{
+ const s=state();s.routeResult.results=[];s.routeResult.found=0;
+ for(const reasons of [undefined,{incomplete:null,unsupported:[]},{incomplete:{11:NaN,3:-1,9:0,bogus:2},unsupported:{4:'1'}}]){s.routeResult.reasonCounts=reasons;const html=render(s);assert.ok(!html.includes('canonicalIncompleteReasons'));assert.ok(!html.includes('canonicalUnsupportedReasons'));assert.ok(!html.includes('NaN'));assert.ok(html.includes('평가한 조합에서 성공 후보를 찾지 못했습니다.'));}
+});

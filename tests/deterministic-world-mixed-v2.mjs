@@ -20,7 +20,7 @@ test('MMQ2 compile graph omits only unreachable legacy stages and binds run revi
  const f=rollingCushionFixture(),codes=[],device={createBindGroupLayout:x=>x,createPipelineLayout:x=>x,pushErrorScope(){},async popErrorScope(){return null;},createShaderModule({code,label}){if(label?.startsWith('event phase '))codes[Number(label.slice(12))]=code;return{getCompilationInfo:async()=>({messages:[]})};},async createComputePipelineAsync(){return{getBindGroupLayout:()=>({})};},createBuffer(){throw Error('Unexpected allocation');}};
  const engine=await createPreparedPairContinuationGPU(device,f.hulls,{mixedMotionRevision:'mmq2'});
  for(const i of[26,27,28,31,32,34,39,41,64,65])assert.equal(codes[i],'@compute @workgroup_size(1) fn main(){}',String(i));
- assert.match(codes[51],/0x4d4d5102/);assert.match(codes[67],/state\[2\]=select\(6,98/);
+ assert.match(codes[51],/0x4d4d5102/);assert.match(codes[67],/state\[2\]=select\(reason,98,mixedBridge\)/);assert.match(codes[67],/state\[1\]=5;state\[2\]=5;return;/);
  await assert.rejects(()=>engine.run(f.world,f.scene,{...f.options,mixedMotionRevision:'mmq1'}),/revision must match/);
  await assert.rejects(()=>engine.run(f.world,f.scene,{...f.options,selectedTrace:true,selectedTraceMaxRecords:513}),/trace cap 1..512/);
  await assert.rejects(()=>createPreparedPairContinuationGPU(device,f.hulls,{mixedMotionRevision:'latest'}),/mmq1 or mmq2/);

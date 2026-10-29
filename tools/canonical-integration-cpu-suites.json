@@ -26,6 +26,7 @@
   "tests/canonical-controller-search.mjs",
   "tests/canonical-route-ui.cjs",
   "tests/canonical-practice-entry.mjs",
+  "tests/canonical-public-mmq2-default.mjs",
   "tests/canonical-practice-ui.cjs",
   "tests/canonical-controller-search-assets.mjs",
   "tests/canonical-search-grid-ui.cjs",

@@ -1,6 +1,8 @@
 /** Host-only regression against committed independent pre-extraction digests.
  * No sibling checkout, adapter, shader execution, network or CPU dynamics.
  * Goldens were captured from commit715b503f, never updated by this test.
+ * One separately reviewed MMQ2 module delta is pinned; substituting its original
+ * bytes must reproduce the entire immutable baseline (including all 104 peers).
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -15,6 +17,12 @@ import {packCushionHull} from '../src/direct-candidate/deterministic-cushion-geo
 import {packPreparedWorldInputs} from '../src/direct-candidate/deterministic-prepared-world-inputs.mjs';
 const golden=JSON.parse(await readFile(new URL('./fixtures/prepared-world-input-baseline-digests.json',import.meta.url),'utf8'));
 assert.equal(golden.sourceCommit,'715b503f57f6962d99c7a85a787995284960ee8b');
+const delta=JSON.parse(await readFile(new URL('./fixtures/prepared-world-input-reviewed-mmq2-module-delta.json',import.meta.url),'utf8'));
+assert.equal(delta.kind,'reviewed-prepared-world-module-delta-v1');
+assert.equal(delta.baselineCommit,golden.sourceCommit);
+assert.equal(delta.case,'mmq2-cushion');
+assert.equal(delta.moduleIndex,67);
+assert.equal(delta.moduleCount,105);
 const sha=x=>createHash('sha256').update(x).digest('hex');
 function digestCapture({r}){return {modules:{count:r.modules.length,sha256:sha(JSON.stringify(r.modules.map(m=>({code:m.code,label:m.label}))))},pipelines:{count:r.pipelines.length,sha256:sha(JSON.stringify(r.pipelines.map(p=>({entryPoint:p.entryPoint,layout:p.layout,constants:p.constants,module:p.module.id}))))},commands:{count:r.commands.length,sha256:sha(JSON.stringify(r.commands))},buffers:r.buffers.map(b=>[b.size,b.usage,sha(b.bytes)])};}
 const f=fixture(),d=snapshotCanonicalWorldContinuation(f.binding),template=snapshotRawWorldBatch(f.batch).template;
@@ -38,7 +46,19 @@ for(const [name,mutate]of [
  const x=base();mutate(x);const packed=packPreparedWorldInputs(x.original,x.scene,x.hulls,x.options),before=structuredClone(x),current=await capture(createPreparedPairContinuationGPU,x);
  assert.deepEqual(x,before,'packer/factory do not mutate current caller inputs');
  const expectedCapture=golden.cases[name];assert.ok(expectedCapture,'Committed case exists');
- assert.deepEqual(digestCapture(current),{...expectedCapture,buffers:expectedCapture.buffers.map(index=>golden.bufferRecords[index])},'Independent source/layout/command/upload digest parity');
+ const actual=digestCapture(current);
+ if(name===delta.case){
+  assert.equal(actual.modules.count,delta.moduleCount);
+  assert.equal(actual.modules.sha256,delta.reviewedModulesSHA256,'Reviewed complete current module set');
+  assert.equal(sha(current.r.modules[delta.moduleIndex].code),delta.reviewedModuleSHA256,'Exactly reviewed replacement module');
+  assert.equal(sha(delta.baselineModuleCode),delta.baselineModuleSHA256);
+  assert.equal(delta.baselineModulesSHA256,expectedCapture.modules.sha256);
+  const restored=current.r.modules.map(m=>({code:m.code,label:m.label}));
+  restored[delta.moduleIndex].code=delta.baselineModuleCode;
+  assert.equal(sha(JSON.stringify(restored)),expectedCapture.modules.sha256,'All other 104 modules and labels retain immutable baseline bytes');
+  actual.modules={count:actual.modules.count,sha256:sha(JSON.stringify(restored))};
+ }
+ assert.deepEqual(actual,{...expectedCapture,buffers:expectedCapture.buffers.map(index=>golden.bufferRecords[index])},'Independent source/layout/command/upload digest parity');
  const expected=['rows','scene','context','recurContext','landingConfig','cloth','tailScene','pairMaterial','iterations','qtSearchConfig','qtFixedConfig'];
  assert.deepEqual([...current.labels.values()].filter(x=>x.startsWith('wasm-input:world:')).sort(),expected.map(n=>'wasm-input:world:'+n).sort());
  for(const [id,label]of current.labels){if(!label.startsWith('wasm-input:world:'))continue;const name=label.slice('wasm-input:world:'.length);assert.deepEqual(current.r.buffers[id].bytes,bytes(packed[name]),label);}

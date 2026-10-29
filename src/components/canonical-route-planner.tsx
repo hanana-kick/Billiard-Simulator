@@ -8,6 +8,14 @@ import { CanonicalSearchProgress } from '@/components/canonical-search-progress'
 const fmt=(value:number,digits=2)=>Number.isFinite(value)?value.toFixed(digits):'—'
 const count=(value:unknown)=>Number.isSafeInteger(value)&&Number(value)>=0?String(value):'—'
 
+// Canonical compact packet reason codes; these do not expose internal world-event reasons.
+const reasonLabels:Record<number,string>={3:'계산 예산 소진',4:'물리 처리 미지원',5:'탐색 조건 미지원',6:'게임 규칙 미지원',8:'계산 취소',9:'시간 범위 도달',10:'수치 계산 문제',11:'미해결 물리 이벤트',12:'미구현'}
+function reasonSummary(reasons:unknown){
+ if(!reasons||typeof reasons!=='object'||Array.isArray(reasons))return null
+ const entries=Object.entries(reasons).filter(([code,n])=>/^\d+$/.test(code)&&Number.isSafeInteger(Number(code))&&Number.isSafeInteger(n)&&Number(n)>0)
+ return entries.map(([code,n])=>`${reasonLabels[Number(code)]??'알 수 없는 사유'} (코드 ${code}) ${n}개`).join(' · ')||null
+}
+
 function batchWidthsSummary(widths:unknown){
  if(!Array.isArray(widths)||!widths.length||widths.some(n=>!Number.isSafeInteger(n)||n<1))return null
  const counts=new Map<number,number>();for(const width of widths)counts.set(width,(counts.get(width)??0)+1)
@@ -23,6 +31,7 @@ export function CanonicalRoutePlanner({state:s,controller:c}:{state:any;controll
  React.useEffect(()=>{if(busy)setShown(6)},[busy])
  const canSearch=enabled&&s.ready&&s.canAim&&!busy&&!s.activeStroke
  const executedWidths=batchWidthsSummary(progress?.batchWidths)
+ const incompleteReasons=reasonSummary(progress?.reasonCounts?.incomplete),unsupportedReasons=reasonSummary(progress?.reasonCounts?.unsupported)
  const game=s.game,threeCushion=game?.kind==='three'||game?.threeCushion===true
  return <Card id="routePlanner" className="route-card">
   <CardHeader><CardTitle>{s.gameMode==='four'?'4구':'3구'} GPU 파라미터 탐색</CardTitle>
@@ -46,10 +55,12 @@ export function CanonicalRoutePlanner({state:s,controller:c}:{state:any;controll
     <p>처리 {count(progress.tested)} / {count(progress.total)} · 판정 완료 {count(progress.evaluated)} · 성공 {count(progress.found)}</p>
     {executedWidths?<p id="canonicalActualBatchWidths" className="helper">실제 완료 배치: {executedWidths}</p>:null}
     <p className="helper">실패 {count(progress.miss)} · 미완료 {count(progress.incomplete)} · 미지원 {count(progress.unsupported)}</p>
+    {incompleteReasons?<p id="canonicalIncompleteReasons" className="helper">미완료 사유: {incompleteReasons}</p>:null}
+    {unsupportedReasons?<p id="canonicalUnsupportedReasons" className="helper">미지원 사유: {unsupportedReasons}</p>:null}
     <p className="helper">미완료·미지원은 실패나 경로가 없다는 판정이 아닙니다.</p>
    </div>:null}
    {['error','canceled','stale','unavailable'].includes(s.routeStatus)?<Alert><AlertTitle>{s.routeStatus==='stale'?'배치·조건이 바뀌었습니다':s.routeStatus==='canceled'?'탐색 취소':'탐색을 완료하지 못했습니다'}</AlertTitle><AlertDescription>{s.routeError}</AlertDescription></Alert>:null}
-   {s.routeStatus==='done'&&result&&!result.partial&&!rows.length?<Alert id="noRoute"><AlertTitle>평가한 조합에서 성공 후보를 찾지 못했습니다.</AlertTitle><AlertDescription>미완료·미지원 입력과 탐색하지 않은 조합이 있을 수 있습니다. 경로가 없다는 증명이 아닙니다.</AlertDescription></Alert>:null}
+   {s.routeStatus==='done'&&result&&!result.partial&&!rows.length?<Alert id="noRoute"><AlertTitle>{result.evaluated===0?'판정 완료된 조합이 없습니다.':'평가한 조합에서 성공 후보를 찾지 못했습니다.'}</AlertTitle><AlertDescription>{result.evaluated===0?'미완료·미지원은 성공 또는 실패로 판정되지 않은 입력입니다. 경로가 없다는 증명이 아닙니다.':'미완료·미지원 입력과 탐색하지 않은 조합이 있을 수 있습니다. 경로가 없다는 증명이 아닙니다.'}</AlertDescription></Alert>:null}
    {rows.length?<div className="route-results" aria-label="GPU 성공 후보">
     <p id="routeResultCount" role="status">성공 후보 {rows.length}개</p>
     <p id="routePageCount">{rows.length}개 중 {Math.min(shown,rows.length)}개 표시</p>

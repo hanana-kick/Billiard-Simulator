@@ -54,7 +54,17 @@ test('current captures match compact independent pre-extraction source and uploa
  const {readFile}=await import('node:fs/promises'),{createHash}=await import('node:crypto');
  const fixture=JSON.parse(await readFile(new URL('./fixtures/wasm-gpu-world-input-baseline.json',import.meta.url),'utf8'));
  assert.equal(fixture.sourceRevision,'715b503f57f6962d99c7a85a787995284960ee8b');
- for(const changed of [false,true]){const x=current(changed,changed?777:100),now=await captureWasmGpuWorldInputPlan(x);assert.equal(createHash('sha256').update(JSON.stringify(now.plan)).digest('hex'),fixture.cases[changed?'changed-geometry-clock-rules-ids':'default']);
+ const delta=JSON.parse(await readFile(new URL('./fixtures/prepared-world-input-reviewed-mmq2-module-delta.json',import.meta.url),'utf8'));
+ assert.equal(delta.baselineCommit,fixture.sourceRevision);
+ const sha=value=>createHash('sha256').update(value).digest('hex');
+ assert.equal(sha(delta.baselineModuleCode),delta.baselineModuleSHA256);
+ for(const changed of [false,true]){const x=current(changed,changed?777:100),now=await captureWasmGpuWorldInputPlan(x);
+ // Preserve the independent pre-extraction plan golden. Only the explicitly
+ // reviewed MMQ2 clear module may differ; layouts, commands and uploads may not.
+ const restored=structuredClone(now.plan),replacements=restored.definitions.filter(d=>sha(d.source)===delta.reviewedModuleSHA256);
+ assert.equal(replacements.length,1,'Exactly one reviewed MMQ2 source delta');
+ replacements[0].source=delta.baselineModuleCode;
+ assert.equal(sha(JSON.stringify(restored)),fixture.cases[changed?'changed-geometry-clock-rules-ids':'default'],'Original full plan except reviewed single module');
  const uploads=prepareWasmGpuWorldUploads({engine,bindings:[x.binding],batches:[x.batch]}).initialUploads;for(const u of uploads)assert.deepEqual(u.initial,now.plan.allocations[u.index].initial);
  }
 });
