@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {mkdtemp,readFile,readdir,rm} from 'node:fs/promises';import {tmpdir} from 'node:os';import {join} from 'node:path';import {createHash} from 'node:crypto';import {gzipSync,gunzipSync} from 'node:zlib';
+import {mkdtemp,readFile,readdir,rm} from 'node:fs/promises';import {tmpdir} from 'node:os';import {join} from 'node:path';import {createHash} from 'node:crypto';import {gzipSync,gunzipSync,brotliCompressSync} from 'node:zlib';
 import {buildWasmGpuProgramAssets} from '../tools/build-wasm-gpu-program-assets.mjs';
 import {createWasmGpuProgramLibrary,assertIntegrityVerifiedWasmGpuProgramLibrary} from '../src/wasm-gpu/program-library.mjs';
 import {canonicalEngineArtifactJSON} from '../src/wasm-gpu/engine-artifact.mjs';
@@ -73,4 +73,43 @@ test('selected missing/tampered/config/output mismatch and failed cache retry ar
 
 test('reviewed-source tag remains integrity-only; production authority is not granted by loader',async()=>{
  const f=fixture();alterManifest(f,m=>m.sourceVerification='reviewed-source-snapshot');const library=await createWasmGpuProgramLibrary(options(f));assert.equal(library.manifest.sourceVerification,'reviewed-source-snapshot');assert.equal(library.integrityVerified,true);assert.equal(library.sourceQualified,false);assert.equal(library.productionEnabled,false);
+});
+
+
+test('HTTP-compressed scheduler accepts decoded bytes, not compressed Content-Length',async()=>{
+ for(const [encoding,compress] of [['gzip',gzipSync],['br',brotliCompressSync]]){
+  const f=fixture(),fetch=f.fetch,m=JSON.parse(f.files.get('manifest.json')),bytes=f.files.get(m.scheduler.file);
+  assert.notEqual(compress(bytes).length,bytes.length);
+  f.fetch=async(url,options)=>{const response=await fetch(url,options);if(!url.endsWith(m.scheduler.file))return response;return new Response(bytes,{headers:{'content-encoding':encoding,'content-length':String(compress(bytes).length)}});};
+  const library=await createWasmGpuProgramLibrary(options(f));assert.deepEqual(library.getScheduler().moduleBytes,new Uint8Array(bytes));
+ }
+});
+
+test('HTTP-compressed scheduler still rejects truncated, oversized and tampered decoded bodies',async()=>{
+ for(const variant of ['truncated','oversized','tampered']){
+  const f=fixture(),fetch=f.fetch,m=JSON.parse(f.files.get('manifest.json')),original=f.files.get(m.scheduler.file);let bytes=Buffer.from(original);
+  if(variant==='truncated')bytes=bytes.subarray(0,bytes.length-1);else if(variant==='oversized')bytes=Buffer.concat([bytes,Buffer.from([0])]);else bytes[50]^=1;
+  f.fetch=async(url,options)=>{const response=await fetch(url,options);if(!url.endsWith(m.scheduler.file))return response;return new Response(bytes,{headers:{'content-encoding':'gzip','content-length':String(gzipSync(bytes).length)}});};
+  await assert.rejects(()=>createWasmGpuProgramLibrary(options(f)),variant==='tampered'?/binary hash/:/byte (length mismatch|bound)/);
+ }
+});
+
+test('identity scheduler still checks declared length and HTTP encoding cannot bypass stream limits',async()=>{
+ for(const encoding of [undefined,'identity']){
+  const f=fixture(),fetch=f.fetch,m=JSON.parse(f.files.get('manifest.json'));
+  f.fetch=async(url,options)=>{const response=await fetch(url,options);if(!url.endsWith(m.scheduler.file))return response;const headers={'content-length':'6858'};if(encoding)headers['content-encoding']=encoding;return new Response(f.files.get(m.scheduler.file),{headers});};
+  await assert.rejects(()=>createWasmGpuProgramLibrary(options(f)),/declared byte length mismatch: wasm-gpu-runtime.wasm/);
+ }
+ for(const length of ['invalid','9007199254740992','2097153']){
+  const f=fixture();f.fetch=async()=>new Response(new Uint8Array(1),{headers:{'content-encoding':'br','content-length':length}});
+  await assert.rejects(()=>createWasmGpuProgramLibrary(options(f)),/declared byte length mismatch: manifest.json/);
+ }
+ {const f=fixture();f.fetch=async()=>new Response(new Uint8Array(2097153),{headers:{'content-encoding':'gzip','content-length':'1'}});await assert.rejects(()=>createWasmGpuProgramLibrary(options(f)),/exceeds byte bound/);}
+});
+
+test('CDN recompression of artifact bytes is authenticated after transparent HTTP decoding',async()=>{
+ for(const decodedArtifact of [false,true]){
+  const f=fixture(),fetch=f.fetch;f.fetch=async(url,options)=>{const response=await fetch(url,options);if(!url.endsWith('.json.gz'))return response;const encoded=f.files.get(url.slice(baseURL.length)),bytes=decodedArtifact?gunzipSync(encoded):encoded;return new Response(bytes,{headers:{'content-encoding':'br','content-length':String(brotliCompressSync(bytes).length)}});};
+  const library=await createWasmGpuProgramLibrary(options(f));assert.equal((await library.lookupProgram(selector(library))).engine.count,1);assert.equal((await library.lookupSelectedProgram({sourceRevision:library.sourceRevision,...WASM_GPU_SELECTED_CONFIG})).count,1);
+ }
 });

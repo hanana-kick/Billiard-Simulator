@@ -24,7 +24,13 @@ async function fetchBytes(fetcher,url,{maximum,exact,declaredLengths,signal}){
  check(signal);const response=await abortable(fetcher(url,{signal,redirect:'error',credentials:'same-origin',cache:'no-cache'}),signal);check(signal);
  if(!response?.ok)throw Error('Bundled asset fetch failed: '+(response?.status??'no response'));
  if(response.redirected||response.url&&response.url!==url)throw Error('Bundled asset redirect refused');
- const length=response.headers?.get('content-length');if(length!==null&&length!==undefined&&(!/^\d+$/.test(length)||Number(length)>maximum||exact!==undefined&&Number(length)!==exact||declaredLengths&&!declaredLengths.includes(Number(length))))throw Error('Bundled asset declared byte length mismatch');
+ // Content-Length describes the wire representation. Fetch transparently
+ // decodes HTTP gzip/br/etc., so only identity responses may compare that
+ // header with pinned file lengths. The decoded stream remains bounded below;
+ // callers authenticate its exact length and SHA independently of headers.
+ const encoding=response.headers?.get('content-encoding')?.trim().toLowerCase();
+ const wireEncoded=!!encoding&&encoding.split(',').some(value=>value.trim()!=='identity');
+ const length=response.headers?.get('content-length');if(length!==null&&length!==undefined&&(!/^\d+$/.test(length)||!Number.isSafeInteger(Number(length))||Number(length)>maximum||!wireEncoded&&(exact!==undefined&&Number(length)!==exact||declaredLengths&&!declaredLengths.includes(Number(length)))))throw Error('Bundled asset declared byte length mismatch: '+new URL(url).pathname.split('/').pop());
  return streamBytes(response.body,{maximum,exact,signal});
 }
 function fileDescriptor(d){if(!d||d.encoding!=='gzip'||!integer(d.byteLength,1,MAX_ENCODED)||!integer(d.decodedByteLength,1,MAX_DECODED)||![d.sha256,d.decodedSha256,d.artifactSha256].every(digest))throw Error('Exact compressed program descriptor required');}
