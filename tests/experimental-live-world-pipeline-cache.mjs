@@ -68,7 +68,7 @@ test('opaque preflight receipts reuse only exact same-device checked modules',as
 test('concurrent cancellation does not poison independent caller or its completed cache',async()=>{
  const f=fake(),hold=deferred(),cancel=new AbortController();f.compileWait(hold.promise);
  const a=compile(f.device,{code:'shared',signal:cancel.signal}),b=compile(f.device,{code:'shared'});
- const rejected=assert.rejects(a,{name:'AbortError'});await Promise.resolve();await Promise.resolve();cancel.abort();hold.resolve();
+ const rejected=assert.rejects(a,{name:'AbortError'});while(f.counts.pipelines<2)await new Promise(r=>setImmediate(r));cancel.abort();hold.resolve();
  await rejected;const good=await b;assert.equal(await compile(f.device,{code:'shared'}),good);assert.equal(f.counts.pipelines,2);
 });
 
@@ -85,5 +85,16 @@ test('loss diagnostics preserve native reason and exact asynchronous compilation
    assert.ok(error.gpuPreparation.elapsedMs>=0);assert.ok(Object.isFrozen(error.gpuPreparation));assert.ok(!JSON.stringify(error.gpuPreparation).includes('secret'));return true;
   });
   await new Promise(resolve=>setImmediate(resolve));f.loss.resolve({reason:'unknown',message:'A valid external Instance reference no longer exists.'});await rejected;hold.resolve();
+ }
+});
+
+test('abort releases unresolved shader/pipeline waiter promptly and late native completion never caches',async()=>{
+ for(const phase of ['info','pipeline']){
+  const f=fake(),hold=deferred(),a=new AbortController();if(phase==='info')f.infoWait(hold.promise);else f.compileWait(hold.promise);
+  const p=compile(f.device,{code:'screen-off',signal:a.signal});await new Promise(r=>setImmediate(r));a.abort('screen hidden');
+  await Promise.race([assert.rejects(p,{name:'AbortError'}),new Promise((_,reject)=>setTimeout(()=>reject(Error('Cancellation waited for native compilation')),1000))]);
+  assert.equal(f.counts.pipelines,phase==='info'?0:1);
+  hold.resolve();await new Promise(r=>setImmediate(r));f.infoWait(null);f.compileWait(null);await compile(f.device,{code:'screen-off'});
+  assert.equal(f.counts.modules,2);
  }
 });

@@ -10,7 +10,7 @@ import {prepareWasmGpuEngine} from './engine.mjs';
 import {prepareWasmGpuSelectedEngine} from './selected-engine.mjs';
 import {createWasmGpuCompactSearchBackendHarness} from './compact-search-backend.mjs';
 import {createWasmGpuSelectedSessionBackendHarness} from './selected-session-backend.mjs';
-import {WASM_GPU_SELECTED_CONFIG} from './selected-artifact.mjs';
+import {createCanonicalPreparationScope} from '../direct-candidate/canonical-page-preparation.mjs';
 const runtimes=new WeakMap(),MiB=1024*1024;
 const abortError=reason=>{const e=Error(String(reason??'WASM runtime preparation cancelled'));e.name='AbortError';return e;};
 export function assertWasmGpuProductionRuntime(runtime,device){const owned=runtimes.get(runtime);if(!owned||device&&owned.device!==device)throw TypeError('Owned sealed WASM GPU production runtime required');return runtime;}
@@ -34,47 +34,66 @@ export async function createWasmGpuProductionRuntime(options={}){
  check();if(library.sourceRevision!==config.sourceRevision||library.manifestSha256!==config.manifestSha256||library.manifest.sourceVerification!=='reviewed-source-snapshot'||library.manifest.structuralBounds.maxWorldSteps!==128||!library.manifest.selectedProgram)throw Error('Sealed current N1/N3/selected program library mismatch');
  const sourceRevision=config.sourceRevision,{moduleBytes}=library.getScheduler(),coordinator=createWasmGpuDeviceCoordinator({device,maximumOwnedBytes:16*MiB,groupBudgets:{search:8*MiB,selected:12*MiB}}),pool=new Map();
  let search,selected,disposed=false,disposal=null,searchGeneration=0,selectedGeneration=0;
+ const creations=new Set();
  const keyOf=({engine,rawEngine})=>rawEngine?`${engine.artifactSha256}:${rawEngine.artifactSha256}`:engine.artifactSha256;
- const destroy=async item=>{if(item.destroyed)return;await item.owner?.dispose();item.destroyed=true;item.reservation.release();};
+ const destroy=async item=>{if(item.destroyed)return;await item.owner?.dispose();item.destroyed=true;item.reservation.release();if(pool.get(item.key)===item)pool.delete(item.key);};
  const wrap=item=>Object.freeze({requiresExclusiveDevice:true,ownsRaw:true,...(item.group==='selected'?{selected:true}:{}),
-  run(args){return coordinator.run(({signal})=>item.owner.run({...args,signal}),{signal:args.signal,onCancel:reason=>item.owner.cancel(reason)});},
+  run(args){if(item.destroyed)throw Error('WASM program owner disposed');return coordinator.run(({signal})=>item.owner.run({...args,signal}),{signal:args.signal,onCancel:reason=>item.owner.cancel(reason)});},
   cancel(reason){return item.owner.cancel(reason);},
   dispose(){if(item.destroyed)return Promise.resolve();return coordinator.run(()=>destroy(item),{cleanup:true});},
   status:()=>item.owner.status(),
  });
- try{
-  const loaded=[];
-  for(const count of [3,1]){progress({phase:'loading',program:`search-N${count}`});const program=await library.lookupProgram({sourceRevision,count,profile:'mmq2-cushion',strikeBackend:'staged',bodyCount:4,maximumSteps:2048,maxWorldSteps:128},{signal});check();loaded.push({group:'search',name:`search-N${count}`,program,bytes:program.engine.resources.totalOwnedBytes});}
-  progress({phase:'loading',program:'selected'});const selectedProgram=await library.lookupSelectedProgram({sourceRevision,...WASM_GPU_SELECTED_CONFIG},{signal});check();loaded.push({group:'selected',name:'selected',program:{engine:selectedProgram},bytes:selectedProgram.resourcePlan.totalOwnedBytes});
-  // Admit the combined arena budget BEFORE compiling or allocating any owner.
-  for(const item of loaded){const key=keyOf(item.program),reservation=coordinator.reserve({key,group:item.group,bytes:item.bytes});pool.set(key,{...item,reservation,owner:null,destroyed:false});}
-  for(const item of pool.values()){
-   progress({phase:'preparing',program:item.name});
-   await coordinator.run(async({signal})=>{item.owner=await(item.group==='search'?prepareWasmGpuEngine:prepareWasmGpuSelectedEngine)({device,moduleBytes,...item.program,maximumOwnedBytes:item.group==='search'?8*MiB:12*MiB,signal,onPrepareProgress:detail=>progress({phase:'preparing',program:item.name,...detail})});return item.owner;},{signal});
-   check();item.wrapper=wrap(item);
-  }
-  const cachedOwner=args=>{const item=pool.get(keyOf(args));if(!item||item.destroyed||args.device!==device)throw Error('Only prewarmed same-device sealed programs may execute');return item.wrapper;};
-  search=createWasmGpuCompactSearchBackendHarness({sourceRevision,moduleBytes,maximumOwnedBytes:8*MiB,maximumCachedPrograms:2,lookupProgram:(selector,options)=>library.lookupProgram(selector,options),prepareEngine:cachedOwner});
-  selected=createWasmGpuSelectedSessionBackendHarness({device,sourceRevision,moduleBytes,maximumOwnedBytes:12*MiB,lookupProgram:(selector,options)=>library.lookupSelectedProgram(selector,options),prepareEngine:cachedOwner});
-  progress({phase:'ready',program:'all',allocatedBytes:coordinator.status().allocatedBytes});
- }catch(error){const diagnostic=Object.freeze({...lastProgress,...error?.gpuPreparation,elapsedMs:Math.max(0,Date.now()-startedAt),...(error?.deviceLoss?{deviceLoss:error.deviceLoss}:{})});await coordinator.dispose(async()=>{const errors=[];for(const item of pool.values())try{await destroy(item);}catch(e){errors.push(e);}if(errors.length)throw new AggregateError(errors,'Preparation cleanup failed');}).catch(()=>{});if(error?.name==='AbortError')throw error;const failure=new Error(`GPU 준비 실패 [${diagnostic.program??'unknown'} · ${diagnostic.stage??diagnostic.phase??'unknown'}${diagnostic.pipelineIndex?` · ${diagnostic.pipelineIndex}/${diagnostic.totalPipelines}`:''}${diagnostic.shaderBytes?` · ${diagnostic.shaderBytes} bytes · ${diagnostic.entryPoint??'main'}`:''} · ${diagnostic.elapsedMs} ms]: ${error?.message??String(error)}`,{cause:error});failure.gpuPreparation=diagnostic;if(error?.deviceLoss)failure.deviceLoss=error.deviceLoss;throw failure;}
+ // Only an actual owned request may download and prepare its exact program.
+ // The manifest/WASM scheduler above do not allocate GPU buffers or pipelines.
+ const demandOwner=async args=>{
+  if(args.device!==device)throw Error('Only same-device sealed programs may execute');
+  const key=keyOf(args),group=args.rawEngine?'search':'selected',name=group==='search'?`search-N${args.engine.count}`:'selected';
+  const scope=createCanonicalPreparationScope({signal:args.signal}),began=Date.now();let last=null,created=null;
+  const report=detail=>{scope.check();last=Object.freeze({phase:'preparing',program:name,...detail,elapsedMs:Math.max(0,Date.now()-began)});const result=args.onPrepareProgress?.(last);if(result&&typeof result.then==='function'){Promise.resolve(result).catch(()=>{});throw TypeError('Synchronous preparation progress callback required');}scope.check();};
+  try{return await coordinator.run(async({signal:operationSignal})=>{
+   scope.check();const existing=pool.get(key);if(existing&&!existing.destroyed)return existing.wrapper;
+   const bytes=group==='search'?args.engine.resources.totalOwnedBytes:args.engine.resourcePlan.totalOwnedBytes;
+   const item={key,group,name,owner:null,destroyed:false,reservation:coordinator.reserve({key,group,bytes})};created=item;pool.set(key,item);
+   try{report({stage:'prepare'});item.owner=await(group==='search'?prepareWasmGpuEngine:prepareWasmGpuSelectedEngine)({...args,device,moduleBytes,maximumOwnedBytes:group==='search'?8*MiB:12*MiB,signal:operationSignal,onPrepareProgress:report});scope.check();if(operationSignal.aborted)throw abortError(operationSignal.reason);item.wrapper=wrap(item);return item.wrapper;}
+   catch(error){await destroy(item);throw error;}
+  },{signal:scope.signal});}
+  catch(error){
+   const diagnostic=Object.freeze({...last,...error?.gpuPreparation,program:name,elapsedMs:Math.max(0,Date.now()-began),...(error?.deviceLoss?{deviceLoss:error.deviceLoss}:{})});
+   // A cancellation immediately after owner creation must not leave an owner
+   // outside the backend cache. Cleanup is serialized, never nested in its lock.
+   if(created&&!created.destroyed&&!coordinator.status().disposing&&!coordinator.status().disposed)await coordinator.run(()=>destroy(created),{cleanup:true}).catch(()=>{});
+   if(error?.name==='AbortError')throw error;
+   const failure=new Error(`GPU 준비 실패 [${diagnostic.program} · ${diagnostic.stage??'prepare'}${diagnostic.pipelineIndex?` · ${diagnostic.pipelineIndex}/${diagnostic.totalPipelines}`:''}${diagnostic.shaderBytes?` · ${diagnostic.shaderBytes} bytes · ${diagnostic.entryPoint??'main'}`:''} · ${diagnostic.elapsedMs} ms]: ${error?.message??String(error)}`,{cause:error});failure.gpuPreparation=diagnostic;if(error?.deviceLoss)failure.deviceLoss=error.deviceLoss;throw failure;
+  }finally{scope.dispose();}
+ };
+ search=createWasmGpuCompactSearchBackendHarness({sourceRevision,moduleBytes,maximumOwnedBytes:8*MiB,maximumCachedPrograms:2,lookupProgram:(selector,options)=>library.lookupProgram(selector,options),prepareEngine:demandOwner});
+ selected=createWasmGpuSelectedSessionBackendHarness({device,sourceRevision,moduleBytes,maximumOwnedBytes:12*MiB,lookupProgram:(selector,options)=>library.lookupSelectedProgram(selector,options),prepareEngine:demandOwner});
+ try{progress({phase:'ready',program:'runtime',allocatedBytes:0,preparation:'on-demand'});}catch(error){await search.dispose();await selected.dispose();await coordinator.dispose();throw error;}
  const open=otherDevice=>{if(disposed)throw Error('WASM production runtime disposed');if(otherDevice!==device)throw Error('WASM runtime cannot change its exclusive device');};
- function cancelSearch(reason){searchGeneration++;search.cancel(reason);}
+ function cancelSearch(reason){searchGeneration++;for(const abort of creations)abort.abort(reason);search.cancel(reason);}
  function cancelSelected(reason){selectedGeneration++;selected.cancel(reason);}
  function cancel(reason='WASM runtime cancelled'){cancelSearch(reason);cancelSelected(reason);coordinator.cancel(reason);}
  function dispose(){if(disposal)return disposal;disposed=true;cancel('WASM runtime disposed');disposal=(async()=>{const errors=[];for(const backend of [search,selected])try{await backend.dispose();}catch(e){errors.push(e);}try{await coordinator.dispose(async()=>{for(const item of pool.values())try{await destroy(item);}catch(e){errors.push(e);}});}catch(e){errors.push(e);}if(errors.length)throw new AggregateError(errors,'WASM runtime disposal failed');})();return disposal;}
  const runtime=Object.freeze({sourceRevision,expectedPreparation:'wasm-program',requiresExclusiveDevice:true,experimental:true,productionEnabled:false,gpuExecutionQualified:false,buildSealed:true,
   async createSearchEngine(otherDevice,args){
-   open(otherDevice);const creation=searchGeneration,view=await search.createEngine(device,args);open(device);if(creation!==searchGeneration){view.dispose();throw abortError();}let released=false;
-   return Object.freeze({...view,buildSealed:true,integrityVerified:true,provenance:'sealed-source-wasm-program',dispose(){released=true;return view.dispose();},async run(options){if(released)throw Error('Search view disposed');const ticket=searchGeneration,result=await view.run(options);open(device);if(released||ticket!==searchGeneration||options?.signal?.aborted)throw abortError(options?.signal?.reason);return Object.freeze({...result,buildSealed:true,integrityVerified:true,provenance:'sealed-source-wasm-program',coverage:'experimental-current-source-mmq2-N1-N3-wasm-program',gpuExecutionQualified:false});}});
+   open(otherDevice);const creation=searchGeneration,abort=new AbortController(),relay=()=>abort.abort(args?.signal?.reason);creations.add(abort);let view;
+   const scope=createCanonicalPreparationScope({signal:abort.signal});
+   const prepareProgress=detail=>{
+    for(const [fn,value] of [[args?.onPrepareProgress,detail],[['compile-start','compile'].includes(detail.stage)?args?.onCompilePhase:undefined,{stage:detail.stage==='compile-start'?'start':'end',compileOrdinal:(detail.stage==='compile-start'?detail.pipelineIndex:detail.completedPipelines)-1,total:detail.totalPipelines,elapsedMs:detail.elapsedMs,preparation:'wasm-program'}]]){
+     if(fn===undefined)continue;if(typeof fn!=='function')throw TypeError('Synchronous preparation progress callback required');const result=fn(Object.freeze(value));if(result&&typeof result.then==='function'){Promise.resolve(result).catch(()=>{});throw TypeError('Synchronous preparation progress callback required');}
+    }
+   };
+   try{args?.signal?.addEventListener('abort',relay,{once:true});if(args?.signal?.aborted)relay();scope.check();view=await search.createEngine(device,{...args,signal:scope.signal,onPrepareProgress:prepareProgress});open(device);scope.check();if(creation!==searchGeneration){view.dispose();throw abortError();}}
+   catch(error){view?.dispose();throw error;}finally{args?.signal?.removeEventListener('abort',relay);scope.dispose();creations.delete(abort);}let released=false;
+   return Object.freeze({...view,buildSealed:true,integrityVerified:true,provenance:'sealed-source-wasm-program',dispose(){released=true;return view.dispose();},async run(options){if(released)throw Error('Search view disposed');const ticket=searchGeneration,scope=createCanonicalPreparationScope({signal:options?.signal});try{scope.check();const result=await view.run({...options,signal:scope.signal});open(device);scope.check();if(released||ticket!==searchGeneration)throw abortError();return Object.freeze({...result,buildSealed:true,integrityVerified:true,provenance:'sealed-source-wasm-program',coverage:'experimental-current-source-mmq2-N1-N3-wasm-program',gpuExecutionQualified:false});}finally{scope.dispose();}}});
   },
   async createSelectedEngine(otherDevice,binding,{request,candidate,strikeBackend='staged'}={}){
    open(otherDevice);if(strikeBackend!=='staged'||!request||!candidate)throw Error('Current owned selected request/candidate and staged backend required');let released=false,active=null;
    return Object.freeze({buildRevision:sourceRevision,preparation:'wasm-program-selected',requiresExclusiveDevice:true,buildSealed:true,integrityVerified:true,provenance:'sealed-source-wasm-selected',
     async runRaw(batch,{signal,selectedTrace,selectedTraceMaxRecords}={}){
      open(device);if(released||active)throw Error('Selected view disposed or active');if(selectedTrace!==true||selectedTraceMaxRecords!==256)throw Error('Exact selected trace256 capsule required');
-     const ticket=selectedGeneration,abort=new AbortController(),relay=()=>abort.abort(signal.reason);active=abort;
-     try{signal?.addEventListener('abort',relay,{once:true});if(signal?.aborted)relay();const result=await selected.evaluate({request,candidate,binding,batch,maximumRecords:256,signal:abort.signal});open(device);if(released||ticket!==selectedGeneration||abort.signal.aborted)throw abortError(abort.signal.reason);return Object.freeze({...result,buildSealed:true,integrityVerified:true,provenance:'sealed-source-wasm-selected',gpuExecutionQualified:false});}finally{try{signal?.removeEventListener('abort',relay);}finally{active=null;}}
+     const ticket=selectedGeneration,abort=new AbortController(),relay=()=>abort.abort(signal.reason),scope=createCanonicalPreparationScope({signal:abort.signal});active=abort;
+     try{signal?.addEventListener('abort',relay,{once:true});if(signal?.aborted)relay();scope.check();const result=await selected.evaluate({request,candidate,binding,batch,maximumRecords:256,signal:scope.signal});open(device);scope.check();if(released||ticket!==selectedGeneration||abort.signal.aborted)throw abortError(abort.signal.reason);return Object.freeze({...result,buildSealed:true,integrityVerified:true,provenance:'sealed-source-wasm-selected',gpuExecutionQualified:false});}finally{try{signal?.removeEventListener('abort',relay);}finally{scope.dispose();active=null;}}
     },
     dispose(){released=true;active?.abort('Selected view disposed');},
    });

@@ -75,3 +75,21 @@ test('public WASM browser import is inert; forged services/runtime refuse and fa
   assert.equal(adapters,1);assert.equal(devices,1);assert.equal(fetches,0);assert.equal(f.destroyed,1);assert.equal(f.c.game,oldGame);assert.equal(f.c.lab,oldLab);assert.equal(f.c.canonicalPlayback,undefined);
  }finally{globalThis.isSecureContext=oldSecure;globalThis.fetch=oldFetch;if(oldNavigator)Object.defineProperty(globalThis,'navigator',oldNavigator);else delete globalThis.navigator;f.cleanup();}
 });
+
+test('page hiding cancels adapter/device requests promptly; visible retry creates fresh device and late orphan cannot install',async()=>{
+ const oldSecure=globalThis.isSecureContext,oldNavigator=Object.getOwnPropertyDescriptor(globalThis,'navigator'),oldDoc=globalThis.document,oldWindow=globalThis.window;
+ const f=fixture(),doc=new EventTarget(),win=new EventTarget();doc.hidden=true;doc.visibilityState='hidden';let adapterCalls=0,deviceCalls=0,orphanDestroyed=0;const deviceWait=deferred();
+ try{
+  globalThis.isSecureContext=true;globalThis.document=doc;globalThis.window=win;
+  Object.defineProperty(globalThis,'navigator',{configurable:true,value:{gpu:{async requestAdapter(){adapterCalls++;return {limits:{maxStorageBuffersPerShaderStage:10},requestDevice(){deviceCalls++;return deviceCalls===1?deviceWait.promise:Promise.resolve(f.device);}};}}}});
+  const {startCanonicalPractice}=await import('../src/direct-candidate/canonical-controller-browser-entry.mjs');
+  await assert.rejects(startCanonicalPractice(f.c),e=>e.name==='AbortError'&&/화면/.test(e.message));assert.equal(adapterCalls,0);
+  doc.hidden=false;doc.visibilityState='visible';const oldGame=f.c.game,oldLab=f.c.lab,p=startCanonicalPractice(f.c);while(deviceCalls===0)await new Promise(r=>setImmediate(r));
+  doc.hidden=true;doc.visibilityState='hidden';doc.dispatchEvent(new Event('visibilitychange'));
+  await Promise.race([assert.rejects(p,e=>e.name==='AbortError'&&/화면/.test(e.message)),new Promise((_,reject)=>setTimeout(()=>reject(Error('Hidden startup blocked')),1000))]);
+  assert.equal(f.c.game,oldGame);assert.equal(f.c.lab,oldLab);assert.equal(f.c.canonicalPlayback,undefined);
+  doc.hidden=false;doc.visibilityState='visible';doc.dispatchEvent(new Event('visibilitychange'));assert.equal(deviceCalls,1,'visibility must not request a device automatically');
+  await assert.rejects(startCanonicalPractice(f.c),/static build configuration/);assert.equal(deviceCalls,2);assert.equal(f.destroyed,1);
+  deviceWait.resolve({destroy(){orphanDestroyed++;}});await new Promise(r=>setImmediate(r));assert.equal(orphanDestroyed,1);assert.equal(f.destroyed,1);assert.equal(f.c.game,oldGame);assert.equal(f.c.canonicalPlayback,undefined);
+ }finally{globalThis.isSecureContext=oldSecure;globalThis.document=oldDoc;globalThis.window=oldWindow;if(oldNavigator)Object.defineProperty(globalThis,'navigator',oldNavigator);else delete globalThis.navigator;f.cleanup();}
+});

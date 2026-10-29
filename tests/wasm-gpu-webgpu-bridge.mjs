@@ -132,3 +132,11 @@ test('compile-start progress identifies pending first pipeline before native com
  await begun;assert.equal(progress[0].stage,'compile-start');assert.equal(progress[0].pipelineIndex,1);assert.equal(progress[0].totalPipelines,2);assert.equal(progress[0].label,'world-N1-1');assert.equal(progress[0].entryPoint,'main');assert.ok(progress[0].shaderBytes>0);assert.equal(progress.filter(p=>p.stage==='compile').length,0);
  m.lose();await rejected;release();assert.equal(m.buffers.length,0);
 });
+
+test('hidden preparation abandons unresolved allocation scopes but retains no live buffers',async()=>{
+ const engine=await fixture(),m=mock(engine),a=new AbortController();let release,entered,pops=0;const hold=new Promise(r=>release=r),started=new Promise(r=>entered=r);
+ m.device.popErrorScope=()=>{pops++;entered();return hold;};
+ const preparing=createWasmGpuWebGPUBridge(m.device,{engine,maximumOwnedBytes:8*1024*1024,signal:a.signal});await started;a.abort('screen hidden');
+ await Promise.race([assert.rejects(preparing,{name:'AbortError'}),new Promise((_,reject)=>setTimeout(()=>reject(Error('Preparation cleanup blocked')),1000))]);
+ assert.equal(pops,3);assert.ok(m.buffers.length>0);assert.ok(m.buffers.every(b=>b.dead));assert.equal(m.events.filter(e=>Array.isArray(e)&&e[0]==='submit').length,0);release(null);
+});

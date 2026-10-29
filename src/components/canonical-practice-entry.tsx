@@ -23,7 +23,7 @@ export function canonicalPreparationLabel(progress:any){
 
 /** Optional build only. Opening or dismissing the dialog does not request a GPU. */
 export function CanonicalPracticeEntry({state:s,controller}:{state:any;controller:any}) {
- const [open,setOpen]=React.useState(false),[busy,setBusy]=React.useState(false),[error,setError]=React.useState(''),[progress,setProgress]=React.useState<any>(null)
+ const [open,setOpen]=React.useState(false),[busy,setBusy]=React.useState(false),[error,setError]=React.useState(''),[progress,setProgress]=React.useState<any>(null),[interrupted,setInterrupted]=React.useState(false)
  const pending=React.useRef<AbortController|null>(null)
  React.useEffect(()=>()=>{pending.current?.abort();pending.current=null},[])
  const loss=s.canonicalPlayback?.deviceLoss,lossProgress=loss?.searchProgress
@@ -32,12 +32,12 @@ export function CanonicalPracticeEntry({state:s,controller}:{state:any;controlle
  const disabled=busy||!s.ready||!s.paused||!s.canAim||!!s.activeStroke||s.routeStatus==='searching'||!!s.canonicalPlayback
  const changeOpen=(value:boolean)=>{
   if(!value){pending.current?.abort();pending.current=null;setBusy(false);setProgress(null)}
-  else {setError('');setProgress(null)}
+  else {setError('');setProgress(null);setInterrupted(false)}
   setOpen(value)
  }
  const start=async()=>{
   if(pending.current||disabled)return
-  const request=new AbortController();pending.current=request;setBusy(true);setError('');setProgress(null)
+  const request=new AbortController();pending.current=request;setBusy(true);setError('');setProgress(null);setInterrupted(false)
   try {
    await loadAndStartCanonicalPractice(controller,request.signal,undefined,undefined,(detail:any)=>{
     if(pending.current!==request||request.signal.aborted)return
@@ -47,6 +47,7 @@ export function CanonicalPracticeEntry({state:s,controller}:{state:any;controlle
    pending.current=null;setBusy(false);setProgress(null);setOpen(false)
   } catch(cause) {
    if(pending.current!==request||request.signal.aborted)return
+   setInterrupted(cause instanceof Error&&cause.name==='AbortError')
    setError(cause instanceof Error?cause.message:String(cause))
   } finally {
    if(pending.current===request){pending.current=null;setBusy(false);setProgress(null)}
@@ -72,7 +73,7 @@ export function CanonicalPracticeEntry({state:s,controller}:{state:any;controlle
    <p>초기 9개 타격 조합으로 시작하며 수동 탭에서 유한 조합을 편집할 수 있습니다. 최대 4096개를 대기열로 처리하며 초기 9개는 3개씩 GPU 배치로 평가합니다. 최대 배치 폭은 3개이며 나머지는 1개씩 처리합니다. 전체 경로 탐색이나 수천 개 동시 처리의 완료 버전이 아닙니다.</p>
    <Alert><AlertTitle>지원 범위 제한</AlertTitle><AlertDescription>공 충돌과 제한된 쿠션 충돌을 하나의 GPU 모드로 처리합니다. 모든 쿠션 상황을 지원한다는 뜻은 아니며 미지원·미완료를 실패로 바꾸지 않습니다. GPU 저장 버퍼 바인딩 10개가 필요합니다. 정지한 공의 X/Z 이동은 Q24 격자와 보수적인 간격 검사 안에서 지원합니다. 높이·공 추가/삭제·재질·모드 변경은 지원하지 않습니다. 기본 모드로 돌아가려면 페이지를 새로 열어야 합니다.</AlertDescription></Alert>
    {busy?<p role="status" aria-live="polite">{canonicalPreparationLabel(progress)}. 취소하면 대기 중인 시작 요청을 중단합니다.</p>:null}
-   {error?<Alert id="canonicalPracticeError" role="alert"><AlertTitle>시작하지 못했습니다</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>:null}
+   {error?<Alert id="canonicalPracticeError" role="alert"><AlertTitle>{interrupted?'GPU 준비 중단':'시작하지 못했습니다'}</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>:null}
    <DialogFooter><Button id="cancelCanonicalPractice" variant="outline" onClick={()=>changeOpen(false)}>취소</Button><Button id="confirmCanonicalPractice" disabled={disabled} onClick={start}>{busy?'준비 중…':'배치·점수 교체 후 시작'}</Button></DialogFooter>
   </DialogContent></Dialog>
  </>

@@ -1,3 +1,4 @@
+import {canonicalPreparationAbort} from './canonical-page-preparation.mjs';
 /** Explicit fresh practice preset. Never imports or normalizes the live world.
  * Static geometry comes from a NEW unstepped authored table; bodies are authored
  * at their declared resting height before canonical admission, not moved/snapped. */
@@ -28,7 +29,7 @@ export async function startCanonicalPracticeInternal(c,{install,requestDevice,di
  let cleanupStarted=false,cleanupResult;
  const cleanupDevice=device=>{if(!cleanupStarted){cleanupStarted=true;cleanupResult=disposeDevice?disposeDevice(device):device.destroy();}return cleanupResult;};
  const source={lab:c.lab,game:c.game,stamp:c.worldStamp(),settings:JSON.stringify(c.state.settings),routeOptions:JSON.stringify(c.state.routeOptions)};
- const check=()=>{if(signal?.aborted)throw Error('GPU 연습 시작을 취소했습니다.');ready(c);if(c.lab!==source.lab||c.game!==source.game||c.worldStamp()!==source.stamp||JSON.stringify(c.state.settings)!==source.settings||JSON.stringify(c.state.routeOptions)!==source.routeOptions)throw Error('준비 중 현재 게임이 바뀌었습니다. 다시 시작하세요.');};pending.add(c);let device,store,installed=false;
+ const check=()=>{if(signal?.aborted)throw canonicalPreparationAbort(signal);ready(c);if(c.lab!==source.lab||c.game!==source.game||c.worldStamp()!==source.stamp||JSON.stringify(c.state.settings)!==source.settings||JSON.stringify(c.state.routeOptions)!==source.routeOptions)throw Error('준비 중 현재 게임이 바뀌었습니다. 다시 시작하세요.');};pending.add(c);let device,store,installed=false;
  try{check();device=await requestDevice();check();const preset=createCanonicalPracticePreset({selectedWorldProfile});store=createCanonicalStateStore({scene:preset.scene,selectedWorldProfile:preset.selectedWorldProfile});
   const saved={game:c.game,gameMode:c.state.gameMode,selectedId:c.state.selectedId,settings:c.state.settings,routeOptions:c.state.routeOptions,predict:c.state.predict,activePanel:c.state.activePanel};
   try{check();c.game=new globalThis.FourBallGame([50,19],[8,300],{threeCushion:false});c.state.gameMode='four';c.state.selectedId=preset.selectedId;c.state.settings=own(preset.settings);c.state.routeOptions={...c.state.routeOptions,fourBallThreeCushion:false};c.state.predict=false;c.state.activePanel='routes';

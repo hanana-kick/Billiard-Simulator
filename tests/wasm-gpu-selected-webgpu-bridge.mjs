@@ -38,3 +38,11 @@ test('pre-device requirements reject whitespace-hidden groups, unclassified bind
   const changed={...engine,definitions:engine.definitions.map((d,i)=>i?d:{...d,code:d.code+'\n'+extra})};assert.throws(()=>deriveSelectedWebGPURequirements(changed),/selected|Selected/);
  }
 });
+
+test('hidden preparation cancels unresolved error-scope replies without submitting work or leaking buffers',async()=>{
+ const {engine}=await fixture(),m=mock(engine),a=new AbortController(),hold=deferred(),entered=deferred();let pops=0;
+ m.setPop(()=>{pops++;entered.resolve();return hold.promise;});
+ const preparing=createWasmGpuSelectedWebGPUBridge(m.device,{engine,maximumOwnedBytes:12*1024*1024,signal:a.signal});await entered.promise;a.abort('screen hidden');
+ await Promise.race([assert.rejects(preparing,{name:'AbortError'}),new Promise((_,reject)=>setTimeout(()=>reject(Error('Preparation cleanup blocked')),1000))]);
+ assert.equal(pops,3);assert.ok(m.buffers.length>0);assert.ok(m.buffers.every(b=>b.dead));assert.equal(m.events.filter(e=>Array.isArray(e)&&e[0]==='submit').length,0);hold.reject(Error('late scope rejection'));await new Promise(r=>setImmediate(r));
+});

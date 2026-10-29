@@ -1,3 +1,4 @@
+import {awaitCanonicalPreparation} from '../direct-candidate/canonical-page-preparation.mjs';
 /** Experimental GPU-only execution bridge. No capture, CPU physics or public activation.
  * Artifact initial data is intentionally not trusted/stored: callers supply every
  * internal arena's complete bytes for every run. With rawEngine, the same arena
@@ -64,10 +65,10 @@ export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximum
  const lose=(reason='GPU device lost')=>{if(!lost){lost=reason instanceof Error?reason:Error(String(reason));active=null;externalGroups.dispose();}};
  const deviceLost=reason=>{lose(reason);rejectLost(lost);};
  Promise.resolve(device.lost).then(info=>deviceLost('GPU device lost: '+(info?.message??'unknown')),deviceLost);
- const scoped=async fn=>{
+ const scoped=async(fn,preparation=false)=>{
   let result,failure,depth=0,gpuFailure;
   try{for(const kind of ['validation','internal','out-of-memory']){device.pushErrorScope(kind);depth++;}result=await fn();}catch(error){failure=error;}
-  while(depth--){try{const error=await device.popErrorScope();if(error&&!gpuFailure)gpuFailure=Error('GPU operation error: '+(error.message??String(error)));}catch(error){gpuFailure??=error;}}
+  while(depth--){try{const error=await awaitCanonicalPreparation(device.popErrorScope(),preparation?signal:undefined);if(error&&!gpuFailure)gpuFailure=Error('GPU operation error: '+(error.message??String(error)));}catch(error){gpuFailure??=error;}}
   if(gpuFailure)lose(gpuFailure);if(failure)throw failure;if(gpuFailure)throw gpuFailure;return result;
  };
  const totalBuffers=(rawEngine?.allocations.length??0)+plan.allocations.filter(a=>!a.external).length+3;
@@ -145,5 +146,5 @@ export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximum
    lose,
    async dispose(){return exclusive(async()=>{if(disposed)return;try{await drain();}finally{disposed=true;active=null;externalGroups.dispose();internalGroups.dispose();for(const b of owned)b.destroy();buffers.length=0;rawBuffers.length=0;owned.length=0;pipelines.length=0;rawPipelines.length=0;fault=null;ids=null;read=null;}});},
   });
- });checkPrepare();return prepared;}catch(error){externalGroups.dispose();internalGroups.dispose();for(const b of owned)b.destroy();buffers.length=0;rawBuffers.length=0;owned.length=0;throw error;}
+ },true);checkPrepare();return prepared;}catch(error){externalGroups.dispose();internalGroups.dispose();for(const b of owned)b.destroy();buffers.length=0;rawBuffers.length=0;owned.length=0;throw error;}
 }

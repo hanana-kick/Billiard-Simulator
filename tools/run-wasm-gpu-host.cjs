@@ -8,6 +8,7 @@ function run(args){const r=spawnSync(process.execPath,args,{cwd:root,env:process
 run(['tools/prepare-engine.cjs']);
 run(['tools/wasm-gpu-runtime/build.mjs']);
 const suites=[
+  "canonical-page-preparation.mjs",
   "wasm-gpu-raw-artifact.mjs",
   "wasm-gpu-engine-artifact.mjs",
   "wasm-gpu-runtime.mjs",

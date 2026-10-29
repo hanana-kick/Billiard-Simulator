@@ -147,10 +147,17 @@ physical-GPU numerical equivalence.
 
 ## Public preparation and lifecycle
 
-The explicit practice action loads locally bundled, hash-pinned programs and
-prewarms N3, N1, and selected programs before reporting readiness. Browser/driver
-pipeline preparation still occurs on that device. Candidate runs upload current
-inputs and replay prepared programs; they do not recapture or lower GPU factories.
+The explicit practice action authenticates the bundled manifest and WASM scheduler,
+then installs a runtime with no prepared GPU pipelines or allocated calculation
+arenas. It does not download or prepare all N3, N1, and selected programs up front.
+The first actual search or selected-shot request authenticates its exact program,
+prepares it on the current device, and allocates only that program's bounded arena.
+Repeated requests reuse the same-device prepared owner. Readiness of the game is
+not a claim that its first calculation will require no preparation: device-specific
+GPU compilation still occurs when that program is first used. This does not remove
+all hardware compilation or replace the GPU with CPU simulation.
+Candidate runs upload current inputs and replay prepared programs; they do not
+recapture or lower GPU factories.
 The legacy factories remain available for compatibility/reference and some of
 their static source text remains in the JavaScript import closure. They are not
 invoked by the public WASM execution path.
@@ -162,10 +169,16 @@ JavaScript/WASM memory, browser rendering, pipeline caches, or opaque driver/com
 allocations. The selected source graph alone owns 8,772,676 bytes, including its
 full trace arena and two readback buffers.
 
-Cancellation prevents later submissions/compilations after the currently pending
-native operation settles. It cannot interrupt an individual native compilation or
-GPU shader invocation. Submitted work drains before arena reuse or destruction;
-loss invalidates the entire device owner. No CPU fallback invents a successful
+Page hiding or `pagehide` cancels entry and first-use preparation rather than
+silently carrying a pending operation into a suspended page. No new GPU action
+starts while hidden, and becoming visible does not automatically restart it.
+Cancelled preparation releases the JavaScript waiter; a late native compilation
+result is consumed but never installed into the cancelled operation. This does not
+interrupt the native compiler itself. If the device remains usable, an explicit
+new request may prepare again. An actual `device.lost` invalidates the entire device
+owner and requires a fresh game/device (currently a page reload), not cache reuse.
+Already submitted physics work still drains before arena reuse or destruction;
+page cancellation cannot interrupt an individual GPU shader invocation. No CPU fallback invents a successful
 result. Public service factories accept only the runtime produced from the static
 verified build configuration, not caller-supplied libraries or fake owners.
 
