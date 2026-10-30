@@ -1,3 +1,4 @@
+import {WASM_GPU_COMMAND_CAPACITY,assertWasmGpuSchedulerLimits} from '../src/wasm-gpu/scheduler-limits.mjs';
 /** Low-level, unsealed build tool. Source revision is caller supplied, not trust.
  * Captures original factories on a nonexecuting recorder; never requests GPU. */
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
@@ -12,7 +13,10 @@ import {prepareRawWorldBinding,prepareRawWorldBatch} from '../src/direct-candida
 import {prepareCanonicalWorldContinuation} from '../src/direct-candidate/canonical-world-continuation.mjs';
 import {captureWasmGpuWorldInputPlan} from '../src/wasm-gpu/world-input-manifest-builder.mjs';
 import {lowerLiveWorldPlans} from '../src/direct-candidate/experimental-live-world-batch.mjs';
-import {createWasmGpuEngineArtifact} from '../src/wasm-gpu/engine-artifact.mjs';
+import {createWasmGpuInputContract} from '../src/wasm-gpu/input-contract-builder.mjs';
+import {loadWasmGpuRawArtifact} from '../src/wasm-gpu/raw-artifact.mjs';
+import {loadWasmGpuSelectedArtifact} from '../src/wasm-gpu/selected-artifact.mjs';
+import {createWasmGpuEngineArtifact,loadWasmGpuEngineArtifact} from '../src/wasm-gpu/engine-artifact.mjs';
 import {createWasmGpuSelectedArtifact} from '../src/wasm-gpu/selected-artifact-builder.mjs';
 import {createWasmGpuRawArtifact} from '../src/wasm-gpu/raw-artifact-builder.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..'),sha=x=>createHash('sha256').update(x).digest('hex');
@@ -23,6 +27,7 @@ export async function verifyWasmGpuSchedulerBuild({wasmPath=resolve(root,'artifa
  const names=['Cargo.toml','Cargo.lock','src/lib.rs','build.mjs'];if(Object.keys(p.sourceSha256??{}).sort().join(',')!==names.sort().join(','))throw Error('Complete scheduler source hashes required');
  for(const name of names)if(sha(await readFile(resolve(sourceDirectory,name)))!==p.sourceSha256[name])throw Error('Scheduler source hash mismatch: '+name);
  const module=await WebAssembly.compile(bytes);if(JSON.stringify(WebAssembly.Module.imports(module))!==JSON.stringify(p.imports)||JSON.stringify(WebAssembly.Module.exports(module))!==JSON.stringify(p.exports))throw Error('Scheduler ABI provenance mismatch');
+ const instance=await WebAssembly.instantiate(module,{bridge:{submit(){throw Error('Scheduler verification must not submit');}}});assertWasmGpuSchedulerLimits(instance.exports);
  if(p.imports.length!==1||p.imports[0].module!=='bridge'||p.imports[0].name!=='submit')throw Error('Unexpected scheduler imports');
  return {bytes,provenance:p,provenanceBytes,provenanceSha256:sha(provenanceBytes)};
 }
@@ -40,6 +45,7 @@ export async function buildWasmGpuProgramAssets({outputDirectory,sourceRevision,
  await onProgress({stage:'capture-world'});const captured=await captureWasmGpuWorldInputPlan({binding,batch:single});
  const directory=resolve(outputDirectory);await mkdir(directory,{recursive:true});
  const packageFile=async(name,value)=>{const json=Buffer.from(JSON.stringify(value)),bytes=gzipSync(json,{level:9});await writeFile(resolve(directory,name),bytes);return {file:name,encoding:'gzip',byteLength:bytes.length,sha256:sha(bytes),decodedByteLength:json.length,decodedSha256:sha(json)};};
+ const inputFile=async(name,kind,engine)=>{const contract=createWasmGpuInputContract(kind,engine),bytes=Buffer.from(JSON.stringify(contract));if(bytes.length<1||bytes.length>512*1024)throw Error('Bounded input contract required');await writeFile(resolve(directory,name),bytes);return {file:name,byteLength:bytes.length,sha256:sha(bytes)};};
  const programs=[];
  for(const count of [1,3]){
   await onProgress({stage:'package-width',count});
@@ -49,20 +55,25 @@ export async function buildWasmGpuProgramAssets({outputDirectory,sourceRevision,
   const lowered=await lowerLiveWorldPlans(Array(count).fill(captured.plan),{faultPolicy:'atomic-per-access',candidateLocalAllocations:captured.candidateLocalAllocations});
   const structuralConfig={profile:'mmq2-cushion',strikeBackend:'staged',maximumSteps:batch.effectiveMaximumSteps,bodyCount:4,faultPolicy:'atomic-per-access',options:{...o.continuation,tailMaxNodes:256,enableCushionContinuation:true,mixedMotionRevision:'mmq2'},uploadManifest:captured.uploadManifest};
   const {artifact:world}=await createWasmGpuEngineArtifact({lowered,count,sourceRevision,structuralConfig,rawAllocations});
-  const commandCount=raw.payload.commands.indices.length+world.payload.lowered.commands.indices.length;if(commandCount>65536)throw Error('Combined raw/world command capacity exceeded');
+  const commandCount=raw.payload.commands.indices.length+world.payload.lowered.commands.indices.length;if(commandCount>WASM_GPU_COMMAND_CAPACITY)throw Error('Combined raw/world command capacity exceeded');
   // Neither artifact contains mutable scene/request/input bytes. Only descriptors,
   // source text, ordering and the upload-role manifest survive packaging.
   const rawFile=await packageFile(`raw-n${count}.json.gz`,raw),worldFile=await packageFile(`world-n${count}.json.gz`,world);
-  programs.push({count,profile:'mmq2-cushion',bodyCount:4,maximumSteps:batch.effectiveMaximumSteps,commandCount,world:{...worldFile,artifactSha256:world.sha256},raw:{...rawFile,artifactSha256:raw.sha256}});
+  // Projection is permitted only after full executable graph/resource validation.
+  const loadedWorld=await loadWasmGpuEngineArtifact(world,{expectedArtifactSha256:world.sha256,expectedSourceRevision:sourceRevision,expectedCount:count,expectedStructuralConfig:structuralConfig}),loadedRaw=await loadWasmGpuRawArtifact(raw,{expectedArtifactSha256:raw.sha256,expectedSourceRevision:sourceRevision,expectedCount:count,expectedMaximumSteps:2048});
+  const inputs={world:await inputFile(`input-world-n${count}.json`,'world',loadedWorld),raw:await inputFile(`input-raw-n${count}.json`,'raw',loadedRaw)};
+  programs.push({count,profile:'mmq2-cushion',bodyCount:4,maximumSteps:batch.effectiveMaximumSteps,commandCount,inputs,world:{...worldFile,artifactSha256:world.sha256},raw:{...rawFile,artifactSha256:raw.sha256}});
  }
  await onProgress({stage:'package-selected',count:1});
  const {artifact:selected}=await createWasmGpuSelectedArtifact({binding,batch:single,sourceRevision});
  // Only immutable native command/source graph, role descriptors and fixed phase
  // constants ship. The builder's mutable initialUploads are deliberately dropped.
  const selectedFile=await packageFile('selected-n1.json.gz',selected);
- const selectedProgram={...selected.payload.structuralConfig,commandCount:selected.payload.commands.indices.length,totalOwnedBytes:selected.payload.allocations.reduce((n,a)=>n+a.size,0),outputs:selected.payload.outputs,artifact:{...selectedFile,artifactSha256:selected.sha256}};
+ const loadedSelected=await loadWasmGpuSelectedArtifact(selected,{expectedArtifactSha256:selected.sha256,expectedSourceRevision:sourceRevision});
+ const selectedInputs=await inputFile('input-selected-n1.json','selected',loadedSelected);
+ const selectedProgram={...selected.payload.structuralConfig,inputs:selectedInputs,commandCount:selected.payload.commands.indices.length,totalOwnedBytes:selected.payload.allocations.reduce((n,a)=>n+a.size,0),outputs:selected.payload.outputs,artifact:{...selectedFile,artifactSha256:selected.sha256}};
  const wasmFile='wasm-gpu-runtime.wasm',provenanceFile=wasmFile+'.build.json';await writeFile(resolve(directory,wasmFile),scheduler.bytes);await writeFile(resolve(directory,provenanceFile),scheduler.provenanceBytes);
- const manifest={format:'wasm-gpu-program-assets-v1',sourceRevision,sourceVerification:'caller-supplied-unverified',gpuExecutionQualified:false,publicActivation:false,profile:'mmq2-cushion',bodyCount:4,widths:[1,3],programs,selectedProgram,scheduler:{file:wasmFile,byteLength:scheduler.bytes.length,sha256:sha(scheduler.bytes),provenanceFile,provenanceSha256:scheduler.provenanceSha256,sourceHashesVerified:true},presetDefaults:{settings:preset.settings,requestOptions:o,canonicalParameters:CANONICAL_DEFAULT_PARAMETERS},structuralBounds:{profile:'mmq2-cushion',strikeBackend:'staged',bodyCount:4,maximumSteps:single.effectiveMaximumSteps,maxWorldSteps:o.continuation.maxWorldSteps,maximumCommands:65536,widths:[1,3],mutableInputs:'Current positions, identities, rules and materials are packed per request; existing canonical admission, allocation shape and shared-input equality remain mandatory.'}};
+ const manifest={format:'wasm-gpu-program-assets-v1',sourceRevision,sourceVerification:'caller-supplied-unverified',gpuExecutionQualified:false,publicActivation:false,profile:'mmq2-cushion',bodyCount:4,widths:[1,3],programs,selectedProgram,scheduler:{file:wasmFile,byteLength:scheduler.bytes.length,sha256:sha(scheduler.bytes),provenanceFile,provenanceSha256:scheduler.provenanceSha256,sourceHashesVerified:true},presetDefaults:{settings:preset.settings,requestOptions:o,canonicalParameters:CANONICAL_DEFAULT_PARAMETERS},structuralBounds:{profile:'mmq2-cushion',strikeBackend:'staged',bodyCount:4,maximumSteps:single.effectiveMaximumSteps,maxWorldSteps:o.continuation.maxWorldSteps,maximumCommands:WASM_GPU_COMMAND_CAPACITY,widths:[1,3],mutableInputs:'Current positions, identities, rules and materials are packed per request; existing canonical admission, allocation shape and shared-input equality remain mandatory.'}};
  await writeFile(resolve(directory,'manifest.json'),JSON.stringify(manifest,null,2)+'\n');await onProgress({stage:'complete',programs:programs.length});return manifest;
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href){const [outputDirectory,sourceRevision]=process.argv.slice(2);buildWasmGpuProgramAssets({outputDirectory,sourceRevision,onProgress:p=>console.log(JSON.stringify(p))}).catch(error=>{console.error(error);process.exitCode=1;});}

@@ -1,4 +1,8 @@
+import {WASM_GPU_COMMAND_CAPACITY} from './scheduler-limits.mjs';
+import {subscribeDeviceLoss} from './device-loss-subscriptions.mjs';
+import {createDeviceLossWaiters} from './device-loss-waiters.mjs';
 import {heavyFirstPipelineIndices} from './pipeline-preparation-order.mjs';
+import {selectBoundedPipelinePriming} from './pipeline-priming-budget.mjs';
 /** Experimental GPU-only execution bridge. No capture, CPU physics or public activation.
  * Artifact initial data is intentionally not trusted/stored: callers supply every
  * internal arena's complete bytes for every run. With rawEngine, the same arena
@@ -11,6 +15,7 @@ import {heavyFirstPipelineIndices} from './pipeline-preparation-order.mjs';
  */
 import {assertLoadedWasmGpuRawArtifact} from './raw-artifact.mjs';
 import {assertLoadedWasmGpuEngineArtifact} from './engine-artifact.mjs';
+import {assertLoadedWasmGpuSelectedArtifact} from './selected-artifact.mjs';
 import {validateLiveWorldResources} from '../direct-candidate/experimental-live-world-resources.mjs';
 import {compileLiveWorldPipeline,awaitLiveWorldPreparation,assertLiveWorldPreparationUsable} from '../direct-candidate/experimental-live-world-pipeline-cache.mjs';
 import {createLiveWorldRunBindGroups} from '../direct-candidate/experimental-live-world-bind-groups.mjs';
@@ -25,11 +30,11 @@ export function encodeWasmGpuClear(encoder,buffer,{offset,size},stride,count){
 }
 
 export function validateWasmGpuCommandCount(worldCount,rawCount=0){
- if(!Number.isSafeInteger(worldCount)||worldCount<1||!Number.isSafeInteger(rawCount)||rawCount<0||worldCount+rawCount>65536)throw RangeError('Bounded combined command table required');
+ if(!Number.isSafeInteger(worldCount)||worldCount<1||!Number.isSafeInteger(rawCount)||rawCount<0||worldCount+rawCount>WASM_GPU_COMMAND_CAPACITY)throw RangeError('Bounded combined command table required');
  return worldCount+rawCount;
 }
 
-export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximumOwnedBytes,maxInFlight=1,signal,onPrepareProgress}={}) {
+export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximumOwnedBytes,maxInFlight=1,signal,onPrepareProgress,primingSelectedEngine}={}) {
  if(onPrepareProgress!==undefined&&typeof onPrepareProgress!=='function')throw TypeError('Synchronous preparation callback required');
  const checkPrepare=()=>{assertLiveWorldPreparationUsable(device);if(signal?.aborted)throw new DOMException(String(signal.reason??'GPU preparation cancelled'),'AbortError');};
  const progress=value=>{checkPrepare();const result=onPrepareProgress?.(Object.freeze(value));if(result&&typeof result.then==='function'){Promise.resolve(result).catch(()=>{});throw TypeError('Preparation callback must be synchronous');}checkPrepare();};
@@ -37,6 +42,7 @@ export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximum
  if(typeof device?.pushErrorScope!=='function'||typeof device?.popErrorScope!=='function')throw TypeError('GPU error scopes required');
  if(typeof device?.lost?.then!=='function')throw TypeError('Device loss promise required');
  assertLoadedWasmGpuEngineArtifact(engine);
+ if(primingSelectedEngine!==undefined){assertLoadedWasmGpuSelectedArtifact(primingSelectedEngine);if(primingSelectedEngine.sourceRevision!==engine.sourceRevision)throw Error('Priming selected/search source revision mismatch');}
  if(!engine?.lowered||!Number.isInteger(engine.count)||engine.count<1)throw TypeError('Loaded engine artifact required');
  if(![1,2].includes(maxInFlight))throw RangeError('Bounded in-flight submissions must be 1 or 2');
  validateLiveWorldResources(engine.resources,device.limits,{maximumOwnedBytes});
@@ -50,23 +56,31 @@ export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximum
  }
  const rawCommands=rawEngine?.commands??[];validateWasmGpuCommandCount(worldCommands.length,rawCommands.length);
  const commands=[...rawCommands,...worldCommands];
- const pipelines=[],rawPipelines=[],totalPipelines=lowered.definitions.length+(rawEngine?.definitions.length??0)+1;let completedPipelines=0;
+ const pipelines=[],rawPipelines=[];let totalPipelines=lowered.definitions.length+(rawEngine?.definitions.length??0)+1,completedPipelines=0;
  const compile=async definition=>{checkPrepare();progress({stage:'compile-start',pipelineIndex:completedPipelines+1,totalPipelines,shaderBytes:new TextEncoder().encode(definition.code).byteLength,entryPoint:definition.entryPoint??'main',label:definition.label});const pipeline=await compileLiveWorldPipeline(device,{...definition,signal});checkPrepare();progress({stage:'compile',completedPipelines:++completedPipelines,totalPipelines});return pipeline;};
  const stride=plan.allocations[plan.readback].size/4;
  // Preparation ordinal is independent of the immutable command's definition index.
  const preparation=[...lowered.definitions.map((definition,index)=>({bank:pipelines,index,code:definition.code,layout:definition.layout,label:`world-N${count}-${index+1}`})),...(rawEngine?.definitions??[]).map((definition,index)=>({bank:rawPipelines,index,code:definition.code,layout:definition.layout,label:`raw-N${count}-${index+1}`}))];
  const gateBank=[];preparation.push({bank:gateBank,index:0,code:liveBoundsResultGateSource(stride),preflight:false,label:`result-gate-N${count}`});
+ // Bounded cross-mode priming fits the planned primary preparation cache budget,
+ // with at most sixteen exact selected-only definitions. Existing LRU remains;
+ // unrelated prior entries may be evicted. Command slots/arenas stay fixed.
+ if(primingSelectedEngine){
+  const priming=selectBoundedPipelinePriming(preparation,primingSelectedEngine.definitions);
+  for(const {definition,index}of priming)preparation.push({bank:[],index:0,code:definition.code,layout:definition.layout,entryPoint:definition.entryPoint,label:`selected-prime-${index+1}`});
+  totalPipelines+=priming.length;
+ }
  for(const ordinal of heavyFirstPipelineIndices(preparation)){const {bank,index,...definition}=preparation[ordinal];bank[index]=await compile(definition);}
- const gate=gateBank[0];
+ let gate=gateBank[0];
  const buffers=[],rawBuffers=[],owned=[],pending=[];
  const internalGroups=createLiveWorldRunBindGroups(device);let externalGroups=createLiveWorldRunBindGroups(device);
  let lost=null,disposed=false,active=null,lastGeneration=0,busy=false;
  const alive=()=>{if(disposed)throw Error('GPU bridge disposed');if(lost)throw lost;assertLiveWorldPreparationUsable(device);};
  // Device loss establishes that pending GPU work can no longer access resources.
- let rejectLost;const loss=new Promise((_,reject)=>{rejectLost=reject;});loss.catch(()=>{});
+ const lossWaiters=createDeviceLossWaiters();
  const lose=(reason='GPU device lost')=>{if(!lost){lost=reason instanceof Error?reason:Error(String(reason));active=null;externalGroups.dispose();}};
- const deviceLost=reason=>{lose(reason);rejectLost(lost);};
- Promise.resolve(device.lost).then(info=>deviceLost('GPU device lost: '+(info?.message??'unknown')),deviceLost);
+ const deviceLost=reason=>{lose(reason);lossWaiters.deviceLost(lost);};
+ const unsubscribeLoss=subscribeDeviceLoss(device,info=>deviceLost(info instanceof Error?info:'GPU device lost: '+(info?.message??'unknown')));
  const scoped=async(fn,preparation=false)=>{
   let result,failure,depth=0,gpuFailure;
   try{for(const kind of ['validation','internal','out-of-memory']){device.pushErrorScope(kind);depth++;}result=await fn();}catch(error){failure=error;}
@@ -91,7 +105,7 @@ export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximum
   const submit=async (encoder,generation)=>{
    alive();while(pending.length>=maxInFlight)await pending.shift();
    guard(generation);device.queue.submit([encoder.finish()]);
-   const done=Promise.race([device.queue.onSubmittedWorkDone(),loss]);done.catch(lose);pending.push(done);
+   const done=lossWaiters.wait(device.queue.onSubmittedWorkDone());done.catch(lose);pending.push(done);
   };
   // Quarantined cleanup skips new scopes, but still awaits every submitted fence.
  const exclusive=async (fn,after,cleanup=false)=>{if(busy)throw Error('Concurrent GPU bridge operation');let unscoped=false;try{assertLiveWorldPreparationUsable(device);}catch(error){if(!cleanup)throw error;unscoped=error.code==='GPU_PREPARATION_TIMEOUT';}busy=true;try{const result=await (unscoped?fn():scoped(fn));return after?after(result):result;}finally{busy=false;}};
@@ -125,16 +139,19 @@ export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximum
     guard(generation);if(!(handles instanceof Uint32Array)||handles.length<1||handles.length>4096)throw RangeError('Bounded owned u32 command chunk required');
     const copy=handles.slice(),start=active.cursor;
     for(let i=0;i<copy.length;i++)if(copy[i]!==start+i+1||copy[i]>commands.length)throw Error('Exact ordered command handles required');
-    const encoder=device.createCommandEncoder();
-    for(const handle of copy){
+    const encoder=device.createCommandEncoder();let pass=null;
+    const closePass=()=>{const open=pass;pass=null;open?.end();};
+    // Compute usage scopes and storage ordering are per dispatch. Only group
+    // consecutive dispatches; encoder-level clears and chunk fences stay put.
+    try{for(const handle of copy){
      const isRaw=handle<=rawCommands.length,c=commands[handle-1];
-     if(c.kind==='clear'){if(isRaw)throw Error('Unsupported raw clear command');encodeWasmGpuClear(encoder,buffers[c.buffer],c,plan.allocations[c.buffer].size,count);continue;}
+     if(c.kind==='clear'){closePass();if(isRaw)throw Error('Unsupported raw clear command');encodeWasmGpuClear(encoder,buffers[c.buffer],c,plan.allocations[c.buffer].size,count);continue;}
      if(c.kind!=='dispatch')throw Error('Unsupported command');
      const bank=isRaw?rawBuffers:buffers,p=(isRaw?rawPipelines:pipelines)[c.definition],entries=c.entries.map(e=>({binding:e.binding,resource:{buffer:bank[e.buffer],offset:e.offset,size:e.size}}));
      if(!isRaw){const binding=lowered.definitions[c.definition].faultBinding;if(binding!==null)entries.push({binding,resource:{buffer:fault}});}
      const cache=!rawEngine&&!isRaw&&c.entries.some(e=>plan.allocations[e.buffer].external)?externalGroups:internalGroups;
-     const pass=encoder.beginComputePass();pass.setPipeline(p);pass.setBindGroup(0,cache.get(p,entries));pass.dispatchWorkgroups(c.x,isRaw?1:count,1);pass.end();
-    }
+     pass??=encoder.beginComputePass();pass.setPipeline(p);pass.setBindGroup(0,cache.get(p,entries));pass.dispatchWorkgroups(c.x,isRaw?1:count,1);
+    }closePass();}catch(error){try{closePass();}catch{}throw error;}
     await submit(encoder,generation);guard(generation);active.cursor+=copy.length;return active.cursor;
    });},
    async finish(generation){return exclusive(async()=>{
@@ -142,12 +159,12 @@ export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximum
     const encoder=device.createCommandEncoder(),pass=encoder.beginComputePass();pass.setPipeline(gate);pass.setBindGroup(0,internalGroups.get(gate,[fault,buffers[plan.readback],ids].map((buffer,binding)=>({binding,resource:{buffer}}))));pass.dispatchWorkgroups(count);pass.end();
     for(let i=0;i<count;i++)encoder.copyBufferToBuffer(buffers[plan.readback],(i*stride+stride-4)*4,read,i*16,16);
     await submit(encoder,generation);await drain();guard(generation);let mapped=false;
-    try{await Promise.race([read.mapAsync(1),loss]);mapped=true;guard(generation);const result=new Uint32Array(read.getMappedRange()).slice();return result;}finally{if(mapped)read.unmap();}
+    try{await lossWaiters.wait(read.mapAsync(1));mapped=true;guard(generation);const result=new Uint32Array(read.getMappedRange()).slice();return result;}finally{if(mapped)read.unmap();}
    },result=>{guard(generation);active=null;releaseExternal();return result;});},
    cancel(generation){if(active?.generation===generation)active.cancelled=true;},
    async drain(){return exclusive(async()=>{try{await drain();}finally{if(active?.cancelled){active=null;releaseExternal();}}},undefined,true);},
    lose,
-   async dispose(){return exclusive(async()=>{if(disposed)return;try{await drain();}finally{disposed=true;active=null;externalGroups.dispose();internalGroups.dispose();for(const b of owned)b.destroy();buffers.length=0;rawBuffers.length=0;owned.length=0;pipelines.length=0;rawPipelines.length=0;fault=null;ids=null;read=null;}},undefined,true);},
+   async dispose(){return exclusive(async()=>{if(disposed)return;try{await drain();}finally{disposed=true;active=null;externalGroups.dispose();internalGroups.dispose();for(const b of owned)b.destroy();buffers.length=0;rawBuffers.length=0;owned.length=0;pipelines.length=0;rawPipelines.length=0;gate=null;gateBank.length=0;preparation.length=0;unsubscribeLoss();fault=null;ids=null;read=null;}},undefined,true);},
   });
- },true);checkPrepare();return prepared;}catch(error){externalGroups.dispose();internalGroups.dispose();for(const b of owned)b.destroy();buffers.length=0;rawBuffers.length=0;owned.length=0;throw error;}
+ },true);checkPrepare();return prepared;}catch(error){unsubscribeLoss();pipelines.length=0;rawPipelines.length=0;gate=null;gateBank.length=0;preparation.length=0;externalGroups.dispose();internalGroups.dispose();for(const b of owned)b.destroy();buffers.length=0;rawBuffers.length=0;owned.length=0;throw error;}
 }

@@ -5,7 +5,7 @@ import {encodeCanonicalScene,createCanonicalRequest,createCanonicalCandidate} fr
 import {prepareRawWorldBinding,prepareRawWorldBatch} from '../src/direct-candidate/deterministic-raw-world.mjs';
 import {prepareCanonicalWorldContinuation} from '../src/direct-candidate/canonical-world-continuation.mjs';
 import {captureWasmGpuWorldInputPlan,buildWasmGpuWorldUploadManifest} from '../src/wasm-gpu/world-input-manifest-builder.mjs';
-import {packWasmGpuWorldInputRoles,prepareWasmGpuWorldUploads,prepareWasmGpuRawUploads,prepareWasmGpuCurrentInputs,prepareWasmGpuInputs} from '../src/wasm-gpu/world-inputs.mjs';
+import {validateWasmGpuWorldUploadManifest,WORLD_QUERY_VIEW_ROLES,packWasmGpuWorldInputRoles,prepareWasmGpuWorldUploads,prepareWasmGpuRawUploads,prepareWasmGpuCurrentInputs,prepareWasmGpuInputs} from '../src/wasm-gpu/world-inputs.mjs';
 import {createWasmGpuEngineArtifact,loadWasmGpuEngineArtifact} from '../src/wasm-gpu/engine-artifact.mjs';
 import {createWasmGpuRawArtifact} from '../src/wasm-gpu/raw-artifact-builder.mjs';
 import {loadWasmGpuRawArtifact} from '../src/wasm-gpu/raw-artifact.mjs';
@@ -62,8 +62,8 @@ test('current captures match compact independent pre-extraction source and uploa
  for(const changed of [false,true]){const x=current(changed,changed?777:100),now=await captureWasmGpuWorldInputPlan(x);
  // Preserve the independent pre-extraction plan golden. Only the explicitly
  // reviewed MMQ2 clear module and endpoint-cache structural delta may differ.
- const inverse=restoreEndpointCacheDelta({definitions:now.plan.definitions,commands:now.plan.commands,buffers:now.plan.allocations,sourceKey:'source'});
- const restored={...structuredClone(now.plan),definitions:inverse.definitions,commands:inverse.commands,allocations:inverse.buffers},replacements=restored.definitions.filter(d=>sha(d.source)===delta.reviewedModuleSHA256);
+ const inverse=restoreEndpointCacheDelta({definitions:now.originalPlan.definitions,commands:now.originalPlan.commands,buffers:now.originalPlan.allocations,sourceKey:'source'});
+ const restored={...structuredClone(now.originalPlan),definitions:inverse.definitions,commands:inverse.commands,allocations:inverse.buffers},replacements=restored.definitions.filter(d=>sha(d.source)===delta.reviewedModuleSHA256);
  assert.equal(replacements.length,1,'Exactly one reviewed MMQ2 source delta');
  replacements[0].source=delta.baselineModuleCode;
  assert.equal(sha(JSON.stringify(restored)),fixture.cases[changed?'changed-geometry-clock-rules-ids':'default'],'Original full plan after exact reviewed inverses');
@@ -99,4 +99,41 @@ test('weak owned-pair cache preserves current candidate bytes and cannot be pois
  assert.throws(()=>packWasmGpuWorldInputRoles({binding:{...f.binding},batch:f.batch}),/Owned|owned/);
  assert.throws(()=>packWasmGpuWorldInputRoles({binding:f.binding,batch:current(true).batch}),/mismatch/);
  const otherPair=current(),ownedOther=packWasmGpuWorldInputRoles({binding:otherPair.binding,batch:otherPair.batch});assert.deepEqual(ownedOther.roles.get('world:scene'),packWasmGpuWorldInputRoles({binding:f.binding,batch:f.batch}).roles.get('world:scene'));
+});
+test('explicit staged graph retains audited reference and widens only one zeroed temporary arena',async()=>{
+ const {lowerSmoothCellProgram}=await import('../src/wasm-gpu/smooth-program-lowering.mjs');
+ const {SMOOTH_CELLS_WGSL}=await import('../src/direct-candidate/deterministic-smooth-segment.mjs');
+ const {lowerQueryProgram}=await import('../src/wasm-gpu/query-program-lowering.mjs');const {lowerCushionProgram}=await import('../src/wasm-gpu/cushion-program-lowering.mjs');const original=structuredClone(capture.originalPlan),d=await lowerSmoothCellProgram(capture.originalPlan,{sourceField:'source'}),cushion=await lowerCushionProgram(d,{sourceField:'source'}),query=await lowerQueryProgram(cushion,{sourceField:'source'});
+ assert.deepEqual(capture.originalPlan,original);assert.deepEqual(capture.plan.commands,query.commands);assert.deepEqual(capture.plan.definitions,query.definitions);assert.deepEqual(capture.queryLowering,query.receipt);assert.deepEqual(capture.lowering,d.receipt);
+ assert.ok(capture.originalPlan.definitions.some(x=>x.source===SMOOTH_CELLS_WGSL));assert.ok(capture.plan.definitions.every(x=>x.source!==SMOOTH_CELLS_WGSL));
+ const t=d.receipt.tempAllocation;assert.equal(t,capture.originalPlan.allocations.length);assert.equal(d.receipt.tempBytes,2048);assert.deepEqual(capture.uploadManifest.allocations[t],{index:t,size:2048,usage:128,external:null,hostInitialized:false,role:'zero'});
+ const e=await engineFor(f,capture,3);assert.equal(e.lowered.shared[t],false);const uploads=prepareWasmGpuWorldUploads({engine:e,bindings:[f.binding,f.binding,f.binding],batches:[f.batch,f.batch,f.batch]});const temp=uploads.initialUploads.find(x=>x.index===t);assert.equal(temp.initial.length,6144);assert.ok(temp.initial.every(x=>x===0));
+ const cr=e.lowered.sourcePlan.cushionLowering;assert.equal(cr.originalSHA256,e.lowered.sourcePlan.lowering.derivedSHA256);assert.equal(cr.cacheAllocations.length,2);for(const {index}of cr.cacheAllocations){const u=uploads.initialUploads.find(x=>x.index===index);assert.equal(u.initial.length,18432);assert.ok(u.initial.every(x=>x===0));assert.equal(e.lowered.shared[index],false);}const releaseTemp=uploads.initialUploads.find(x=>x.index===cr.tempAllocation);assert.equal(releaseTemp.initial.length,768);assert.ok(releaseTemp.initial.every(x=>x===0));
+ const staged=e.lowered.commands.filter(c=>c.kind==='dispatch'&&c.entries.some(x=>x.buffer===t));assert.equal(staged.length,d.receipt.expandedCommands*3);
+ for(const c of staged){assert.equal(c.entries[4].buffer,t);assert.equal(c.entries[4].size,6144);const def=e.lowered.definitions[c.definition];assert.match(def.code,/@binding\(4\)/);assert.match(def.code,/@binding\(5\)/);if(c.indirect)assert.match(def.code,/@binding\(6\)/);}
+});
+
+
+test('query descriptors are exact immutable-role uploads shared by N3 without losing candidate-local output guards',async()=>{
+ const {queryViewWords}=await import('../src/wasm-gpu/query-view.mjs');
+ const e=await engineFor(f,capture,3),q=e.lowered.sourcePlan.queryLowering;
+ assert.equal(q.originalSHA256,e.lowered.sourcePlan.cushionLowering.derivedSHA256);assert.equal(q.originalCommands,e.lowered.sourcePlan.cushionLowering.derivedCommands);
+ const uploads=prepareWasmGpuWorldUploads({engine:e,bindings:[f.binding,f.binding,f.binding],batches:[f.batch,f.batch,f.batch]});
+ const definitions=new Set();
+ for(let rail=0;rail<4;rail++){
+  const {index,role}=q.descriptors[rail];assert.equal(role,WORLD_QUERY_VIEW_ROLES[rail]);assert.equal(index,e.lowered.sourcePlan.allocations.length-4+rail);
+  assert.equal(e.lowered.shared[index],true);assert.deepEqual(new Uint32Array(uploads.initialUploads.find(x=>x.index===index).initial.buffer),queryViewWords(rail));
+  const dispatches=e.lowered.commands.filter(c=>c.kind==='dispatch'&&c.entries.some(x=>x.buffer===index));assert.ok(dispatches.length>0);
+  for(const c of dispatches){assert.deepEqual(c.entries.find(x=>x.buffer===index),{binding:4,buffer:index,offset:0,size:16});const out=c.entries.find(x=>x.binding===3);assert.equal(e.lowered.shared[out.buffer],false);assert.equal(out.size,12288);assert.equal(out.offset,0);const layout=e.lowered.definitions[c.definition].layout;assert.notEqual(layout,'auto');assert.deepEqual(layout.bindGroupLayouts[0].entries.map(x=>[x.binding,x.buffer.type]),[[0,'read-only-storage'],[1,'read-only-storage'],[2,'read-only-storage'],[3,'storage'],[4,'read-only-storage'],[5,'storage'],[6,'read-only-storage']]);definitions.add(c.definition);}
+ }
+ assert.equal(definitions.size,2,'all four views share two guarded staged kernels');
+});
+
+test('fixed query roles reject missing receipts, relocation, arbitrary bytes and zero-role disguise',()=>{
+ const q=capture.plan.queryLowering,{index}=q.descriptors[0];
+ const noReceipt={...capture.plan};delete noReceipt.queryLowering;assert.throws(()=>validateWasmGpuWorldUploadManifest(capture.uploadManifest,noReceipt),/Query descriptor/);
+ for(const mutate of [p=>p.queryLowering.descriptors[0].index++,p=>p.queryLowering.originalSHA256='0'.repeat(64),p=>p.queryLowering.derivedCommands++,p=>p.queryLowering.descriptors[0].role='query-view-v1:9']){const p=structuredClone(capture.plan);mutate(p);assert.throws(()=>validateWasmGpuWorldUploadManifest(capture.uploadManifest,p),/query descriptor/i);}
+ const disguised=structuredClone(capture.uploadManifest);disguised.allocations[index].role='zero';disguised.allocations[index].hostInitialized=false;assert.throws(()=>validateWasmGpuWorldUploadManifest(disguised,capture.plan),/query descriptor/i);
+ const changed=structuredClone(capture.plan);changed.allocations[index].initial[0]^=1;assert.throws(()=>buildWasmGpuWorldUploadManifest({...f,plan:changed,metadata:capture.metadata}),/Source-owned upload bytes disagree/);
+ const moved=structuredClone(capture.uploadManifest);[moved.allocations[index].role,moved.allocations[index+1].role]=[moved.allocations[index+1].role,moved.allocations[index].role];assert.throws(()=>validateWasmGpuWorldUploadManifest(moved,capture.plan),/query descriptor/i);
 });

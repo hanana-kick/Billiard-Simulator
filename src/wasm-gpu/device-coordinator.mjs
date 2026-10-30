@@ -1,16 +1,19 @@
+import {assertWorkerOwnerEndpoint} from './worker-owner-client.mjs';
 import {assertLiveWorldPreparationUsable} from '../direct-candidate/experimental-live-world-pipeline-cache.mjs';
 /** One device-global operation queue and memory ledger for search + selected.
  * A cancelled task retains the lock until its owner has actually drained. */
 const coordinators=new WeakSet(),devices=new WeakMap();
 const abortError=reason=>{const e=Error(String(reason??'GPU operation cancelled'));e.name='AbortError';return e;};
 export function assertWasmGpuDeviceCoordinator(value,device){if(!coordinators.has(value)||device&&value.device!==device)throw TypeError('Owned matching GPU device coordinator required');return value;}
-export function createWasmGpuDeviceCoordinator({device,maximumOwnedBytes=16*1024*1024,groupBudgets={search:8*1024*1024,selected:12*1024*1024}}={}){
+export function createWasmGpuDeviceCoordinator(options={}){return createCoordinator(options,assertLiveWorldPreparationUsable);}
+export function createWasmGpuWorkerCoordinator({endpoint,...options}={}){assertWorkerOwnerEndpoint(endpoint);return createCoordinator({...options,device:endpoint},assertWorkerOwnerEndpoint);}
+function createCoordinator({device,maximumOwnedBytes=16*1024*1024,groupBudgets={search:8*1024*1024,selected:12*1024*1024}}={},assertUsable){
  if(!device||typeof device.lost?.then!=='function')throw TypeError('GPU device loss promise required');
  if(devices.has(device))throw Error('Device already has a live WASM coordinator');
  if(!Number.isSafeInteger(maximumOwnedBytes)||maximumOwnedBytes<1||maximumOwnedBytes>16*1024*1024||['search','selected'].some(g=>!Number.isSafeInteger(groupBudgets[g])||groupBudgets[g]<1||groupBudgets[g]>(g==='search'?8:12)*1024*1024))throw RangeError('Explicit bounded aggregate/group GPU budgets required');
  const limits=Object.freeze({search:groupBudgets.search,selected:groupBudgets.selected}),reservations=new Map(),groupBytes={search:0,selected:0};
  let allocatedBytes=0,tail=Promise.resolve(),active=null,cancellation=0,closing=false,closed=false,disposal=null,lost=null;
- const alive=()=>{if(closing||closed)throw Error('GPU coordinator disposed');if(lost)throw lost;assertLiveWorldPreparationUsable(device);};
+ const alive=()=>{if(closing||closed)throw Error('GPU coordinator disposed');if(lost)throw lost;assertUsable(device);};
  const notifyCancel=(token,reason)=>{if(!token)return;token.abort.abort(reason);try{token.onCancel?.(reason);}catch(error){token.cancelError=error;}};
  const cancel=(reason='GPU coordinator cancelled')=>{cancellation++;notifyCancel(active,reason);};
  const onLoss=reason=>{lost=reason instanceof Error?reason:Error('GPU device lost: '+(reason?.message??String(reason)));cancel(lost.message);};

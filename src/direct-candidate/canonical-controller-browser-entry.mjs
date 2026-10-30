@@ -1,5 +1,5 @@
 // Importing this bundle is inert: no adapter, device, fetch, or mode activation.
-import {createCanonicalPreparationScope,awaitCanonicalPreparation} from './canonical-page-preparation.mjs';
+import {createCanonicalPreparationScope} from './canonical-page-preparation.mjs';
 import {startCanonicalPracticeInternal} from './canonical-practice-entry.mjs';
 import {installCanonicalController as install} from './canonical-controller-integration.mjs';
 import {createCanonicalWasmCompactSearchService} from './canonical-compact-search-service.mjs';
@@ -14,24 +14,22 @@ export function installCanonicalController(controller,options={}){
  catch(error){searchService?.dispose();throw error;}
 }
 
-/** Explicit confirmation prepares all bundled programs before controller install.
- * No missing-build, unsupported-device, or preparation failure falls back. */
+/** Explicit confirmation installs the verified Worker-owned runtime. Programs
+ * remain on-demand; no native GPU objects or fallback live on this thread. */
 export function startCanonicalPractice(controller,{signal,onProgress,selectedWorldProfile='mmq2-cushion'}={}){
  if(selectedWorldProfile!=='mmq2-cushion')throw TypeError('GPU 새 게임은 공·쿠션 통합 모드만 지원합니다.');
  if(onProgress!==undefined&&typeof onProgress!=='function')throw TypeError('Synchronous preparation progress callback required');
  const scope=createCanonicalPreparationScope({signal});signal=scope.signal;
- const bindings=10;let productionRuntime;
- const current=()=>scope.check();
- const disposeDevice=async device=>{try{await productionRuntime?.dispose();}finally{device.destroy();}};
- return startCanonicalPracticeInternal(controller,{install:(c,options)=>installCanonicalController(c,{...options,productionRuntime}),disposeDevice,signal,selectedWorldProfile,requestDevice:async()=>{
-  current();
-  if(!globalThis.isSecureContext||!globalThis.navigator?.gpu)throw Error('이 브라우저에서 안전한 WebGPU 연결을 사용할 수 없습니다.');
-  const adapter=await awaitCanonicalPreparation(navigator.gpu.requestAdapter(),signal);current();if(!adapter)throw Error('WebGPU 장치를 찾지 못했습니다. 기존 엔진으로 대신 실행하지 않습니다.');
-  if(adapter.limits.maxStorageBuffersPerShaderStage<bindings)throw Error(`이 GPU는 현재 실험에 필요한 저장 버퍼 ${bindings}개를 지원하지 않습니다.`);
-  const device=await awaitCanonicalPreparation(adapter.requestDevice({requiredLimits:{maxStorageBuffersPerShaderStage:bindings}}),signal,lateDevice=>lateDevice.destroy());
-  // Internal entry cannot own this device until requestDevice resolves: failures
-  // during async prewarm must drain/destroy here, not leak an unreturned device.
-  try{current();productionRuntime=await createWasmGpuProductionRuntime({device,signal,onProgress});current();return device;}
-  catch(error){await disposeDevice(device);current();throw error;}
+ let productionRuntime;
+ // The runtime alone owns Worker/native lifetimes, including failed creation.
+ // Entry cleanup waits for its drain/destroy acknowledgement; an opaque public
+ // identity must never be treated as a GPUDevice or destroyed independently.
+ const disposeDevice=()=>productionRuntime.dispose();
+ return startCanonicalPracticeInternal(controller,{install:(c,options)=>installCanonicalController(c,{...options,productionRuntime}),disposeDevice,getDeviceLoss:()=>productionRuntime.lost,signal,selectedWorldProfile,requestDevice:async()=>{
+  scope.check();productionRuntime=await createWasmGpuProductionRuntime({signal,onProgress});
+  // Cancellation can win immediately after successful creation. Do not publish
+  // the identity or finish rejection until that late runtime is fully disposed.
+  try{scope.check();return productionRuntime.identity;}
+  catch(error){await disposeDevice();throw error;}
  }}).finally(()=>scope.dispose());
 }

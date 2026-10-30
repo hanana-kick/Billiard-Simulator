@@ -1,3 +1,4 @@
+import {subscribeDeviceLoss} from './device-loss-subscriptions.mjs';
 /** Private shared lifecycle: one WASM schedule, terminal loss, cancel/drain/dispose. */
 import {instantiateWasmGpuRuntime} from './runtime.mjs';
 const abortError = reason => { const error = new Error(String(reason ?? 'WASM GPU run cancelled')); error.name = 'AbortError'; return error; };
@@ -25,7 +26,7 @@ export async function prepareWasmGpuOwner({moduleBytes, device, bridge, chunkSiz
     terminal = reason instanceof Error ? reason : new Error(String(reason));
     if (runtime.status().state !== 'disposed') runtime.lose(terminal);
   };
-  Promise.resolve(device.lost).then(info => lose(new Error(`GPU device lost: ${info?.message ?? 'unknown'}`)), lose);
+  const unsubscribeLoss=subscribeDeviceLoss(device,info=>lose(info instanceof Error?info:new Error(`GPU device lost: ${info?.message ?? 'unknown'}`)));
   const guard = token => {
     if (active !== token) throw new Error('Stale WASM GPU run');
     if (terminal) throw terminal;
@@ -33,37 +34,53 @@ export async function prepareWasmGpuOwner({moduleBytes, device, bridge, chunkSiz
     if (disposal || disposed) throw abortError('WASM GPU engine disposed');
   };
   function run(input = {}) {
-    const {signal, onProgress} = input;
+    const {signal, onProgress, onExecutionPhase} = input;
     try {
       checkAlive();
       if (active) throw new Error('WASM GPU engine run already active');
       if (signal && (typeof signal.addEventListener !== 'function' || typeof signal.removeEventListener !== 'function')) throw new TypeError('AbortSignal required');
       if (signal?.aborted) throw abortError(signal.reason);
       if (onProgress !== undefined && typeof onProgress !== 'function') throw new TypeError('onProgress must be a function');
+      if (onExecutionPhase !== undefined && typeof onExecutionPhase !== 'function') throw new TypeError('onExecutionPhase must be a function');
       const {begin, release = () => {}} = snapshotRun(input);
       const token = {generation: runtime.start().generation, cancelled: null, promise: null};
       active = token;
       const onAbort = () => cancel(signal.reason);
       token.promise = (async () => {
-        let result, failure, phase = 'begin';
+        let result, failure, phase = 'begin', submittedCommands = 0, chunkIndex = 0;
+        const began = globalThis.performance?.now() ?? Date.now();
+        const detail = executionStage => Object.freeze({executionStage, generation: token.generation,
+          chunkIndex, chunkCount: Math.ceil(bridge.commandCount / chunkSize), submittedCommands,
+          totalCommands: bridge.commandCount, runElapsedMs: (globalThis.performance?.now() ?? Date.now()) - began});
+        // Public observers execute only at owner boundaries, never inside bridge
+        // submit/fence cleanup. Observer failures cancel and drain, not poison GPU.
+        const report = executionStage => {
+          guard(token); phase = 'progress';
+          const result = onExecutionPhase?.(detail(executionStage));
+          if (result && typeof result.then === 'function') {
+            Promise.resolve(result).catch(() => {});
+            throw new TypeError('Synchronous execution phase callback required');
+          }
+          guard(token);
+        };
         try {
           signal?.addEventListener('abort', onAbort, {once: true});
           if (signal?.aborted) onAbort();
           guard(token);
+          report('upload'); phase = 'begin';
           await bridge.beginRun({generation: token.generation, ...begin});
           guard(token);
-          let submittedCommands = 0;
           while (runtime.status().state === 'running') {
-            phase = 'step';
+            chunkIndex++; report('chunk-encode-or-wait'); phase = 'step';
             const chunk = await runtime.step(chunkSize); submittedCommands += chunk.submittedCommands;
             guard(token);
             if (onProgress) {
               phase = 'progress';
-              await onProgress(Object.freeze({generation: token.generation, submittedCommands, totalCommands: bridge.commandCount}));
+              await onProgress(detail('chunk-submitted'));
               guard(token);
             }
           }
-          phase = 'finish'; result = await bridge.finish(token.generation); guard(token);
+          report('finish-fence-and-readback'); phase = 'finish'; result = await bridge.finish(token.generation); guard(token);
         } catch (error) {
           failure = token.cancelled || error;
           if (token.cancelled || phase === 'progress') {
@@ -95,7 +112,7 @@ export async function prepareWasmGpuOwner({moduleBytes, device, bridge, chunkSiz
         if (pending) await pending.catch(() => {});
         runtime.dispose();
         await bridge.dispose();
-      } finally { disposed = true; }
+      } finally { disposed = true; unsubscribeLoss(); }
     })();
     return disposal;
   }

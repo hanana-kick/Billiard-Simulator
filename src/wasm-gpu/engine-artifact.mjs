@@ -1,3 +1,4 @@
+import {WASM_GPU_COMMAND_CAPACITY} from './scheduler-limits.mjs';
 /** Build-time packaging of an exact captured/lowered GPU program, NOT an engine
  * qualification or universal physics model. No GPU/CPU physics executes here.
  * Trust root: the caller must obtain the expected digest/revision/config/width
@@ -17,7 +18,7 @@ function packCommands(commands){
 }
 function unpackCommands(packed){
  keys(packed,['dictionary','indices','bindings']);if(!Array.isArray(packed.dictionary)||!Array.isArray(packed.indices)||!Array.isArray(packed.bindings)||!packed.dictionary.length||!packed.indices.length)throw Error('Packed command dictionary/stream required');
- if(packed.indices.length>65536||packed.dictionary.length>packed.indices.length||packed.bindings.length>packed.dictionary.length)throw RangeError('Packed command counts exceed scheduler capacity');
+ if(packed.indices.length>WASM_GPU_COMMAND_CAPACITY||packed.dictionary.length>packed.indices.length||packed.bindings.length>packed.dictionary.length)throw RangeError('Packed command counts exceed scheduler capacity');
  const bindingUsed=new Set(),dictionary=packed.dictionary.map(c=>{if(!Object.hasOwn(c,'entries'))return c;const id=c.entries;if(!Number.isSafeInteger(id)||id<0||id>=packed.bindings.length||!Array.isArray(packed.bindings[id]))throw Error('Invalid packed bindings handle');bindingUsed.add(id);return {...c,entries:packed.bindings[id]};});
  const used=new Set(),commands=packed.indices.map(index=>{if(!Number.isSafeInteger(index)||index<0||index>=dictionary.length)throw Error('Invalid packed command handle');used.add(index);return dictionary[index];});
  if(used.size!==dictionary.length||bindingUsed.size!==packed.bindings.length)throw Error('Unused packed dictionary entry');return commands;

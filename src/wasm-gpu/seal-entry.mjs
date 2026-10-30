@@ -23,3 +23,4 @@ import './world-inputs.mjs';
 import '../direct-candidate/canonical-practice-entry.mjs';
 import '../math.js';
 import '../physics.js';
+import './input-contract-builder.mjs';

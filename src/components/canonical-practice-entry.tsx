@@ -60,7 +60,9 @@ export function CanonicalPracticeEntry({state:s,controller}:{state:any;controlle
    <p>{loss.message||loss.reason}</p>
    <p>마지막 단계: {lossPhase} · 이유: {loss.reason} · 발생 시각: {loss.timestamp}</p>
    {lossProgress?.phase==='compiling'?<p>셰이더 준비 {count(lossProgress.compileCompleted)} / {count(lossProgress.compileTotal)}</p>:null}
-   {['encoding','submitted'].includes(lossProgress?.phase)&&(lossProgress?.encodedCommands!=null||lossProgress?.totalCommands!=null)?<p>명령 준비 {count(lossProgress.encodedCommands)} / {count(lossProgress.totalCommands)}</p>:null}
+   {lossProgress?.executionStage?<p>실행 구간: {lossProgress.executionStage} · 청크 {count(lossProgress.chunkIndex)} / {count(lossProgress.chunkCount)}</p>:null}
+   {lossProgress?.submittedCommands!=null?<p>제출 명령 {count(lossProgress.submittedCommands)} / {count(lossProgress.totalCommands)} · GPU 완료 수가 아닙니다.</p>:null}
+   {lossProgress?.cachedDeviceOwnedBytes!=null?<p>엔진 소유 버퍼 {count(lossProgress.cachedDeviceOwnedBytes)} bytes · 드라이버 전체 메모리 사용량은 아닙니다.</p>:null}
    {lossProgress?<p>검색 진행: {count(lossProgress.tested)} / {count(lossProgress.total)}개</p>:null}
    <p>GPU 작업을 중단했습니다. 이 오류와 브라우저 이름·버전, 직전 동작을 알려 주세요. 새로고침하면 기본 모드에서 다시 시작할 수 있지만 현재 게임 기록은 사라집니다.</p>
   </AlertDescription></Alert>:null}

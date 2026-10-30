@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {createWasmGpuDeviceCoordinator,assertWasmGpuDeviceCoordinator} from '../src/wasm-gpu/device-coordinator.mjs';
+import {createWasmGpuDeviceCoordinator,createWasmGpuWorkerCoordinator,assertWasmGpuDeviceCoordinator} from '../src/wasm-gpu/device-coordinator.mjs';
 const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return{promise,resolve};};
 const tick=()=>new Promise(r=>setImmediate(r));
 const make=()=>{const loss=deferred(),device={lost:loss.promise},coordinator=createWasmGpuDeviceCoordinator({device,maximumOwnedBytes:160,groupBudgets:{search:80,selected:120}});return{loss,device,coordinator};};
@@ -12,3 +12,5 @@ test('one live coordinator per device and non-forgeable brand',async()=>{const {
 
 test('throwing cancellation hook still holds lock through drain and rejects safely',async()=>{const {coordinator:c}=make(),gate=deferred();const p=c.run(async()=>gate.promise,{onCancel(){throw Error('hook failed');}}),rejected=assert.rejects(p,/hook failed/);await tick();assert.doesNotThrow(()=>c.cancel());gate.resolve();await rejected;await c.dispose();});
 test('failed destruction retains its byte reservation and blocks a second coordinator on that device',async()=>{const {device,coordinator:c}=make();c.reserve({key:'not-destroyed',group:'selected',bytes:90});await assert.rejects(c.dispose(async()=>{throw Error('destruction failed');}),/destruction/);assert.equal(c.status().allocatedBytes,90);assert.throws(()=>createWasmGpuDeviceCoordinator({device}),/already/);});
+
+test('worker coordinator refuses forged endpoints and native devices',()=>{for(const endpoint of[{lost:new Promise(()=>{})},{kind:'sealed-worker-owner-endpoint-v1',lost:new Promise(()=>{})}])assert.throws(()=>createWasmGpuWorkerCoordinator({endpoint}),/Owned sealed Worker/);});

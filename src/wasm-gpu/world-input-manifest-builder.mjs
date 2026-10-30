@@ -1,3 +1,6 @@
+import {lowerQueryProgram} from './query-program-lowering.mjs';
+import {lowerCushionProgram} from './cushion-program-lowering.mjs';
+import {lowerSmoothCellProgram} from './smooth-program-lowering.mjs';
 /** BUILD ONLY: classify every original allocation by descriptor provenance and
  * prove its complete initial bytes against current source-owned input packers. */
 import {captureLiveWorldPlan} from '../direct-candidate/experimental-live-world-capture.mjs';
@@ -19,7 +22,12 @@ export function wasmGpuWorldCandidateLocalAllocations(uploadManifest){
  return indices;
 }
 export async function captureWasmGpuWorldInputPlan({binding,batch}={}){
- let metadata;const plan=await captureLiveWorldPlan(binding,batch,{profile:'mmq2-cushion',strikeBackend:'staged',onUploadMetadata:value=>{metadata=value;}});
+ let metadata;const originalPlan=await captureLiveWorldPlan(binding,batch,{profile:'mmq2-cushion',strikeBackend:'staged',onUploadMetadata:value=>{metadata=value;}});
+ // Prove original source uploads first. The recorder and original indirect audit
+ // stay unchanged; an explicit compiler pass then introduces one zeroed arena.
+ buildWasmGpuWorldUploadManifest({plan:originalPlan,metadata,binding,batch});
+ const smooth=await lowerSmoothCellProgram(originalPlan,{sourceField:'source'}),cushion=await lowerCushionProgram(smooth,{sourceField:'source'}),lowered=await lowerQueryProgram(cushion,{sourceField:'source'}),plan={...originalPlan,definitions:lowered.definitions,commands:lowered.commands,allocations:lowered.allocations,lowering:smooth.receipt,cushionLowering:cushion.receipt,queryLowering:lowered.receipt};
+ metadata=[...metadata.map((m,index)=>({...m,size:lowered.allocations[index].size})),...[smooth.receipt,cushion.receipt].map((r,i)=>({index:r.tempAllocation,label:i?'wasm-temporary:release-staged':'wasm-temporary:smooth-staged',hostInitialized:false,size:r.tempBytes,usage:128,external:null})),...lowered.descriptors.map(({index,role})=>({index,label:'wasm-input:'+role,hostInitialized:true,size:16,usage:128,external:null}))];
  const uploadManifest=buildWasmGpuWorldUploadManifest({plan,metadata,binding,batch});
- return {plan,uploadManifest,metadata,candidateLocalAllocations:wasmGpuWorldCandidateLocalAllocations(uploadManifest)};
+ return {plan,originalPlan,lowering:smooth.receipt,cushionLowering:cushion.receipt,queryLowering:lowered.receipt,uploadManifest,metadata,candidateLocalAllocations:wasmGpuWorldCandidateLocalAllocations(uploadManifest)};
 }

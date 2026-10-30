@@ -122,3 +122,25 @@ test('combined mode rejects external raw leases and missing raw inputs before su
  const s=await combinedSetup();await assert.rejects(s.owner.run({...s.input(),rawLease:{}}),/external raw leases/);await assert.rejects(s.owner.run({...s.input(),rawUploads:undefined}),/rawUploads/);assert.equal(submitted(s.m),0);await s.owner.dispose();
  const external=await setup();await assert.rejects(external.owner.run({...external.input(),rawUploads:[]}),/rawEngine/);await external.owner.dispose();
 });
+
+test('execution diagnostics distinguish upload, chunk submission and final fence/readback without changing legacy progress',async()=>{
+ const s=await setup(),events=[],progress=[];
+ await s.owner.run({...s.input(),onExecutionPhase:p=>events.push(p),onProgress:p=>progress.push(p)});
+ assert.deepEqual(events.map(p=>[p.executionStage,p.chunkIndex,p.submittedCommands]),[
+  ['upload',0,0],['chunk-encode-or-wait',1,0],['chunk-encode-or-wait',2,1],['finish-fence-and-readback',2,2]]);
+ assert.deepEqual(progress.map(p=>[p.executionStage,p.chunkIndex,p.submittedCommands]),[['chunk-submitted',1,1],['chunk-submitted',2,2]]);
+ for(const p of [...events,...progress]){assert.equal(p.chunkCount,2);assert.equal(p.totalCommands,2);assert.ok(p.runElapsedMs>=0);assert.ok(Object.isFrozen(p));}
+ await s.owner.dispose();
+});
+test('execution observer failure after submission drains real fences and does not terminally poison owner',async()=>{
+ const s=await setup(),observed=deferred();s.m.hold();
+ const run=s.owner.run({...s.input(),onExecutionPhase(p){if(p.chunkIndex===2){observed.resolve();throw Error('execution observer failed');}}});
+ const rejected=assert.rejects(run,/execution observer failed/);await observed.promise;await tick();
+ assert.equal(submitted(s.m),1);assert.equal(s.releases,0);assert.ok(s.m.buffers.every(b=>!b.dead));
+ s.m.release();await rejected;assert.equal(s.owner.status().state,'ready');
+ await s.owner.run(s.input(2));await s.owner.dispose();
+});
+test('async execution observer rejected before uploads without poisoning the owner',async()=>{
+ const s=await setup();await assert.rejects(s.owner.run({...s.input(),onExecutionPhase:async()=>{}}),/Synchronous execution/);
+ assert.equal(submitted(s.m),0);assert.equal(s.owner.status().state,'ready');await s.owner.run(s.input(2));await s.owner.dispose();
+});

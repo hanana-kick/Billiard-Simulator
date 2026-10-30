@@ -13,8 +13,9 @@ import {captureRawWorldResourceFacts} from '../src/direct-candidate/experimental
 import {createWasmGpuEngineArtifact,loadWasmGpuEngineArtifact} from '../src/wasm-gpu/engine-artifact.mjs';
 import {createWasmGpuRawArtifact} from '../src/wasm-gpu/raw-artifact-builder.mjs';
 import {loadWasmGpuRawArtifact} from '../src/wasm-gpu/raw-artifact.mjs';
-import {prepareWasmGpuInputs} from '../src/wasm-gpu/world-inputs.mjs';
+import {prepareWasmGpuInputs,validateWasmGpuWorldUploadManifest} from '../src/wasm-gpu/world-inputs.mjs';
 import {createWasmGpuCompactSearchBackendHarness} from '../src/wasm-gpu/compact-search-backend.mjs';
+import {createStaticWorkerBackendHarness,loadProjectedInputContract} from './helpers/wasm-gpu-worker-backend-harness.mjs';
 const sourceRevision='private-compact-host-harness-only';
 const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return{promise,resolve};};
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
@@ -50,7 +51,7 @@ function harness({lookupProgram=selector=>programs.get(selector.count),onRun,mal
    cancel(){records.cancelled++;},async dispose(){records.disposed++;}};}});
  return{backend,device,records,lose:()=>lose({message:'test loss'})};
 }
-function expectedInput(context){const batch=prepareRawWorldBatch(context.rawBinding,context.candidates,{maximumSteps:2048}),singleBatches=context.candidates.map(c=>prepareRawWorldBatch(context.rawBinding,[c],{maximumSteps:2048}));return prepareWasmGpuInputs({...programs.get(context.candidates.length),binding:context.binding,batch,singleBatches});}
+function expectedInput(context,program=programs.get(context.candidates.length)){const batch=prepareRawWorldBatch(context.rawBinding,context.candidates,{maximumSteps:2048}),singleBatches=context.candidates.map(c=>prepareRawWorldBatch(context.rawBinding,[c],{maximumSteps:2048}));return prepareWasmGpuInputs({...program,binding:context.binding,batch,singleBatches});}
 
 test('private harness uses actual source input helper and preserves compact/source/request/candidate identities',async()=>{
  const h=harness(),c=current({width:3}),view=await h.backend.createEngine(h.device,c),result=await view.run();
@@ -94,4 +95,63 @@ test('persistent cache obeys an aggregate byte budget and a bounded program coun
   const h=harness({backendOptions});await h.backend.createEngine(h.device,current());
   await assert.rejects(h.backend.createEngine(h.device,current({width:3})),/aggregate byte budget/);assert.equal(h.records.prepared.length,1);await h.backend.dispose();
  }
+});
+
+test('backend forwards truthful owner stages and chunk submissions with owned-byte diagnostics',async()=>{
+ const h=harness({onRun(input){
+  input.onExecutionPhase({executionStage:'upload',chunkIndex:0,chunkCount:2,submittedCommands:0,totalCommands:512,runElapsedMs:0});
+  input.onProgress({executionStage:'chunk-submitted',chunkIndex:1,chunkCount:2,submittedCommands:256,totalCommands:512,runElapsedMs:12});
+  input.onExecutionPhase({executionStage:'finish-fence-and-readback',chunkIndex:2,chunkCount:2,submittedCommands:512,totalCommands:512,runElapsedMs:25});
+ }}),events=[],view=await h.backend.createEngine(h.device,current());await view.run({onPhase:p=>events.push(p)});
+ assert.deepEqual(events.map(p=>p.phase),['queued','uploading','submitted','readback','complete']);
+ assert.equal(events[2].submittedCommands,256);assert.equal(events[2].runElapsedMs,12);assert.ok(events[2].cachedDeviceOwnedBytes>0);assert.ok(events[2].plannedTotalOwnedBytes>0);
+ await h.backend.dispose();
+});
+
+test('mode retirement drains active work, invalidates old views and permits fresh owner',async()=>{
+ const gate=deferred(),started=deferred(),h=harness({onRun:async()=>{started.resolve();await gate.promise;}}),view=await h.backend.createEngine(h.device,current());
+ const run=view.run(),rejected=assert.rejects(run,{name:'AbortError'});await started.promise;const retirement=h.backend.releaseOwners();await tick();assert.equal(h.records.disposed,0);gate.resolve();await rejected;await retirement;assert.equal(h.records.disposed,1);await assert.rejects(view.run(),{name:'AbortError'});
+ const next=await h.backend.createEngine(h.device,current());await next.run();assert.equal(h.records.prepared.length,2);await h.backend.dispose();assert.equal(h.records.disposed,2);
+});
+
+
+// Production-only metadata contracts use an additional genuine raw2048/world128
+// fixture. The earlier native generic world2 cases remain unchanged.
+let productionPrograms;
+function productionInputPrograms(){return productionPrograms??=(async()=>{
+ const c=current({worldSteps:128}),batch=prepareRawWorldBatch(c.rawBinding,c.candidates,{maximumSteps:2048}),captured=await captureWasmGpuWorldInputPlan({binding:c.binding,batch}),result=new Map();
+ for(const count of [1,3]){
+  const context=current({width:count,worldSteps:128}),rawBatch=prepareRawWorldBatch(context.rawBinding,context.candidates,{maximumSteps:2048}),lowered=await lowerLiveWorldPlans(Array(count).fill(captured.plan),{candidateLocalAllocations:captured.candidateLocalAllocations});
+  const structuralConfig={profile:'mmq2-cushion',strikeBackend:'staged',maximumSteps:2048,bodyCount:4,faultPolicy:'atomic-per-access',uploadManifest:captured.uploadManifest};
+  const {artifact}=await createWasmGpuEngineArtifact({lowered,count,sourceRevision,structuralConfig,rawAllocations:await captureRawWorldResourceFacts(rawBatch)}),engine=await loadWasmGpuEngineArtifact(artifact,{expectedArtifactSha256:artifact.sha256,expectedSourceRevision:sourceRevision,expectedStructuralConfig:structuralConfig,expectedCount:count});
+  const {artifact:rawArtifact}=await createWasmGpuRawArtifact({batch:rawBatch,sourceRevision}),rawEngine=await loadWasmGpuRawArtifact(rawArtifact,{expectedArtifactSha256:rawArtifact.sha256,expectedSourceRevision:sourceRevision,expectedCount:count,expectedMaximumSteps:2048});result.set(count,{engine,rawEngine});
+ }
+ return result;
+})();}
+
+test('authenticated input-only world/raw contracts preserve exact N1/N3 bytes without executable graph authority',async()=>{
+ for(const [count,program]of await productionInputPrograms()){
+  const engine=await loadProjectedInputContract('world',program.engine),rawEngine=await loadProjectedInputContract('raw',program.rawEngine),c=current({width:count,epoch:31,angle:35,x:1.25,worldSteps:128});
+  const batch=prepareRawWorldBatch(c.rawBinding,c.candidates,{maximumSteps:2048}),singleBatches=c.candidates.map(candidate=>prepareRawWorldBatch(c.rawBinding,[candidate],{maximumSteps:2048})),args={engine,rawEngine,binding:c.binding,batch,singleBatches};
+  assert.equal(engine.lowered.commands,undefined);assert.equal(engine.lowered.sourcePlan.commands,undefined);assert.equal(engine.lowered.definitions,undefined);assert.equal(rawEngine.commands,undefined);assert.equal(rawEngine.definitions,undefined);assert.equal(engine.lowered.sourcePlan.sourceCommandCount,program.engine.lowered.sourcePlan.commands.length);assert.ok(Object.isFrozen(engine.lowered.sourcePlan.allocations));assert.throws(()=>validateWasmGpuWorldUploadManifest(engine.structuralConfig.uploadManifest,engine.lowered.sourcePlan),/query descriptor/,'a scalar count alone cannot replace an executable plan in ordinary validation');
+  const actual=prepareWasmGpuInputs(args);assert.deepEqual(actual,expectedInput(c,program));actual.initialUploads.forEach(u=>u.initial.fill(255));actual.rawUploads.forEach(u=>u.initial.fill(255));actual.candidateIds.fill(0);assert.deepEqual(prepareWasmGpuInputs(args),expectedInput(c,program));
+  assert.throws(()=>prepareWasmGpuInputs({...args,engine:{...engine}}),/Owned/);assert.throws(()=>prepareWasmGpuInputs({...args,rawEngine:{...rawEngine}}),/Owned/);assert.throws(()=>prepareWasmGpuInputs({...args,binding:{...c.binding}}),/Owned/);
+  if(count===3)assert.throws(()=>prepareWasmGpuInputs({...args,singleBatches:[singleBatches[1],singleBatches[0],singleBatches[2]]}),/candidate input mismatch/);
+  const {prepareWasmGpuEngine}=await import('../src/wasm-gpu/engine.mjs');await assert.rejects(prepareWasmGpuEngine({engine,rawEngine}),/Owned loaded/);await assert.rejects(prepareWasmGpuEngine({engine:program.engine,rawEngine}),/Owned loaded/);
+ }
+});
+
+test('Worker-owned scheduler consumes only authenticated contracts and current uploads, never placeholder WASM bytes',async t=>{
+ const api=await createStaticWorkerBackendHarness(t),workerEndpoint=await api.createSealedWorkerOwnerEndpoint(),fullPrograms=await productionInputPrograms(),contracts=new Map();
+ for(const [count,p]of fullPrograms)contracts.set(count,{engine:await loadProjectedInputContract('world',p.engine),rawEngine:await loadProjectedInputContract('raw',p.rawEngine)});
+ const prepared=[],runs=[];const prepareEngine=async args=>{prepared.push(args);assert.equal(args.workerEndpoint,workerEndpoint);assert.equal(args.device,workerEndpoint);assert.equal(Object.hasOwn(args,'moduleBytes'),false);return{requiresExclusiveDevice:true,ownsRaw:true,cancel(){},async dispose(){},async run(input){runs.push(input);return{result:Uint32Array.from([...input.candidateIds].flatMap(id=>[id,4,4,0x80000000]))};}};};
+ const options={workerEndpoint,lookupProgram:s=>contracts.get(s.count),sourceRevision,maximumOwnedBytes:8*1024*1024,prepareEngine},backend=api.createWasmGpuCompactSearchBackendHarness(options);
+ try{
+  for(const count of [1,3]){const c=current({width:count,epoch:43,angle:31,x:1.25,worldSteps:128}),view=await backend.createEngine(workerEndpoint,c),result=await view.run();const {candidateIds,initialUploads,rawUploads}=runs.at(-1);assert.deepEqual({candidateIds,initialUploads,rawUploads},expectedInput(c,fullPrograms.get(count)));assert.equal(result.sourcePlanIdentity,fullPrograms.get(count).engine.lowered.identity);assert.deepEqual(result.candidateKeys,c.candidates.map(c=>c.candidateKey));assert.equal(result.gpuExecutionQualified,false);assert.equal(result.metrics.hardwareVerified,false);}
+  assert.equal(prepared.length,2);await assert.rejects(backend.createEngine({...workerEndpoint},current()),/scheduler endpoint mismatch/);
+ }finally{await backend.dispose();}
+ for(const patch of [{workerEndpoint:{...workerEndpoint}},{moduleBytes:new Uint8Array([0])},{prepareEngine:undefined}])assert.throws(()=>api.createWasmGpuCompactSearchBackendHarness({...options,...patch}),/Owned|remote owner/);
+ assert.throws(()=>createWasmGpuCompactSearchBackendHarness({lookupProgram:()=>programs.get(1),sourceRevision,maximumOwnedBytes:8*1024*1024,prepareEngine}),/bundled WASM bytes/);
+ const native=harness({lookupProgram:()=>contracts.get(1)});try{await assert.rejects(native.backend.createEngine(native.device,current()),/Owned loaded/);assert.equal(native.records.prepared.length,0);}finally{await native.backend.dispose();}
+ for(const key of ['engine','rawEngine']){const p=contracts.get(1),rejected=api.createWasmGpuCompactSearchBackendHarness({...options,lookupProgram:()=>({...p,[key]:{...p[key]}})});try{await assert.rejects(rejected.createEngine(workerEndpoint,current()),/Owned/);}finally{await rejected.dispose();}}
 });

@@ -1,6 +1,7 @@
 /** Current source-owned request -> complete native selected arena resets.
  * No graph capture, GPU calls, physics evaluation, or frozen scene uploads. */
 import {assertLoadedWasmGpuSelectedArtifact,WASM_GPU_SELECTED_CONFIG,selectedArtifactJSON} from './selected-artifact.mjs';
+import {isWasmGpuInputContract,assertWasmGpuSelectedInputContract} from './input-contract.mjs';
 import {packWasmGpuWorldInputRoles} from './world-inputs.mjs';
 import {snapshotCanonicalWorldContinuation} from '../direct-candidate/canonical-world-continuation.mjs';
 import {snapshotRawWorldBatch} from '../direct-candidate/deterministic-raw-world.mjs';
@@ -9,7 +10,7 @@ import {inspectCanonicalPhaseBudget} from '../direct-candidate/canonical-engine-
 import {packSelectedWorldTraceV2Control} from '../direct-candidate/canonical-selected-world-trace-v2-gpu.mjs';
 const bytes=x=>new Uint8Array(x.buffer,x.byteOffset,x.byteLength).slice();
 export function prepareWasmGpuSelectedInputs({engine,binding,batch,maximumRecords=256}={}){
- assertLoadedWasmGpuSelectedArtifact(engine);
+ isWasmGpuInputContract(engine,'selected')?assertWasmGpuSelectedInputContract(engine):assertLoadedWasmGpuSelectedArtifact(engine);
  const d=snapshotCanonicalWorldContinuation(binding),raw=snapshotRawWorldBatch(batch),b=batch.binding,config=engine.structuralConfig;
  if(selectedArtifactJSON(config)!==selectedArtifactJSON(WASM_GPU_SELECTED_CONFIG)||maximumRecords!==config.maximumRecords||batch.count!==1||batch.maximumSteps!==config.maximumSteps||batch.effectiveMaximumSteps!==config.maximumSteps||b.bodyCount!==config.bodyCount||d.options.maxWorldSteps!==config.maxWorldSteps||d.options.mixedMotionRevision!=='mmq2'||d.options.enableCushionContinuation!==true||d.options.selectedTrace)throw Error('Current selected structural capsule mismatch');
  if(b.requestIdentity!==binding.requestIdentity||b.sceneId!==binding.sceneIdentity||b.epoch!==binding.epoch||d.request.epoch!==binding.epoch||b.sceneKey!==binding.sceneKey||b.requestKey!==binding.requestKey||selectedArtifactJSON(b.shotClock)!==selectedArtifactJSON(binding.shotClock)||selectedArtifactJSON(d.shotClock)!==selectedArtifactJSON(binding.shotClock))throw Error('Current selected owned request/scene/epoch/clock mismatch');

@@ -1,3 +1,4 @@
+import {assertWasmGpuSchedulerLimits} from '../../src/wasm-gpu/scheduler-limits.mjs';
 import { spawnSync } from 'node:child_process';
 import { mkdir, copyFile, readFile, writeFile, chmod } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -19,6 +20,8 @@ if (imports.length !== 1 || imports[0].module !== 'bridge' || imports[0].name !=
 const expected = ['memory', 'abi_version', 'input_ptr', 'capacity', 'max_chunk', 'configure', 'load', 'start', 'step', 'commit', 'cancel', 'lose', 'dispose', 'state', 'generation', 'cursor', 'repeats_left', 'stream_len'];
 const exports = WebAssembly.Module.exports(module);
 for (const name of expected) if (!exports.some(e => e.name === name && e.kind === (name === 'memory' ? 'memory' : 'function'))) throw new Error(`Missing ABI export ${name}`);
+const instance = await WebAssembly.instantiate(module, { bridge: { submit() { throw new Error('Build verification must not submit'); } } });
+assertWasmGpuSchedulerLimits(instance.exports);
 const sha256 = buffer => createHash('sha256').update(buffer).digest('hex');
 const sourceSha256 = {};
 for (const name of ['Cargo.toml', 'Cargo.lock', 'src/lib.rs', 'build.mjs']) sourceSha256[name] = sha256(await readFile(resolve(here, name)));

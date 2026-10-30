@@ -9,6 +9,7 @@ import {loadWasmGpuSelectedArtifact} from '../src/wasm-gpu/selected-artifact.mjs
 import {prepareWasmGpuSelectedInputs} from '../src/wasm-gpu/selected-inputs.mjs';
 import {createWasmGpuSelectedSessionBackendHarness} from '../src/wasm-gpu/selected-session-backend.mjs';
 import {mock,deferred} from './helpers/wasm-gpu-selected-fixture.mjs';
+import {createStaticWorkerBackendHarness,loadProjectedInputContract} from './helpers/wasm-gpu-worker-backend-harness.mjs';
 const context=mmq2RawFixture({durationTicks:65535}),sourceRevision='selected-session-host-only';
 const {artifact}=await createWasmGpuSelectedArtifact({...context,sourceRevision});
 const engine=await loadWasmGpuSelectedArtifact(artifact,{expectedArtifactSha256:artifact.sha256,expectedSourceRevision:sourceRevision});
@@ -45,14 +46,35 @@ test('selected library branding and explicit aggregate12MiB cap remain fail-clos
  const h=harness({lookupProgram:()=>({...engine})});await assert.rejects(h.backend.evaluate(context),/Owned/);assert.equal(h.records.prepared,0);await h.backend.dispose();
  assert.throws(()=>createWasmGpuSelectedSessionBackendHarness({device:mock(engine).device,lookupProgram:()=>engine,sourceRevision,moduleBytes,maximumOwnedBytes:13*1024*1024}),/12MiB/);
 });
-test('genuine226-buffer selected capsule runs through actual WASM/concrete bridge and zero mock output fails original trace decoder',{timeout:120000},async()=>{
+test('genuine228-buffer selected capsule runs through actual WASM/concrete bridge and zero mock output fails original trace decoder',{timeout:120000},async()=>{
  const m=mock(engine),backend=createWasmGpuSelectedSessionBackendHarness({device:m.device,moduleBytes,lookupProgram:()=>engine,sourceRevision,maximumOwnedBytes:12*1024*1024,chunkSize:4096});
  await assert.rejects(backend.evaluate(context),/Complete final selected GPU source readback/);
- assert.equal(m.buffers.length,226);assert.equal(m.events.filter(e=>Array.isArray(e)&&e[0]==='submit').reduce((n,e)=>n+e[1].length,0),55403);assert.ok(m.buffers.every(b=>b.dead&&!b.mapped));await backend.dispose();
+ assert.equal(m.buffers.length,232);assert.equal(m.events.filter(e=>Array.isArray(e)&&e[0]==='submit').reduce((n,e)=>n+e[1].length,0),66189);assert.ok(m.buffers.every(b=>b.dead&&!b.mapped));await backend.dispose();
 });
 
 test('persistent selected owner receives regenerated current candidate rows and trace identity on every evaluation',async()=>{
  let live=context;const h=harness({output:()=>packet(live)});await h.backend.evaluate(live);
  const candidate=createCanonicalCandidate(context.request,777,{...context.candidate.settings,angle:45}),batch=prepareRawWorldBatch(context.batch.binding,[candidate],{maximumSteps:2048});live={...context,candidate,batch};
  const result=await h.backend.evaluate(live);assert.equal(result.rawHandoffStatus[0],777);assert.equal(result.candidateKey,candidate.candidateKey);assert.equal(h.records.prepared,1);assert.deepEqual(h.records.runs[1],prepareWasmGpuSelectedInputs({engine,...live}).initialUploads);assert.notDeepEqual(h.records.runs[0],h.records.runs[1]);await h.backend.dispose();
+});
+
+test('mode retirement waits selected drain then permits a fresh exact owner',async()=>{
+ const started=deferred(),gate=deferred(),h=harness({runHook:async()=>{started.resolve();await gate.promise;}}),run=h.backend.evaluate(context),rejected=assert.rejects(run,{name:'AbortError'});await started.promise;
+ const retirement=h.backend.releaseOwners();await new Promise(r=>setImmediate(r));assert.equal(h.records.disposed,0);gate.resolve();await rejected;await retirement;assert.equal(h.records.disposed,1);await h.backend.evaluate(context);assert.equal(h.records.prepared,2);await h.backend.dispose();assert.equal(h.records.disposed,2);
+});
+
+
+test('Worker scheduler uses selected input contracts with unchanged live packing and complete source decoder guards',async t=>{
+ const api=await createStaticWorkerBackendHarness(t),workerEndpoint=await api.createSealedWorkerOwnerEndpoint(),contract=await loadProjectedInputContract('selected',engine);let live=context,alter=null,prepared=0;const runs=[];
+ const prepareEngine=async args=>{prepared++;assert.equal(args.workerEndpoint,workerEndpoint);assert.equal(args.device,workerEndpoint);assert.equal(args.engine,contract);assert.equal(Object.hasOwn(args,'moduleBytes'),false);return{requiresExclusiveDevice:true,selected:true,cancel(){},async dispose(){},async run(input){runs.push(input.initialUploads);const output=packet(live,{ready:true});alter?.(output);return{result:output};}};};
+ const options={device:workerEndpoint,workerEndpoint,lookupProgram:()=>contract,sourceRevision,maximumOwnedBytes:12*1024*1024,prepareEngine},backend=api.createWasmGpuSelectedSessionBackendHarness(options);
+ try{
+  const first=await backend.evaluate(live);assert.deepEqual(runs[0],prepareWasmGpuSelectedInputs({engine,...live}).initialUploads);assert.equal(first.continuation.dense[0],0x12345678);assert.equal(first.continuation.firstPairEntry[0],0x87654321);assert.equal(first.continuation.elapsedTicks,10);assert.equal(first.gpuExecutionQualified,false);
+  const candidate=createCanonicalCandidate(context.request,777,{...context.candidate.settings,angle:45}),batch=prepareRawWorldBatch(context.batch.binding,[candidate],{maximumSteps:2048});live={...context,candidate,batch};const next=await backend.evaluate(live);assert.equal(next.rawHandoffStatus[0],777);assert.deepEqual(runs[1],prepareWasmGpuSelectedInputs({engine,...live}).initialUploads);assert.equal(prepared,1);
+ }finally{await backend.dispose();}
+ for(const mutate of [output=>{output.world[2848]++;},output=>{output.world[64]++;},output=>{output.world[5]=live.batch.binding.shotClock.deadlineTick+1;},output=>{output.trace[8]++;}]){alter=mutate;const rejected=api.createWasmGpuSelectedSessionBackendHarness(options);try{await assert.rejects(rejected.evaluate(live),/identity mismatch|roster\/state\/clock mismatch/);await assert.rejects(rejected.evaluate(live));}finally{await rejected.dispose();}}
+ for(const patch of [{workerEndpoint:{...workerEndpoint}},{device:{...workerEndpoint}},{moduleBytes:new Uint8Array([0])},{prepareEngine:undefined}])assert.throws(()=>api.createWasmGpuSelectedSessionBackendHarness({...options,...patch}),/Owned|remote owner/);
+ assert.throws(()=>createWasmGpuSelectedSessionBackendHarness({device:workerEndpoint,lookupProgram:()=>engine,sourceRevision,maximumOwnedBytes:12*1024*1024,prepareEngine}),/bundled WASM bytes/);
+ const native=harness({lookupProgram:()=>contract});try{await assert.rejects(native.backend.evaluate(context),/Owned loaded selected/);assert.equal(native.records.prepared,0);}finally{await native.backend.dispose();}
+ const forged=api.createWasmGpuSelectedSessionBackendHarness({...options,lookupProgram:()=>({...contract})});try{await assert.rejects(forged.evaluate(context),/Owned/);}finally{await forged.dispose();}
 });

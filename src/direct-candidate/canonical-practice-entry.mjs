@@ -21,21 +21,33 @@ export function createCanonicalPracticePreset({PhysicsLab=globalThis.PhysicsLab,
 function ready(c){if(!c?.state?.ready||!c.lab||c.disposed||c.canonicalPlayback)throw Error('새 GPU 연습을 시작할 수 있는 기본 화면이 아닙니다.');
  if(!c.state.paused||c.lab.cue||c.lab.anyMotion()||c.game?.pending||c.drag||c.windup||c.state.routeStatus==='searching')throw Error('현재 타격·탐색을 마치고 공이 멈춘 뒤 시작하세요.');
  if(c.undoStack.length||c.redoStack.length)throw Error('기존 기록은 옮기지 않습니다. 먼저 기본 게임을 초기화한 뒤 다시 시작하세요.');}
-/** Internal dependency seam. Public browser wrapper owns install/device APIs. */
-export async function startCanonicalPracticeInternal(c,{install,requestDevice,disposeDevice,signal,selectedWorldProfile='mmq2-cushion'}={}){
+/** Internal dependency seam. The browser supplies an opaque runtime identity,
+ * its loss promise and its acknowledged cleanup, never a native GPUDevice. */
+export async function startCanonicalPracticeInternal(c,{install,requestDevice,disposeDevice,getDeviceLoss,signal,selectedWorldProfile='mmq2-cushion'}={}){
  if(!['mmq1-ball-ball','mmq2-cushion'].includes(selectedWorldProfile))throw TypeError('명시된 canonical 프로필이 필요합니다.');
  ready(c);if(pending.has(c))throw Error('이미 새 GPU 연습을 준비 중입니다.');if(typeof install!=='function'||typeof requestDevice!=='function')throw TypeError('Owned browser installer/device request required');
+ if(getDeviceLoss!==undefined&&typeof getDeviceLoss!=='function')throw TypeError('Owned device loss observer required');
  if(disposeDevice!==undefined&&typeof disposeDevice!=='function')throw TypeError('Owned device cleanup required');
  let cleanupStarted=false,cleanupResult;
  const cleanupDevice=device=>{if(!cleanupStarted){cleanupStarted=true;cleanupResult=disposeDevice?disposeDevice(device):device.destroy();}return cleanupResult;};
  const source={lab:c.lab,game:c.game,stamp:c.worldStamp(),settings:JSON.stringify(c.state.settings),routeOptions:JSON.stringify(c.state.routeOptions)};
  const check=()=>{if(signal?.aborted)throw canonicalPreparationAbort(signal);ready(c);if(c.lab!==source.lab||c.game!==source.game||c.worldStamp()!==source.stamp||JSON.stringify(c.state.settings)!==source.settings||JSON.stringify(c.state.routeOptions)!==source.routeOptions)throw Error('준비 중 현재 게임이 바뀌었습니다. 다시 시작하세요.');};pending.add(c);let device,store,installed=false;
- try{check();device=await requestDevice();check();const preset=createCanonicalPracticePreset({selectedWorldProfile});store=createCanonicalStateStore({scene:preset.scene,selectedWorldProfile:preset.selectedWorldProfile});
+ try{check();device=await requestDevice();check();const loss=getDeviceLoss?getDeviceLoss(device):device.lost;if(getDeviceLoss&&typeof loss?.then!=='function')throw TypeError('Owned device loss promise required');const preset=createCanonicalPracticePreset({selectedWorldProfile});store=createCanonicalStateStore({scene:preset.scene,selectedWorldProfile:preset.selectedWorldProfile});
   const saved={game:c.game,gameMode:c.state.gameMode,selectedId:c.state.selectedId,settings:c.state.settings,routeOptions:c.state.routeOptions,predict:c.state.predict,activePanel:c.state.activePanel};
   try{check();c.game=new globalThis.FourBallGame([50,19],[8,300],{threeCushion:false});c.state.gameMode='four';c.state.selectedId=preset.selectedId;c.state.settings=own(preset.settings);c.state.routeOptions={...c.state.routeOptions,fourBallThreeCushion:false};c.state.predict=false;c.state.activePanel='routes';
    const owner=install(c,{stateStore:store,device,selectedWorldProfile:preset.selectedWorldProfile,requestOptions:preset.requestOptions,searchOptions:preset.searchOptions});installed=true;
-   const dispose=c.dispose;c.dispose=function(...args){try{return dispose.apply(this,args);}finally{store.dispose();const cleanup=cleanupDevice(device);if(cleanup?.then)cleanup.catch(error=>{c.state.canonicalPlayback??={};c.state.canonicalPlayback.disposalError=error.message??String(error);});}};
-   device.lost?.then(info=>{if(c.disposed)return;
+   const dispose=c.dispose;c.dispose=function(...args){
+    if(cleanupStarted)return cleanupResult;
+    let result,cleanup;
+    try{result=dispose.apply(this,args);}finally{
+     store.dispose();cleanup=cleanupDevice(device);
+     // Preserve immediate UI teardown while allowing owners to await actual
+     // Worker drain/destroy. Observe ignored disposal failures in state too.
+     if(cleanup?.then)cleanup.catch(error=>{c.state.canonicalPlayback??={};c.state.canonicalPlayback.disposalError=error.message??String(error);});
+    }
+    return cleanup??result;
+   };
+   loss?.then(info=>{if(c.disposed)return;
     // Capture before cancellation: cancel/late search completions can replace
     // routeError and progress. Keep the original loss evidence independently.
     c.state.canonicalPlayback??={};
@@ -46,7 +58,12 @@ export async function startCanonicalPracticeInternal(c,{install,requestDevice,di
     c.state.canonicalPlayback.deviceLoss=deviceLoss;c.state.canonicalPlayback.deviceLost=true;
     try{owner.cancel();}catch{}
     c.state.paused=true;c.state.predictionBusy=false;c.state.routeStatus='error';
-    c.state.routeError='GPU 장치를 사용할 수 없습니다: '+(deviceLoss.message||deviceLoss.reason)+' · 마지막 단계: '+(deviceLoss.routeStatus==='searching'?deviceLoss.searchProgress?.phase??deviceLoss.phase:deviceLoss.phase);
+    const last=deviceLoss.routeStatus==='searching'?deviceLoss.searchProgress:null;
+    c.state.routeError='GPU 장치를 사용할 수 없습니다: '+(deviceLoss.message||deviceLoss.reason)+
+     ' · 원인 코드: '+deviceLoss.reason+' · 마지막 단계: '+(last?.executionStage??last?.phase??deviceLoss.phase)+
+     (Number.isSafeInteger(last?.chunkIndex)?' · 청크 '+last.chunkIndex+'/'+(last.chunkCount??'?'):'')+
+     (Number.isSafeInteger(last?.submittedCommands)?' · 제출 명령 '+last.submittedCommands+'/'+(last.totalCommands??'?')+' (GPU 완료 수 아님)':'')+
+     (Number.isFinite(last?.elapsedMs)?' · 경과 '+Math.round(last.elapsedMs)+' ms':'');
     c.state.forecastStatus=c.state.routeError;try{c.notify();}catch{}
    });
    try{c.repairRouteTargets();c.notify();}catch(error){c.state.canonicalPlayback??={};c.state.canonicalPlayback.entryWarning='GPU 모드는 시작됐지만 화면 갱신에 실패했습니다: '+(error.message??String(error));}return owner;

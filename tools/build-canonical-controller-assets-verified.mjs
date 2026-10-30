@@ -4,10 +4,31 @@ import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import esbuild from 'esbuild';
-import {ROOTS,SEAL_PATH,BUILD_CONFIGURATION_PATH,staticSourceDependencies,verifyLiveWorldSourcePin,snapshotVerifiedLiveWorldSources,buildVerifiedLiveWorldBundle} from './build-live-world-upload-seal.mjs';
+import {ROOTS,SEAL_PATH,BUILD_CONFIGURATION_PATH,WORKER_CONFIGURATION_PATH,staticSourceDependencies,verifyLiveWorldSourcePin,snapshotVerifiedLiveWorldSources,buildVerifiedLiveWorldBundle} from './build-live-world-upload-seal.mjs';
 const ENTRY='src/direct-candidate/canonical-controller-browser-entry.mjs';
 const SEALED_ENTRY=ROOTS[0];
 const hash=x=>createHash('sha256').update(x).digest('hex');
+const WORKER_ENTRY='src/wasm-gpu/worker-owner-entry.mjs';
+const WORKER_FILE='wasm-gpu-compute-worker.mjs';
+/** Own verified source/program capabilities, never mutable worktree imports. */
+export async function buildVerifiedWasmGpuWorkerBundle(sourceToken,{programBuild}={}){
+ const verified=snapshotVerifiedLiveWorldSources(sourceToken);
+ const {readVerifiedWasmGpuProgramBuild}=await import('./build-wasm-gpu-program-assets-verified.mjs');
+ const bootstrap=readVerifiedWasmGpuProgramBuild(programBuild,verified.revision),files=verified.files;
+ const plugin={name:'exact-reviewed-worker-snapshot',setup(build){
+  build.onResolve({filter:/.*/},args=>{
+   const name=args.path===WORKER_ENTRY&&!args.importer?WORKER_ENTRY:path.posix.normalize(path.posix.join(path.posix.dirname(args.importer),args.path));
+   if(!Object.hasOwn(files,name))throw Error('Unsnapshotted worker import: '+name);
+   return {path:name,namespace:'worker-snapshot'};
+  });
+  build.onLoad({filter:/.*/,namespace:'worker-snapshot'},args=>({contents:args.path===SEAL_PATH?`export const LIVE_WORLD_UPLOAD_SOURCE_SEALED=true;export const LIVE_WORLD_UPLOAD_SOURCE_REVISION=${JSON.stringify(verified.revision)};`:args.path===BUILD_CONFIGURATION_PATH?`export const WASM_GPU_BUILD_CONFIGURATION=Object.freeze(${JSON.stringify(bootstrap)});`:files[args.path],loader:'js'}));
+ }};
+ const result=await esbuild.build({entryPoints:[WORKER_ENTRY],bundle:true,write:false,format:'esm',platform:'browser',target:'es2022',metafile:true,legalComments:'inline',plugins:[plugin],logLevel:'silent'});
+ if(result.outputFiles.length!==1||Object.values(result.metafile.outputs).some(o=>o.imports.length))throw Error('One self-contained worker module required');
+ const bytes=new Uint8Array(result.outputFiles[0].contents);
+ const descriptor=Object.freeze({sourceRevision:verified.revision,programManifestSha256:bootstrap.manifestSha256,file:WORKER_FILE,sha256:hash(bytes),byteLength:bytes.length});
+ return Object.freeze({bytes,descriptor});
+}
 export async function snapshotControllerSources(root,pin){
  const files={},pending=[ENTRY];
  while(pending.length){
@@ -38,13 +59,15 @@ export async function buildCanonicalControllerAssetsVerified({root,out,pinFile=p
  // This independent bundle is an audit receipt only. Never inline its code:
  // selected/search share one original-module graph and thus one set of brands.
  const sealed=await buildVerifiedLiveWorldBundle(token,{programBuild});
+ // Program hashes precede worker bytes; the worker never embeds its own hash.
+ const worker=bootstrap?await buildVerifiedWasmGpuWorkerBundle(token,{programBuild}):null;
  const plugin={name:'exact-controller-and-sealed-search-snapshots',setup(build){
   build.onResolve({filter:/.*/},args=>{
    const name=args.path===ENTRY&&!args.importer?ENTRY:path.posix.normalize(path.posix.join(path.posix.dirname(args.importer),args.path));
    if(!Object.hasOwn(files,name))throw Error('Unsnapshotted controller import: '+name);
    return{path:name,namespace:'canonical-snapshot'};
   });
-  build.onLoad({filter:/.*/,namespace:'canonical-snapshot'},args=>({contents:args.path===SEAL_PATH?`export const LIVE_WORLD_UPLOAD_SOURCE_SEALED=true;export const LIVE_WORLD_UPLOAD_SOURCE_REVISION=${JSON.stringify(verified.revision)};`:args.path===BUILD_CONFIGURATION_PATH&&bootstrap?`export const WASM_GPU_BUILD_CONFIGURATION=Object.freeze(${JSON.stringify(bootstrap)});`:files[args.path],loader:'js'}));
+  build.onLoad({filter:/.*/,namespace:'canonical-snapshot'},args=>({contents:args.path===SEAL_PATH?`export const LIVE_WORLD_UPLOAD_SOURCE_SEALED=true;export const LIVE_WORLD_UPLOAD_SOURCE_REVISION=${JSON.stringify(verified.revision)};`:args.path===BUILD_CONFIGURATION_PATH&&bootstrap?`export const WASM_GPU_BUILD_CONFIGURATION=Object.freeze(${JSON.stringify(bootstrap)});`:args.path===WORKER_CONFIGURATION_PATH&&worker?`export const WASM_GPU_WORKER_BUILD_CONFIGURATION=Object.freeze(${JSON.stringify(worker.descriptor)});`:files[args.path],loader:'js'}));
  }};
  const result=await esbuild.build({entryPoints:[ENTRY],bundle:true,write:false,format:'esm',platform:'browser',target:'es2022',metafile:true,legalComments:'inline',plugins:[plugin],logLevel:'silent'});
  if(result.outputFiles.length!==1||Object.values(result.metafile.outputs).some(o=>o.imports.length))throw Error('One self-contained browser module required');
@@ -53,9 +76,9 @@ export async function buildCanonicalControllerAssetsVerified({root,out,pinFile=p
   experimental:true,productionEnabled:false,browserVerified:false,nativeControllerVerified:false,
   explicitPracticeEntry:true,explicitPracticeDeviceRequest:true,
   searchSourceSealed:true,searchSourceRevision:sealed.receipt.sourceRevision,sharedSourceBytesVerified:true,
-  sealedSearchBundleSHA256:sealed.receipt.bundleSHA256,unifiedSourceGraph:true,wasmGpuProgramBootstrap:bootstrap,buildInputs:verified.buildInputs,
+  sealedSearchBundleSHA256:sealed.receipt.bundleSHA256,unifiedSourceGraph:true,wasmGpuProgramBootstrap:bootstrap,wasmGpuWorkerBootstrap:worker?.descriptor??null,buildInputs:verified.buildInputs,
   sha256:hash(bytes),bytes:bytes.length,sources:Object.fromEntries(Object.entries(allSources).sort(([a],[b])=>a.localeCompare(b)).map(([file,source])=>[file,hash(source)]))};
- await fs.mkdir(out,{recursive:true});await fs.writeFile(path.join(out,manifest.entrypoint),bytes);await fs.writeFile(path.join(out,'manifest.json'),JSON.stringify(manifest,null,2)+'\n');return manifest;
+ await fs.mkdir(out,{recursive:true});if(worker)await fs.writeFile(path.join(out,worker.descriptor.file),worker.bytes);await fs.writeFile(path.join(out,manifest.entrypoint),bytes);await fs.writeFile(path.join(out,'manifest.json'),JSON.stringify(manifest,null,2)+'\n');return manifest;
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const [root,out,flag]=process.argv.slice(2);if(!root||!out||process.argv.length>5||flag!==undefined&&flag!=='--wasm-gpu-programs')throw Error('Usage: node build-canonical-controller-assets-verified.mjs root out [--wasm-gpu-programs]');

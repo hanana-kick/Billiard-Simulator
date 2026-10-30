@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {compileLiveWorldPipeline as compile} from '../src/direct-candidate/experimental-live-world-pipeline-cache.mjs';
+import {compileLiveWorldPipeline as compile,drainLiveWorldPreparation,releaseLiveWorldPipelineCache} from '../src/direct-candidate/experimental-live-world-pipeline-cache.mjs';
 const deferred = () => { let resolve, reject; const promise = new Promise((a,b) => {resolve=a;reject=b;}); return {promise,resolve,reject}; };
 function fake() {
  const loss=deferred(), counts={modules:0,infos:0,layouts:0,pipelines:0};
@@ -42,9 +42,9 @@ test('device loss evicts hits, rejects pending work and ignores late native succ
  assert.equal(f.counts.pipelines,2);
 });
 test('bounded completed LRU evicts oldest and refreshes hits',async()=>{
- const f=fake();for(let i=0;i<128;i++)await compile(f.device,{code:String(i)});
- await compile(f.device,{code:'0'});await compile(f.device,{code:'128'});await compile(f.device,{code:'0'});assert.equal(f.counts.pipelines,129);
- await compile(f.device,{code:'1'});assert.equal(f.counts.pipelines,130);
+ const f=fake();for(let i=0;i<256;i++)await compile(f.device,{code:String(i)});
+ await compile(f.device,{code:'0'});await compile(f.device,{code:'256'});await compile(f.device,{code:'0'});assert.equal(f.counts.pipelines,257);
+ await compile(f.device,{code:'1'});assert.equal(f.counts.pipelines,258);
 });
 test('unsafe layout values reject rather than alias JSON keys',async()=>{
  const f=fake();for(const value of [undefined,NaN,-0,()=>{},Symbol('x')])await assert.rejects(compile(f.device,{code:'A',layout:{bindGroupLayouts:[{value}]}}),TypeError);
@@ -170,4 +170,19 @@ test('prepared owner and queued work cannot use quarantined device; coordinator 
  assert.throws(()=>coordinator.reserve({key:'invalid-reuse',group:'search',bytes:16}),{code:'GPU_PREPARATION_TIMEOUT'});
  assert.equal(submissions,1);assert.equal(coordinator.status().active,false);
  await owner.dispose();await coordinator.dispose();assert.equal(coordinator.status().disposed,true);held.resolve();
+});
+
+test('retirement waits actual native compile after host cancellation before clearing or new preparation',async()=>{
+ const f=fake(),hold=deferred(),a=new AbortController();f.compileWait(hold.promise);
+ const p=compile(f.device,{code:'old',signal:a.signal}),rejected=assert.rejects(p,{name:'AbortError'});await new Promise(r=>setImmediate(r));assert.equal(f.counts.pipelines,1);a.abort('switch mode');await rejected;
+ let admitted=false;const next=(async()=>{await releaseLiveWorldPipelineCache(f.device);admitted=true;f.compileWait(null);await compile(f.device,{code:'next'});})();
+ await new Promise(r=>setImmediate(r));assert.equal(admitted,false);assert.equal(f.counts.pipelines,1);hold.resolve();await next;assert.equal(f.counts.pipelines,2);
+});
+test('native retirement timeout quarantines device and never admits a replacement compiler',async()=>{
+ const f=fake(),hold=deferred(),a=new AbortController();f.compileWait(hold.promise);const p=compile(f.device,{code:'old',signal:a.signal}),rejected=assert.rejects(p,{name:'AbortError'});await new Promise(r=>setImmediate(r));a.abort();await rejected;
+ await assert.rejects(drainLiveWorldPreparation(f.device,{timeoutMs:10}),{code:'GPU_PREPARATION_TIMEOUT'});await assert.rejects(compile(f.device,{code:'next'}),{code:'GPU_PREPARATION_TIMEOUT'});assert.equal(f.counts.pipelines,1);hold.resolve();await new Promise(r=>setImmediate(r));await assert.rejects(releaseLiveWorldPipelineCache(f.device),{code:'GPU_PREPARATION_TIMEOUT'});
+});
+test('actual device loss rejects native retirement without waiting on never-settling compile',async()=>{
+ const f=fake(),hold=deferred(),a=new AbortController();f.compileWait(hold.promise);const p=compile(f.device,{code:'old',signal:a.signal}),rejected=assert.rejects(p,{name:'AbortError'});await new Promise(r=>setImmediate(r));a.abort();await rejected;
+ const retirement=drainLiveWorldPreparation(f.device),failed=assert.rejects(retirement,/device lost/);f.loss.resolve({message:'lost during native drain'});await failed;await assert.rejects(compile(f.device,{code:'next'}),/device lost/);assert.equal(f.counts.pipelines,1);hold.resolve();
 });

@@ -1,3 +1,4 @@
+import {WASM_GPU_COMMAND_CAPACITY,assertWasmGpuSchedulerLimits,WASM_GPU_MAX_CHUNK} from './scheduler-limits.mjs';
 /** Private stage-one WASM command scheduler. GPU physics remains existing WGSL.
  * No fetch, CPU physics, or runtime dependency. Each instance owns one schedule.
  * Cancellation cannot retract work already submitted to a GPU queue.
@@ -9,18 +10,18 @@ const uint = (value, name, maximum = 0xffffffff) => {
 };
 export async function instantiateWasmGpuRuntime({ moduleBytes, bridge } = {}) {
   if (!(moduleBytes instanceof ArrayBuffer) && !ArrayBuffer.isView(moduleBytes)) throw new TypeError('Explicit bundled moduleBytes are required');
-  uint(bridge?.commandCount, 'bridge.commandCount', 65536);
+  uint(bridge?.commandCount, 'bridge.commandCount', WASM_GPU_COMMAND_CAPACITY);
   for (const method of ['encodeChunk', 'cancel', 'lose']) if (typeof bridge[method] !== 'function') throw new TypeError(`bridge.${method} is required`);
   const commandCount = bridge.commandCount;
   let exports, pending = null, stepping = false;
   const imports = { bridge: { submit(pointer, count, generation) {
-    if (pending || !exports || count < 1 || count > 4096) return -1;
+    if (pending || !exports || count < 1 || count > WASM_GPU_MAX_CHUNK) return -1;
     pending = { handles: new Uint32Array(exports.memory.buffer, pointer, count).slice(), generation: generation >>> 0 };
     return 0;
   } } };
   const { instance } = await WebAssembly.instantiate(moduleBytes, imports);
-  exports = instance.exports;
-  if (exports.abi_version() !== 1 || exports.configure(commandCount) !== 0) throw new Error('Unsupported WASM scheduler ABI');
+  exports = assertWasmGpuSchedulerLimits(instance.exports);
+  if (exports.configure(commandCount) !== 0) throw new Error('Unsupported WASM scheduler ABI');
   const check = (value, operation) => { if (value < 0) throw new Error(`WASM scheduler ${operation} rejected (${value}; ${STATES[exports.state()]})`); return value; };
   const status = () => Object.freeze({ state: STATES[exports.state()], generation: exports.generation() >>> 0, cursor: exports.cursor() >>> 0, repeatsLeft: exports.repeats_left() >>> 0, commandCount: exports.stream_len() >>> 0, inFlight: stepping });
   const loseBridge = reason => {

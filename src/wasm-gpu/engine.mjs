@@ -8,13 +8,13 @@ import {assertLoadedWasmGpuRawArtifact, loadWasmGpuRawArtifact} from './raw-arti
 import {createWasmGpuWebGPUBridge} from './webgpu-bridge.mjs';
 import {prepareWasmGpuOwner} from './owner-core.mjs';
 
-export async function prepareWasmGpuEngine({moduleBytes, device, engine, artifact, artifactExpectations, rawEngine, rawArtifact, rawArtifactExpectations, maximumOwnedBytes, chunkSize = 256, maxInFlight = 1, signal, onPrepareProgress} = {}) {
+export async function prepareWasmGpuEngine({moduleBytes, device, engine, artifact, artifactExpectations, rawEngine, rawArtifact, rawArtifactExpectations, maximumOwnedBytes, chunkSize = 256, maxInFlight = 1, signal, onPrepareProgress, primingSelectedEngine} = {}) {
   if (!Number.isSafeInteger(chunkSize) || chunkSize < 1 || chunkSize > 4096) throw new RangeError('chunkSize must be 1..4096');
   if (engine && artifact) throw new TypeError('Supply either loaded engine or serialized artifact');
   engine = engine ? assertLoadedWasmGpuEngineArtifact(engine) : await loadWasmGpuEngineArtifact(artifact, artifactExpectations);
   if (rawEngine && rawArtifact) throw new TypeError('Supply either loaded rawEngine or serialized rawArtifact');
   rawEngine = rawEngine ? assertLoadedWasmGpuRawArtifact(rawEngine) : rawArtifact ? await loadWasmGpuRawArtifact(rawArtifact, rawArtifactExpectations) : null;
-  const bridge = await createWasmGpuWebGPUBridge(device, {engine, rawEngine, maximumOwnedBytes, maxInFlight, signal, onPrepareProgress});
+  const bridge = await createWasmGpuWebGPUBridge(device, {engine, rawEngine, maximumOwnedBytes, maxInFlight, signal, onPrepareProgress, primingSelectedEngine});
   return prepareWasmGpuOwner({moduleBytes, device, bridge, chunkSize, signal, metadata: {ownsRaw: !!rawEngine}, snapshotRun({initialUploads, rawUploads, candidateIds, rawLease}) {
       if (rawEngine) {
         if (rawLease !== undefined) throw new TypeError('Combined raw/world mode does not accept external raw leases');

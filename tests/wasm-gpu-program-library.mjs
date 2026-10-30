@@ -113,3 +113,8 @@ test('CDN recompression of artifact bytes is authenticated after transparent HTT
   const library=await createWasmGpuProgramLibrary(options(f));assert.equal((await library.lookupProgram(selector(library))).engine.count,1);assert.equal((await library.lookupSelectedProgram({sourceRevision:library.sourceRevision,...WASM_GPU_SELECTED_CONFIG})).count,1);
  }
 });
+
+test('input sidecar descriptors are exact bounded and globally unique without fetching them in native library',async()=>{
+ for(const mutate of [m=>m.programs[0].inputs.world.file='../foreign.json',m=>m.programs[0].inputs.world.file=m.programs[0].world.file,m=>m.programs[0].inputs.world.byteLength=512*1024+1,m=>m.programs[0].inputs.world.sha256='bad',m=>m.programs[0].inputs.world.extra=true,m=>m.selectedProgram.inputs.file=m.programs[0].inputs.world.file]){const f=fixture();alterManifest(f,mutate);await assert.rejects(()=>createWasmGpuProgramLibrary(options(f)),/filename|descriptor|Duplicate/i);assert.equal(f.requests.length,1);}
+ const f=fixture();await createWasmGpuProgramLibrary(options(f));assert.equal(f.requests.some(x=>x.includes('/input-')),false);
+});

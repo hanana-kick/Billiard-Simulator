@@ -7,7 +7,9 @@ import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import ts from 'typescript';
 import esbuild from 'esbuild';
-export const ROOTS=Object.freeze(['src/direct-candidate/experimental-live-world-sealed-entry.mjs','src/direct-candidate/experimental-live-world-batch.mjs','src/direct-candidate/experimental-live-world-uploads.mjs','src/wasm-gpu/seal-entry.mjs','src/direct-candidate/canonical-controller-browser-entry.mjs']);
+export const ROOTS=Object.freeze(['src/direct-candidate/experimental-live-world-sealed-entry.mjs','src/direct-candidate/experimental-live-world-batch.mjs','src/direct-candidate/experimental-live-world-uploads.mjs','src/wasm-gpu/seal-entry.mjs','src/direct-candidate/canonical-controller-browser-entry.mjs','src/wasm-gpu/worker-owner-entry.mjs']);
+export const WORKER_CONFIGURATION_PATH='src/wasm-gpu/worker-build-configuration.mjs';
+export const WORKER_CONFIGURATION_STUB='/** Inert development stub. Only the reviewed snapshot builder may bind exact worker bytes. */\nexport const WASM_GPU_WORKER_BUILD_CONFIGURATION = null;\n';
 export const BUILD_CONFIGURATION_PATH='src/wasm-gpu/build-configuration.mjs';
 export const BUILD_CONFIGURATION_STUB='/** Inert development stub. Only the verified same-source bundle builder may\n * replace this with the independently pinned local program asset configuration. */\nexport const WASM_GPU_BUILD_CONFIGURATION = null;\n';
 export const SEAL_PATH='src/direct-candidate/experimental-live-world-build-seal.mjs';
@@ -37,7 +39,7 @@ async function sourceBytes(root,relative){
  const bytes=await fs.readFile(filename),text=bytes.toString('utf8');if(!Buffer.from(text).equals(bytes))throw Error('Exact UTF-8 source required');return text;
 }
 export async function collectLiveWorldSourceClosure(root){
- const files={},pending=[...ROOTS,SEAL_PATH,BUILD_CONFIGURATION_PATH];
+ const files={},pending=[...ROOTS,SEAL_PATH,BUILD_CONFIGURATION_PATH,WORKER_CONFIGURATION_PATH];
  while(pending.length){const name=pending.pop();if(Object.hasOwn(files,name))continue;const source=await sourceBytes(root,name);files[name]=source;pending.push(...staticSourceDependencies(name,source));}
  return Object.fromEntries(Object.entries(files).sort(([a],[b])=>a.localeCompare(b)));
 }
@@ -54,6 +56,7 @@ export async function verifyLiveWorldSourcePin(root,pin){
  for(const name of names)if(typeof pin.files[name]!=='string'||current[name]!==pin.files[name])throw Error('Host-source bytes drift: '+name);
  if(current[SEAL_PATH]!==STUB)throw Error('Only the reviewed false/null seal stub may be substituted');
  if(current[BUILD_CONFIGURATION_PATH]!==BUILD_CONFIGURATION_STUB)throw Error('Only the reviewed null program configuration stub may be substituted');
+ if(current[WORKER_CONFIGURATION_PATH]!==WORKER_CONFIGURATION_STUB)throw Error('Only the reviewed null worker configuration stub may be substituted');
  const inputs=await readBuildInputs(root);if(!pin.buildInputs||JSON.stringify(Object.keys(pin.buildInputs).sort())!==JSON.stringify(BUILD_INPUT_PATHS))throw Error('Complete reviewed build input hashes required');for(const name of BUILD_INPUT_PATHS)if(pin.buildInputs[name]!==inputs.hashes[name])throw Error('Build input bytes drift: '+name);
  const revision=digest(JSON.stringify({files:current,buildInputs:inputs.hashes})),token=Object.freeze({kind:'verified-live-world-build-capability-v1',revision,moduleCount:names.length});
  owned.set(token,{files:current,revision,buildInputs:inputs.hashes,buildInputBytes:inputs.bytes});return token;

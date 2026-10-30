@@ -42,10 +42,14 @@ test('one public GPU mode defaults to ball and cushion; legacy choice cannot loa
 test('durable device-loss alert renders localized stage and original compile/command progress independently of route error',()=>{
  const old=globalThis.CANONICAL_GPU_ENTRY_AVAILABLE;globalThis.CANONICAL_GPU_ENTRY_AVAILABLE=true;
  try{
-  for(const [phase,label,detail] of [['compiling','GPU 셰이더 컴파일 중','셰이더 준비 2 / 17'],['encoding','GPU 명령 준비 중','명령 준비 256 / 1024'],['submitted','제출한 GPU 배치 완료 대기 중','명령 준비 256 / 1024']]){
-   const html=render({routeStatus:'idle',routeError:'overwritten',routeProgress:null,canonicalPlayback:{deviceLost:true,deviceLoss:{reason:'unknown',message:'A valid external Instance reference no longer exists.',timestamp:'2026-10-29T02:00:00.000Z',phase:'ready',routeStatus:'searching',searchProgress:{phase,compileCompleted:2,compileTotal:17,encodedCommands:256,totalCommands:1024,tested:0,total:9}}}});
+  for(const [phase,label,detail] of [['compiling','GPU 셰이더 컴파일 중','셰이더 준비 2 / 17'],['encoding','GPU 명령 준비 중','제출 명령 256 / 1024'],['submitted','GPU 명령 제출 중','제출 명령 256 / 1024'],['uploading','GPU 입력 업로드 중','제출 명령 256 / 1024'],['readback','GPU 최종 작업 완료·결과 수신 대기 중','제출 명령 256 / 1024']]){
+   const executionStage={compiling:'pipeline-create',uploading:'upload',encoding:'chunk-encode-or-wait',submitted:'chunk-submitted',readback:'finish-fence-and-readback'}[phase];
+   const html=render({routeStatus:'idle',routeError:'overwritten',routeProgress:null,canonicalPlayback:{deviceLost:true,deviceLoss:{reason:'unknown',message:'A valid external Instance reference no longer exists.',timestamp:'2026-10-29T02:00:00.000Z',phase:'ready',routeStatus:'searching',searchProgress:{phase,compileCompleted:2,compileTotal:17,executionStage,chunkIndex:2,chunkCount:4,submittedCommands:256,totalCommands:1024,cachedDeviceOwnedBytes:8192,tested:0,total:9}}}});
    for(const text of ['canonicalDeviceLoss','role="alert"',label,detail,'검색 진행: 0 / 9개','A valid external Instance reference no longer exists.','2026-10-29T02:00:00.000Z','브라우저 이름·버전','현재 게임 기록은 사라집니다'])assert.ok(html.includes(text),text);
    assert.ok(!html.includes('overwritten'));
+   for(const text of ['이유: unknown','청크 2 / 4','제출 명령 256 / 1024','GPU 완료 수가 아닙니다.','엔진 소유 버퍼 8192 bytes','드라이버 전체 메모리 사용량은 아닙니다.'])assert.ok(html.includes(text),text);
+   assert.ok(html.includes('실행 구간: '+executionStage));
+   assert.ok(!html.includes('명령 준비 256 / 1024'));
   }
  }finally{if(old===undefined)delete globalThis.CANONICAL_GPU_ENTRY_AVAILABLE;else globalThis.CANONICAL_GPU_ENTRY_AVAILABLE=old;}
 });

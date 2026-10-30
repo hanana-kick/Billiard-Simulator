@@ -9,6 +9,8 @@ import {assertLoadedWasmGpuEngineArtifact, canonicalEngineArtifactJSON} from './
 import {assertLoadedWasmGpuRawArtifact} from './raw-artifact.mjs';
 import {prepareWasmGpuInputs} from './world-inputs.mjs';
 import {prepareWasmGpuEngine} from './engine.mjs';
+import {isWasmGpuInputContract,assertWasmGpuWorldInputContract,assertWasmGpuRawInputContract} from './input-contract.mjs';
+import {assertWorkerOwnerEndpoint} from './worker-owner-client.mjs';
 const aborted = signal => { if (signal?.aborted) { const e = new Error(String(signal.reason ?? 'WASM compact search cancelled')); e.name = 'AbortError'; throw e; } };
 const callback = (fn, detail) => { const result = fn?.(Object.freeze(detail)); if (result && typeof result.then === 'function') { Promise.resolve(result).catch(() => {}); throw new TypeError('Synchronous backend progress callbacks required'); } };
 const checkSignal = signal => { if (signal !== undefined && signal !== null && (typeof signal.addEventListener !== 'function' || typeof signal.removeEventListener !== 'function')) throw new TypeError('AbortSignal required'); };
@@ -16,18 +18,23 @@ const now = () => globalThis.performance?.now() ?? Date.now();
 
 /** Only a harness constructor exists until a separately reviewed, independently
  * pinned build-manifest owner supplies a non-forgeable production library. */
-export function createWasmGpuCompactSearchBackendHarness({lookupProgram, sourceRevision, moduleBytes, maximumOwnedBytes, chunkSize = 256, maximumCachedPrograms = 4, prepareEngine = prepareWasmGpuEngine} = {}) {
+export function createWasmGpuCompactSearchBackendHarness({lookupProgram, sourceRevision, moduleBytes, workerEndpoint, maximumOwnedBytes, chunkSize = 256, maximumCachedPrograms = 4, prepareEngine = prepareWasmGpuEngine} = {}) {
   if (typeof lookupProgram !== 'function' || typeof prepareEngine !== 'function') throw new TypeError('Explicit program lookup and owner factory required');
   if (typeof sourceRevision !== 'string' || !sourceRevision.trim()) throw new TypeError('Explicit descriptive source revision required');
   if (!Number.isSafeInteger(maximumOwnedBytes) || maximumOwnedBytes < 1) throw new RangeError('Explicit owned GPU byte budget required');
   if (!Number.isSafeInteger(maximumCachedPrograms) || maximumCachedPrograms < 1 || maximumCachedPrograms > 4) throw new RangeError('Bounded cache1..4 programs per device required');
-  if (!(moduleBytes instanceof ArrayBuffer) && !ArrayBuffer.isView(moduleBytes)) throw new TypeError('Explicit bundled WASM bytes required');
-  const bytes = moduleBytes instanceof ArrayBuffer ? new Uint8Array(moduleBytes).slice() : new Uint8Array(moduleBytes.buffer, moduleBytes.byteOffset, moduleBytes.byteLength).slice();
+  const workerOwned = workerEndpoint !== undefined;
+  if (workerOwned) {
+    assertWorkerOwnerEndpoint(workerEndpoint);
+    if (moduleBytes !== undefined || prepareEngine === prepareWasmGpuEngine) throw new TypeError('Worker-owned scheduler requires a remote owner and no main-thread WASM bytes');
+  } else if (!(moduleBytes instanceof ArrayBuffer) && !ArrayBuffer.isView(moduleBytes)) throw new TypeError('Explicit bundled WASM bytes required');
+  const scheduler = workerOwned ? {workerEndpoint} : {moduleBytes: moduleBytes instanceof ArrayBuffer ? new Uint8Array(moduleBytes).slice() : new Uint8Array(moduleBytes.buffer, moduleBytes.byteOffset, moduleBytes.byteLength).slice()};
   const devices = new Map(); let tail = Promise.resolve(), disposed = false, disposal = null, active = null, cancellation = 0;
   const current = ticket => { if (ticket !== cancellation) { const e = new Error('WASM compact invocation cancelled'); e.name = 'AbortError'; throw e; } };
   const alive = () => { if (disposed) throw new Error('WASM compact backend disposed'); };
   const serial = work => { const result = tail.then(work); tail = result.catch(() => {}); return result; };
   const deviceState = device => {
+    if (workerOwned && device !== workerEndpoint) throw new TypeError('Owned Worker scheduler endpoint mismatch');
     if (!device || typeof device.lost?.then !== 'function') throw new TypeError('Exclusive GPU device with loss promise required');
     let state = devices.get(device);
     if (!state) {
@@ -65,7 +72,8 @@ export function createWasmGpuCompactSearchBackendHarness({lookupProgram, sourceR
       alive(); current(ticket); aborted(options.signal); if (state.lost) throw state.lost;
       const program = await lookupProgram(selector, {signal: options.signal});
       alive(); current(ticket); aborted(options.signal); if (state.lost) throw state.lost;
-      assertLoadedWasmGpuEngineArtifact(program?.engine); assertLoadedWasmGpuRawArtifact(program?.rawEngine);
+      workerOwned && isWasmGpuInputContract(program?.engine,'world') ? assertWasmGpuWorldInputContract(program.engine) : assertLoadedWasmGpuEngineArtifact(program?.engine);
+      workerOwned && isWasmGpuInputContract(program?.rawEngine,'raw') ? assertWasmGpuRawInputContract(program.rawEngine) : assertLoadedWasmGpuRawArtifact(program?.rawEngine);
       const {engine, rawEngine} = program;
       const expectedShape = {profile, strikeBackend, bodyCount: selector.bodyCount, maximumSteps, maxWorldSteps: selector.maxWorldSteps};
       if (engine.count !== count || rawEngine.count !== count || engine.sourceRevision !== sourceRevision || rawEngine.sourceRevision !== sourceRevision || rawEngine.maximumSteps !== 2048 || engine.structuralConfig.profile !== profile || engine.structuralConfig.strikeBackend !== strikeBackend || canonicalEngineArtifactJSON(engine.structuralConfig.uploadManifest?.shape) !== canonicalEngineArtifactJSON(expectedShape)) throw new Error('Program library structural/source identity mismatch');
@@ -77,7 +85,7 @@ export function createWasmGpuCompactSearchBackendHarness({lookupProgram, sourceR
         const required = engine.resources.totalOwnedBytes;
         if (state.programs.size >= maximumCachedPrograms || !Number.isSafeInteger(required) || required < 1 || state.allocatedBytes + required > maximumOwnedBytes) throw new RangeError('Persistent WASM program cache exceeds count/aggregate byte budget');
         const began = now();
-        const owner = await prepareEngine({moduleBytes: bytes, device, engine, rawEngine, maximumOwnedBytes, chunkSize, signal: options.signal, onPrepareProgress: options.onPrepareProgress});
+        const owner = await prepareEngine({...scheduler, device, engine, rawEngine, maximumOwnedBytes, chunkSize, signal: options.signal, onPrepareProgress: options.onPrepareProgress});
         if (owner?.requiresExclusiveDevice !== true || owner?.ownsRaw !== true || typeof owner.run !== 'function' || typeof owner.cancel !== 'function' || typeof owner.dispose !== 'function') { await owner?.dispose?.(); throw new Error('Combined exclusive-device WASM owner required'); }
         entry = {program: {engine, rawEngine}, owner, signature, compileMs: now() - began}; state.programs.set(signature, entry); state.allocatedBytes += required;
       }
@@ -102,9 +110,19 @@ export function createWasmGpuCompactSearchBackendHarness({lookupProgram, sourceR
           try {
             signal?.addEventListener('abort', onAbort, {once: true}); if (signal?.aborted) onAbort(); aborted(abort.signal);
             const inputs = inputsFor(context, checked, entry.program);
-            callback(onPhase, {phase: 'running', preparation: 'wasm-program', candidateCount: count}); aborted(abort.signal);
             const began = now();
-            const result = await entry.owner.run({...inputs, signal: abort.signal});
+            const report = detail => {
+              alive(); current(ticket); aborted(abort.signal);
+              callback(onPhase, {preparation: 'wasm-program', candidateCount: count,
+                plannedTotalOwnedBytes: entry.program.engine.resources.totalOwnedBytes,
+                cachedDeviceOwnedBytes: state.allocatedBytes, ...detail});
+              alive(); current(ticket); aborted(abort.signal);
+            };
+            report({phase: 'queued', executionStage: 'coordinator-admission', submittedCommands: 0,
+              chunkIndex: 0, chunkCount: null, totalCommands: null, runElapsedMs: 0});
+            const result = await entry.owner.run({...inputs, signal: abort.signal,
+              onExecutionPhase: detail => report({phase: detail.executionStage === 'upload' ? 'uploading' : detail.executionStage === 'finish-fence-and-readback' ? 'readback' : 'encoding', ...detail}),
+              onProgress: detail => report({phase: 'submitted', ...detail})});
             if (state.lost) throw state.lost; alive(); current(ticket); aborted(abort.signal);
             const compact = result.result;
             if (!(compact instanceof Uint32Array) || compact.length !== count * 4 || checked.some((c, i) => compact[i * 4] !== c.candidateId)) { entry.error = new Error('Exact current candidate compact16-byte rows required'); await entry.owner.dispose(); throw entry.error; }
@@ -122,11 +140,15 @@ export function createWasmGpuCompactSearchBackendHarness({lookupProgram, sourceR
     });
   }
   function cancel(reason = 'WASM compact backend cancelled') { cancellation++; active?.abort.abort(reason); active?.owner.cancel(reason); }
+  function releaseOwners(){
+    alive();cancel('Compact mode retired');
+    return serial(async()=>{const errors=[];for(const state of devices.values()){for(const entry of state.programs.values()){entry.error=Object.assign(new Error('Compact mode retired'),{name:'AbortError'});try{await entry.owner.dispose();}catch(error){errors.push(error);}}state.programs.clear();state.allocatedBytes=0;}if(errors.length)throw new AggregateError(errors,'Compact mode retirement failed');});
+  }
   function dispose() {
     if (disposal) return disposal; disposed = true; cancel('WASM compact backend disposed');
     disposal = serial(async () => { const errors = []; for (const state of devices.values()) for (const entry of state.programs.values()) { try { await entry.owner.dispose(); } catch (error) { errors.push(error); } } devices.clear(); if (errors.length) throw new AggregateError(errors, 'WASM compact backend disposal failed'); });
     return disposal;
   }
   return Object.freeze({sourceRevision, implementation: 'wasm-program-compact-search-harness-v1', preparation: 'wasm-program', requiresExclusiveDevice: true,
-    experimental: true, productionEnabled: false, gpuExecutionQualified: false, provenance: 'injected-program-library-harness', createEngine, cancel, dispose});
+    experimental: true, productionEnabled: false, gpuExecutionQualified: false, provenance: 'injected-program-library-harness', createEngine, cancel, releaseOwners, dispose});
 }

@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { instantiateWasmGpuRuntime } from '../src/wasm-gpu/runtime.mjs';
+import { WASM_GPU_COMMAND_CAPACITY, WASM_GPU_MAX_CHUNK, assertWasmGpuSchedulerLimits } from '../src/wasm-gpu/scheduler-limits.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const temp = mkdtempSync(resolve(tmpdir(), 'wasm-gpu-runtime-test-'));
 let bytes;
@@ -77,7 +78,7 @@ test('raw WASM ABI independently validates handles, bounds, lifecycle and commit
   let calls=0; const {instance} = await WebAssembly.instantiate(bytes,{bridge:{submit(){calls++;return 0;}}}); const e=instance.exports;
   assert.equal(e.abi_version(),1); assert.equal(e.configure(5),0); assert.ok(e.configure(5)<0);
   const view=new Uint32Array(e.memory.buffer,e.input_ptr(),3); view.set([1,0,3]); assert.ok(e.load(3)<0); assert.ok(e.start(1)<0);
-  view.set([1,6,3]); assert.ok(e.load(3)<0); assert.ok(e.load(65537)<0); assert.equal(calls,0);
+  view.set([1,6,3]); assert.ok(e.load(3)<0); assert.ok(e.load(WASM_GPU_COMMAND_CAPACITY+1)<0); assert.equal(calls,0);
   view.set([1,2,3]); assert.equal(e.load(3),0); assert.equal(e.start(2),0);
   assert.ok(e.commit(1)<0); assert.ok(e.step(0)<0); assert.ok(e.step(4097)<0);
   assert.equal(e.step(2),2); assert.equal(e.cursor(),0); assert.ok(e.step(2)<0); assert.ok(e.start(1)<0);
@@ -125,4 +126,39 @@ test('unsigned generation bits are normalized on WASM getter and import boundari
   let observed;
   const r=await instantiateWasmGpuRuntime({moduleBytes:bytes,bridge:{commandCount:1,encodeChunk(h,g){observed=g;},cancel(){},lose(){}}});
   r.load([1]);assert.equal(r.start().generation,2147483648);await r.step();assert.equal(observed,2147483648);
+});
+
+
+test('actual expanded WASM capacity preserves high u32 handles, exact boundary ordering, repeats and cancellation', async () => {
+  assert.equal(WASM_GPU_COMMAND_CAPACITY,131072);assert.equal(WASM_GPU_MAX_CHUNK,4096);
+  const pattern=[65535,65536,65537,WASM_GPU_COMMAND_CAPACITY], stream=Uint32Array.from({length:WASM_GPU_COMMAND_CAPACITY},(_,i)=>pattern[i%pattern.length]);
+  let consumed=0, submissions=0;
+  const bridge={commandCount:WASM_GPU_COMMAND_CAPACITY,cancel(){},lose(){},encodeChunk(handles){assert.ok(handles.length<=4096);for(const handle of handles){assert.equal(handle,stream[consumed%stream.length]);consumed++;}submissions++;}};
+  const r=await instantiateWasmGpuRuntime({moduleBytes:bytes,bridge});
+  assert.throws(()=>r.load(new Uint32Array(WASM_GPU_COMMAND_CAPACITY+1)),/command stream length/);
+  assert.throws(()=>r.load([WASM_GPU_COMMAND_CAPACITY+1]),/command handle/);
+  r.load(stream);r.start({repeat:2});while(r.status().state==='running')await r.step(4096);
+  assert.equal(consumed,2*WASM_GPU_COMMAND_CAPACITY);assert.equal(submissions,64);assert.equal(r.status().state,'complete');assert.equal(r.status().cursor,0);
+  consumed=0;r.start();await r.step(4096);r.cancel();assert.equal(r.status().state,'cancelled');await assert.rejects(r.step());
+  consumed=0;r.start();while(r.status().state==='running')await r.step(4096);assert.equal(consumed,WASM_GPU_COMMAND_CAPACITY);
+  r.dispose();assert.equal(r.status().state,'disposed');assert.throws(()=>r.load(stream));assert.throws(()=>r.start());
+  await assert.rejects(instantiateWasmGpuRuntime({moduleBytes:bytes,bridge:{...bridge,commandCount:WASM_GPU_COMMAND_CAPACITY+1}}),/bridge.commandCount/);
+});
+
+test('raw expanded ABI rejects capacity plus one before reads and disposal zeroes the whole admitted input', async () => {
+  let submitted=0;const {instance}=await WebAssembly.instantiate(bytes,{bridge:{submit(){submitted++;return 0;}}});const e=assertWasmGpuSchedulerLimits(instance.exports);
+  assert.ok(e.configure(WASM_GPU_COMMAND_CAPACITY+1)<0);assert.equal(e.configure(WASM_GPU_COMMAND_CAPACITY),0);
+  const input=new Uint32Array(e.memory.buffer,e.input_ptr(),WASM_GPU_COMMAND_CAPACITY);input.fill(WASM_GPU_COMMAND_CAPACITY);
+  assert.ok(e.load(WASM_GPU_COMMAND_CAPACITY+1)<0);assert.equal(submitted,0);assert.equal(e.load(WASM_GPU_COMMAND_CAPACITY),0);assert.equal(e.start(1),0);
+  assert.equal(e.step(4096),4096);assert.equal(e.commit(1),0);assert.equal(e.cursor(),4096);assert.equal(e.cancel(),0);assert.equal(e.dispose(),0);
+  assert.ok(input.every(x=>x===0));assert.equal(e.stream_len(),0);assert.ok(e.load(1)<0);assert.ok(e.start(1)<0);
+});
+
+test('runtime rejects mismatched bundled capacity and chunk ABI before configure or submission', async t => {
+  const instantiate=WebAssembly.instantiate.bind(WebAssembly);let configured=0;
+  for(const override of [{capacity:()=>65536},{capacity:()=>131073},{max_chunk:()=>8192},{abi_version:()=>2}]){
+    const mock=t.mock.method(WebAssembly,'instantiate',async(...args)=>{const result=await instantiate(...args);return {instance:{exports:{...result.instance.exports,...override,configure(){configured++;return 0;}}}};});
+    await assert.rejects(make(),/ABI version\/capacity\/chunk mismatch/);mock.mock.restore();
+  }
+  assert.equal(configured,0);
 });

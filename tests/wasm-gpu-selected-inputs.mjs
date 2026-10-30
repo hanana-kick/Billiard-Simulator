@@ -1,3 +1,4 @@
+import {queryViewWords} from '../src/wasm-gpu/query-view.mjs';
 /** Current selected host input differential; no GPU/CPU dynamics. */
 import {restoreEndpointCacheDelta} from './helpers/reviewed-endpoint-cache-delta.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';
@@ -9,6 +10,7 @@ import {prepareCanonicalWorldContinuation} from '../src/direct-candidate/canonic
 import {createWasmGpuSelectedArtifact,captureWasmGpuSelectedProgram} from '../src/wasm-gpu/selected-artifact-builder.mjs';
 import {loadWasmGpuSelectedArtifact} from '../src/wasm-gpu/selected-artifact.mjs';
 import {prepareWasmGpuSelectedInputs} from '../src/wasm-gpu/selected-inputs.mjs';
+import {loadProjectedInputContract} from './helpers/wasm-gpu-worker-backend-harness.mjs';
 const base=mmq2RawFixture();
 function current(changed=false,candidateId=100){
  const p=structuredClone(base.request.scene.physical),shift=changed?1/1024:0,id=x=>x+(changed?1000:0);
@@ -24,7 +26,7 @@ const f=current(),sourceRevision='selected-current-input-test',{artifact}=await 
 const sha=x=>createHash('sha256').update(x).digest('hex');
 test('all selected uploads match genuine source capture across current geometry/rules/IDs/clock',async()=>{
  const golden=JSON.parse(await readFile(new URL('./fixtures/selected-current-input-baseline-digests.json',import.meta.url),'utf8'));assert.equal(golden.sourceCommit,'715b503f57f6962d99c7a85a787995284960ee8b');
- for(const changed of [false,true]){const x=changed?current(true,777):f,input=prepareWasmGpuSelectedInputs({engine,...x,maximumRecords:256}),{recorder:r}=await captureWasmGpuSelectedProgram(x);assert.equal(input.initialUploads.length,r.buffers.length);for(const u of input.initialUploads)assert.deepEqual(u.initial,r.buffers[u.index].bytes,'allocation '+u.index);assert.equal(input.candidateIds[0],x.candidate.candidateId);
+ for(const changed of [false,true]){const x=changed?current(true,777):f,input=prepareWasmGpuSelectedInputs({engine,...x,maximumRecords:256}),{recorder:r}=await captureWasmGpuSelectedProgram(x);assert.equal(input.initialUploads.length,r.buffers.length+6);for(const u of input.initialUploads.slice(0,-6)){if(engine.cushionLowering.cacheAllocations.some(a=>a.index===u.index)){assert.equal(u.initial.length,6144);assert.ok(u.initial.every(v=>v===0));}else assert.deepEqual(u.initial,r.buffers[u.index].bytes,'allocation '+u.index);}assert.equal(input.initialUploads.at(-6).initial.length,2048);assert.equal(input.initialUploads.at(-5).initial.length,256);assert.ok(input.initialUploads.slice(-6,-4).every(u=>u.initial.every(v=>v===0)));for(let rail=0;rail<4;rail++)assert.deepEqual(input.initialUploads.at(-4+rail).initial,new Uint8Array(queryViewWords(rail).buffer));assert.equal(input.candidateIds[0],x.candidate.candidateId);
   const delta=JSON.parse(await readFile(new URL('./fixtures/prepared-world-input-reviewed-mmq2-module-delta.json',import.meta.url),'utf8'));assert.equal(delta.baselineCommit,golden.sourceCommit);assert.equal(sha(delta.baselineModuleCode),delta.baselineModuleSHA256);
   const restored=restoreEndpointCacheDelta({definitions:r.modules.map(m=>({code:m.code,label:m.label})),commands:r.commands,buffers:r.buffers.map(b=>({size:b.size,usage:b.usage,bytes:b.bytes})),pipelineModules:r.pipelines.map(p=>p.module.id)});
   const modules=restored.definitions,replacements=modules.filter(m=>sha(m.code)===delta.reviewedModuleSHA256);assert.equal(replacements.length,1,'Exactly reviewed MMQ2 module delta');replacements[0].code=delta.baselineModuleCode;
@@ -43,4 +45,12 @@ test('source decorator consumes complete decoded packets; synthetic ABI test is 
  const packet=new Uint32Array(2916);packet[0]=100;packet[1]=9;packet[5]=f.rawBinding.absoluteTick+10;packet[2848]=100;packet[2849]=1;packet[2856]=f.rawBinding.sceneKey;packet[2857]=f.rawBinding.requestKey;packet[2864+38]=10;packet[2864+39]=1;packet[2912]=100;
  const decoded=decodePreparedWorldReadback(packet,{journalBytes:4224,journalAuxBytes:4096,rawStatusBytes:64,ruleBytes:208}),decorated=decorateCanonicalRawWorldGPUResult(f.binding,f.batch,decoded);assert.equal(decorated.continuation.state,decoded.state);assert.equal(decorated.continuation.elapsedTicks,10);assert.equal(decorated.continuation.timeBudgetEnforced,true);assert.equal(decorated.continuation.kissCoverage,true);assert.equal(Object.hasOwn(decorated.continuation,'gpuQualified'),false);
  assert.throws(()=>decorateCanonicalRawWorldGPUResult(f.binding,f.batch,{rawHandoffStatus:decoded.rawHandoffStatus,compactResult:decoded.compactResult}),/Complete/);assert.throws(()=>decorateCanonicalRawWorldGPUResult(f.binding,current(true).batch,decoded),/binding/);const incomplete={rawHandoffStatus:decoded.rawHandoffStatus.slice()};incomplete.rawHandoffStatus[1]=4;assert.equal(decorateCanonicalRawWorldGPUResult(f.binding,f.batch,incomplete).continuation,null);
+});
+
+
+test('selected input-only authority preserves every fixed/current byte and cannot become a native executable owner',async()=>{
+ const contract=await loadProjectedInputContract('selected',engine);assert.equal(contract.commands,undefined);assert.equal(contract.definitions,undefined);assert.equal(contract.commandCount,engine.commands.length);assert.ok(Object.isFrozen(contract.initialization));
+ for(const changed of [false,true]){const context=changed?current(true,777):f,expected=prepareWasmGpuSelectedInputs({engine,...context}),actual=prepareWasmGpuSelectedInputs({engine:contract,...context});assert.deepEqual(actual,expected);actual.initialUploads.forEach(u=>u.initial.fill(255));actual.candidateIds.fill(0);assert.deepEqual(prepareWasmGpuSelectedInputs({engine:contract,...context}),expected);}
+ assert.throws(()=>prepareWasmGpuSelectedInputs({engine:{...contract},...f}),/Owned/);assert.throws(()=>prepareWasmGpuSelectedInputs({engine:contract,...f,binding:{...f.binding}}),/Owned/);assert.throws(()=>prepareWasmGpuSelectedInputs({engine:contract,binding:f.binding,batch:current(true).batch}),/mismatch/);assert.throws(()=>prepareWasmGpuSelectedInputs({engine:contract,...f,maximumRecords:128}),/capsule/);
+ const {prepareWasmGpuSelectedEngine}=await import('../src/wasm-gpu/selected-engine.mjs');await assert.rejects(prepareWasmGpuSelectedEngine({engine:contract,maximumOwnedBytes:12*1024*1024}),/Owned loaded selected/);
 });

@@ -1,0 +1,36 @@
+/** One live compute-device generation. No renderer or canonical state ownership. */
+const aborted=reason=>{const e=Error(String(reason??'Compute generation cancelled'));e.name='AbortError';return e;};
+export async function createComputeGenerationFacade(options={}){
+ let{device,requestDevice,createGeneration,signal}=options;options=null;
+ if(!device||typeof device.lost?.then!=='function'||typeof requestDevice!=='function'||typeof createGeneration!=='function')throw TypeError('Owned device generation factories required');
+ const identity=Object.freeze({kind:'wasm-compute-identity-v1'}),versions={search:0,selected:0};let current=null,mode=null,epoch=0,tail=Promise.resolve(),active=null,closed=false,disposal=null,fatal=null,lossReported=false,lastCoordinator=null,resolveLost;
+ const lost=new Promise(resolve=>{resolveLost=resolve;});
+ const devices=new WeakSet();let generationCount=0;
+ const check=()=>{if(closed)throw Error('Compute generation facade disposed');if(fatal)throw fatal;};
+ function cancelGroup(group,reason){versions[group]++;if(active?.group===group)active.abort.abort(reason);try{current?.child?.[group==='search'?'cancelSearch':'cancelSelected']?.(reason);}catch(error){fatal??=error;}}
+ function cancel(reason='Compute generation cancelled'){cancelGroup('search',reason);cancelGroup('selected',reason);}
+ function recordDevice(d){if(!d||typeof d.lost?.then!=='function')throw TypeError('Fresh GPU device required');if(devices.has(d))throw Error('Replacement must be a fresh compute device');const lossState={generation:++generationCount,intentional:false},r={device:d,child:null,lossState,destroyed:false,retirement:null};devices.add(d);const loss=info=>{if(lossState.intentional&&info?.reason==='destroyed')return;if(lossReported)return;lossReported=true;const value=Object.freeze({reason:info?.reason??'unknown',message:info?.message??String(info??'GPU device lost'),...(info?.cleanupVerified===false?{cleanupVerified:false}:{})});fatal=Error('GPU device lost: '+value.message);fatal.deviceLoss=value;resolveLost(value);cancel(fatal.message);};Promise.resolve(d.lost).then(loss,loss);d=null;return r;}
+ async function destroy(r){if(r.destroyed)return;r.lossState.intentional=true;r.destroyed=true;await r.device.destroy();r.device=null;}
+ function retire(r){if(!r)return Promise.resolve();if(r.retirement)return r.retirement;r.retirement=(async()=>{await r.child?.dispose();lastCoordinator=r.child?.status?.().coordinator??lastCoordinator;r.child=null;await destroy(r);})();return r.retirement;}
+ async function initialize(d,operationSignal,{ownedOnFailure=true}={}){const r=recordDevice(d);try{if(operationSignal?.aborted)throw aborted(operationSignal.reason);r.child=await createGeneration(d,operationSignal);if(operationSignal?.aborted)throw aborted(operationSignal.reason);check();return r;}catch(error){try{if(ownedOnFailure)await retire(r);else await r.child?.dispose();}catch(cleanup){const failure=new AggregateError([error,cleanup],'Compute generation initialization cleanup failed');if(ownedOnFailure){current=r;fatal=failure;}throw failure;}throw error;}}
+ try{current=await initialize(device,signal,{ownedOnFailure:false});}catch(error){closed=true;throw error;}finally{device=null;}const sourceRevision=current.child.sourceRevision;
+ function runMode(group,work,{signal:operationSignal,expectedEpoch}={}){
+  try{check();}catch(error){return Promise.reject(error);}const ticket=versions[group];
+  const result=tail.then(async()=>{check();if(ticket!==versions[group]||operationSignal?.aborted)throw aborted(operationSignal?.reason);if(expectedEpoch!==undefined&&expectedEpoch!==epoch)throw aborted('Stale compute generation view');const abort=new AbortController(),relay=()=>abort.abort(operationSignal.reason);active={group,abort};
+   const currentCheck=()=>{check();if(ticket!==versions[group]||abort.signal.aborted)throw aborted(abort.signal.reason);};
+   try{operationSignal?.addEventListener('abort',relay,{once:true});if(operationSignal?.aborted)relay();currentCheck();
+    if(mode!==null&&mode!==group){const previous=current;epoch++;try{await retire(previous);}catch(error){fatal=error;throw error;}current=null;mode=null;currentCheck();}
+    if(!current){const d=await requestDevice({signal:abort.signal});try{currentCheck();}catch(error){const r=recordDevice(d);try{await destroy(r);}catch(cleanup){current=r;fatal=new AggregateError([error,cleanup],'Late compute generation cleanup failed');throw fatal;}throw error;}current=await initialize(d,abort.signal);currentCheck();}
+    mode=group;const generation=current,viewEpoch=epoch,value=await work(generation.child,generation.device,viewEpoch,abort.signal);currentCheck();if(current!==generation||epoch!==viewEpoch)throw aborted('Compute generation changed');return value;
+   }finally{operationSignal?.removeEventListener('abort',relay);active=null;}
+  });tail=result.catch(()=>{});return result;
+ }
+ function dispose(){if(disposal)return disposal;closed=true;cancel('Compute generation facade disposed');disposal=tail.then(async()=>{await retire(current);current=null;mode=null;});tail=disposal.catch(()=>{});return disposal;}
+ const open=other=>{check();if(other!==identity)throw Error('Owned immutable compute identity required');};
+ return Object.freeze({identity,lost,
+  async createSearchEngine(other,args){open(other);let view,viewEpoch;try{await runMode('search',async(child,d,e,s)=>{viewEpoch=e;view=await child.createSearchEngine(d,{...args,signal:s});},{signal:args?.signal});}catch(error){view?.dispose();throw error;}let released=false;return Object.freeze({...view,dispose(){released=true;return view.dispose();},run(options){if(released)return Promise.reject(Error('Search view disposed'));return runMode('search',(_child,_d,_e,s)=>view.run({...options,signal:s}),{signal:options?.signal,expectedEpoch:viewEpoch});}});},
+  async createSelectedEngine(other,binding,args){open(other);let released=false,view=null,operation=null;return Object.freeze({buildRevision:sourceRevision,preparation:'wasm-program-selected',requiresExclusiveDevice:true,buildSealed:true,integrityVerified:true,provenance:'sealed-source-wasm-selected',async runRaw(batch,options={}){if(released||operation)throw Error('Selected view disposed or active');const abort=new AbortController(),relay=()=>abort.abort(options.signal.reason);operation=abort;try{options.signal?.addEventListener('abort',relay,{once:true});if(options.signal?.aborted)relay();return await runMode('selected',async(child,d,_e,s)=>{if(released)throw aborted('Selected view disposed');view=await child.createSelectedEngine(d,binding,args);try{if(released||s.aborted)throw aborted(s.reason);return await view.runRaw(batch,{...options,signal:s});}finally{view.dispose();view=null;}},{signal:abort.signal});}finally{options.signal?.removeEventListener('abort',relay);operation=null;}},dispose(){released=true;operation?.abort('Selected view disposed');view?.dispose();}});},
+  cancelSearch:reason=>cancelGroup('search',reason),cancelSelected:reason=>cancelGroup('selected',reason),cancel,dispose,
+  status:()=>Object.freeze({disposed:closed,residentMode:mode,modeEpoch:epoch,deviceGenerations:generationCount,coordinator:current?.child?.status?.().coordinator??lastCoordinator}),
+ });
+}

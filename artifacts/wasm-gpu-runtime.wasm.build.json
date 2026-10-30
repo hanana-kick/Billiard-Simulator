@@ -6,12 +6,12 @@
   "offline": true,
   "locked": true,
   "byteLength": 16343,
-  "sha256": "6a21a5c76918c333810915e6e039df8843a9cdec6d00995162c07a74344c0152",
+  "sha256": "396145c6ff702e8e28b9ca9acb6aa489322e486a6c18bae9f080a284e727806e",
   "sourceSha256": {
     "Cargo.toml": "edc81236447a56957b0390168ccefeafe710f94809e2da7082b29900626ef60b",
     "Cargo.lock": "9b517f10d28a96db45e0a91e2a4ba4cbef31b3e3c788ae9fb8ebcfef84e82a31",
-    "src/lib.rs": "441008fd527fdf200f37ad75c617fbce5dd49e5066ba7c0c815d374cf1649f2a",
-    "build.mjs": "fbd64e5391f4f9fa6c0b5d3124422092860280593b9395a667e5d0ef4434a39c"
+    "src/lib.rs": "e97cee8f681839c68db3be8cddf7f6ed5046fae0b9d37fd38f0a1533a0f985b0",
+    "build.mjs": "ccf0c5bc4daf08593cd8b0012063aeb3cda553b2ca5f9c7bdff4429a81cf38da"
   },
   "cargoVersion": "cargo 1.99.1 (5f94df478 2026-08-27)",
   "rustcVersion": "rustc 1.99.1 (58cf8f9c3 2026-10-13)\nbinary: rustc\ncommit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67\ncommit-date: 2026-10-13\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.1\nLLVM version: 23.1.1",

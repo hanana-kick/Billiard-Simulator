@@ -1,3 +1,6 @@
+import {lowerQueryProgram} from './query-program-lowering.mjs';
+import {lowerCushionProgram} from './cushion-program-lowering.mjs';
+import {lowerSmoothCellProgram} from './smooth-program-lowering.mjs';
 /** BUILD ONLY. Original selected factory on a recorder; stop at first map after
  * confirmed submission. No fake headers, decoding errors swallowed, or physics. */
 import {createLiveWorldCaptureDevice} from '../direct-candidate/experimental-live-world-capture.mjs';
@@ -36,8 +39,12 @@ export async function createWasmGpuSelectedArtifact({binding,batch,sourceRevisio
   if(b.label.startsWith('wasm-fixed:trace-v2:phase:'))return {index,kind:'fixed',role:b.label.slice(11),bytes:Array.from(b.bytes)};
   throw Error('Unclassified selected host initialization: '+index+' '+b.label);
  });
- const payload={sourceRevision,structuralConfig:WASM_GPU_SELECTED_CONFIG,allocations:r.buffers.map(b=>({size:b.size,sourceUsage:b.usage,usage:b.usage|8,label:b.label})),definitions,commands:packSelectedCommands(commands),outputs,initialization,sourceHashes:await Promise.all(definitions.map(d=>selectedArtifactHash(d.code)))};
+ const originalAllocations=r.buffers.map(b=>({size:b.size,sourceUsage:b.usage,usage:b.usage|8,label:b.label}));
+ const smooth=await lowerSmoothCellProgram({definitions,commands,allocations:originalAllocations},{sourceField:'code'}),cushion=await lowerCushionProgram(smooth,{sourceField:'code'}),lowered=await lowerQueryProgram(cushion,{sourceField:'code'});
+ initialization.push({index:smooth.receipt.tempAllocation,kind:'zero'},{index:cushion.receipt.tempAllocation,kind:'zero'});for(const {index}of cushion.receipt.cacheAllocations)if(initialization[index].kind!=='zero')throw Error('Endpoint cache must retain zero initialization');
+ initialization.push(...lowered.descriptors.map(d=>({...d,kind:'fixed'})));
+ const payload={sourceRevision,structuralConfig:WASM_GPU_SELECTED_CONFIG,allocations:lowered.allocations,definitions:lowered.definitions,commands:packSelectedCommands(lowered.commands),outputs,initialization,lowering:smooth.receipt,cushionLowering:cushion.receipt,queryLowering:lowered.receipt,sourceHashes:await Promise.all(lowered.definitions.map(d=>selectedArtifactHash(d.code)))};
  const artifact={format:WASM_GPU_SELECTED_ARTIFACT_FORMAT,sha256:await selectedArtifactHash(payload),payload};
  await loadWasmGpuSelectedArtifact(artifact,{expectedArtifactSha256:artifact.sha256,expectedSourceRevision:sourceRevision});
- return {artifact,initialUploads:r.buffers.map((b,index)=>({index,initial:b.bytes.slice()}))};
+ return {artifact,initialUploads:lowered.allocations.map((a,index)=>({index,initial:index<r.buffers.length&&r.buffers[index].size===a.size?r.buffers[index].bytes.slice():Uint8Array.from(lowered.descriptors.find(d=>d.index===index)?.bytes??new Uint8Array(a.size))}))};
 }

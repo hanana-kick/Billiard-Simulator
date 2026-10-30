@@ -4,7 +4,7 @@ const {waitForPretendard}=require('../e2e/font-helper.cjs');
 
 // Required real-browser smoke. No authored scene injection, fake GPU, selected-shot
 // candidate loop, CPU dynamics oracle, or native fallback replaces the UI flow.
-test('real MMQ2 GPU entry searches nine complete candidates, stops and restarts, applies one and commits exact undo/redo',async({page},testInfo)=>{
+test('real MMQ2 GPU entry searches nine complete candidates repeatedly, stops in flight and restarts, applies one and commits exact undo/redo',async({page},testInfo)=>{
  // Cold software WebGPU is slower than physical adapters. Bound the complete
  // multi-stage UI flow independently of the application's per-stage watchdog.
  test.setTimeout(900000);
@@ -23,13 +23,20 @@ test('real MMQ2 GPU entry searches nine complete candidates, stops and restarts,
    const c=cueLab,legacy=c.lab;
    if(!c.state.paused||legacy.cue||legacy.anyMotion()||c.drag||c.windup||c.game?.pending||c.undoStack.length||c.redoStack.length)
     throw Error('Real default app must be idle, paused and empty-history before entry');
-   const evidence=globalThis.__canonicalBrowserTest={adapterRequests:0,deviceRequests:0,adapters:[],gpuErrors:[],deviceLoss:[],legacyCalls:[],canvas:c.canvas,initialLab:legacy};
+   const evidence=globalThis.__canonicalBrowserTest={adapterRequests:0,deviceRequests:0,adapters:[],gpuErrors:[],deviceLoss:[],legacyCalls:[],queueSubmits:0,settledSubmit:0,fenceCalls:0,pendingFences:0,cancelClicks:[],canvas:c.canvas,initialLab:legacy};
    // Observe REAL calls and retain original native methods. No adapter/device is substituted.
    if(navigator.gpu){const requestAdapter=navigator.gpu.requestAdapter.bind(navigator.gpu);
     navigator.gpu.requestAdapter=async(...args)=>{evidence.adapterRequests++;const adapter=await requestAdapter(...args);if(!adapter)return adapter;
      const info=adapter.info;evidence.adapters.push(info?{vendor:info.vendor,architecture:info.architecture,device:info.device,description:info.description,isFallbackAdapter:typeof info.isFallbackAdapter==='boolean'?info.isFallbackAdapter:null}:null);
      const requestDevice=adapter.requestDevice.bind(adapter);adapter.requestDevice=async(...options)=>{evidence.deviceRequests++;const device=await requestDevice(...options);
+      // Observe only fences the engine already requests. Return the ORIGINAL
+      // native promise; do not add synchronization or alter submission order.
+      const queue=device.queue,submit=queue.submit.bind(queue),workDone=queue.onSubmittedWorkDone.bind(queue);
+      queue.submit=(...args)=>{const result=submit(...args);evidence.queueSubmits++;return result;};
+      queue.onSubmittedWorkDone=(...args)=>{const through=evidence.queueSubmits,promise=workDone(...args);evidence.fenceCalls++;evidence.pendingFences++;
+       promise.then(()=>{evidence.settledSubmit=Math.max(evidence.settledSubmit,through);evidence.pendingFences--;},()=>{evidence.pendingFences--;});return promise;};
       device.addEventListener('uncapturederror',event=>evidence.gpuErrors.push(event.error.message));device.lost.then(info=>evidence.deviceLoss.push({reason:info.reason,message:info.message}));return device;};return adapter;};}
+   document.addEventListener('click',event=>{if(event.target.closest?.('#cancelRoute'))evidence.cancelClicks.push({status:c.state.routeStatus,phase:c.state.routeProgress?.phase,submits:evidence.queueSubmits,settled:evidence.settledSubmit,pendingFences:evidence.pendingFences});},true);
    for(const method of ['strike','step','restore'])legacy[method]=()=>{evidence.legacyCalls.push(method);throw Error('Forbidden legacy dynamics: '+method);};
   });
   const entry=page.locator('#startCanonicalPractice');await expect(entry).toBeVisible();await expect(entry).toBeEnabled();
@@ -76,15 +83,27 @@ test('real MMQ2 GPU entry searches nine complete candidates, stops and restarts,
   expect(new Set(search.result.results.map(row=>row.id)).size).toBe(9);
   for(const row of search.result.results)expect(row.compact).toEqual([row.id,1,0,1]);
   };
-  const warmSearch=await readSearch();assertCompleteSearch(warmSearch);
+  const coldSearch=await readSearch();assertCompleteSearch(coldSearch);
+  const warmSearches=[];
+  for(let repeat=0;repeat<3;repeat++){
+   await page.locator('#findRoute').click();
+   await page.waitForFunction(()=>['done','error','stale'].includes(cueLab.state.routeStatus),{},{timeout:420000});
+   const result=await readSearch();assertCompleteSearch(result);warmSearches.push(result.result);
+  }
+  await testInfo.attach('canonical-repeated-search',{body:JSON.stringify({cold:coldSearch.result,warm:warmSearches},null,2),contentType:'application/json'});
   // Reproduce the reported calculate -> stop -> calculate flow with real UI
   // buttons. start() clears the previous run; stop() retains any rows already
   // published by the CURRENT run, and reports done/stopped (not canceled).
+  const submitsBeforeCancelRun=await page.evaluate(()=>__canonicalBrowserTest.queueSubmits);
   await page.locator('#findRoute').click();
-  await page.waitForFunction(()=>cueLab.state.routeStatus==='searching',{},{timeout:30000});
+  await page.waitForFunction(before=>{const t=__canonicalBrowserTest;return cueLab.state.routeStatus==='searching'&&['encoding','submitted','readback'].includes(cueLab.state.routeProgress?.phase)&&t.pendingFences>0&&t.queueSubmits>before&&t.queueSubmits>t.settledSubmit;},submitsBeforeCancelRun,{timeout:420000});
   await expect(page.locator('#cancelRoute')).toBeVisible();
   const beforeStop=await readSearch();expect(beforeStop.status).toBe('searching');
   await page.locator('#cancelRoute').click();
+  const cancelClick=await page.evaluate(()=>__canonicalBrowserTest.cancelClicks.at(-1));
+  expect(cancelClick.status).toBe('searching');expect(cancelClick.pendingFences).toBeGreaterThan(0);
+  expect(['encoding','submitted','readback']).toContain(cancelClick.phase);
+  expect(cancelClick.submits).toBeGreaterThan(submitsBeforeCancelRun);expect(cancelClick.submits).toBeGreaterThan(cancelClick.settled);
   await page.waitForFunction(()=>cueLab.state.routeStatus==='done'&&cueLab.state.routeProgress?.phase==='stopped',{},{timeout:30000});
   const stopped=await page.evaluate(()=>({status:cueLab.state.routeStatus,error:cueLab.state.routeError,phase:cueLab.state.routeProgress?.phase,result:cueLab.state.routeResult}));
   expect(stopped).toMatchObject({status:'done',error:'',phase:'stopped'});
@@ -96,7 +115,7 @@ test('real MMQ2 GPU entry searches nine complete candidates, stops and restarts,
   await page.locator('#findRoute').click();
   await page.waitForFunction(()=>['done','error','stale'].includes(cueLab.state.routeStatus),{},{timeout:420000});
   const search=await readSearch();assertCompleteSearch(search);
-  await testInfo.attach('canonical-stop-restart',{body:JSON.stringify({warmSearch:warmSearch.result,beforeStop,stopped,restarted:search.result},null,2),contentType:'application/json'});
+  await testInfo.attach('canonical-stop-restart',{body:JSON.stringify({coldSearch:coldSearch.result,warmSearches,beforeStop,cancelClick,stopped,restarted:search.result},null,2),contentType:'application/json'});
   const chosen=search.result.results[0];expect(chosen.compact).toEqual([chosen.id,1,0,1]);
   expect(await page.locator('.route-result').count()).toBeGreaterThan(0);
   await page.locator('#applyRoute'+chosen.id).click();

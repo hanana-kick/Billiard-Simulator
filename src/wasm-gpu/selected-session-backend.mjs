@@ -8,14 +8,21 @@ import {decodeSelectedWorldTraceV2GPU} from '../direct-candidate/canonical-selec
 import {assertLoadedWasmGpuSelectedArtifact,WASM_GPU_SELECTED_CONFIG} from './selected-artifact.mjs';
 import {prepareWasmGpuSelectedInputs} from './selected-inputs.mjs';
 import {prepareWasmGpuSelectedEngine} from './selected-engine.mjs';
+import {isWasmGpuInputContract,assertWasmGpuSelectedInputContract} from './input-contract.mjs';
+import {assertWorkerOwnerEndpoint} from './worker-owner-client.mjs';
 const abortError=reason=>{const e=Error(String(reason??'Selected WASM invocation cancelled'));e.name='AbortError';return e;};
 const signalCheck=signal=>{if(signal&&(typeof signal.addEventListener!=='function'||typeof signal.removeEventListener!=='function'))throw TypeError('AbortSignal required');if(signal?.aborted)throw abortError(signal.reason);};
-export function createWasmGpuSelectedSessionBackendHarness({device,lookupProgram,moduleBytes,sourceRevision,maximumOwnedBytes,chunkSize=256,prepareEngine=prepareWasmGpuSelectedEngine}={}){
+export function createWasmGpuSelectedSessionBackendHarness({device,lookupProgram,moduleBytes,workerEndpoint,sourceRevision,maximumOwnedBytes,chunkSize=256,prepareEngine=prepareWasmGpuSelectedEngine}={}){
  if(typeof device?.lost?.then!=='function'||typeof lookupProgram!=='function'||typeof prepareEngine!=='function')throw TypeError('Exclusive device/program lookup/owner factory required');
  if(typeof sourceRevision!=='string'||!sourceRevision.trim())throw TypeError('Explicit descriptive source revision required');
  if(!Number.isSafeInteger(maximumOwnedBytes)||maximumOwnedBytes<1||maximumOwnedBytes>12*1024*1024)throw RangeError('Explicit aggregate selected budget up to12MiB required');
- if(!(moduleBytes instanceof ArrayBuffer)&&!ArrayBuffer.isView(moduleBytes))throw TypeError('Explicit bundled WASM bytes required');
- const bytes=moduleBytes instanceof ArrayBuffer?new Uint8Array(moduleBytes).slice():new Uint8Array(moduleBytes.buffer,moduleBytes.byteOffset,moduleBytes.byteLength).slice();
+ const workerOwned=workerEndpoint!==undefined;
+ if(workerOwned){
+  assertWorkerOwnerEndpoint(workerEndpoint);
+  if(device!==workerEndpoint)throw TypeError('Owned Worker scheduler endpoint mismatch');
+  if(moduleBytes!==undefined||prepareEngine===prepareWasmGpuSelectedEngine)throw TypeError('Worker-owned scheduler requires a remote owner and no main-thread WASM bytes');
+ }else if(!(moduleBytes instanceof ArrayBuffer)&&!ArrayBuffer.isView(moduleBytes))throw TypeError('Explicit bundled WASM bytes required');
+ const scheduler=workerOwned?{workerEndpoint}:{moduleBytes:moduleBytes instanceof ArrayBuffer?new Uint8Array(moduleBytes).slice():new Uint8Array(moduleBytes.buffer,moduleBytes.byteOffset,moduleBytes.byteLength).slice()};
  let entry=null,tail=Promise.resolve(),active=null,lost=null,disposed=false,disposal=null,cancellation=0;
  const queue=fn=>{const p=tail.then(fn);tail=p.catch(()=>{});return p;};
  const check=(ticket,signal)=>{if(disposed)throw Error('Selected backend disposed');if(lost)throw lost;if(ticket!==cancellation)throw abortError();signalCheck(signal);};
@@ -32,12 +39,12 @@ export function createWasmGpuSelectedSessionBackendHarness({device,lookupProgram
    try{
     signal?.addEventListener('abort',onAbort,{once:true});if(signal?.aborted)onAbort();check(ticket,abort.signal);
     const program=await lookupProgram(Object.freeze({sourceRevision,...WASM_GPU_SELECTED_CONFIG}),{signal:abort.signal});check(ticket,abort.signal);
-    const engine=assertLoadedWasmGpuSelectedArtifact(program?.engine??program);
+    const input=program?.engine??program,engine=workerOwned&&isWasmGpuInputContract(input,'selected')?assertWasmGpuSelectedInputContract(input):assertLoadedWasmGpuSelectedArtifact(input);
     if(engine.sourceRevision!==sourceRevision||engine.resourcePlan.totalOwnedBytes>maximumOwnedBytes)throw Error('Selected program source/aggregate budget mismatch');
     const inputs=prepareWasmGpuSelectedInputs({engine,binding,batch,maximumRecords});
     if(entry&&entry.signature!==engine.artifactSha256)throw Error('Selected cache permits one exact program signature; dispose before replacement');
     if(!entry){
-     const owner=await prepareEngine({device,moduleBytes:bytes,engine,maximumOwnedBytes,chunkSize,signal:abort.signal,onPrepareProgress});
+     const owner=await prepareEngine({...scheduler,device,engine,maximumOwnedBytes,chunkSize,signal:abort.signal,onPrepareProgress});
      if(owner?.requiresExclusiveDevice!==true||owner?.selected!==true||typeof owner.run!=='function'||typeof owner.cancel!=='function'||typeof owner.dispose!=='function'){await owner?.dispose?.();throw Error('Exclusive selected WASM owner required');}
      entry={signature:engine.artifactSha256,owner,engine};
     }
@@ -56,6 +63,7 @@ export function createWasmGpuSelectedSessionBackendHarness({device,lookupProgram
    }catch(error){if(phase==='decode'&&entry){entry.error=error;await entry.owner.dispose();}throw error;}finally{try{signal?.removeEventListener('abort',onAbort);}finally{if(active===token)active=null;}}
   });
  }
+ function releaseOwners(){if(disposed)return Promise.reject(Error('Selected backend disposed'));cancel('Selected mode retired');return queue(async()=>{await entry?.owner.dispose();entry=null;});}
  function dispose(){if(disposal)return disposal;disposed=true;cancel('Selected backend disposed');disposal=queue(async()=>{await entry?.owner.dispose();entry=null;});return disposal;}
- return Object.freeze({evaluate,cancel,dispose,sourceRevision,requiresExclusiveDevice:true,experimental:true,productionEnabled:false,gpuExecutionQualified:false,preparation:'wasm-program-selected',provenance:'injected-selected-program-harness'});
+ return Object.freeze({evaluate,cancel,releaseOwners,dispose,sourceRevision,requiresExclusiveDevice:true,experimental:true,productionEnabled:false,gpuExecutionQualified:false,preparation:'wasm-program-selected',provenance:'injected-selected-program-harness'});
 }

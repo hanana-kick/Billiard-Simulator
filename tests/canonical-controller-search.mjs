@@ -48,3 +48,16 @@ test('stalled native preparation becomes a visible search error rather than endl
  // Explicit retry reports the quarantined device without scheduling another compile.
  assert.equal(await search.start(),false);assert.equal(calls,1);assert.equal(c.state.routeStatus,'error');search.dispose();
 });
+
+test('chunk updates retain every scalar but throttle alternating encode/submit UI notifications and guard stale callbacks',async()=>{
+ let notifications=0,callbacks,finish;
+ const {c,search}=searchHarness(async options=>{callbacks=options;return await new Promise(resolve=>finish=resolve);});
+ c.notify=()=>notifications++;const started=search.start();
+ const before=notifications;
+ for(let i=1;i<=50;i++)callbacks.onPhase({phase:i%2?'encoding':'submitted',executionStage:'chunk',chunkIndex:i,submittedCommands:i});
+ assert.equal(c.state.routeProgress.chunkIndex,50);assert.equal(c.state.routeProgress.submittedCommands,50);
+ assert.ok(notifications-before<50,'alternating stage labels must not force a render for every callback');
+ const last=notifications;callbacks.onPhase({phase:'readback',executionStage:'finish-fence-and-readback'});assert.equal(notifications,last+1);
+ search.stop();const snapshot=c.state.routeProgress;assert.throws(()=>callbacks.onPhase({phase:'submitted',chunkIndex:999}));assert.equal(c.state.routeProgress,snapshot);
+ finish({rows:[],assertCurrent(){}});assert.equal(await started,false);
+});

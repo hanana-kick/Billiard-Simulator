@@ -6,13 +6,17 @@ import {canonicalPreparationAbort} from './canonical-page-preparation.mjs';
  */
 const devices = new WeakMap();
 const checkedShaders = new WeakMap();
-const MAX_COMPLETED = 128;
+// The sealed N1/N3 + selected definition union contains 195 exact pipelines.
+// Keep their shared compilation receipts so a new width does not compile a
+// second native copy of pipelines still retained by a live owner.
+export const LIVE_WORLD_PIPELINE_CACHE_LIMITS = Object.freeze({maximumCompleted:256,maximumKeyBytes:32*1024*1024});
+const MAX_COMPLETED = LIVE_WORLD_PIPELINE_CACHE_LIMITS.maximumCompleted;
 // Per native preparation await, not a total search/runtime deadline. A minute
 // permits slow cold compilers while bounding a missing browser callback. Tests
 // and owned callers may provide a shorter positive deadline explicitly.
 export const LIVE_WORLD_PREPARATION_TIMEOUT_MS = 60_000;
 // Exact-source JS key budget only; not a bound on opaque GPU/driver memory.
-const MAX_KEY_BYTES = 32 * 1024 * 1024;
+const MAX_KEY_BYTES = LIVE_WORLD_PIPELINE_CACHE_LIMITS.maximumKeyBytes;
 const abort = signal => { if (signal?.aborted) throw canonicalPreparationAbort(signal); };
 // Exact JSON data only: reject values that JSON would silently omit or coerce.
 function snapshot(value) {
@@ -41,13 +45,13 @@ function stateFor(device) {
   let state = devices.get(device);
   if (state) return state;
   if (typeof device?.lost?.then !== 'function') throw TypeError('Device loss promise required');
-  state = {completed: new Map(), keyBytes: 0, pending: new Set(), lost: null, quarantined: null};
+  state = {completed: new Map(), keyBytes: 0, pending: new Set(), native: new Set(), lost: null, quarantined: null};
   devices.set(device, state);
   const lose = info => {
     if (state.lost) return;
     state.lost = new Error('Live pipeline cache device lost: ' + (info?.message ?? 'unknown'));
     state.lost.deviceLoss = Object.freeze({reason: info?.reason ?? 'unknown', message: info?.message ?? 'unknown'});
-    state.completed.clear(); state.keyBytes = 0;
+    state.completed.clear(); state.keyBytes = 0; state.native.clear();
     for (const reject of state.pending) reject(state.lost);
     state.pending.clear();
   };
@@ -58,6 +62,10 @@ function alive(state) { if (state.quarantined) throw state.quarantined; if (stat
 function pending(state, work, context, signal, timeoutMs = LIVE_WORLD_PREPARATION_TIMEOUT_MS) {
   // Observe already-started native work even when this device was quarantined.
   const promise = Promise.resolve(work); promise.catch(() => {});
+  // Host cancellation removes a waiter, not the native operation. Retain an
+  // independent settled receipt until real native completion or device loss.
+  const settled=promise.then(()=>{},()=>{});state.native.add(settled);
+  settled.then(()=>state.native.delete(settled));
   if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 2_147_483_647) throw RangeError('Positive bounded preparation timeout required');
   alive(state);
   const annotate = error => {
@@ -98,6 +106,14 @@ function pending(state, work, context, signal, timeoutMs = LIVE_WORLD_PREPARATIO
 }
 /** Reject new work on a device with uncertain timed-out native preparation. */
 export function assertLiveWorldPreparationUsable(device) { alive(stateFor(device)); }
+/** Caller must drain/dispose all retiring owners before clearing their receipts.
+ * Never reset loss/quarantine or erase a pending native preparation. */
+export async function drainLiveWorldPreparation(device,{signal,timeoutMs=LIVE_WORLD_PREPARATION_TIMEOUT_MS}={}){
+ const state=stateFor(device);alive(state);
+ if(state.native.size)await pending(state,Promise.all([...state.native]),{startedAt:Date.now(),stage:'native-preparation-drain',label:'mode-retirement'},signal,timeoutMs);
+ alive(state);
+}
+export async function releaseLiveWorldPipelineCache(device){const state=stateFor(device);await drainLiveWorldPreparation(device);if(state.pending.size||state.native.size)throw Error('Cannot release pipeline cache during native preparation');state.completed.clear();state.keyBytes=0;}
 /** Preparation only: never use for submitted work, mapping or resource drains. */
 export async function awaitLiveWorldPreparation(device, work, {signal, timeoutMs = LIVE_WORLD_PREPARATION_TIMEOUT_MS, ...context} = {}) {
   return pending(stateFor(device), work, {startedAt: Date.now(), ...context}, signal, timeoutMs);

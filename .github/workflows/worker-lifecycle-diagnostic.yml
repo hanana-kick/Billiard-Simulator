@@ -1,0 +1,63 @@
+name: Worker lifecycle diagnostic (no deployment)
+on:
+  push:
+    branches: ['backup/**']
+    paths:
+      - '.github/workflows/worker-lifecycle-diagnostic.yml'
+      - 'tests/browser-worker-lifecycle/**'
+      - 'playwright.worker-lifecycle.config.cjs'
+      - 'tools/probe-browser-worker-webgpu.cjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  worker-lifecycle:
+    if: startsWith(github.ref, 'refs/heads/backup/')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    env:
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Record environment
+        run: |
+          test "$(id -u)" != 0
+          mkdir -p worker-lifecycle-evidence
+          { cat /etc/os-release; google-chrome --version; node --version; git rev-parse HEAD; git status --porcelain; } > worker-lifecycle-evidence/environment.txt
+      - name: Require real Worker WebGPU capability before expensive build
+        run: node tools/probe-browser-worker-webgpu.cjs
+      - run: npm run prepare:engine
+      - run: npm run typecheck
+      - name: Build current sealed application
+        run: node build.cjs --canonical-controller-assets
+      - name: Search, strike, mixed-width re-search, cancel and restart
+        run: npx playwright test -c playwright.worker-lifecycle.config.cjs
+      - name: Read available host memory evidence
+        if: always()
+        shell: bash
+        run: |
+          for file in /proc/meminfo /proc/self/cgroup /sys/fs/cgroup/memory.events /sys/fs/cgroup/memory.current /sys/fs/cgroup/memory.max; do
+            { echo "### $file"; if test -r "$file"; then cat "$file"; else echo unavailable; fi; } >> worker-lifecycle-evidence/host-memory-after.txt
+          done
+      - name: Preserve diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: worker-lifecycle-diagnostic
+          path: |
+            worker-lifecycle-evidence/
+            test-results-worker-lifecycle/
+            playwright-worker-lifecycle-report/
+            docs/ui-bundle-audit.json
+          retention-days: 14
+      - name: Qualification boundary
+        if: always()
+        run: |
+          echo 'Diagnostic only. Capability failure is not an application crash. A lifecycle pass is not full numerical parity, full UI qualification, physical GPU validation or deployment. Inspect lifecycle.json and capability.json.' >> "$GITHUB_STEP_SUMMARY"

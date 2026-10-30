@@ -4,12 +4,13 @@ import assert from 'node:assert/strict';
 import {createWasmGpuWebGPUBridge} from '../src/wasm-gpu/webgpu-bridge.mjs';
 import {planLiveWorldResources} from '../src/direct-candidate/experimental-live-world-resources.mjs';
 import {createWasmGpuEngineArtifact,loadWasmGpuEngineArtifact} from '../src/wasm-gpu/engine-artifact.mjs';
-async function fixture({repeat=1,definitionPadding=null}={}){
+async function fixture({repeat=1,definitionPadding=null,commandPattern=null}={}){
  const count=1,sizes=[768,64,32],shared=[false,false,false],entries=sizes.map((size,binding)=>({binding,buffer:binding,offset:0,size}));
  const source=entries.map((e,i)=>`@group(0) @binding(${i}) var<storage,${i===2?'read_write':'read'}> b${i}:array<u32>;`).join('')+'@compute @workgroup_size(1) fn main(){}';
  const sourcePlan={kind:'experimental-live-mmq1-graph-v1',strikeBackend:'staged',sourceQualified:false,nativeQualified:false,allocations:sizes.map((size,i)=>({size,usage:140,initial:new Uint8Array(size),external:i===0?'prepared':i===1?'status':null})),readback:2,definitions:[{source,ownership:entries.map(e=>({stride:sizes[e.buffer]/4,base:0,length:e.size/4}))}],commands:[{kind:'dispatch',definition:0,x:1,entries},{kind:'clear',buffer:2,offset:0,size:32}]};
  const definitions=[{code:source+'@group(0) @binding(3) var<storage,read_write> fault:array<atomic<u32>>;',faultBinding:3,layout:'auto'}],commands=structuredClone(sourcePlan.commands);if(repeat>1){sourcePlan.commands=Array(repeat).fill(sourcePlan.commands[0]);commands.splice(0,commands.length,...Array(repeat).fill(commands[0]));}
  if(definitionPadding){const base=definitions[0];definitions.splice(0,1,...definitionPadding.map(n=>({...base,code:base.code+'\n//'+'.'.repeat(n)})));sourcePlan.definitions=definitionPadding.map(n=>({...sourcePlan.definitions[0],source:source+'\n//'+'.'.repeat(n)}));commands.splice(0,commands.length,...definitions.map((_,definition)=>({kind:'dispatch',definition,x:1,entries})));sourcePlan.commands=structuredClone(commands);}
+ if(commandPattern){const originals=commands.slice(),sourceOriginals=sourcePlan.commands.slice();commands.splice(0,commands.length,...commandPattern.map(i=>i===null?{kind:'clear',buffer:2,offset:0,size:32}:originals[i]));sourcePlan.commands=commandPattern.map(i=>i===null?{kind:'clear',buffer:2,offset:0,size:32}:sourceOriginals[i]);}
  const shape={strikeResult:[512,132],handoffInput:[64,136],rosterTemplate:[768,136],admitted:[4,136],budget:[16,136],prepared:[768,132],status:[64,132]};
  const rawAllocations={strikeBackend:'staged',effectiveMaximumSteps:0,sceneBytes:64,allocations:Object.entries(shape).map(([role,[bytes,usage]])=>({role,bytes,usage}))};
  const resources=planLiveWorldResources({plan:sourcePlan,shared,count,definitions,commands,rawAllocations});
@@ -120,7 +121,7 @@ test('combined mode requires complete raw resets and rejects mixing external buf
  const {rawArtifactHash,loadWasmGpuRawArtifact}=await import('../src/wasm-gpu/raw-artifact.mjs');const altered=structuredClone(r.artifact);altered.payload.sourceRevision='different';altered.sha256=await rawArtifactHash(altered.payload);const other=await loadWasmGpuRawArtifact(altered,{...r.expectations,expectedSourceRevision:'different',expectedArtifactSha256:altered.sha256});const another=h.mock(engine);await assert.rejects(()=>createWasmGpuWebGPUBridge(another.device,{engine,rawEngine:other,maximumOwnedBytes:engine.resources.totalOwnedBytes}),/mismatch/);assert.equal(another.compiled,0);
 });
 test('single WASM command cap accounts for raw plus world and checks exact boundary',async()=>{
- const {validateWasmGpuCommandCount}=await import('../src/wasm-gpu/webgpu-bridge.mjs');assert.equal(validateWasmGpuCommandCount(65529,7),65536);assert.throws(()=>validateWasmGpuCommandCount(65530,7),/combined command/);for(const [world,raw]of [[0,7],[1,-1],[1,NaN],[Infinity,0],[1,1.5]])assert.throws(()=>validateWasmGpuCommandCount(world,raw),/combined command/);
+ const {validateWasmGpuCommandCount}=await import('../src/wasm-gpu/webgpu-bridge.mjs');assert.equal(validateWasmGpuCommandCount(131065,7),131072);assert.throws(()=>validateWasmGpuCommandCount(131066,7),/combined command/);for(const [world,raw]of [[0,7],[1,-1],[1,NaN],[Infinity,0],[1,1.5]])assert.throws(()=>validateWasmGpuCommandCount(world,raw),/combined command/);
 });
 test('preparation cancellation stops after held native compile settles without caching aborted kernel',async()=>{const engine=await fixture(),m=mock(engine),a=new AbortController();let resolve,started;const wait=new Promise(r=>resolve=r),begun=new Promise(r=>started=r),create=m.device.createComputePipelineAsync;m.device.createComputePipelineAsync=async d=>{const p=await create(d);started();await wait;return p;};const preparing=createWasmGpuWebGPUBridge(m.device,{engine,maximumOwnedBytes:1e6,signal:a.signal}),rejected=assert.rejects(preparing,{name:'AbortError'});await begun;a.abort();assert.equal(m.compiled,1);assert.equal(m.buffers.length,0);resolve();await rejected;assert.equal(m.compiled,1);m.device.createComputePipelineAsync=create;const progress=[],bridge=await createWasmGpuWebGPUBridge(m.device,{engine,maximumOwnedBytes:1e6,onPrepareProgress:p=>progress.push(p)});assert.equal(m.compiled,3);assert.equal(progress.filter(x=>x.stage==='compile').length,2);await bridge.dispose();});
 test('world preparation callback failure or post-allocation cancellation destroys partial/all owned buffers',async()=>{for(const mode of ['throw','abort','scope-abort','async']){const engine=await fixture(),m=mock(engine),a=new AbortController();if(mode==='scope-abort')m.device.popErrorScope=async()=>{a.abort();return null;};await assert.rejects(()=>createWasmGpuWebGPUBridge(m.device,{engine,maximumOwnedBytes:1e6,signal:a.signal,onPrepareProgress:p=>{if(p.stage!=='allocate')return;if(mode==='throw')throw Error('prepare callback failed');if(mode==='abort')a.abort();if(mode==='async')return Promise.resolve();}}));assert.ok(m.buffers.length>0);assert.ok(m.buffers.every(b=>b.dead));}});
@@ -171,4 +172,44 @@ test('heavy-first preparation preserves exact world definition source/layout and
 test('heavy-first ordering is stable, byte-based and does not mutate definitions',async()=>{
  const {heavyFirstPipelineIndices}=await import('../src/wasm-gpu/pipeline-preparation-order.mjs');const definitions=Object.freeze([{code:'aa',layout:'a'},{code:'한',layout:'b'},{code:'bbb',layout:'c'},{code:'cc',layout:'d'}].map(Object.freeze));
  assert.deepEqual(heavyFirstPipelineIndices(definitions),[1,2,0,3]);assert.deepEqual(definitions.map(d=>d.layout),['a','b','c','d']);assert.throws(()=>heavyFirstPipelineIndices([{}]),/source/);
+});
+
+test('grouped world passes preserve exact dispatch bindings/order and clear/chunk boundaries',async()=>{
+ const {bridge,m,run,engine}=await setup({definitionPadding:[0,10,20],commandPattern:[0,1,null,1,2,0]});
+ const recorded=[],submits=[];let opened=0,ended=0,passOpen=false;
+ m.device.createCommandEncoder=()=>({beginComputePass(){assert.equal(passOpen,false);passOpen=true;opened++;let pipeline,entries;return{setPipeline:p=>pipeline=p,setBindGroup:(_,g)=>entries=g.entries,dispatchWorkgroups:(...xyz)=>recorded.push({kind:'dispatch',pipeline,entries,xyz}),end(){assert.equal(passOpen,true);passOpen=false;ended++;}};},clearBuffer(buffer,offset,size){assert.equal(passOpen,false);recorded.push({kind:'clear',buffer,offset,size});},finish(){assert.equal(passOpen,false);return recorded.slice();}});
+ m.device.queue.submit=x=>submits.push(x);
+ await bridge.beginRun(run(1));await bridge.encodeChunk(new Uint32Array([1,2,3,4]),1);await bridge.encodeChunk(new Uint32Array([5,6]),1);
+ assert.equal(opened,3);assert.equal(ended,3);assert.equal(submits.length,2);
+ const bufferBySlot=[run(1).externalBuffers.prepared,run(1).externalBuffers.status,m.buffers[0]];
+ const expected=engine.lowered.commands.map(c=>c.kind==='clear'?{kind:'clear',buffer:bufferBySlot[c.buffer],offset:c.offset,size:c.size}:{kind:'dispatch',entries:[...c.entries.map(e=>({binding:e.binding,resource:{buffer:bufferBySlot[e.buffer],offset:e.offset,size:e.size}})),{binding:3,resource:{buffer:m.buffers[1]}}],xyz:[c.x,engine.count,1]});
+ assert.deepEqual(recorded.map(({pipeline,...rest})=>rest),expected);
+ assert.equal(recorded[1].pipeline,recorded[3].pipeline);assert.equal(recorded[0].pipeline,recorded[5].pipeline);assert.notEqual(recorded[0].pipeline,recorded[1].pipeline);
+ bridge.cancel(1);await bridge.drain();await bridge.dispose();
+});
+test('world encoding error closes open pass, preserves original error, never submits partial encoder',async()=>{
+ const {bridge,m,run}=await setup({repeat:3});const original=Error('dispatch failure');let ended=0,submitted=0;
+ m.device.createCommandEncoder=()=>({beginComputePass:()=>({setPipeline(){},setBindGroup(){},dispatchWorkgroups(){throw original;},end(){ended++;throw Error('cleanup failure');}}),finish(){throw Error('must not finish');}});
+ m.device.queue.submit=()=>submitted++;await bridge.beginRun(run(1));await assert.rejects(bridge.encodeChunk(new Uint32Array([1,2,3]),1),e=>e===original);assert.equal(ended,1);assert.equal(submitted,0);bridge.cancel(1);await bridge.drain();await bridge.dispose();
+});
+
+test('bounded branded selected-only prefix primes globally heavy-first with exact cache reuse and no selected arenas',async()=>{
+ const {selectedHostFixture}=await import('./fixtures/wasm-gpu-selected-host.mjs');const {compileLiveWorldPipeline}=await import('../src/direct-candidate/experimental-live-world-pipeline-cache.mjs');
+ const engine=await fixture({definitionPadding:[3000,10,20]}),{engine:selected}=await selectedHostFixture({definitionPadding:[0,1000,0]}),m=mock(engine),compiled=[],progress=[];
+ const create=m.device.createComputePipelineAsync;m.device.createComputePipelineAsync=async d=>{compiled.push(d);return create(d);};
+ const before=structuredClone(engine.lowered.commands),bridge=await createWasmGpuWebGPUBridge(m.device,{engine,primingSelectedEngine:selected,maximumOwnedBytes:engine.resources.totalOwnedBytes,onPrepareProgress:p=>progress.push(p)});
+ assert.equal(compiled.length,7);assert.equal(m.buffers.length,4,'no selected buffers');assert.deepEqual(engine.lowered.commands,before);
+ assert.equal(compiled[0].compute.module.code,engine.lowered.definitions[0].code);
+ assert.equal(compiled[1].compute.module.code,selected.definitions[1].code);assert.equal(compiled[1].compute.entryPoint,'snapshot');assert.equal(compiled[1].layout,'auto');
+ assert.equal(progress.filter(p=>p.stage==='compile-start'&&p.label.startsWith('selected-prime-')).length,3);assert.ok(progress.filter(p=>p.stage==='compile-start').every(p=>p.totalPipelines===7));
+ for(const d of selected.definitions)await compileLiveWorldPipeline(m.device,{code:d.code,layout:d.layout,entryPoint:d.entryPoint});assert.equal(compiled.length,7,'manual exact source/entrypoint/layout prefix is already cached');await bridge.dispose();
+});
+test('priming refuses forged or wrong-revision selected artifact before native pipeline or buffer creation',async()=>{
+ const {selectedHostFixture}=await import('./fixtures/wasm-gpu-selected-host.mjs');const {engine:wrong}=await selectedHostFixture({sourceRevision:'wrong'});
+ for(const primingSelectedEngine of [{},wrong]){const engine=await fixture(),m=mock(engine);await assert.rejects(createWasmGpuWebGPUBridge(m.device,{engine,primingSelectedEngine,maximumOwnedBytes:engine.resources.totalOwnedBytes}),/Owned loaded selected|revision mismatch/);assert.equal(m.compiled,0);assert.equal(m.buffers.length,0);}
+});
+test('cancelling priming aborts the shared preparation before later pipelines or arena allocation',async()=>{
+ const {selectedHostFixture}=await import('./fixtures/wasm-gpu-selected-host.mjs');const engine=await fixture({definitionPadding:[3000,0,0]}),{engine:selected}=await selectedHostFixture({definitionPadding:[0,1000,0]}),m=mock(engine),abort=new AbortController();
+ await assert.rejects(createWasmGpuWebGPUBridge(m.device,{engine,primingSelectedEngine:selected,maximumOwnedBytes:engine.resources.totalOwnedBytes,signal:abort.signal,onPrepareProgress:p=>{if(p.stage==='compile-start'&&p.label.startsWith('selected-prime-'))abort.abort('stop prime');}}),{name:'AbortError'});
+ assert.equal(m.compiled,1);assert.equal(m.buffers.length,0);
 });

@@ -38,14 +38,18 @@ test('actual completed batch widths render from receipts and never from candidat
 
 
 test('GPU preparation phases are distinct from completed candidate counts without invented percentages',()=>{
- const labels={preparing:'GPU 계산 준비 중',queued:'이전 GPU 작업 종료 대기 중',compiling:'GPU 셰이더 컴파일 중',running:'GPU 파라미터 평가 중',encoding:'GPU 명령 준비 중',submitted:'제출한 GPU 배치 완료 대기 중'};
+ const labels={preparing:'GPU 계산 준비 중',queued:'이전 GPU 작업 종료 대기 중',compiling:'GPU 셰이더 컴파일 중',running:'GPU 파라미터 평가 중',encoding:'GPU 명령 준비 중',submitted:'GPU 명령 제출 중',uploading:'GPU 입력 업로드 중',readback:'GPU 최종 작업 완료·결과 수신 대기 중'};
  for(const [phase,label] of Object.entries(labels)){
-  const s=state();s.routeStatus='searching';s.routeResult=null;s.routeProgress={phase,total:3,tested:0,evaluated:0,found:0,compileCompleted:2,compileTotal:17,encodedCommands:256,totalCommands:1024,elapsedMs:12345};
+  const s=state();s.routeStatus='searching';s.routeResult=null;s.routeProgress={phase,total:3,tested:0,evaluated:0,found:0,compileCompleted:2,compileTotal:17,chunkIndex:2,chunkCount:4,submittedCommands:256,totalCommands:1024,elapsedMs:12345};
   const html=render(s);assert.ok(html.includes(label),phase);assert.ok(html.includes('경과 12초'));assert.ok(html.includes('처리 0 / 3'));assert.ok(html.includes('남은 시간은 알 수 없습니다'));assert.ok(!html.includes('aria-valuenow'));assert.ok(!html.includes('%'));
   assert.ok(html.includes('이미 제출한 GPU 작업은 즉시 취소되지 않으며'));
   if(phase==='compiling')assert.ok(html.includes('셰이더 준비 2 / 17'));
   else assert.ok(!html.includes('셰이더 준비 2 / 17'));
-  if(phase==='encoding')assert.ok(html.includes('명령 준비 256 / 1024'));
+  if(['encoding','submitted','readback'].includes(phase)){
+   for(const text of ['청크 2 / 4','제출 명령 256 / 1024','GPU 완료 수가 아닙니다.'])assert.ok(html.includes(text),text);
+   assert.ok(!html.includes('명령 준비 256 / 1024'));
+  }
+  if(phase==='submitted')assert.ok(html.includes('결과 수신 전에는 후보 처리 수가 늘지 않습니다'));
   if(phase==='queued')assert.ok(html.includes('아직 새 후보를 계산하지 않습니다'));
  }
 });

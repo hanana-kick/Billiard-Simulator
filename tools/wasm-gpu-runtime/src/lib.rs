@@ -1,6 +1,8 @@
 //! Stage-one GPU command scheduler, not a CPU physics implementation.
 //! The host owns GPU objects; this module owns the admitted schedule and run cursor.
-const CAPACITY: usize = 65536;
+// Two u32 arrays at 131072 handles add 512 KiB over the previous capacity.
+// Command handles/cursors remain u32; the per-submission chunk remains 4096.
+const CAPACITY: usize = 131072;
 const CHUNK: usize = 4096;
 static mut INPUT: [u32; CAPACITY] = [0; CAPACITY];
 static mut STREAM: [u32; CAPACITY] = [0; CAPACITY];
