@@ -56,7 +56,7 @@ test('live Worker search → strike → N3+N1 → cancellation → restart',asyn
     this.addEventListener('message',({data:m})=>{if(m?.v!==1)return;
      if(m.event==='execution'){p.executionCount++;p.lastExecution={worker:row.index,id:m.id,active:true,detail:m.detail};}
      if(m.event==='boot-error'||m.event==='lost')emit({kind:m.event,worker:row.index,error:m.error,detail:m.detail});
-     if(m.op==='run'&&!m.event){p.lastExecution={...p.lastExecution,active:false};if(m.ok&&m.result instanceof Uint32Array){const request=row.requests.find(r=>r.id===m.id);p.compact.push({stage:request?.stage,words:Array.from(m.result)});}emit({kind:'run-reply',worker:row.index,id:m.id,ok:m.ok,error:m.error});}
+     if(m.op==='run'&&!m.event){p.lastExecution={...p.lastExecution,active:false};if(m.ok&&m.result instanceof Uint32Array){const request=row.requests.find(r=>r.id===m.id);p.compact.push({stage:request?.stage,words:Array.from(m.result)});}const selected=m.ok&&m.result?.world instanceof Uint32Array&&m.result?.trace instanceof Uint32Array?{worldLength:m.result.world.length,world:Array.from(m.result.world.slice(0,2916)),traceLength:m.result.trace.length,traceHeader:Array.from(m.result.trace.slice(0,64))}:undefined;emit({kind:'run-reply',worker:row.index,id:m.id,ok:m.ok,error:m.error,selected});}
      if(m.op==='dispose'){row.acks.push({ok:m.ok,drained:m.drained,disposed:m.disposed,destroyed:m.destroyed,ownedBytes:m.ownedBytes});emit({kind:'dispose-ack',worker:row.index,...row.acks.at(-1)});}
     });
     const terminate=this.terminate.bind(this);this.terminate=()=>{row.terminated=true;emit({kind:'terminate',worker:row.index,ack:row.acks.at(-1)});return terminate();};
@@ -109,7 +109,7 @@ test('live Worker search → strike → N3+N1 → cancellation → restart',asyn
   await page.locator('#strike').click();
   await page.waitForFunction(()=>cueLab.state.canonicalPlayback.phase==='rest'||cueLab.state.canonicalPlayback.phase==='refused',null,{timeout:600000});
   const final=await page.evaluate(()=>({words:Array.from(cueLab.canonicalPlayback.readCommittedState()||[]),game:cueLab.game.snapshot(),selectedId:cueLab.state.selectedId,status:cueLab.state.canonicalPlayback}));
-  evidence.manual=final;save();expect(final.words).toHaveLength(256);expect(final.words[1]).toBe(9);
+  evidence.manual=final;if(final.status.phase==='refused')evidence.refusalObservation=await observe();save();expect(final.words).toHaveLength(256);expect(final.words[1]).toBe(9);
   expect(final.status).toMatchObject({phase:'rest',captureComplete:true,scoreAndTurnCommitted:true});
   expect(final.game.scores).toEqual({'19':0,'50':1});expect(final.selectedId).toBe(50);expect(final.game.pending).toBe(null);
   if(await page.locator('#sidebarTrigger').getAttribute('aria-expanded')!=='true')await page.locator('#sidebarTrigger').click();

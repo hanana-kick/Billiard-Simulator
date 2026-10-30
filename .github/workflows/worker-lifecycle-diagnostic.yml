@@ -59,6 +59,7 @@ jobs:
             test-results-worker-lifecycle/
             playwright-worker-lifecycle-report/
             docs/ui-bundle-audit.json
+            dist/canonical-controller-assets/
           retention-days: 14
       - name: Qualification boundary
         if: always()
