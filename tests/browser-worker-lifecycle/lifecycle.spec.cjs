@@ -56,7 +56,7 @@ test('live Worker search → strike → N3+N1 → cancellation → restart',asyn
     this.addEventListener('message',({data:m})=>{if(m?.v!==1)return;
      if(m.event==='execution'){p.executionCount++;p.lastExecution={worker:row.index,id:m.id,active:true,detail:m.detail};}
      if(m.event==='boot-error'||m.event==='lost')emit({kind:m.event,worker:row.index,error:m.error,detail:m.detail});
-     if(m.op==='run'&&!m.event){p.lastExecution={...p.lastExecution,active:false};if(m.ok&&m.result instanceof Uint32Array){const request=row.requests.find(r=>r.id===m.id);p.compact.push({stage:request?.stage,words:Array.from(m.result)});}const selected=m.ok&&m.result?.world instanceof Uint32Array&&m.result?.trace instanceof Uint32Array?{worldLength:m.result.world.length,world:Array.from(m.result.world.slice(0,2916)),traceLength:m.result.trace.length,traceHeader:Array.from(m.result.trace.slice(0,64))}:undefined;emit({kind:'run-reply',worker:row.index,id:m.id,ok:m.ok,error:m.error,selected});}
+     if(m.op==='run'&&!m.event){p.lastExecution={...p.lastExecution,active:false};if(m.ok&&m.result instanceof Uint32Array){const request=row.requests.find(r=>r.id===m.id);p.compact.push({stage:request?.stage,words:Array.from(m.result)});}const selected=m.ok&&m.result?.world instanceof Uint32Array&&m.result?.trace instanceof Uint32Array?{worldLength:m.result.world.length,world:Array.from(m.result.world.slice(0,2916)),traceLength:m.result.trace.length,traceHeader:Array.from(m.result.trace.slice(0,64))}:undefined;if(selected){const trace=m.result.trace,count=trace[1],capacity=trace[2];if(trace.length>=16&&capacity>0&&capacity<=512&&count<=capacity&&16+capacity*4096===trace.length){selected.traceRecordCount=count;selected.traceUsedWords=Array.from(trace.slice(0,16+count*4096));}else selected.tracePrefixError='Invalid bounded selected trace count/capacity';}emit({kind:'run-reply',worker:row.index,id:m.id,ok:m.ok,error:m.error,selected});}
      if(m.op==='dispose'){row.acks.push({ok:m.ok,drained:m.drained,disposed:m.disposed,destroyed:m.destroyed,ownedBytes:m.ownedBytes});emit({kind:'dispose-ack',worker:row.index,...row.acks.at(-1)});}
     });
     const terminate=this.terminate.bind(this);this.terminate=()=>{row.terminated=true;emit({kind:'terminate',worker:row.index,ack:row.acks.at(-1)});return terminate();};
@@ -81,7 +81,7 @@ test('live Worker search → strike → N3+N1 → cancellation → restart',asyn
  try{
   stage('load');await page.goto('./');await page.waitForFunction(()=>globalThis.__LAB_READY__&&cueLab.state.ready);
   const manifest=await (await page.request.get('./canonical-controller-assets/manifest.json')).json();
-  expect(manifest.searchSourceRevision).toBe('90ad6636d8768b56cb4e93153d1762d3594c6652ad4ae12da283d1249dd1d16f');
+  expect(manifest.searchSourceRevision).toBe('00f39faf69d2ca6aefcc251d5700f33c3ab5198058e3cc8852a9d979f60fcc16');
   expect(manifest.searchSourceSealed).toBe(true);expect(manifest.sharedSourceBytesVerified).toBe(true);
   const bundle=await page.request.get('./canonical-controller-assets/canonical-controller.mjs');expect(bundle.ok()).toBe(true);
   expect(createHash('sha256').update(await bundle.body()).digest('hex')).toBe(manifest.sha256);
