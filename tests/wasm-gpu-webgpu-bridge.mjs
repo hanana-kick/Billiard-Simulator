@@ -4,11 +4,12 @@ import assert from 'node:assert/strict';
 import {createWasmGpuWebGPUBridge} from '../src/wasm-gpu/webgpu-bridge.mjs';
 import {planLiveWorldResources} from '../src/direct-candidate/experimental-live-world-resources.mjs';
 import {createWasmGpuEngineArtifact,loadWasmGpuEngineArtifact} from '../src/wasm-gpu/engine-artifact.mjs';
-async function fixture({repeat=1}={}){
+async function fixture({repeat=1,definitionPadding=null}={}){
  const count=1,sizes=[768,64,32],shared=[false,false,false],entries=sizes.map((size,binding)=>({binding,buffer:binding,offset:0,size}));
  const source=entries.map((e,i)=>`@group(0) @binding(${i}) var<storage,${i===2?'read_write':'read'}> b${i}:array<u32>;`).join('')+'@compute @workgroup_size(1) fn main(){}';
  const sourcePlan={kind:'experimental-live-mmq1-graph-v1',strikeBackend:'staged',sourceQualified:false,nativeQualified:false,allocations:sizes.map((size,i)=>({size,usage:140,initial:new Uint8Array(size),external:i===0?'prepared':i===1?'status':null})),readback:2,definitions:[{source,ownership:entries.map(e=>({stride:sizes[e.buffer]/4,base:0,length:e.size/4}))}],commands:[{kind:'dispatch',definition:0,x:1,entries},{kind:'clear',buffer:2,offset:0,size:32}]};
  const definitions=[{code:source+'@group(0) @binding(3) var<storage,read_write> fault:array<atomic<u32>>;',faultBinding:3,layout:'auto'}],commands=structuredClone(sourcePlan.commands);if(repeat>1){sourcePlan.commands=Array(repeat).fill(sourcePlan.commands[0]);commands.splice(0,commands.length,...Array(repeat).fill(commands[0]));}
+ if(definitionPadding){const base=definitions[0];definitions.splice(0,1,...definitionPadding.map(n=>({...base,code:base.code+'\n//'+'.'.repeat(n)})));sourcePlan.definitions=definitionPadding.map(n=>({...sourcePlan.definitions[0],source:source+'\n//'+'.'.repeat(n)}));commands.splice(0,commands.length,...definitions.map((_,definition)=>({kind:'dispatch',definition,x:1,entries})));sourcePlan.commands=structuredClone(commands);}
  const shape={strikeResult:[512,132],handoffInput:[64,136],rosterTemplate:[768,136],admitted:[4,136],budget:[16,136],prepared:[768,132],status:[64,132]};
  const rawAllocations={strikeBackend:'staged',effectiveMaximumSteps:0,sceneBytes:64,allocations:Object.entries(shape).map(([role,[bytes,usage]])=>({role,bytes,usage}))};
  const resources=planLiveWorldResources({plan:sourcePlan,shared,count,definitions,commands,rawAllocations});
@@ -129,7 +130,7 @@ test('compile-start progress identifies pending first pipeline before native com
  const engine=await fixture(),m=mock(engine),progress=[];let entered,release;const begun=new Promise(r=>entered=r),hold=new Promise(r=>release=r);
  m.device.createComputePipelineAsync=async()=>{entered();await hold;return{getBindGroupLayout:()=>({})};};
  const pending=createWasmGpuWebGPUBridge(m.device,{engine,maximumOwnedBytes:engine.resources.totalOwnedBytes,onPrepareProgress:p=>progress.push(p)}),rejected=assert.rejects(pending,/device lost/);
- await begun;assert.equal(progress[0].stage,'compile-start');assert.equal(progress[0].pipelineIndex,1);assert.equal(progress[0].totalPipelines,2);assert.equal(progress[0].label,'world-N1-1');assert.equal(progress[0].entryPoint,'main');assert.ok(progress[0].shaderBytes>0);assert.equal(progress.filter(p=>p.stage==='compile').length,0);
+ await begun;assert.equal(progress[0].stage,'compile-start');assert.equal(progress[0].pipelineIndex,1);assert.equal(progress[0].totalPipelines,2);assert.equal(progress[0].label,'result-gate-N1');assert.equal(progress[0].entryPoint,'main');assert.ok(progress[0].shaderBytes>0);assert.equal(progress.filter(p=>p.stage==='compile').length,0);
  m.lose();await rejected;release();assert.equal(m.buffers.length,0);
 });
 
@@ -139,4 +140,35 @@ test('hidden preparation abandons unresolved allocation scopes but retains no li
  const preparing=createWasmGpuWebGPUBridge(m.device,{engine,maximumOwnedBytes:8*1024*1024,signal:a.signal});await started;a.abort('screen hidden');
  await Promise.race([assert.rejects(preparing,{name:'AbortError'}),new Promise((_,reject)=>setTimeout(()=>reject(Error('Preparation cleanup blocked')),1000))]);
  assert.equal(pops,3);assert.ok(m.buffers.length>0);assert.ok(m.buffers.every(b=>b.dead));assert.equal(m.events.filter(e=>Array.isArray(e)&&e[0]==='submit').length,0);release(null);
+});
+
+test('quarantined cached bridge rejects before native scopes and cleanup still drains real fences',async()=>{
+ const {awaitLiveWorldPreparation}=await import('../src/direct-candidate/experimental-live-world-pipeline-cache.mjs');
+ for(const submitted of [false,true]){
+  const {bridge,m,run}=await setup();
+  if(submitted){await bridge.beginRun(run(1));m.hold();await bridge.encodeChunk(new Uint32Array([1]),1);}
+  await assert.rejects(awaitLiveWorldPreparation(m.device,new Promise(()=>{}),{stage:'pipeline-create',timeoutMs:15}),{code:'GPU_PREPARATION_TIMEOUT'});
+  if(!submitted){m.lose();await new Promise(r=>setImmediate(r));}
+  let scopes=0;m.device.pushErrorScope=()=>{scopes++;};m.device.popErrorScope=()=>{scopes++;return new Promise(()=>{});};
+  await assert.rejects(bridge.beginRun(run(2)),{code:'GPU_PREPARATION_TIMEOUT'});assert.equal(scopes,0);
+  let disposed=false;const cleanup=bridge.dispose().then(()=>{disposed=true;});await new Promise(r=>setImmediate(r));
+  if(submitted){assert.equal(disposed,false);assert.ok(m.buffers.every(b=>!b.dead));m.release();}
+  await cleanup;assert.equal(scopes,0);assert.ok(m.buffers.slice(0,4).every(b=>b.dead));
+ }
+});
+
+
+test('heavy-first preparation preserves exact world definition source/layout and command slots',async()=>{
+ const engine=await fixture({definitionPadding:[0,1200,600]}),m=mock(engine),compiled=[],used=[];
+ m.device.createComputePipelineAsync=async d=>{compiled.push(d);return{code:d.compute.module.code,getBindGroupLayout:()=>({})};};
+ const originalEncoder=m.device.createCommandEncoder;m.device.createCommandEncoder=()=>{const e=originalEncoder();const begin=e.beginComputePass;e.beginComputePass=()=>{const p=begin();p.setPipeline=v=>used.push(v.code);return p;};return e;};
+ const progress=[],bridge=await createWasmGpuWebGPUBridge(m.device,{engine,maximumOwnedBytes:engine.resources.totalOwnedBytes,onPrepareProgress:p=>progress.push(p)});
+ const starts=progress.filter(p=>p.stage==='compile-start');assert.deepEqual(starts.map(p=>p.label),['world-N1-2','world-N1-3','result-gate-N1','world-N1-1']);assert.deepEqual(starts.map(p=>p.pipelineIndex),[1,2,3,4]);
+ for(const d of engine.lowered.definitions){const c=compiled.find(x=>x.compute.module.code===d.code);assert.ok(c);assert.equal(c.layout,d.layout);assert.equal(c.compute.entryPoint,'main');}
+ const externalBuffers={prepared:m.device.createBuffer({size:768,usage:132}),status:m.device.createBuffer({size:64,usage:132})};
+ await bridge.beginRun({generation:1,initialUploads:[{index:2,initial:new Uint8Array(32)}],externalBuffers,candidateIds:new Uint32Array([1])});await bridge.encodeChunk(new Uint32Array([1,2,3]),1);assert.deepEqual(used,engine.lowered.definitions.map(d=>d.code));await bridge.finish(1);await bridge.dispose();
+});
+test('heavy-first ordering is stable, byte-based and does not mutate definitions',async()=>{
+ const {heavyFirstPipelineIndices}=await import('../src/wasm-gpu/pipeline-preparation-order.mjs');const definitions=Object.freeze([{code:'aa',layout:'a'},{code:'한',layout:'b'},{code:'bbb',layout:'c'},{code:'cc',layout:'d'}].map(Object.freeze));
+ assert.deepEqual(heavyFirstPipelineIndices(definitions),[1,2,0,3]);assert.deepEqual(definitions.map(d=>d.layout),['a','b','c','d']);assert.throws(()=>heavyFirstPipelineIndices([{}]),/source/);
 });

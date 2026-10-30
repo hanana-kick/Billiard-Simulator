@@ -98,3 +98,76 @@ test('abort releases unresolved shader/pipeline waiter promptly and late native 
   assert.equal(f.counts.modules,2);
  }
 });
+
+test('unresolved native preparation and loss time out, quarantine device, and discard late success',async()=>{
+ for(const stage of ['shader-info','pipeline-create']){
+  const f=fake(),hold=deferred();await compile(f.device,{code:'cached'});
+  if(stage==='shader-info')f.infoWait(hold.promise);else f.compileWait(hold.promise);
+  const before=f.counts.pipelines;
+  const request=compile(f.device,{code:'stalled',label:'world-N3-70',preparationTimeoutMs:15});
+  await assert.rejects(request,error=>{
+   assert.equal(error.code,'GPU_PREPARATION_TIMEOUT');assert.equal(error.name,'GPUPreparationTimeoutError');
+   assert.equal(error.gpuPreparation.stage,stage);assert.equal(error.gpuPreparation.label,'world-N3-70');
+   assert.ok(error.gpuPreparation.elapsedMs>=10);assert.match(error.message,/새로고침/);return true;
+  });
+  const allocated={...f.counts};
+  await assert.rejects(compile(f.device,{code:'cached'}),{code:'GPU_PREPARATION_TIMEOUT'});
+  await assert.rejects(compile(f.device,{code:'another'}),{code:'GPU_PREPARATION_TIMEOUT'});
+  hold.resolve();await new Promise(r=>setImmediate(r));
+  await assert.rejects(compile(f.device,{code:'stalled'}),{code:'GPU_PREPARATION_TIMEOUT'});
+  assert.deepEqual(f.counts,allocated);assert.equal(f.counts.pipelines,before+(stage==='pipeline-create'?1:0));
+  // Only a genuinely fresh device can prepare again.
+  await compile(fake().device,{code:'stalled'});
+ }
+});
+test('deadline rejects concurrent pending preparations and late failures are consumed',async()=>{
+ const f=fake(),hold=deferred();f.compileWait(hold.promise);
+ const first=compile(f.device,{code:'first',preparationTimeoutMs:15});
+ const second=compile(f.device,{code:'second',preparationTimeoutMs:1000});
+ await Promise.all([assert.rejects(first,{code:'GPU_PREPARATION_TIMEOUT'}),assert.rejects(second,{code:'GPU_PREPARATION_TIMEOUT'})]);
+ hold.reject(Error('late native failure'));await new Promise(r=>setImmediate(r));
+});
+test('preparation cleanup deadline releases coordinator reservation without timing submitted work',async()=>{
+ const {awaitLiveWorldPreparation}=await import('../src/direct-candidate/experimental-live-world-pipeline-cache.mjs');
+ const {createWasmGpuDeviceCoordinator}=await import('../src/wasm-gpu/device-coordinator.mjs');
+ const f=fake(),hold=deferred(),coordinator=createWasmGpuDeviceCoordinator({device:f.device});
+ const operation=coordinator.run(async()=>{
+  const reservation=coordinator.reserve({key:'preparation',group:'search',bytes:16});
+  try{await awaitLiveWorldPreparation(f.device,hold.promise,{stage:'error-scope',timeoutMs:15});}finally{reservation.release();}
+ });
+ await assert.rejects(operation,error=>error.code==='GPU_PREPARATION_TIMEOUT'&&error.gpuPreparation.stage==='error-scope');
+ assert.equal(coordinator.status().allocatedBytes,0);assert.equal(coordinator.status().reservations,0);assert.equal(coordinator.status().active,false);
+ const late=deferred();await assert.rejects(awaitLiveWorldPreparation(f.device,late.promise,{stage:'error-scope'}),{code:'GPU_PREPARATION_TIMEOUT'});
+ late.reject(Error('late popped scope'));hold.resolve();await new Promise(r=>setImmediate(r));await coordinator.dispose();
+ // Physical operations retain their existing explicit completion fence.
+ const g=fake(),live=createWasmGpuDeviceCoordinator({device:g.device}),fence=deferred();let settled=false;
+ const physical=live.run(()=>fence.promise).then(()=>{settled=true;});await new Promise(r=>setTimeout(r,25));assert.equal(settled,false);assert.equal(live.status().active,true);
+ fence.resolve();await physical;await live.dispose();
+});
+test('normal completion, caller abort and device loss beat the preparation deadline',async()=>{
+ const f=fake(),hold=deferred();f.compileWait(hold.promise);const normal=compile(f.device,{code:'slow',preparationTimeoutMs:100});
+ await new Promise(r=>setTimeout(r,10));hold.resolve();const result=await normal;await new Promise(r=>setTimeout(r,110));assert.equal(await compile(f.device,{code:'slow'}),result);
+ for(const reason of ['abort','loss']){
+  const g=fake(),wait=deferred(),a=new AbortController();g.compileWait(wait.promise);
+  const task=compile(g.device,{code:'wait',signal:a.signal,preparationTimeoutMs:100});await new Promise(r=>setImmediate(r));
+  if(reason==='abort')a.abort();else g.loss.resolve({message:'lost first'});
+  await assert.rejects(task,error=>reason==='abort'?error.name==='AbortError':/device lost/.test(error.message));
+  wait.reject(Error('late'));await new Promise(r=>setImmediate(r));
+ }
+});
+
+test('prepared owner and queued work cannot use quarantined device; coordinator cleanup remains allowed',async()=>{
+ const {awaitLiveWorldPreparation}=await import('../src/direct-candidate/experimental-live-world-pipeline-cache.mjs');
+ const {createWasmGpuDeviceCoordinator}=await import('../src/wasm-gpu/device-coordinator.mjs');
+ const f=fake(),coordinator=createWasmGpuDeviceCoordinator({device:f.device});let submissions=0;
+ const owner=await coordinator.run(()=>({run:()=>coordinator.run(()=>{submissions++;}),dispose:()=>coordinator.run(()=>{}, {cleanup:true})}));
+ await owner.run();assert.equal(submissions,1);
+ const held=deferred();
+ const preparing=coordinator.run(()=>awaitLiveWorldPreparation(f.device,held.promise,{stage:'pipeline-create',timeoutMs:15}));
+ const queued=owner.run();
+ await Promise.all([assert.rejects(preparing,{code:'GPU_PREPARATION_TIMEOUT'}),assert.rejects(queued,{code:'GPU_PREPARATION_TIMEOUT'})]);
+ await assert.rejects(owner.run(),{code:'GPU_PREPARATION_TIMEOUT'});
+ assert.throws(()=>coordinator.reserve({key:'invalid-reuse',group:'search',bytes:16}),{code:'GPU_PREPARATION_TIMEOUT'});
+ assert.equal(submissions,1);assert.equal(coordinator.status().active,false);
+ await owner.dispose();await coordinator.dispose();assert.equal(coordinator.status().disposed,true);held.resolve();
+});

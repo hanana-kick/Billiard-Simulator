@@ -1,3 +1,4 @@
+import {assertLiveWorldPreparationUsable} from '../direct-candidate/experimental-live-world-pipeline-cache.mjs';
 /** One device-global operation queue and memory ledger for search + selected.
  * A cancelled task retains the lock until its owner has actually drained. */
 const coordinators=new WeakSet(),devices=new WeakMap();
@@ -9,7 +10,7 @@ export function createWasmGpuDeviceCoordinator({device,maximumOwnedBytes=16*1024
  if(!Number.isSafeInteger(maximumOwnedBytes)||maximumOwnedBytes<1||maximumOwnedBytes>16*1024*1024||['search','selected'].some(g=>!Number.isSafeInteger(groupBudgets[g])||groupBudgets[g]<1||groupBudgets[g]>(g==='search'?8:12)*1024*1024))throw RangeError('Explicit bounded aggregate/group GPU budgets required');
  const limits=Object.freeze({search:groupBudgets.search,selected:groupBudgets.selected}),reservations=new Map(),groupBytes={search:0,selected:0};
  let allocatedBytes=0,tail=Promise.resolve(),active=null,cancellation=0,closing=false,closed=false,disposal=null,lost=null;
- const alive=()=>{if(closing||closed)throw Error('GPU coordinator disposed');if(lost)throw lost;};
+ const alive=()=>{if(closing||closed)throw Error('GPU coordinator disposed');if(lost)throw lost;assertLiveWorldPreparationUsable(device);};
  const notifyCancel=(token,reason)=>{if(!token)return;token.abort.abort(reason);try{token.onCancel?.(reason);}catch(error){token.cancelError=error;}};
  const cancel=(reason='GPU coordinator cancelled')=>{cancellation++;notifyCancel(active,reason);};
  const onLoss=reason=>{lost=reason instanceof Error?reason:Error('GPU device lost: '+(reason?.message??String(reason)));cancel(lost.message);};
@@ -18,7 +19,7 @@ export function createWasmGpuDeviceCoordinator({device,maximumOwnedBytes=16*1024
   if(typeof work!=='function'||onCancel!==undefined&&typeof onCancel!=='function')return Promise.reject(TypeError('GPU task/cancel callback required'));
   if(signal&&(typeof signal.addEventListener!=='function'||typeof signal.removeEventListener!=='function'))return Promise.reject(TypeError('AbortSignal required'));
   if(closing||closed)return Promise.reject(Error('GPU coordinator disposed'));
-  if(lost&&!cleanup)return Promise.reject(lost);
+  if(!cleanup){try{alive();}catch(error){return Promise.reject(error);}}
   const ticket=cancellation;
   const promise=tail.then(async()=>{
    if(!cleanup){alive();if(ticket!==cancellation||signal?.aborted)throw abortError(signal?.reason);}

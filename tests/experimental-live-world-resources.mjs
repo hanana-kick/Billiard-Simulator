@@ -1,3 +1,4 @@
+import {restoreEndpointCacheDelta,REVIEWED_TWO_CACHE_BYTE_INCREASE} from './helpers/reviewed-endpoint-cache-delta.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';
 import {planLiveWorldResources,validateLiveWorldResources} from '../src/direct-candidate/experimental-live-world-resources.mjs';
 function raw(count,{steps=1,backend='staged'}={}){const shape={};if(steps){Object.assign(shape,{scene:[64,136],strikeInput:[64*count,136],strikeResult:[512*count,132],strikeScratch:[128*count,128]});if(backend==='chunked-16')shape.chunkControl=[4,136];}else shape.strikeResult=[512*count,132];Object.assign(shape,{handoffInput:[64*count,136],rosterTemplate:[768,136],admitted:[4*count,136],budget:[16,136],prepared:[768*count,132],status:[64*count,132]});return {strikeBackend:backend,effectiveMaximumSteps:steps,sceneBytes:64,allocations:Object.entries(shape).map(([role,[bytes,usage]])=>({role,bytes,usage}))};}
@@ -16,5 +17,10 @@ test('resource summaries deduplicate repeated commands instead of retaining disp
 test('actual MMQ2 graph and original raw-factory roles reproduce qualified N1 allocation metrics',async()=>{
  const {mmq2RawFixture}=await import('./fixtures/canonical-selected-mmq2-raw.mjs'),{captureLiveWorldPlan}=await import('../src/direct-candidate/experimental-live-world-capture.mjs'),{lowerLiveWorldPlans}=await import('../src/direct-candidate/experimental-live-world-batch.mjs'),{captureRawWorldResourceFacts}=await import('../src/direct-candidate/experimental-live-world-raw-resources.mjs');
  const f=mmq2RawFixture(),plan=await captureLiveWorldPlan(f.binding,f.batch,{profile:'mmq2-cushion'}),lowered=await lowerLiveWorldPlans([plan]),rawAllocations=await captureRawWorldResourceFacts(f.batch),p=planLiveWorldResources({plan,...lowered,count:1,rawAllocations});
- assert.equal(p.totalWorldOwnedBytes,337472);assert.equal(p.totalOwnedBytes,340628);assert.equal(p.requiredLimits.maxStorageBuffersPerShaderStage,10);assert.equal(p.requiredLimits.maxComputeWorkgroupsPerDimension,44);assert.ok(p.views.length<1000);validateLiveWorldResources(p,limits(p),{maximumOwnedBytes:p.totalOwnedBytes});
+ const restored=restoreEndpointCacheDelta({definitions:plan.definitions,commands:plan.commands,buffers:plan.allocations,sourceKey:'source'});
+ const resized=plan.allocations.flatMap((a,i)=>a.size!==restored.buffers[i].size?[i]:[]);
+ assert.equal(resized.length,2,'Only two resident resolver scratch allocations grow');
+ for(const i of resized){assert.equal(plan.allocations[i].external,null);assert.deepEqual([plan.allocations[i].size,restored.buffers[i].size],[4096,1024]);}
+ assert.equal(plan.allocations.reduce((sum,a,i)=>sum+a.size-restored.buffers[i].size,0),REVIEWED_TWO_CACHE_BYTE_INCREASE);
+ assert.equal(p.totalWorldOwnedBytes,337472+REVIEWED_TWO_CACHE_BYTE_INCREASE);assert.equal(p.totalOwnedBytes,340628+REVIEWED_TWO_CACHE_BYTE_INCREASE);assert.equal(p.requiredLimits.maxStorageBuffersPerShaderStage,10);assert.equal(p.requiredLimits.maxComputeWorkgroupsPerDimension,44);assert.ok(p.views.length<1000);validateLiveWorldResources(p,limits(p),{maximumOwnedBytes:p.totalOwnedBytes});
 });

@@ -8,7 +8,7 @@ test('MMQ2 finite entry accumulates loop verdicts without changing contact quali
  const original=MIXED_HULL_ENTRY_WGSL.split(start)[1].split(end)[0];
  assert.match(original,/if\(!allStates\[i\]\.valid\)\{entry\[6\]=6u;return;\}/,'v1 remains unchanged');
  const next=MIXED_V2_HULL_ENTRY_WGSL.split(start)[1].split(end)[0];
- assert.equal(next,'var allStatesValid=true;for(var i=0u;i<n;i++){allStates[i]=hs(i,hi);allStatesValid=allStatesValid & allStates[i].valid;}if(!allStatesValid){entry[6]=6u;return;}');
+ assert.equal(next,'var allStatesValid=true;for(var i=0u;i<n;i++){allStates[i]=cachedHullState(i,hi,endpointSlot);allStatesValid=allStatesValid & allStates[i].valid;}if(!allStatesValid){entry[6]=6u;return;}');
  assert.ok(MIXED_V2_HULL_ENTRY_WGSL.includes('competitorsClear=competitorsClear & ((k==selected)|(ledger[at+3u]==2u)|(ledger[at+4u]>hi));}if(!competitorsClear){entry[6]=10u;return;}'));
  const baseQualifier=MIXED_HULL_ENTRY_WGSL.split('bad=false;let whole=mb(body,lo,hi);')[1].split(start)[0];
  const newQualifier=MIXED_V2_HULL_ENTRY_WGSL.split('bad=false;let whole=mb(body,lo,hi);')[1].split(start)[0];

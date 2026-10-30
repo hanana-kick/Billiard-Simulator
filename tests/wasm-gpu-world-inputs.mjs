@@ -1,3 +1,4 @@
+import {restoreEndpointCacheDelta} from './helpers/reviewed-endpoint-cache-delta.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';
 import {mmq2RawFixture} from './fixtures/canonical-selected-mmq2-raw.mjs';
 import {encodeCanonicalScene,createCanonicalRequest,createCanonicalCandidate} from '../src/direct-candidate/canonical-engine-contract.mjs';
@@ -60,11 +61,12 @@ test('current captures match compact independent pre-extraction source and uploa
  assert.equal(sha(delta.baselineModuleCode),delta.baselineModuleSHA256);
  for(const changed of [false,true]){const x=current(changed,changed?777:100),now=await captureWasmGpuWorldInputPlan(x);
  // Preserve the independent pre-extraction plan golden. Only the explicitly
- // reviewed MMQ2 clear module may differ; layouts, commands and uploads may not.
- const restored=structuredClone(now.plan),replacements=restored.definitions.filter(d=>sha(d.source)===delta.reviewedModuleSHA256);
+ // reviewed MMQ2 clear module and endpoint-cache structural delta may differ.
+ const inverse=restoreEndpointCacheDelta({definitions:now.plan.definitions,commands:now.plan.commands,buffers:now.plan.allocations,sourceKey:'source'});
+ const restored={...structuredClone(now.plan),definitions:inverse.definitions,commands:inverse.commands,allocations:inverse.buffers},replacements=restored.definitions.filter(d=>sha(d.source)===delta.reviewedModuleSHA256);
  assert.equal(replacements.length,1,'Exactly one reviewed MMQ2 source delta');
  replacements[0].source=delta.baselineModuleCode;
- assert.equal(sha(JSON.stringify(restored)),fixture.cases[changed?'changed-geometry-clock-rules-ids':'default'],'Original full plan except reviewed single module');
+ assert.equal(sha(JSON.stringify(restored)),fixture.cases[changed?'changed-geometry-clock-rules-ids':'default'],'Original full plan after exact reviewed inverses');
  const uploads=prepareWasmGpuWorldUploads({engine,bindings:[x.binding],batches:[x.batch]}).initialUploads;for(const u of uploads)assert.deepEqual(u.initial,now.plan.allocations[u.index].initial);
  }
 });

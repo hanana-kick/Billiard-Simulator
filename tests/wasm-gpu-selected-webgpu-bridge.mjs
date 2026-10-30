@@ -5,10 +5,10 @@ import {WASM_GPU_SELECTED_ARTIFACT_FORMAT,WASM_GPU_SELECTED_CONFIG,SELECTED_WORL
 import {compileLiveWorldPipeline} from '../src/direct-candidate/experimental-live-world-pipeline-cache.mjs';
 import {instantiateWasmGpuRuntime} from '../src/wasm-gpu/runtime.mjs';
 const deferred=()=>{let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return{promise,resolve,reject};};
-async function fixture(){
+async function fixture({definitionPadding=[0,0,0]}={}){
  const allocations=[[11664,140],[4194304,140],[64,140],[32,396],[11664,9],[4194368,9],[128,136]].map(([size,sourceUsage],i)=>({size,sourceUsage,usage:sourceUsage|8,label:i===0?'wasm-input:world:rows':i===6?'wasm-fixed:trace-v2:phase:1:15':'unit-only-'+i}));
  const code='@group(0) @binding(0) var<storage,read_write> words:array<u32>;'+['initialize','snapshot','finish'].map(name=>`@compute @workgroup_size(1) fn ${name}(){}`).join('');
- const definitions=['initialize','snapshot','finish'].map(entryPoint=>({code,entryPoint,layout:'auto',constants:{}})),entries=[{binding:0,buffer:0,offset:0,size:11664}];
+ const definitions=['initialize','snapshot','finish'].map((entryPoint,index)=>({code:code+'\n//'+'.'.repeat(definitionPadding[index]),entryPoint,layout:'auto',constants:{}})),entries=[{binding:0,buffer:0,offset:0,size:11664}];
  const commands=[{kind:'clear',buffer:0,offset:4,size:8},{kind:'dispatch',definition:0,x:1,entries},{kind:'dispatch',definition:1,indirect:{buffer:3,offset:20},entries},{kind:'dispatch',definition:2,indirect:{buffer:3,offset:8},entries},...Object.values(SELECTED_WORLD_RANGES).map(([offset,size])=>({kind:'copy',source:0,sourceOffset:offset,target:4,targetOffset:offset,size})),{kind:'copy',source:2,sourceOffset:0,target:5,targetOffset:0,size:64},{kind:'copy',source:1,sourceOffset:0,target:5,targetOffset:64,size:4194304}];
  const fixed=new Uint32Array(32);fixed[0]=0x53574702;fixed[1]=1;fixed[14]=15;const initialization=allocations.map((_,index)=>index===0?{index,kind:'dynamic',role:'world:rows'}:index===6?{index,kind:'fixed',role:'trace-v2:phase:1:15',bytes:Array.from(new Uint8Array(fixed.buffer))}:{index,kind:'zero'});
  for(const [role,size]of [['raw:scene',64],['raw:strikeInput',64],['raw:handoffInput',64],['raw:rosterTemplate',768],['raw:admitted',4],['raw:budget',16],['trace-v2:control',128]]){const index=allocations.length;allocations.push({size,sourceUsage:136,usage:136,label:'wasm-input:'+role});initialization.push({index,kind:'dynamic',role});}
@@ -45,4 +45,27 @@ test('hidden preparation cancels unresolved error-scope replies without submitti
  const preparing=createWasmGpuSelectedWebGPUBridge(m.device,{engine,maximumOwnedBytes:12*1024*1024,signal:a.signal});await entered.promise;a.abort('screen hidden');
  await Promise.race([assert.rejects(preparing,{name:'AbortError'}),new Promise((_,reject)=>setTimeout(()=>reject(Error('Preparation cleanup blocked')),1000))]);
  assert.equal(pops,3);assert.ok(m.buffers.length>0);assert.ok(m.buffers.every(b=>b.dead));assert.equal(m.events.filter(e=>Array.isArray(e)&&e[0]==='submit').length,0);hold.reject(Error('late scope rejection'));await new Promise(r=>setImmediate(r));
+});
+
+test('quarantined selected owner does not open native scopes; disposal preserves pending fence',async()=>{
+ const {awaitLiveWorldPreparation}=await import('../src/direct-candidate/experimental-live-world-pipeline-cache.mjs');
+ for(const submitted of [false,true]){
+  const x=await setup(),fence=deferred();
+  if(submitted){await x.bridge.beginRun({generation:1,initialUploads:x.uploads});x.m.setFence(fence);await encode(x);}
+  await assert.rejects(awaitLiveWorldPreparation(x.m.device,new Promise(()=>{}),{stage:'pipeline-create',timeoutMs:15}),{code:'GPU_PREPARATION_TIMEOUT'});
+  if(!submitted){x.m.loss.resolve({message:'late loss after timeout'});await new Promise(r=>setImmediate(r));}
+  let scopes=0;x.m.device.pushErrorScope=()=>{scopes++;};x.m.setPop(()=>{scopes++;return new Promise(()=>{});});
+  await assert.rejects(x.bridge.beginRun({generation:2,initialUploads:x.uploads}),{code:'GPU_PREPARATION_TIMEOUT'});assert.equal(scopes,0);
+  let disposed=false;const cleanup=x.bridge.dispose().then(()=>{disposed=true;});await new Promise(r=>setImmediate(r));
+  if(submitted){assert.equal(disposed,false);assert.ok(x.m.buffers.every(b=>!b.dead));fence.resolve();}
+  await cleanup;assert.equal(scopes,0);assert.ok(x.m.buffers.every(b=>b.dead));
+ }
+});
+
+
+test('heavy-first selected preparation preserves source, entrypoint, layout and command indices',async()=>{
+ const {engine,uploads}=await fixture({definitionPadding:[0,200,60]}),m=mock(engine),progress=[],bridge=await createWasmGpuSelectedWebGPUBridge(m.device,{engine,maximumOwnedBytes:12*1024*1024,onPrepareProgress:p=>progress.push(p)});
+ assert.deepEqual(m.compiles.map(d=>d.compute.entryPoint),['snapshot','finish','initialize']);assert.deepEqual(progress.filter(p=>p.stage==='compile-start').map(p=>[p.pipelineIndex,p.label]),[[1,'selected-2'],[2,'selected-3'],[3,'selected-1']]);
+ for(const d of engine.definitions){const actual=m.compiles.find(p=>p.compute.entryPoint===d.entryPoint);assert.equal(actual.compute.module.code,d.code);assert.equal(actual.layout,d.layout);}
+ await bridge.beginRun({generation:1,initialUploads:uploads});await bridge.encodeChunk(Uint32Array.from({length:bridge.commandCount},(_,i)=>i+1),1);const encoded=m.events.find(e=>Array.isArray(e)&&e[0]==='submit')[1];assert.deepEqual(encoded.slice(0,4),[['clear',0,4,8],['dispatch','initialize',1,1,1],['indirect','snapshot',3,20],['indirect','finish',3,8]]);await bridge.finish(1);await bridge.dispose();
 });

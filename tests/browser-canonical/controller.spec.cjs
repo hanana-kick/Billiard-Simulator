@@ -4,7 +4,10 @@ const {waitForPretendard}=require('../e2e/font-helper.cjs');
 
 // Required real-browser smoke. No authored scene injection, fake GPU, selected-shot
 // candidate loop, CPU dynamics oracle, or native fallback replaces the UI flow.
-test('real GPU entry dialog searches nine candidates, applies one and commits exact undo/redo',async({page},testInfo)=>{
+test('real MMQ2 GPU entry searches nine complete candidates, stops and restarts, applies one and commits exact undo/redo',async({page},testInfo)=>{
+ // Cold software WebGPU is slower than physical adapters. Bound the complete
+ // multi-stage UI flow independently of the application's per-stage watchdog.
+ test.setTimeout(900000);
  const errors=[];page.on('pageerror',error=>errors.push(error.message));
  await page.goto('./');await page.waitForFunction(()=>globalThis.__LAB_READY__&&cueLab.state.ready);
  await page.evaluate(()=>cueLab.option('predict',false));
@@ -24,7 +27,7 @@ test('real GPU entry dialog searches nine candidates, applies one and commits ex
    // Observe REAL calls and retain original native methods. No adapter/device is substituted.
    if(navigator.gpu){const requestAdapter=navigator.gpu.requestAdapter.bind(navigator.gpu);
     navigator.gpu.requestAdapter=async(...args)=>{evidence.adapterRequests++;const adapter=await requestAdapter(...args);if(!adapter)return adapter;
-     const info=adapter.info;evidence.adapters.push(info?{vendor:info.vendor,architecture:info.architecture,device:info.device,description:info.description}:null);
+     const info=adapter.info;evidence.adapters.push(info?{vendor:info.vendor,architecture:info.architecture,device:info.device,description:info.description,isFallbackAdapter:typeof info.isFallbackAdapter==='boolean'?info.isFallbackAdapter:null}:null);
      const requestDevice=adapter.requestDevice.bind(adapter);adapter.requestDevice=async(...options)=>{evidence.deviceRequests++;const device=await requestDevice(...options);
       device.addEventListener('uncapturederror',event=>evidence.gpuErrors.push(event.error.message));device.lost.then(info=>evidence.deviceLoss.push({reason:info.reason,message:info.message}));return device;};return adapter;};}
    for(const method of ['strike','step','restore'])legacy[method]=()=>{evidence.legacyCalls.push(method);throw Error('Forbidden legacy dynamics: '+method);};
@@ -32,7 +35,7 @@ test('real GPU entry dialog searches nine candidates, applies one and commits ex
   const entry=page.locator('#startCanonicalPractice');await expect(entry).toBeVisible();await expect(entry).toBeEnabled();
   await entry.click();const dialog=page.getByRole('dialog');await expect(dialog).toBeVisible();
   await expect(dialog).toContainText('현재 배치와 점수를 새 4구 연습 배치로 교체');
-  await expect(dialog).toContainText('9개 타격 조합');await expect(dialog).toContainText('쿠션 충돌은 미지원');
+  await expect(dialog).toContainText('9개 타격 조합');await expect(dialog).toContainText('공 충돌과 제한된 쿠션 충돌을 하나의 GPU 모드로 처리');
   await page.locator('#cancelCanonicalPractice').click();await expect(dialog).not.toBeVisible();
   expect(await page.evaluate(()=>({requests:__canonicalBrowserTest.adapterRequests,active:!!cueLab.canonicalPlayback,sameLab:cueLab.lab===__canonicalBrowserTest.initialLab})))
    .toEqual({requests:0,active:false,sameLab:true});
@@ -42,7 +45,7 @@ test('real GPU entry dialog searches nine candidates, applies one and commits ex
    implementation:cueLab.canonicalPlayback?.implementation,profile:cueLab.state.canonicalPlayback?.selectedWorldProfile,
    presentationOnly:cueLab.lab.presentationOnly,searchEnabled:cueLab.state.canonicalPlayback?.searchEnabled,total:cueLab.state.canonicalPlayback?.searchDomain?.total}));
   expect(activation.active,activation.error||'Real browser GPU is required; no fallback').toBe(true);
-  expect(activation).toMatchObject({implementation:'webgpu-selected-controller',profile:'mmq1-ball-ball',presentationOnly:true,searchEnabled:true,total:9});
+  expect(activation).toMatchObject({implementation:'webgpu-selected-controller',profile:'mmq2-cushion',presentationOnly:true,searchEnabled:true,total:9});
   await expect(dialog).not.toBeVisible();
   await page.evaluate(()=>{__canonicalBrowserTest.initialGame=cueLab.game.snapshot();});
   if(await page.locator('#sidebarTrigger').getAttribute('aria-expanded')!=='true')await page.locator('#sidebarTrigger').click();
@@ -63,10 +66,37 @@ test('real GPU entry dialog searches nine candidates, applies one and commits ex
   expect(await page.evaluate(()=>cueLab.game.snapshot())).toEqual(await page.evaluate(()=>__canonicalBrowserTest.initialGame));
   await page.getByRole('tab',{name:'경로 탐색',exact:true}).click();
   await expect(page.locator('#canonicalSearchScope')).toBeVisible();await page.locator('#findRoute').click();
-  await page.waitForFunction(()=>['done','error','stale'].includes(cueLab.state.routeStatus),{},{timeout:300000});
-  const search=await page.evaluate(()=>({status:cueLab.state.routeStatus,error:cueLab.state.routeError,result:cueLab.state.routeResult}));
+  await page.waitForFunction(()=>['done','error','stale'].includes(cueLab.state.routeStatus),{},{timeout:420000});
+  const readSearch=()=>page.evaluate(()=>({status:cueLab.state.routeStatus,error:cueLab.state.routeError,result:cueLab.state.routeResult}));
+  const assertCompleteSearch=search=>{
   expect(search.status,search.error).toBe('done');expect(search.result.kind).toBe('canonical-compact-search-v1');
-  expect(search.result.total).toBe(9);expect(search.result.tested).toBe(9);expect(search.result.results.length).toBeGreaterThan(0);
+  expect(search.result).toMatchObject({total:9,tested:9,evaluated:9,found:9,incomplete:0,unsupported:0,miss:0,partial:false});
+  expect(search.result.batchWidths).toEqual([3,3,3]);expect(search.result.reasonCounts).toEqual({incomplete:{},unsupported:{}});
+  expect(search.result.results).toHaveLength(9);
+  expect(new Set(search.result.results.map(row=>row.id)).size).toBe(9);
+  for(const row of search.result.results)expect(row.compact).toEqual([row.id,1,0,1]);
+  };
+  const warmSearch=await readSearch();assertCompleteSearch(warmSearch);
+  // Reproduce the reported calculate -> stop -> calculate flow with real UI
+  // buttons. start() clears the previous run; stop() retains any rows already
+  // published by the CURRENT run, and reports done/stopped (not canceled).
+  await page.locator('#findRoute').click();
+  await page.waitForFunction(()=>cueLab.state.routeStatus==='searching',{},{timeout:30000});
+  await expect(page.locator('#cancelRoute')).toBeVisible();
+  const beforeStop=await readSearch();expect(beforeStop.status).toBe('searching');
+  await page.locator('#cancelRoute').click();
+  await page.waitForFunction(()=>cueLab.state.routeStatus==='done'&&cueLab.state.routeProgress?.phase==='stopped',{},{timeout:30000});
+  const stopped=await page.evaluate(()=>({status:cueLab.state.routeStatus,error:cueLab.state.routeError,phase:cueLab.state.routeProgress?.phase,result:cueLab.state.routeResult}));
+  expect(stopped).toMatchObject({status:'done',error:'',phase:'stopped'});
+  if(stopped.result){
+   expect(stopped.result).toMatchObject({partial:true,continuable:false});
+   for(const row of beforeStop.result?.results??[])expect(stopped.result.results).toContainEqual(row);
+  }else expect(beforeStop.result).toBe(null);
+  await expect(page.locator('#findRoute')).toBeEnabled();
+  await page.locator('#findRoute').click();
+  await page.waitForFunction(()=>['done','error','stale'].includes(cueLab.state.routeStatus),{},{timeout:420000});
+  const search=await readSearch();assertCompleteSearch(search);
+  await testInfo.attach('canonical-stop-restart',{body:JSON.stringify({warmSearch:warmSearch.result,beforeStop,stopped,restarted:search.result},null,2),contentType:'application/json'});
   const chosen=search.result.results[0];expect(chosen.compact).toEqual([chosen.id,1,0,1]);
   expect(await page.locator('.route-result').count()).toBeGreaterThan(0);
   await page.locator('#applyRoute'+chosen.id).click();
@@ -75,10 +105,15 @@ test('real GPU entry dialog searches nine candidates, applies one and commits ex
   if(await page.locator('#sidebarTrigger').getAttribute('aria-expanded')==='true')
    await page.locator('.toolbox-heading').getByRole('button',{name:'설정 패널 닫기',exact:true}).click();
   await page.locator('#strike').click();
-  await page.waitForFunction(()=>cueLab.canonicalPlayback.readCommittedState()||cueLab.state.canonicalPlayback.phase==='refused',{},{timeout:300000});
+  await page.waitForFunction(()=>cueLab.canonicalPlayback.readCommittedState()||cueLab.state.canonicalPlayback.phase==='refused',{},{timeout:420000});
   const final=await page.evaluate(()=>({words:Array.from(cueLab.canonicalPlayback.readCommittedState()||[]),status:cueLab.state.canonicalPlayback,
    game:cueLab.game.snapshot(),selectedId:cueLab.state.selectedId}));
   expect(final.words,'Chosen PASS must reach complete owned physical REST').toHaveLength(256);expect(final.words[1]).toBe(9);
+  expect(final.status.phase).toBe('rest');expect(final.status.captureComplete).toBe(true);
+  // The original engine still lacks raw-contact interior sampling. Complete
+  // physical REST/capture is not a claim of dense samples at every time tick.
+  expect(final.status.samplingComplete).toBe(false);
+  expect(final.words[5]).toBeGreaterThan(0);expect(final.words[5]).toBeLessThan(2**24);
   expect(final.status.scoreAndTurnCommitted).toBe(true);expect(final.game.pending).toBe(null);
   expect(final.game.activeCue).toBe(50);expect(final.selectedId).toBe(50);expect(final.game.scores).toEqual({'19':0,'50':1});
   await page.evaluate(()=>{document.activeElement?.blur();document.body.focus();});await page.keyboard.press('Control+z');
@@ -108,7 +143,9 @@ test('real GPU entry dialog searches nine candidates, applies one and commits ex
   await testInfo.attach('canonical-search-result',{body:JSON.stringify(search.result,null,2),contentType:'application/json'});
  } finally {
   const evidence=await page.evaluate(()=>{const t=globalThis.__canonicalBrowserTest;return {installed:!!cueLab.canonicalPlayback,
-   adapters:t?.adapters,adapterRequests:t?.adapterRequests,deviceRequests:t?.deviceRequests,physicalHardwareVerified:false,userAgent:navigator.userAgent,
+   adapters:t?.adapters,adapterRequests:t?.adapterRequests,deviceRequests:t?.deviceRequests,
+   executionBackend:t?.adapters?.some(info=>info?.isFallbackAdapter===true)?'software-webgpu':'webgpu-adapter-unverified',
+   physicalHardwareVerified:false,userAgent:navigator.userAgent,
    state:Array.from(cueLab.canonicalPlayback?.readCommittedState()||[]),status:cueLab.state.canonicalPlayback,
    gpuErrors:t?.gpuErrors,deviceLoss:t?.deviceLoss,legacyCalls:t?.legacyCalls};}).catch(error=>({evidenceError:error.message}));
   await testInfo.attach('canonical-browser-evidence',{body:JSON.stringify({...evidence,pageErrors:errors},null,2),contentType:'application/json'});

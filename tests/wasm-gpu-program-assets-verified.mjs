@@ -1,3 +1,4 @@
+import {REVIEWED_SELECTED_OWNED_BYTES} from './helpers/reviewed-endpoint-cache-delta.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';import path from 'node:path';import {tmpdir} from 'node:os';import {fileURLToPath} from 'node:url';import {createHash} from 'node:crypto';import {gunzipSync} from 'node:zlib';
 import {createLiveWorldSealReviewCandidate,verifyLiveWorldSourcePin,snapshotVerifiedLiveWorldSources,BUILD_INPUT_PATHS} from '../tools/build-live-world-upload-seal.mjs';
@@ -19,7 +20,7 @@ test('genuine private reviewed snapshot builds all programs despite mutable sour
  const cap=await buildVerifiedWasmGpuProgramAssets({root:f.root,sourceToken:f.token,outputDirectory:out}),bootstrap=readVerifiedWasmGpuProgramBuild(cap,f.token.revision);
  assert.ok(Object.isFrozen(bootstrap));assert.deepEqual(Object.keys(bootstrap).sort(),['manifestSha256','relativeBase','sourceRevision']);assert.equal(bootstrap.relativeBase,'wasm-gpu-programs/');assert.equal(bootstrap.sourceRevision,f.token.revision);
  const bytes=await fs.readFile(path.join(out,'manifest.json'));assert.equal(sha(bytes),bootstrap.manifestSha256);const manifest=JSON.parse(bytes);assert.equal(manifest.sourceVerification,'reviewed-source-snapshot');assert.equal(manifest.sourceRevision,f.token.revision);assert.equal(manifest.publicActivation,false);assert.equal(manifest.gpuExecutionQualified,false);
- assert.deepEqual(manifest.widths,[1,3]);assert.equal(manifest.selectedProgram.commandCount,55403);assert.equal(manifest.selectedProgram.totalOwnedBytes,8772676);
+ assert.deepEqual(manifest.widths,[1,3]);assert.equal(manifest.selectedProgram.commandCount,55403);assert.equal(manifest.selectedProgram.totalOwnedBytes,REVIEWED_SELECTED_OWNED_BYTES);
  for(const info of [...manifest.programs.flatMap(p=>[p.world,p.raw]),manifest.selectedProgram.artifact]){const encoded=await fs.readFile(path.join(out,info.file)),decoded=gunzipSync(encoded);assert.equal(sha(encoded),info.sha256);assert.equal(encoded.length,info.byteLength);assert.equal(sha(decoded),info.decodedSha256);assert.equal(decoded.length,info.decodedByteLength);const artifact=JSON.parse(decoded);assert.equal(artifact.sha256,info.artifactSha256);assert.equal(artifact.payload.sourceRevision,f.token.revision);assert.doesNotMatch(decoded.toString(),/"initial"\s*:/);}
  assert.deepEqual(await fs.readFile(path.join(out,manifest.scheduler.file)),Buffer.from(saved.buildInputBytes['artifacts/wasm-gpu-runtime.wasm']));
  assert.throws(()=>readVerifiedWasmGpuProgramBuild({...cap},f.token.revision),/Owned/);assert.throws(()=>readVerifiedWasmGpuProgramBuild(cap,'other'),/same-revision/);

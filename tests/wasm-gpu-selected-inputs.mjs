@@ -1,4 +1,5 @@
 /** Current selected host input differential; no GPU/CPU dynamics. */
+import {restoreEndpointCacheDelta} from './helpers/reviewed-endpoint-cache-delta.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';import {createHash} from 'node:crypto';
 import {mmq2RawFixture} from './fixtures/canonical-selected-mmq2-raw.mjs';
@@ -25,8 +26,9 @@ test('all selected uploads match genuine source capture across current geometry/
  const golden=JSON.parse(await readFile(new URL('./fixtures/selected-current-input-baseline-digests.json',import.meta.url),'utf8'));assert.equal(golden.sourceCommit,'715b503f57f6962d99c7a85a787995284960ee8b');
  for(const changed of [false,true]){const x=changed?current(true,777):f,input=prepareWasmGpuSelectedInputs({engine,...x,maximumRecords:256}),{recorder:r}=await captureWasmGpuSelectedProgram(x);assert.equal(input.initialUploads.length,r.buffers.length);for(const u of input.initialUploads)assert.deepEqual(u.initial,r.buffers[u.index].bytes,'allocation '+u.index);assert.equal(input.candidateIds[0],x.candidate.candidateId);
   const delta=JSON.parse(await readFile(new URL('./fixtures/prepared-world-input-reviewed-mmq2-module-delta.json',import.meta.url),'utf8'));assert.equal(delta.baselineCommit,golden.sourceCommit);assert.equal(sha(delta.baselineModuleCode),delta.baselineModuleSHA256);
-  const modules=r.modules.map(m=>({code:m.code,label:m.label})),replacements=modules.filter(m=>sha(m.code)===delta.reviewedModuleSHA256);assert.equal(replacements.length,1,'Exactly reviewed MMQ2 module delta');replacements[0].code=delta.baselineModuleCode;
-  const expected=golden.cases[changed?'changed':'default'];assert.equal(sha(JSON.stringify(r.buffers.map(b=>[b.size,b.usage,sha(b.bytes)]))),expected.buffers);assert.equal(sha(JSON.stringify(r.commands)),expected.commands);assert.equal(sha(JSON.stringify(modules)),expected.modules);
+  const restored=restoreEndpointCacheDelta({definitions:r.modules.map(m=>({code:m.code,label:m.label})),commands:r.commands,buffers:r.buffers.map(b=>({size:b.size,usage:b.usage,bytes:b.bytes})),pipelineModules:r.pipelines.map(p=>p.module.id)});
+  const modules=restored.definitions,replacements=modules.filter(m=>sha(m.code)===delta.reviewedModuleSHA256);assert.equal(replacements.length,1,'Exactly reviewed MMQ2 module delta');replacements[0].code=delta.baselineModuleCode;
+  const expected=golden.cases[changed?'changed':'default'];assert.equal(sha(JSON.stringify(restored.buffers.map(b=>[b.size,b.usage,sha(b.bytes)]))),expected.buffers);assert.equal(sha(JSON.stringify(restored.commands)),expected.commands);assert.equal(sha(JSON.stringify(modules)),expected.modules);
  }
 });
 test('owned current inputs are copied; cached original geometry and identity inputs cannot be poisoned',()=>{

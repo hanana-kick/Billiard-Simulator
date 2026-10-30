@@ -1,4 +1,4 @@
-import {awaitCanonicalPreparation} from '../direct-candidate/canonical-page-preparation.mjs';
+import {heavyFirstPipelineIndices} from './pipeline-preparation-order.mjs';
 /** Experimental GPU-only execution bridge. No capture, CPU physics or public activation.
  * Artifact initial data is intentionally not trusted/stored: callers supply every
  * internal arena's complete bytes for every run. With rawEngine, the same arena
@@ -12,7 +12,7 @@ import {awaitCanonicalPreparation} from '../direct-candidate/canonical-page-prep
 import {assertLoadedWasmGpuRawArtifact} from './raw-artifact.mjs';
 import {assertLoadedWasmGpuEngineArtifact} from './engine-artifact.mjs';
 import {validateLiveWorldResources} from '../direct-candidate/experimental-live-world-resources.mjs';
-import {compileLiveWorldPipeline} from '../direct-candidate/experimental-live-world-pipeline-cache.mjs';
+import {compileLiveWorldPipeline,awaitLiveWorldPreparation,assertLiveWorldPreparationUsable} from '../direct-candidate/experimental-live-world-pipeline-cache.mjs';
 import {createLiveWorldRunBindGroups} from '../direct-candidate/experimental-live-world-bind-groups.mjs';
 
 // Byte-identical to the canonical generator; tested without a runtime factory import.
@@ -31,7 +31,7 @@ export function validateWasmGpuCommandCount(worldCount,rawCount=0){
 
 export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximumOwnedBytes,maxInFlight=1,signal,onPrepareProgress}={}) {
  if(onPrepareProgress!==undefined&&typeof onPrepareProgress!=='function')throw TypeError('Synchronous preparation callback required');
- const checkPrepare=()=>{if(signal?.aborted)throw new DOMException(String(signal.reason??'GPU preparation cancelled'),'AbortError');};
+ const checkPrepare=()=>{assertLiveWorldPreparationUsable(device);if(signal?.aborted)throw new DOMException(String(signal.reason??'GPU preparation cancelled'),'AbortError');};
  const progress=value=>{checkPrepare();const result=onPrepareProgress?.(Object.freeze(value));if(result&&typeof result.then==='function'){Promise.resolve(result).catch(()=>{});throw TypeError('Preparation callback must be synchronous');}checkPrepare();};
  checkPrepare();
  if(typeof device?.pushErrorScope!=='function'||typeof device?.popErrorScope!=='function')throw TypeError('GPU error scopes required');
@@ -52,14 +52,16 @@ export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximum
  const commands=[...rawCommands,...worldCommands];
  const pipelines=[],rawPipelines=[],totalPipelines=lowered.definitions.length+(rawEngine?.definitions.length??0)+1;let completedPipelines=0;
  const compile=async definition=>{checkPrepare();progress({stage:'compile-start',pipelineIndex:completedPipelines+1,totalPipelines,shaderBytes:new TextEncoder().encode(definition.code).byteLength,entryPoint:definition.entryPoint??'main',label:definition.label});const pipeline=await compileLiveWorldPipeline(device,{...definition,signal});checkPrepare();progress({stage:'compile',completedPipelines:++completedPipelines,totalPipelines});return pipeline;};
- for(const [index,definition] of lowered.definitions.entries())pipelines.push(await compile({code:definition.code,layout:definition.layout,label:`world-N${count}-${index+1}`}));
- if(rawEngine)for(const [index,definition] of rawEngine.definitions.entries())rawPipelines.push(await compile({code:definition.code,layout:definition.layout,label:`raw-N${count}-${index+1}`}));
  const stride=plan.allocations[plan.readback].size/4;
- const gate=await compile({code:liveBoundsResultGateSource(stride),preflight:false,label:`result-gate-N${count}`});
+ // Preparation ordinal is independent of the immutable command's definition index.
+ const preparation=[...lowered.definitions.map((definition,index)=>({bank:pipelines,index,code:definition.code,layout:definition.layout,label:`world-N${count}-${index+1}`})),...(rawEngine?.definitions??[]).map((definition,index)=>({bank:rawPipelines,index,code:definition.code,layout:definition.layout,label:`raw-N${count}-${index+1}`}))];
+ const gateBank=[];preparation.push({bank:gateBank,index:0,code:liveBoundsResultGateSource(stride),preflight:false,label:`result-gate-N${count}`});
+ for(const ordinal of heavyFirstPipelineIndices(preparation)){const {bank,index,...definition}=preparation[ordinal];bank[index]=await compile(definition);}
+ const gate=gateBank[0];
  const buffers=[],rawBuffers=[],owned=[],pending=[];
  const internalGroups=createLiveWorldRunBindGroups(device);let externalGroups=createLiveWorldRunBindGroups(device);
  let lost=null,disposed=false,active=null,lastGeneration=0,busy=false;
- const alive=()=>{if(disposed)throw Error('GPU bridge disposed');if(lost)throw lost;};
+ const alive=()=>{if(disposed)throw Error('GPU bridge disposed');if(lost)throw lost;assertLiveWorldPreparationUsable(device);};
  // Device loss establishes that pending GPU work can no longer access resources.
  let rejectLost;const loss=new Promise((_,reject)=>{rejectLost=reject;});loss.catch(()=>{});
  const lose=(reason='GPU device lost')=>{if(!lost){lost=reason instanceof Error?reason:Error(String(reason));active=null;externalGroups.dispose();}};
@@ -68,7 +70,7 @@ export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximum
  const scoped=async(fn,preparation=false)=>{
   let result,failure,depth=0,gpuFailure;
   try{for(const kind of ['validation','internal','out-of-memory']){device.pushErrorScope(kind);depth++;}result=await fn();}catch(error){failure=error;}
-  while(depth--){try{const error=await awaitCanonicalPreparation(device.popErrorScope(),preparation?signal:undefined);if(error&&!gpuFailure)gpuFailure=Error('GPU operation error: '+(error.message??String(error)));}catch(error){gpuFailure??=error;}}
+  while(depth--){try{const error=await (preparation?awaitLiveWorldPreparation(device,device.popErrorScope(),{signal,stage:'error-scope',label:'preparation-cleanup'}):device.popErrorScope());if(error&&!gpuFailure)gpuFailure=Error('GPU operation error: '+(error.message??String(error)));}catch(error){gpuFailure??=error;}}
   if(gpuFailure)lose(gpuFailure);if(failure)throw failure;if(gpuFailure)throw gpuFailure;return result;
  };
  const totalBuffers=(rawEngine?.allocations.length??0)+plan.allocations.filter(a=>!a.external).length+3;
@@ -91,7 +93,8 @@ export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximum
    guard(generation);device.queue.submit([encoder.finish()]);
    const done=Promise.race([device.queue.onSubmittedWorkDone(),loss]);done.catch(lose);pending.push(done);
   };
-  const exclusive=async (fn,after)=>{if(busy)throw Error('Concurrent GPU bridge operation');busy=true;try{const result=await scoped(fn);return after?after(result):result;}finally{busy=false;}};
+  // Quarantined cleanup skips new scopes, but still awaits every submitted fence.
+ const exclusive=async (fn,after,cleanup=false)=>{if(busy)throw Error('Concurrent GPU bridge operation');let unscoped=false;try{assertLiveWorldPreparationUsable(device);}catch(error){if(!cleanup)throw error;unscoped=error.code==='GPU_PREPARATION_TIMEOUT';}busy=true;try{const result=await (unscoped?fn():scoped(fn));return after?after(result):result;}finally{busy=false;}};
 
   return Object.freeze({commandCount:commands.length,rawCommandCount:rawCommands.length,worldCommandCount:worldCommands.length,ownsRaw:!!rawEngine,count,experimental:true,productionEnabled:false,requiresExclusiveDevice:true,
    async beginRun({generation,initialUploads,externalBuffers,rawUploads,candidateIds}={}){return exclusive(async()=>{
@@ -142,9 +145,9 @@ export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximum
     try{await Promise.race([read.mapAsync(1),loss]);mapped=true;guard(generation);const result=new Uint32Array(read.getMappedRange()).slice();return result;}finally{if(mapped)read.unmap();}
    },result=>{guard(generation);active=null;releaseExternal();return result;});},
    cancel(generation){if(active?.generation===generation)active.cancelled=true;},
-   async drain(){return exclusive(async()=>{try{await drain();}finally{if(active?.cancelled){active=null;releaseExternal();}}});},
+   async drain(){return exclusive(async()=>{try{await drain();}finally{if(active?.cancelled){active=null;releaseExternal();}}},undefined,true);},
    lose,
-   async dispose(){return exclusive(async()=>{if(disposed)return;try{await drain();}finally{disposed=true;active=null;externalGroups.dispose();internalGroups.dispose();for(const b of owned)b.destroy();buffers.length=0;rawBuffers.length=0;owned.length=0;pipelines.length=0;rawPipelines.length=0;fault=null;ids=null;read=null;}});},
+   async dispose(){return exclusive(async()=>{if(disposed)return;try{await drain();}finally{disposed=true;active=null;externalGroups.dispose();internalGroups.dispose();for(const b of owned)b.destroy();buffers.length=0;rawBuffers.length=0;owned.length=0;pipelines.length=0;rawPipelines.length=0;fault=null;ids=null;read=null;}},undefined,true);},
   });
  },true);checkPrepare();return prepared;}catch(error){externalGroups.dispose();internalGroups.dispose();for(const b of owned)b.destroy();buffers.length=0;rawBuffers.length=0;owned.length=0;throw error;}
 }

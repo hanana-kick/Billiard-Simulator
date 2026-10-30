@@ -33,3 +33,18 @@ test('stop preserves partial reasons and stale source cannot publish late histog
  const started=search.start();assert.equal(search.stop(),true);assert.deepEqual(c.state.routeResult.reasonCounts,{incomplete:{9:1},unsupported:{}});assert.equal(c.state.routeResult.partial,true);
  changeSource();assert.throws(()=>options.onBatch({rows:[packetRow(1,3,R.WORK_BUDGET)],batchWidths:[1]}));finish({rows:[],assertCurrent(){}});assert.equal(await started,false);assert.deepEqual(c.state.routeResult.reasonCounts,{incomplete:{9:1},unsupported:{}});
 });
+
+test('stalled native preparation becomes a visible search error rather than endless searching',async()=>{
+ const {compileLiveWorldPipeline}=await import('../src/direct-candidate/experimental-live-world-pipeline-cache.mjs');
+ const never=new Promise(()=>{});let calls=0;
+ const device={lost:never,createShaderModule(){return{getCompilationInfo:()=>Promise.resolve({messages:[]})};},createComputePipelineAsync(){calls++;return never;}};
+ const {c,search}=searchHarness(async({signal})=>{
+  await compileLiveWorldPipeline(device,{code:'original preparation test seam',label:'world-N3-70',signal,preparationTimeoutMs:15});
+  throw Error('Timed-out native work must never publish a search result');
+ });
+ const pending=search.start();assert.equal(c.state.routeStatus,'searching');assert.equal(await pending,false);
+ assert.equal(c.state.routeStatus,'error');assert.match(c.state.routeError,/GPU 準備|GPU 준비/);assert.match(c.state.routeError,/world-N3-70/);assert.match(c.state.routeError,/새로고침/);
+ assert.equal(c.state.routeResult,null);assert.equal(c.state.routeApplied,null);assert.equal(calls,1);
+ // Explicit retry reports the quarantined device without scheduling another compile.
+ assert.equal(await search.start(),false);assert.equal(calls,1);assert.equal(c.state.routeStatus,'error');search.dispose();
+});

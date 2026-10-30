@@ -1,10 +1,11 @@
 /** Host-only regression against committed independent pre-extraction digests.
  * No sibling checkout, adapter, shader execution, network or CPU dynamics.
  * Goldens were captured from commit715b503f, never updated by this test.
- * One separately reviewed MMQ2 module delta is pinned; substituting its original
- * bytes must reproduce the entire immutable baseline (including all 104 peers).
+ * Separately reviewed MMQ2 clear and endpoint-cache deltas are inverted only in
+ * test copies; every other source, command, binding and upload stays pinned.
  */
 import test from 'node:test';
+import {restoreEndpointCacheDelta} from './helpers/reviewed-endpoint-cache-delta.mjs';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
@@ -46,14 +47,19 @@ for(const [name,mutate]of [
  const x=base();mutate(x);const packed=packPreparedWorldInputs(x.original,x.scene,x.hulls,x.options),before=structuredClone(x),current=await capture(createPreparedPairContinuationGPU,x);
  assert.deepEqual(x,before,'packer/factory do not mutate current caller inputs');
  const expectedCapture=golden.cases[name];assert.ok(expectedCapture,'Committed case exists');
- const actual=digestCapture(current);
+ let normalized=current;
+ if(name==='mmq2-cushion'){
+  const restored=restoreEndpointCacheDelta({definitions:current.r.modules.map(m=>({code:m.code,label:m.label})),commands:current.r.commands,buffers:current.r.buffers.map(b=>({size:b.size,usage:b.usage,bytes:b.bytes})),pipelineModules:current.r.pipelines.map(p=>p.module.id)});
+  normalized={r:{...current.r,modules:restored.definitions,commands:restored.commands,buffers:restored.buffers}};
+ }
+ const actual=digestCapture(normalized);
  if(name===delta.case){
   assert.equal(actual.modules.count,delta.moduleCount);
   assert.equal(actual.modules.sha256,delta.reviewedModulesSHA256,'Reviewed complete current module set');
-  assert.equal(sha(current.r.modules[delta.moduleIndex].code),delta.reviewedModuleSHA256,'Exactly reviewed replacement module');
+  assert.equal(sha(normalized.r.modules[delta.moduleIndex].code),delta.reviewedModuleSHA256,'Exactly reviewed replacement module');
   assert.equal(sha(delta.baselineModuleCode),delta.baselineModuleSHA256);
   assert.equal(delta.baselineModulesSHA256,expectedCapture.modules.sha256);
-  const restored=current.r.modules.map(m=>({code:m.code,label:m.label}));
+  const restored=normalized.r.modules.map(m=>({code:m.code,label:m.label}));
   restored[delta.moduleIndex].code=delta.baselineModuleCode;
   assert.equal(sha(JSON.stringify(restored)),expectedCapture.modules.sha256,'All other 104 modules and labels retain immutable baseline bytes');
   actual.modules={count:actual.modules.count,sha256:sha(JSON.stringify(restored))};
