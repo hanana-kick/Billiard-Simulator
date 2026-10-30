@@ -10,6 +10,11 @@ on:
       - 'tools/*selected*diagnostic*.mjs'
       - 'tests/fixtures/selected-*diagnostic*.mjs'
   workflow_dispatch:
+    inputs:
+      frozen_observer:
+        description: 'Run frozen 90ad observer (rejects other source revisions)'
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -43,6 +48,7 @@ jobs:
           export TMPDIR="$(node -e "process.stdout.write(require('node:fs').realpathSync(require('node:os').tmpdir()))")"
           node build.cjs --canonical-controller-assets
       - name: Build test-only selected observer bundles
+        if: github.event_name == 'workflow_dispatch' && inputs.frozen_observer
         id: diagnostic-build
         run: node tools/build-selected-native-diagnostic.mjs
       - name: Search, strike, mixed-width re-search, cancel and restart
@@ -57,6 +63,19 @@ jobs:
           for file in /proc/meminfo /proc/self/cgroup /sys/fs/cgroup/memory.events /sys/fs/cgroup/memory.current /sys/fs/cgroup/memory.max; do
             { echo "### $file"; if test -r "$file"; then cat "$file"; else echo unavailable; fi; } >> worker-lifecycle-evidence/host-memory-after.txt
           done
+      - name: Preserve compact selected input and full-output evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: worker-selected-raw
+          path: |
+            worker-lifecycle-evidence/selected-inputs/
+            worker-lifecycle-evidence/selected-output/
+            worker-lifecycle-evidence/capability.json
+            test-results-worker-lifecycle/**/lifecycle.json
+            test-results-worker-lifecycle/**/events.jsonl
+            dist/canonical-controller-assets/manifest.json
+          retention-days: 14
       - name: Preserve diagnostic evidence
         if: always()
         uses: actions/upload-artifact@v4

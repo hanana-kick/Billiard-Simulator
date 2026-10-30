@@ -1,0 +1,9 @@
+{
+  "kind": "verified-90ad-supported-clear-structural-baseline-v1",
+  "sourceRevision": "90ad6636d8768b56cb4e93153d1762d3594c6652ad4ae12da283d1249dd1d16f",
+  "artifactSHA256": "e699ec35ef1f899ff6f6bafbb0eb7ec6372b7fc610c20afeec10370cb8c31a18",
+  "canonicalGraphSHA256": "9537b4e25744a57bcdcbecc4d57fd1d9735a4248d4dc87a8dc15ecf440a01829",
+  "commands": 66189,
+  "definitions": 124,
+  "allocations": 232
+}

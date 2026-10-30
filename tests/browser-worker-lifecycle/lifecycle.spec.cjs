@@ -81,7 +81,7 @@ test('live Worker search → strike → N3+N1 → cancellation → restart',asyn
  try{
   stage('load');await page.goto('./');await page.waitForFunction(()=>globalThis.__LAB_READY__&&cueLab.state.ready);
   const manifest=await (await page.request.get('./canonical-controller-assets/manifest.json')).json();
-  expect(manifest.searchSourceRevision).toBe('90ad6636d8768b56cb4e93153d1762d3594c6652ad4ae12da283d1249dd1d16f');
+  expect(manifest.searchSourceRevision).toBe('fb8b37b71feda48dbb4a11d08f9add4742b7a8250175de3b1fc7770a426210ca');
   expect(manifest.searchSourceSealed).toBe(true);expect(manifest.sharedSourceBytesVerified).toBe(true);
   const bundle=await page.request.get('./canonical-controller-assets/canonical-controller.mjs');expect(bundle.ok()).toBe(true);
   expect(createHash('sha256').update(await bundle.body()).digest('hex')).toBe(manifest.sha256);

@@ -41,6 +41,13 @@ import {RECUR_TAIL_COMMIT_WGSL} from './deterministic-recurring-stages.mjs';
 export const WORLD_SUPPORTED_CLEAR_V2_WGSL=TUBE_CLEAR_WGSL
  .replace('if(state[1]!=0){return;}','if(state[1]!=0){return;}var mixedBridge=false;for(var body=0u;body<u32(state[3]);body++){if(state[64u+body*48u+40u]==3){if(state[40]==0){state[1]=7;state[2]=6;return;}mixedBridge=true;}}')
  .replace('state[2]=reason;return;','state[2]=select(reason,98,mixedBridge);return;');
+// Backend-portability candidate: execute the exact existing early routing guard
+// in a small dispatch before the unchanged supported-clear body. No acceptance
+// predicate, arithmetic, allocation, or physics budget is relaxed.
+const supportedClearEntry=WORLD_SUPPORTED_CLEAR_V2_WGSL.indexOf('@compute @workgroup_size(1) fn main(){');
+const supportedClearBody=WORLD_SUPPORTED_CLEAR_V2_WGSL.indexOf('let n=u32(state[3]);',supportedClearEntry);
+if(supportedClearEntry<0||supportedClearBody<supportedClearEntry)throw Error('Exact supported-clear guard boundary required');
+export const WORLD_SUPPORTED_CLEAR_V2_GUARD_WGSL='@group(0) @binding(0) var<storage,read_write> state:array<i32>;\n'+WORLD_SUPPORTED_CLEAR_V2_WGSL.slice(supportedClearEntry,supportedClearBody)+'}';
 export const WORLD_TAIL_MARK_V2_WGSL=WORLD_TAIL_MARK_WGSL.replace('if(mode==1){supportedSlip=true;}','if(mode==1){supportedSlip=true;}if(mode==3){state[50]=1;}');
 /** Only the original all-object-clear tail may skip directly to full rest. */
 export const WORLD_TAIL_COMMIT_V2_WGSL=RECUR_TAIL_COMMIT_WGSL.replace('dense[z+41u]=2;','').replace('if(state[1]!=10){return;}','if(state[1]!=10){return;}if(tail[1]!=1){state[1]=1;return;}if(state[5]>ctx[24]-tail[4]){state[1]=select(7,5,ctx[25]!=0);state[2]=select(79,84,ctx[25]!=0);return;}');

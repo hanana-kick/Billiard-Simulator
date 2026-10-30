@@ -49,7 +49,7 @@ test('selected library branding and explicit aggregate12MiB cap remain fail-clos
 test('genuine228-buffer selected capsule runs through actual WASM/concrete bridge and zero mock output fails original trace decoder',{timeout:120000},async()=>{
  const m=mock(engine),backend=createWasmGpuSelectedSessionBackendHarness({device:m.device,moduleBytes,lookupProgram:()=>engine,sourceRevision,maximumOwnedBytes:12*1024*1024,chunkSize:4096});
  await assert.rejects(backend.evaluate(context),/Complete final selected GPU source readback/);
- assert.equal(m.buffers.length,232);assert.equal(m.events.filter(e=>Array.isArray(e)&&e[0]==='submit').reduce((n,e)=>n+e[1].length,0),66189);assert.ok(m.buffers.every(b=>b.dead&&!b.mapped));await backend.dispose();
+ assert.equal(m.buffers.length,232);assert.equal(m.events.filter(e=>Array.isArray(e)&&e[0]==='submit').reduce((n,e)=>n+e[1].length,0),66317);assert.ok(m.buffers.every(b=>b.dead&&!b.mapped));await backend.dispose();
 });
 
 test('persistent selected owner receives regenerated current candidate rows and trace identity on every evaluation',async()=>{

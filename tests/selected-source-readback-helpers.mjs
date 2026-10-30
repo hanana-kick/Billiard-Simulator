@@ -1,3 +1,4 @@
+import {restoreSupportedClearGuardDelta} from './helpers/reviewed-supported-clear-guard-delta.mjs';
 /** Host-only source ABI and immutable independent baseline checks. */
 import test from 'node:test';
 import {restoreEndpointCacheDelta} from './helpers/reviewed-endpoint-cache-delta.mjs';
@@ -34,10 +35,11 @@ test('original selected source graph, all uploads, and output ranges match porta
  assert.equal(caught,true);assert.equal(mapCount,1);assert.equal(r.submits,1);
  const delta=JSON.parse(await readFile(new URL('./fixtures/prepared-world-input-reviewed-mmq2-module-delta.json',import.meta.url),'utf8'));
  assert.equal(delta.baselineCommit,golden.sourceCommit);assert.equal(sha(delta.baselineModuleCode),delta.baselineModuleSHA256);
- const restored=restoreEndpointCacheDelta({definitions:r.modules.map(m=>({code:m.code,label:m.label})),commands:r.commands,buffers:r.buffers.map(b=>({size:b.size,usage:b.usage,bytes:b.bytes})),pipelineModules:r.pipelines.map(p=>p.module.id)});
+ const guardRestored=restoreSupportedClearGuardDelta({definitions:r.modules.map(m=>({code:m.code,label:m.label})),commands:r.commands,buffers:r.buffers.map(b=>({size:b.size,usage:b.usage,bytes:b.bytes})),pipelines:r.pipelines.map(p=>({entryPoint:p.entryPoint,layout:p.layout,constants:p.constants,module:p.module.id})),expectedDispatches:128});
+ const restored=restoreEndpointCacheDelta({...guardRestored,pipelineModules:guardRestored.pipelines.map(p=>p.module)});
  const modules=restored.definitions,changed=modules.filter(m=>sha(m.code)===delta.reviewedModuleSHA256);
  assert.equal(changed.length,1,'Only the separately reviewed MMQ2 module may change');changed[0].code=delta.baselineModuleCode;
- for(const [name,records]of [['modules',modules],['pipelines',r.pipelines.map(p=>({entryPoint:p.entryPoint,layout:p.layout,constants:p.constants,module:p.module.id}))],['commands',restored.commands]])assert.deepEqual({count:records.length,sha256:sha(JSON.stringify(records))},golden[name]);
+ for(const [name,records]of [['modules',modules],['pipelines',guardRestored.pipelines],['commands',restored.commands]])assert.deepEqual({count:records.length,sha256:sha(JSON.stringify(records))},golden[name]);
  assert.deepEqual(restored.buffers.map(b=>[b.size,b.usage,sha(b.bytes)]),golden.buffers.map(index=>golden.bufferRecords[index]));
  const world=r.buffers.find(b=>b.label==='wasm-output:world:read'),trace=r.buffers.find(b=>b.label==='wasm-output:trace-v2:read');assert.equal(world.size,11664);assert.equal(trace.size,4194368);assert.equal(r.commands.filter(c=>c.kind==='copy'&&c.target===world.id).length,8);assert.equal(r.commands.filter(c=>c.kind==='copy'&&c.target===trace.id).length,2);
  const control=r.buffers.find(b=>b.label==='wasm-input:trace-v2:control');assert.deepEqual(new Uint32Array(control.bytes.buffer),packSelectedWorldTraceV2Control({candidateCount:1,candidateId:f.candidate.candidateId,sceneKey:f.batch.binding.sceneKey,requestKey:f.batch.binding.requestKey,bodyCount:4,maximumRecords:256}));

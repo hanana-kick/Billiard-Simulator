@@ -1,3 +1,4 @@
+import {restoreSupportedClearGuardWorldPlan} from './helpers/reviewed-supported-clear-guard-delta.mjs';
 import {restoreEndpointCacheDelta} from './helpers/reviewed-endpoint-cache-delta.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';
 import {mmq2RawFixture} from './fixtures/canonical-selected-mmq2-raw.mjs';
@@ -61,8 +62,9 @@ test('current captures match compact independent pre-extraction source and uploa
  assert.equal(sha(delta.baselineModuleCode),delta.baselineModuleSHA256);
  for(const changed of [false,true]){const x=current(changed,changed?777:100),now=await captureWasmGpuWorldInputPlan(x);
  // Preserve the independent pre-extraction plan golden. Only the explicitly
- // reviewed MMQ2 clear module and endpoint-cache structural delta may differ.
- const inverse=restoreEndpointCacheDelta({definitions:now.originalPlan.definitions,commands:now.originalPlan.commands,buffers:now.originalPlan.allocations,sourceKey:'source'});
+ // reviewed guard, MMQ2 clear module and endpoint-cache structural deltas may differ.
+ const withoutGuard=restoreSupportedClearGuardWorldPlan(now.originalPlan,{expectedDispatches:2});
+ const inverse=restoreEndpointCacheDelta({definitions:withoutGuard.definitions,commands:withoutGuard.commands,buffers:withoutGuard.allocations,sourceKey:'source'});
  const restored={...structuredClone(now.originalPlan),definitions:inverse.definitions,commands:inverse.commands,allocations:inverse.buffers},replacements=restored.definitions.filter(d=>sha(d.source)===delta.reviewedModuleSHA256);
  assert.equal(replacements.length,1,'Exactly one reviewed MMQ2 source delta');
  replacements[0].source=delta.baselineModuleCode;

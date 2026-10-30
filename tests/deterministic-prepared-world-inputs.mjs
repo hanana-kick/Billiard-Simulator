@@ -1,3 +1,4 @@
+import {restoreSupportedClearGuardDelta} from './helpers/reviewed-supported-clear-guard-delta.mjs';
 /** Host-only regression against committed independent pre-extraction digests.
  * No sibling checkout, adapter, shader execution, network or CPU dynamics.
  * Goldens were captured from commit715b503f, never updated by this test.
@@ -49,8 +50,9 @@ for(const [name,mutate]of [
  const expectedCapture=golden.cases[name];assert.ok(expectedCapture,'Committed case exists');
  let normalized=current;
  if(name==='mmq2-cushion'){
-  const restored=restoreEndpointCacheDelta({definitions:current.r.modules.map(m=>({code:m.code,label:m.label})),commands:current.r.commands,buffers:current.r.buffers.map(b=>({size:b.size,usage:b.usage,bytes:b.bytes})),pipelineModules:current.r.pipelines.map(p=>p.module.id)});
-  normalized={r:{...current.r,modules:restored.definitions,commands:restored.commands,buffers:restored.buffers}};
+  const guardRestored=restoreSupportedClearGuardDelta({definitions:current.r.modules.map(m=>({code:m.code,label:m.label})),commands:current.r.commands,buffers:current.r.buffers.map(b=>({size:b.size,usage:b.usage,bytes:b.bytes})),pipelines:current.r.pipelines.map(p=>({entryPoint:p.entryPoint,layout:p.layout,constants:p.constants,module:p.module.id})),expectedDispatches:x.options.maxWorldSteps});
+  const restored=restoreEndpointCacheDelta({...guardRestored,pipelineModules:guardRestored.pipelines.map(p=>p.module)});
+  normalized={r:{...current.r,modules:restored.definitions,commands:restored.commands,buffers:restored.buffers,pipelines:guardRestored.pipelines.map(p=>({...p,module:{id:p.module}}))}};
  }
  const actual=digestCapture(normalized);
  if(name===delta.case){

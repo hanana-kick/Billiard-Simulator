@@ -9,7 +9,7 @@ export function deriveSupportedClearCases(f){
  if(start<0||end<start)throw Error('Exact early guard boundary required');
  const prefix=declarations.join('\n')+'\n'+f.shader.slice(start,end)+'}';
  const probe=declarations.join('\n')+'\n@compute @workgroup_size(1) fn main(){state[62]=dense[0]^segments[0]^ctx[0];state[63]=0x13579bdf;}';
- return [{name:'original-auto',code:f.shader,explicit:false},{name:'original-explicit',code:f.shader,explicit:true},{name:'early-guard-explicit',code:prefix,explicit:true},{name:'binding-invocation-probe',code:probe,explicit:true}];
+ return [{name:'original-auto',code:f.shader,explicit:false},{name:'original-explicit',code:f.shader,explicit:true},{name:'early-guard-explicit',code:prefix,explicit:true},{name:'binding-invocation-probe',code:probe,explicit:true},{name:'early-guard-then-original',code:f.shader,explicit:false,preGuard:declarations[0]+'\n'+f.shader.slice(start,end)+'}'},{name:'original-already-routed',code:f.shader,explicit:false,inputStatus:[7,6]}];
 }
 export async function validateSupportedClearFixture(f){
  if(f.shaderSHA256!==SHADER_SHA256||await sha(new TextEncoder().encode(f.shader))!==SHADER_SHA256||f.inputs?.length!==4)throw Error('Frozen shader/input identity required');
@@ -35,18 +35,19 @@ if(typeof self!=='undefined'&&typeof self.postMessage==='function')self.onmessag
     const entries=[0,1,2,3].map(binding=>({binding,visibility:4,buffer:{type:binding<2?'storage':'read-only-storage'}}));
     const layout=c.explicit?device.createPipelineLayout({bindGroupLayouts:[device.createBindGroupLayout({entries})]}):'auto';
     const pipeline=await device.createComputePipelineAsync({layout,compute:{module,entryPoint:f.entryPoint}});
-    for(const input of f.inputs){const b=device.createBuffer({size:input.words.length*4,usage:128|8|4});buffers.push(b);device.queue.writeBuffer(b,0,Uint32Array.from(input.words));}
+    const caseInputs=f.inputs.map(r=>r.words.slice());if(c.inputStatus){caseInputs[0][1]=c.inputStatus[0];caseInputs[0][2]=c.inputStatus[1];}
+    for(const [index,input] of f.inputs.entries()){const b=device.createBuffer({size:input.words.length*4,usage:128|8|4});buffers.push(b);device.queue.writeBuffer(b,0,Uint32Array.from(caseInputs[index]));}
     read=device.createBuffer({size:3712,usage:1|8});const group=device.createBindGroup({layout:pipeline.getBindGroupLayout(0),entries:buffers.map((buffer,binding)=>({binding,resource:{buffer,offset:0,size:f.inputs[binding].words.length*4}}))});
-    const e=device.createCommandEncoder(),pass=e.beginComputePass();pass.setPipeline(pipeline);pass.setBindGroup(0,group);pass.dispatchWorkgroups(1,1,1);pass.end();let offset=0;for(const [i,b]of buffers.entries()){e.copyBufferToBuffer(b,0,read,offset,f.inputs[i].words.length*4);offset+=f.inputs[i].words.length*4;}
+    const e=device.createCommandEncoder();if(c.preGuard){const guardModule=device.createShaderModule({code:c.preGuard}),guardLayout=device.createBindGroupLayout({entries:[entries[0]]}),guardPipeline=await device.createComputePipelineAsync({layout:device.createPipelineLayout({bindGroupLayouts:[guardLayout]}),compute:{module:guardModule,entryPoint:'main'}}),guardGroup=device.createBindGroup({layout:guardLayout,entries:[{binding:0,resource:{buffer:buffers[0],offset:0,size:1024}}]}),guardPass=e.beginComputePass();guardPass.setPipeline(guardPipeline);guardPass.setBindGroup(0,guardGroup);guardPass.dispatchWorkgroups(1,1,1);guardPass.end();}const pass=e.beginComputePass();pass.setPipeline(pipeline);pass.setBindGroup(0,group);pass.dispatchWorkgroups(1,1,1);pass.end();let offset=0;for(const [i,b]of buffers.entries()){e.copyBufferToBuffer(b,0,read,offset,f.inputs[i].words.length*4);offset+=f.inputs[i].words.length*4;}
     device.queue.submit([e.finish()]);await device.queue.onSubmittedWorkDone();await read.mapAsync(1);const words=new Uint32Array(read.getMappedRange()).slice();read.unmap();
     let at=0;const outputs=f.inputs.map(input=>{const out=Array.from(words.slice(at,at+input.words.length));at+=input.words.length;return out;});
-    const expected=f.inputs.map(r=>r.words.slice());if(c.name==='binding-invocation-probe'){expected[0][62]=(expected[1][0]^expected[2][0]^expected[3][0])>>>0;expected[0][63]=0x13579bdf;}else{expected[0][1]=7;expected[0][2]=6;}
+    const expected=caseInputs.map(r=>r.slice());if(c.name==='binding-invocation-probe'){expected[0][62]=(expected[1][0]^expected[2][0]^expected[3][0])>>>0;expected[0][63]=0x13579bdf;}else{expected[0][1]=7;expected[0][2]=6;}
     const differences=[];for(let b=0;b<4;b++)for(let i=0;i<outputs[b].length;i++)if(outputs[b][i]!==expected[b][i])differences.push({binding:b,word:i,expected:expected[b][i],actual:outputs[b][i]});
-    row={name:c.name,shaderSHA256:await sha(new TextEncoder().encode(c.code)),explicitLayout:c.explicit,dispatch:[1,1,1],outputs,expectedEarlyBranch:c.name==='binding-invocation-probe'?null:[7,6],matchesExpected:differences.length===0,differences};
+    row={name:c.name,shaderSHA256:await sha(new TextEncoder().encode(c.code)),explicitLayout:c.explicit,dispatch:[1,1,1],dispatchCount:c.preGuard?2:1,inputOrigin:c.inputStatus?'controlled-status-only-variant':'exact-captured-intermediate',inputStatusOverride:c.inputStatus??null,preGuardSHA256:c.preGuard?await sha(new TextEncoder().encode(c.preGuard)):null,outputs,expectedEarlyBranch:c.name==='binding-invocation-probe'?null:[7,6],matchesExpected:differences.length===0,differences};
    }catch(e){failure=e;}finally{read?.destroy();for(const b of buffers)b.destroy();for(let i=0;i<3;i++){const error=await device.popErrorScope();if(error)failure??=Error(error.message);}}
    if(failure)throw failure;result.cases.push(row);
   }
-  result.adapter=adapterEvidence;result.pass=result.cases.every(c=>c.matchesExpected)&&result.gpuErrors.length===0;
+  result.adapter=adapterEvidence;result.originalBaselinePassed=result.cases.slice(0,2).every(c=>c.matchesExpected);result.workaroundAndControlsPassed=result.cases.slice(2).every(c=>c.matchesExpected)&&result.gpuErrors.length===0;result.pass=result.originalBaselinePassed&&result.workaroundAndControlsPassed;
  }catch(e){result.adapter=adapterEvidence;result.error={name:e.name,message:e.message,stack:e.stack};}finally{device?.destroy();}
  self.postMessage({event:result.error?'error':'result',result});
 };
