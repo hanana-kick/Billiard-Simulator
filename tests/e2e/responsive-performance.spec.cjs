@@ -1,7 +1,15 @@
 const {test,expect}=require('@playwright/test');
 async function ready(page){await page.goto('./');await page.waitForFunction(()=>globalThis.__LAB_READY__&&cueLab.state.ready);await page.evaluate(()=>cueLab.option('predict',false));}
 async function point(page,which='ball'){return page.evaluate(which=>{const c=cueLab,r=c.canvas.getBoundingClientRect(),o=c.lab.get(c.state.selectedId),p=o.body.translation(),a=c.state.settings.angle*Math.PI/180;const world=which==='ball'?p:which==='rear'?c.cuePoints().grip:{x:p.x+.45*Math.cos(a),y:p.y,z:p.z+.45*Math.sin(a)},q=c.renderer.project(world);return{x:r.left+q.x,y:r.top+q.y};},which)}
-async function closeSidebar(page){if(await page.locator('#sidebarTrigger').getAttribute('aria-expanded')==='true')await page.locator('.toolbox-heading').getByRole('button',{name:'설정 패널 닫기',exact:true}).click();await expect(page.locator('#tab-shot')).not.toBeInViewport();}
+async function closeSidebar(page){
+ if(await page.locator('#sidebarTrigger').getAttribute('aria-expanded')==='true')await page.locator('.toolbox-heading').getByRole('button',{name:'설정 패널 닫기',exact:true}).click();
+ await expect(page.locator('#tab-shot')).not.toBeInViewport();
+ // Offscreen tabs do not imply that the sidebar's width transition has ended.
+ // Even its final fractional-pixel resize intentionally cancels a live gesture.
+ const gap=page.locator('[data-slot="sidebar-gap"]');await expect(gap).toHaveCount(1);
+ await expect.poll(()=>gap.evaluate(element=>element.getBoundingClientRect().width)).toBe(0);
+ await expect.poll(()=>page.evaluate(()=>{const r=cueLab.canvas.getBoundingClientRect(),v=cueLab.viewportBounds;return v?.width===r.width&&v?.height===r.height;})).toBe(true);
+}
 
 test('fold-size and landscape transitions preserve committed world and cancel incomplete placement',async({page})=>{
  await ready(page);await closeSidebar(page);await page.evaluate(()=>{cueLab.changeSettings({angle:17.23,elevation:13.25});globalThis.__responsiveSaved={lab:cueLab.lab,canvas:cueLab.canvas,settings:{...cueLab.state.settings},positions:cueLab.lab.objects.map(o=>({...o.body.translation()})),camera:structuredClone(cueLab.renderer.camera)};});
@@ -23,7 +31,11 @@ test('real pointer input timing is reported only after a matching canvas frame',
 
 for(const target of ['line','rear'])test(`${target} pointer cancellation restores fine settings and does not fire`,async({page})=>{
  await ready(page);await closeSidebar(page);await page.evaluate(()=>cueLab.view('top'));const settings=await page.evaluate(()=>({...cueLab.state.settings})),start=await point(page,target);
- await page.mouse.move(start.x,start.y);await page.mouse.down();await page.mouse.move(start.x+20,start.y+25,{steps:6});await page.waitForFunction(()=>!!cueLab.drag);
+ await page.mouse.move(start.x,start.y);await page.mouse.down();
+ const expectedDragType=target==='line'?'forward-aim':'aim';
+ expect(await page.evaluate(()=>cueLab.drag?.type)).toBe(expectedDragType);
+ await page.mouse.move(start.x+20,start.y+25,{steps:6});
+ expect(await page.evaluate(()=>cueLab.drag?.type)).toBe(expectedDragType);
  await page.evaluate(()=>cueLab.canvas.dispatchEvent(new PointerEvent('pointercancel',{pointerId:cueLab.drag.pointer,bubbles:true})));await page.mouse.up();
  expect(await page.evaluate(()=>cueLab.state.settings)).toEqual(settings);expect(await page.evaluate(()=>({drag:cueLab.drag,shots:cueLab.lab.shots}))).toEqual({drag:null,shots:0});
 });

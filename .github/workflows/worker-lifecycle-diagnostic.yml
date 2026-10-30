@@ -7,6 +7,8 @@ on:
       - 'tests/browser-worker-lifecycle/**'
       - 'playwright.worker-lifecycle.config.cjs'
       - 'tools/probe-browser-worker-webgpu.cjs'
+      - 'tools/*selected*diagnostic*.mjs'
+      - 'tests/fixtures/selected-*diagnostic*.mjs'
   workflow_dispatch:
 permissions:
   contents: read
@@ -40,8 +42,14 @@ jobs:
           # Keep strict no-symlink source/output checks intact on macOS /var aliases.
           export TMPDIR="$(node -e "process.stdout.write(require('node:fs').realpathSync(require('node:os').tmpdir()))")"
           node build.cjs --canonical-controller-assets
+      - name: Build test-only selected observer bundles
+        id: diagnostic-build
+        run: node tools/build-selected-native-diagnostic.mjs
       - name: Search, strike, mixed-width re-search, cancel and restart
-        run: npx playwright test -c playwright.worker-lifecycle.config.cjs
+        run: npx playwright test -c playwright.worker-lifecycle.config.cjs lifecycle.spec.cjs
+      - name: Replay exact captured inputs before interpreting bounded native snapshots
+        if: always() && steps.diagnostic-build.outcome == 'success'
+        run: npx playwright test -c playwright.worker-lifecycle.config.cjs selected-snapshots.spec.cjs --output=test-results-selected-snapshots --reporter=list
       - name: Read available host memory evidence
         if: always()
         shell: bash
@@ -57,6 +65,8 @@ jobs:
           path: |
             worker-lifecycle-evidence/
             test-results-worker-lifecycle/
+            test-results-selected-snapshots/
+            dist/__selected-diagnostic/
             playwright-worker-lifecycle-report/
             docs/ui-bundle-audit.json
             dist/canonical-controller-assets/
