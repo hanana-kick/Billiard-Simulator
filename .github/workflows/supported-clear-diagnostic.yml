@@ -1,0 +1,51 @@
+name: Exact supported-clear kernel diagnostic (no deployment)
+on:
+  push:
+    branches: ['backup/**']
+    paths:
+      - '.github/workflows/supported-clear-diagnostic.yml'
+      - 'playwright.supported-clear.config.cjs'
+      - 'tools/build-supported-clear-diagnostic.mjs'
+      - 'tests/browser-supported-clear/**'
+      - 'tests/fixtures/supported-clear-diagnostic-*'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  exact-kernel:
+    if: startsWith(github.ref, 'refs/heads/backup/')
+    runs-on: macos-15
+    timeout-minutes: 20
+    env:
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Require default sandboxed Worker WebGPU adapter
+        run: node tools/probe-browser-worker-webgpu.cjs
+      - name: Verify exact fixture and independent control contracts
+        run: node --test tests/supported-clear-isolated-diagnostic.mjs
+      - name: Build copy-only exact-kernel diagnostic (no application build)
+        run: node tools/build-supported-clear-diagnostic.mjs
+      - name: Exact captured inputs, original shader, separate controls
+        run: npx playwright test -c playwright.supported-clear.config.cjs
+      - name: Preserve exact-kernel evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: supported-clear-diagnostic
+          path: |
+            worker-lifecycle-evidence/
+            test-results-supported-clear/
+            playwright-supported-clear-report/
+            dist/__supported-clear/
+          retention-days: 14
+      - name: Qualification boundary
+        if: always()
+        run: echo 'Test-only GPU-intermediate replay and isolated kernel controls. No application pass, CPU parity, physical hardware qualification, or deployment is implied.' >> "$GITHUB_STEP_SUMMARY"
