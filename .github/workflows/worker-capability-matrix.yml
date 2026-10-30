@@ -1,0 +1,41 @@
+name: Standard runner Worker WebGPU capability (no deployment)
+on:
+  push:
+    branches: ['backup/**']
+    paths:
+      - '.github/workflows/worker-capability-matrix.yml'
+      - 'tools/probe-browser-worker-webgpu.cjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  capability:
+    if: startsWith(github.ref, 'refs/heads/backup/')
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2025, macos-15]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - name: Preserve exact checkout line endings
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Record runner environment
+        run: node -e "const fs=require('node:fs'),os=require('node:os');fs.mkdirSync('worker-lifecycle-evidence',{recursive:true});fs.writeFileSync('worker-lifecycle-evidence/runner.json',JSON.stringify({platform:os.platform(),release:os.release(),arch:os.arch(),cpus:os.cpus().length,node:process.version,commit:process.env.GITHUB_SHA},null,2));"
+      - name: Require default sandboxed Worker WebGPU adapter
+        run: node tools/probe-browser-worker-webgpu.cjs
+      - name: Preserve capability evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: worker-capability-${{ matrix.os }}
+          path: worker-lifecycle-evidence/
+          retention-days: 14

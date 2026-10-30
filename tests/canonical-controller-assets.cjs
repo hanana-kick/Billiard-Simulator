@@ -12,7 +12,11 @@ test('explicit browser bundle is local, import-inert and exports no injected lif
     Object.defineProperty(globalThis,'isSecureContext',{configurable:true,value:true});
     Object.defineProperty(globalThis,'navigator',{configurable:true,value:{gpu:{async requestAdapter(){adapters++;return {limits:{maxStorageBuffersPerShaderStage:9},requestDevice(){devices++;throw Error('must not create GPU device');}};}}}});
     const c={state:{ready:true,paused:true,settings:{},routeOptions:{}},lab:{anyMotion:()=>false},game:{},undoStack:[],redoStack:[],worldStamp:()=>0};
-    await assert.rejects(()=>api.startCanonicalPractice(c),/저장 버퍼 10개/);assert.equal(adapters,1);assert.equal(devices,0);
+    // This explicitly program-free bundle remains inert. Capability checks now
+    // belong to the sealed Worker; main-thread activation must fail closed
+    // before requesting an adapter or device when its static programs are absent.
+    assert.equal(manifest.wasmGpuProgramBootstrap,null);
+    await assert.rejects(()=>api.startCanonicalPractice(c),/verified matching static build configuration and source seal/);assert.equal(adapters,0);assert.equal(devices,0);
    }finally{for(const [key,descriptor]of [['navigator',oldNavigator],['isSecureContext',oldSecure]]){if(descriptor)Object.defineProperty(globalThis,key,descriptor);else delete globalThis[key];}}
 }
   finally{globalThis.LabController=old;}
