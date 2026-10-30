@@ -1,6 +1,8 @@
 'use strict';
 const {test,expect}=require('@playwright/test');
 const fs=require('node:fs');
+const {execFileSync,execFile}=require('node:child_process');
+const execFileAsync=require('node:util').promisify(execFile);
 const {createHash}=require('node:crypto');
 const {waitForPretendard}=require('../e2e/font-helper.cjs');
 
@@ -17,7 +19,7 @@ test('live Worker search → strike → N3+N1 → cancellation → restart',asyn
  const save=()=>fs.writeFileSync(output,JSON.stringify(evidence,null,2));
  const record=(kind,data={})=>fs.appendFileSync(events,JSON.stringify({at:new Date().toISOString(),kind,...data})+'\n');
  const stage=name=>{evidence.stage=name;evidence.stages.push({name,at:new Date().toISOString()});save();record('stage',{name});};
- const hostMemory=()=>{const files=['/proc/meminfo','/proc/self/cgroup','/sys/fs/cgroup/memory.events','/sys/fs/cgroup/memory.current','/sys/fs/cgroup/memory.max'];return Object.fromEntries(files.map(file=>{try{return [file,fs.readFileSync(file,'utf8')];}catch(error){return [file,{unavailable:error.code}];}}));};
+ const hostMemory=()=>{if(process.platform==='darwin'){try{return {vm_stat:execFileSync('/usr/bin/vm_stat',[],{encoding:'utf8',timeout:3000})};}catch(error){return {vm_stat:{unavailable:error.code??error.message}};}}const files=['/proc/meminfo','/proc/self/cgroup','/sys/fs/cgroup/memory.events','/sys/fs/cgroup/memory.current','/sys/fs/cgroup/memory.max'];return Object.fromEntries(files.map(file=>{try{return [file,fs.readFileSync(file,'utf8')];}catch(error){return [file,{unavailable:error.code}];}}));};
  evidence.hostMemoryBefore=hostMemory();
  let monitor,memoryMonitor;
  const cdp=await browser.newBrowserCDPSession();
@@ -32,7 +34,7 @@ test('live Worker search → strike → N3+N1 → cancellation → restart',asyn
  let memoryBusy=false;
  const sampleProcesses=async()=>{if(memoryBusy)return;memoryBusy=true;try{
   const {processInfo}=await cdp.send('SystemInfo.getProcessInfo');
-  const processes=processInfo.map(info=>{const row={pid:info.id,type:info.type,cpuTime:info.cpuTime};try{const status=fs.readFileSync('/proc/'+info.id+'/status','utf8');const match=/^VmRSS:\s+(\d+)\s+kB$/m.exec(status);row.rssKiB=match?Number(match[1]):null;if(!match)row.rssUnavailable='VmRSS absent';}catch(error){row.rssUnavailable=error.code??error.message;}return row;});
+  const processes=await Promise.all(processInfo.map(async info=>{const row={pid:info.id,type:info.type,cpuTime:info.cpuTime};try{if(process.platform==='darwin'){if(!Number.isSafeInteger(info.id)||info.id<=0)throw Error('Invalid process ID');const {stdout}=await execFileAsync('/bin/ps',['-o','rss=','-p',String(info.id)],{encoding:'utf8',timeout:3000});const rss=stdout.trim();if(!/^\d+$/.test(rss))throw Error('RSS unavailable');row.rssKiB=Number(rss);row.rssSource='ps';return row;}const status=fs.readFileSync('/proc/'+info.id+'/status','utf8');const match=/^VmRSS:\s+(\d+)\s+kB$/m.exec(status);row.rssKiB=match?Number(match[1]):null;if(!match)row.rssUnavailable='VmRSS absent';}catch(error){row.rssUnavailable=error.code??error.message;}return row;}));
   const aggregateRSSKiB=processes.reduce((n,row)=>n+(row.rssKiB??0),0);
   const sample={stage:evidence.stage,processes,aggregateRSSKiB,rssComplete:processes.every(row=>row.rssKiB!==undefined&&row.rssKiB!==null)};
   evidence.latestProcessMemory=sample;evidence.peakAggregateRSSKiB=Math.max(evidence.peakAggregateRSSKiB??0,aggregateRSSKiB);
@@ -79,6 +81,7 @@ test('live Worker search → strike → N3+N1 → cancellation → restart',asyn
  try{
   stage('load');await page.goto('./');await page.waitForFunction(()=>globalThis.__LAB_READY__&&cueLab.state.ready);
   const manifest=await (await page.request.get('./canonical-controller-assets/manifest.json')).json();
+  expect(manifest.searchSourceRevision).toBe('90ad6636d8768b56cb4e93153d1762d3594c6652ad4ae12da283d1249dd1d16f');
   expect(manifest.searchSourceSealed).toBe(true);expect(manifest.sharedSourceBytesVerified).toBe(true);
   const bundle=await page.request.get('./canonical-controller-assets/canonical-controller.mjs');expect(bundle.ok()).toBe(true);
   expect(createHash('sha256').update(await bundle.body()).digest('hex')).toBe(manifest.sha256);
@@ -122,10 +125,10 @@ test('live Worker search → strike → N3+N1 → cancellation → restart',asyn
   expect(click.execution?.active,'Click must occur during observed Worker execution, not preparation').toBe(true);
   await page.waitForFunction(()=>cueLab.state.routeStatus==='done'&&cueLab.state.routeProgress?.phase==='stopped',null,{timeout:60000});
   expect((await observe()).error).toBe('');await search('restart-nine',9,0,[3,3,3]);
-  await begin('undo-redo');await page.evaluate(()=>{document.activeElement?.blur();document.body.focus();});await page.keyboard.press('Control+z');
+  await begin('undo-redo');await page.evaluate(()=>{document.activeElement?.blur();document.body.focus();});await page.keyboard.press('ControlOrMeta+z');
   expect(await page.evaluate(()=>cueLab.canonicalPlayback.readCommittedState())).toBe(null);
   expect(await page.evaluate(()=>cueLab.game.snapshot())).toEqual(initial.game);
-  await page.keyboard.press('Control+y');expect(await page.evaluate(()=>Array.from(cueLab.canonicalPlayback.readCommittedState()))).toEqual(final.words);
+  await page.keyboard.press('ControlOrMeta+y');expect(await page.evaluate(()=>Array.from(cueLab.canonicalPlayback.readCommittedState()))).toEqual(final.words);
   expect(await page.evaluate(()=>cueLab.game.snapshot())).toEqual(final.game);
   await begin('font-and-final-state');evidence.font=await waitForPretendard(page);
   await page.screenshot({path:testInfo.outputPath('final.png'),fullPage:true});

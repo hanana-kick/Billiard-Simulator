@@ -13,7 +13,7 @@ permissions:
 jobs:
   worker-lifecycle:
     if: startsWith(github.ref, 'refs/heads/backup/')
-    runs-on: ubuntu-24.04
+    runs-on: macos-15
     timeout-minutes: 55
     env:
       CI: 'true'
@@ -29,14 +29,17 @@ jobs:
       - name: Record environment
         run: |
           test "$(id -u)" != 0
-          mkdir -p worker-lifecycle-evidence
-          { cat /etc/os-release; google-chrome --version; node --version; git rev-parse HEAD; git status --porcelain; } > worker-lifecycle-evidence/environment.txt
+          node -e "const fs=require('node:fs'),os=require('node:os');fs.mkdirSync('worker-lifecycle-evidence',{recursive:true});fs.writeFileSync('worker-lifecycle-evidence/environment.json',JSON.stringify({platform:os.platform(),release:os.release(),arch:os.arch(),cpus:os.cpus().length,node:process.version,commit:process.env.GITHUB_SHA},null,2));"
+          git status --porcelain > worker-lifecycle-evidence/checkout-status.txt
       - name: Require real Worker WebGPU capability before expensive build
         run: node tools/probe-browser-worker-webgpu.cjs
       - run: npm run prepare:engine
       - run: npm run typecheck
       - name: Build current sealed application
-        run: node build.cjs --canonical-controller-assets
+        run: |
+          # Keep strict no-symlink source/output checks intact on macOS /var aliases.
+          export TMPDIR="$(node -e "process.stdout.write(require('node:fs').realpathSync(require('node:os').tmpdir()))")"
+          node build.cjs --canonical-controller-assets
       - name: Search, strike, mixed-width re-search, cancel and restart
         run: npx playwright test -c playwright.worker-lifecycle.config.cjs
       - name: Read available host memory evidence
