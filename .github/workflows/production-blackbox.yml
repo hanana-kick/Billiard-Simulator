@@ -1,0 +1,34 @@
+name: Production Mac Chrome black-box reproduction (no deployment)
+on:
+  push:
+    branches: ['backup/**']
+    paths: ['.github/workflows/production-blackbox.yml', 'playwright.production-blackbox.config.cjs', 'tests/browser-production-blackbox/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  production:
+    if: startsWith(github.ref, 'refs/heads/backup/')
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Test unchanged public production UI with standard headed Chrome
+        run: npx playwright test -c playwright.production-blackbox.config.cjs
+      - name: Preserve reproduction evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-mac-blackbox
+          path: |
+            test-results-production-blackbox/
+            playwright-production-blackbox-report/
+          if-no-files-found: warn
+          retention-days: 14

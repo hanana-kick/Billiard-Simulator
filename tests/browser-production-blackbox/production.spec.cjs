@@ -1,0 +1,31 @@
+'use strict';
+const {test,expect}=require('@playwright/test');
+const fs=require('node:fs');const os=require('node:os');const {createHash}=require('node:crypto');
+const REV='fb8b37b71feda48dbb4a11d08f9add4742b7a8250175de3b1fc7770a426210ca';
+// Only production DOM interaction. No app globals, injected scripts, API wrappers,
+// interception, GPU probes, CDP sampling, synthetic results, or local app server.
+const cases=[
+ {name:'default-nine',total:9,grid:null,shot:true},
+ {name:'edited-four-mixed-width',total:4,grid:{angles:'-2, 0',speeds:'0.5, 0.6'},moveX:'-60'},
+ {name:'expanded-twelve',total:12,grid:{angles:'-2, 0, 2',speeds:'0.5, 0.6, 0.7, 0.8'}}
+];
+for(const scenario of cases)test(scenario.name+' production UI repetition and restart',async({page,browser},info)=>{
+ const evidence={scenario,origin:'https://dangoo.hananakick.cc/',browserVersion:browser.version(),host:{platform:os.platform(),release:os.release(),arch:os.arch()},startedAt:new Date().toISOString(),stages:[],pageErrors:[],consoleErrors:[],crashes:[],networkFailures:[],assets:[],pass:false,qualification:'Bounded production-UI reproduction only; not all-input parity or user-machine equivalence'};
+ const pending=[];const save=()=>fs.writeFileSync(info.outputPath('production-evidence.json'),JSON.stringify(evidence,null,2));
+ const stage=async name=>{evidence.stages.push({name,at:new Date().toISOString()});console.log('PRODUCTION_STAGE',scenario.name,name,new Date().toISOString());save();};
+ page.on('pageerror',e=>evidence.pageErrors.push({at:new Date().toISOString(),message:e.message}));page.on('console',m=>{if(m.type()==='error')evidence.consoleErrors.push({at:new Date().toISOString(),text:m.text()});});page.on('crash',()=>evidence.crashes.push(new Date().toISOString()));page.on('requestfailed',r=>evidence.networkFailures.push({url:r.url(),failure:r.failure()}));
+ page.on('response',r=>{if(r.url().includes('/canonical-controller-assets/')&&/manifest\.json$|canonical-controller\.mjs$|wasm-gpu-compute-worker\.mjs$/.test(r.url()))pending.push((async()=>{try{const body=await r.body();const row={url:r.url(),status:r.status(),sha256:createHash('sha256').update(body).digest('hex'),bytes:body.length};if(r.url().endsWith('/canonical-controller-assets/manifest.json')){row.manifest=JSON.parse(body);evidence.sourceRevision=row.manifest.searchSourceRevision;}evidence.assets.push(row);}catch(e){evidence.assets.push({url:r.url(),error:e.message});}})());});
+ const panel=async()=>{if(await page.locator('#sidebarTrigger').getAttribute('aria-expanded')!=='true')await page.locator('#sidebarTrigger').click();};
+ const healthy=async()=>{await expect(page.locator('#canonicalDeviceLoss')).toHaveCount(0);await expect(page.locator('#routePlanner')).not.toContainText('탐색을 완료하지 못했습니다');};
+ const complete=async(name,total)=>{await stage(name);await page.locator('#findRoute').click();await expect(page.locator('#cancelRoute')).toBeVisible();await expect(page.locator('#findRoute')).toBeVisible({timeout:300000});await healthy();await expect(page.locator('#routePlanner .route-progress')).toContainText(`처리 ${total} / ${total} · 판정 완료 ${total}`);await expect(page.locator('#routePlanner .route-progress')).toContainText('미완료 0 · 미지원 0');evidence.stages.at(-1).visibleResult=await page.locator('#routePlanner').innerText();save();};
+ try{
+  await stage('load-production');await page.goto('/');await expect(page.locator('#startCanonicalPractice')).toBeEnabled();await page.locator('#startCanonicalPractice').click();await page.locator('#confirmCanonicalPractice').click();await expect(page.getByRole('dialog')).not.toBeVisible({timeout:90000});await panel();await page.getByRole('tab',{name:'수동',exact:true}).click();
+  if(scenario.moveX){await page.locator('#posX').fill(scenario.moveX);await page.locator('#posX').press('Enter');await expect(page.locator('#posX')).not.toBeFocused();await expect.poll(async()=>Number(await page.locator('#posX').inputValue())).toBe(Math.round(-0.6*16777216)/16777216*100);await expect(page.locator('#undo')).toBeEnabled();}
+  if(scenario.grid){for(const [axis,value] of Object.entries(scenario.grid))await page.locator('#canonicalGrid-'+axis).fill(value);await page.locator('#applyCanonicalGrid').click();await expect(page.locator('#canonicalSearchGrid')).toContainText('탐색 조합을 적용했습니다');}
+  await page.getByRole('tab',{name:'경로 탐색',exact:true}).click();await expect(page.locator('#canonicalSearchScope')).toBeVisible();
+  for(let i=0;i<3;i++)await complete('search-'+(i+1),scenario.total);
+  await stage('cancel-visible-submitted');await page.locator('#findRoute').click();await expect(page.locator('#canonicalSearchPhase')).toHaveAttribute('data-phase',/submitted|readback/,{timeout:300000});evidence.cancelVisibleText=await page.locator('#canonicalSearchPhase').innerText();await page.locator('#cancelRoute').click();await expect(page.locator('#canonicalSearchPhase')).toHaveAttribute('data-phase','stopped',{timeout:60000});await healthy();await complete('restart',scenario.total);
+  if(scenario.shot){await stage('apply-and-strike');await page.locator('[id^="applyRoute"]').first().click();await page.locator('.toolbox-heading').getByRole('button',{name:'설정 패널 닫기',exact:true}).click();await page.locator('#strike').click();await expect(page.locator('.shot-counter')).toContainText('1회',{timeout:300000});await panel();await expect(page.locator('#undo')).toBeEnabled({timeout:300000});await page.getByRole('tab',{name:'경로 탐색',exact:true}).click();await expect(page.locator('#findRoute')).toBeEnabled({timeout:300000});await complete('postshot-search',scenario.total);}
+  await Promise.all(pending);expect(evidence.sourceRevision,'Actual production response must bind the deployed source').toBe(REV);expect(evidence.pageErrors).toEqual([]);expect(evidence.consoleErrors).toEqual([]);expect(evidence.crashes).toEqual([]);await healthy();evidence.pass=true;await stage('passed');
+ }finally{await Promise.allSettled(pending);evidence.finishedAt=new Date().toISOString();evidence.finalVisibleText=await page.locator('body').innerText({timeout:5000}).catch(e=>'DOM unavailable: '+e.message);save();await page.screenshot({path:info.outputPath('final.png'),fullPage:true}).catch(()=>{});await info.attach('production-evidence',{path:info.outputPath('production-evidence.json'),contentType:'application/json'});}
+});
