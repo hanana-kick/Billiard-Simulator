@@ -40,9 +40,14 @@ function normalizeJSON(value){
  };
  return visit(value);
 }
-export function canonicalEngineArtifactJSON(value){
- const json=JSON.stringify(normalizeJSON(value));if(json.length>MAX_BYTES||(json.length>MAX_BYTES/3&&new TextEncoder().encode(json).length>MAX_BYTES))throw RangeError('Artifact exceeds structural byte limit');return json;
+// Private serializer for an owned, recursively normalized snapshot. Never call
+// this with external objects: normalizeJSON supplies validation, canonical key
+// order and isolation from caller mutation before the loader's first await.
+function normalizedArtifactJSON(value){
+ const json=JSON.stringify(value);if(json.length>MAX_BYTES||(json.length>MAX_BYTES/3&&new TextEncoder().encode(json).length>MAX_BYTES))throw RangeError('Artifact exceeds structural byte limit');return json;
 }
+export function canonicalEngineArtifactJSON(value){return normalizedArtifactJSON(normalizeJSON(value));}
+const digestNormalized=x=>sha256Text(normalizedArtifactJSON(x));
 const copy=normalizeJSON;
 const keys=(x,want)=>{if(!x||Object.keys(x).sort().join(',')!==want.slice().sort().join(','))throw Error('Unexpected artifact fields');};
 const digest=x=>sha256Text(canonicalEngineArtifactJSON(x));
@@ -60,8 +65,8 @@ function validateHeader(p){
  for(const a of plan.allocations){keys(a,['size','usage','external']);if(!Number.isSafeInteger(a.usage)||a.usage<1||a.usage>1023)throw Error('Invalid allocation usage');}
  if(plan.sourceQualified!==false||plan.nativeQualified!==false)throw Error('Artifact cannot assert execution qualification');
 }
-async function sourceHashes(lowered){
- const result={plan:await digest(lowered.sourcePlan),original:[],lowered:[]};
+async function sourceHashes(lowered,hashPlan=digest){
+ const result={plan:await hashPlan(lowered.sourcePlan),original:[],lowered:[]};
  // Bound temporary encoded shader bytes to one definition at a time.
  for(const d of lowered.sourcePlan.definitions)result.original.push(await sha256Text(d.source));
  for(const d of lowered.definitions)result.lowered.push(await sha256Text(d.code));
@@ -85,12 +90,12 @@ export async function loadWasmGpuEngineArtifact(input,{expectedArtifactSha256,ex
  if(!validDigest(expectedArtifactSha256)||typeof expectedSourceRevision!=='string'||!expectedSourceRevision||!expectedStructuralConfig||!Number.isSafeInteger(expectedCount))throw Error('Independent expected digest/revision/config/width required');
  if(typeof input==='string'){if(new TextEncoder().encode(input).length>MAX_BYTES)throw RangeError('Artifact exceeds byte limit');input=JSON.parse(input);}
  const artifact=copy(input);keys(artifact,['format','sha256','payload']);
- if(artifact.format!==WASM_GPU_ENGINE_ARTIFACT_FORMAT||!validDigest(artifact.sha256)||artifact.sha256!==expectedArtifactSha256||await digest(artifact.payload)!==expectedArtifactSha256)throw Error('Artifact integrity hash mismatch');
+ if(artifact.format!==WASM_GPU_ENGINE_ARTIFACT_FORMAT||!validDigest(artifact.sha256)||artifact.sha256!==expectedArtifactSha256||await digestNormalized(artifact.payload)!==expectedArtifactSha256)throw Error('Artifact integrity hash mismatch');
  const p=artifact.payload;validateHeader(p);
  if(p.sourceRevision!==expectedSourceRevision)throw Error('Source revision mismatch');
  if(p.count!==expectedCount)throw Error('Artifact width mismatch');
  if(canonicalEngineArtifactJSON(p.structuralConfig)!==canonicalEngineArtifactJSON(expectedStructuralConfig))throw Error('Structural config mismatch');
- if(canonicalEngineArtifactJSON(p.sourceHashes)!==canonicalEngineArtifactJSON(await sourceHashes(p.lowered)))throw Error('Shader source hash mismatch');
+ if(canonicalEngineArtifactJSON(p.sourceHashes)!==canonicalEngineArtifactJSON(await sourceHashes(p.lowered,digestNormalized)))throw Error('Shader source hash mismatch');
  p.lowered.commands=unpackCommands(p.lowered.commands);p.lowered.sourcePlan.commands=unpackCommands(p.lowered.sourcePlan.commands);
  for(const c of p.lowered.sourcePlan.commands)if(c.kind==='dispatch'&&!c.indirect&&(!Number.isSafeInteger(c.x)||c.x<1||c.x>0xffffffff))throw Error('Invalid original dispatch width');
  // Legacy identity/report strings are descriptive only; the trusted digest and

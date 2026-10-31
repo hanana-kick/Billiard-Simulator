@@ -40,3 +40,42 @@ test('throwing diagnostic accessor cannot suppress an original device-loss notif
  const f=fixture();await f.send(1,'prepare',{program:'search',width:1});f.hook.runGate=deferred();f.hook.diagnostics=()=>{throw Error('diagnostic-only error');};const run=f.send(2,'run',f.search());await tick();f.loss.resolve({reason:'unknown',message:'native failure'});await tick();
  assert.equal(f.messages.find(m=>m.event==='lost').error.deviceLoss.message,'native failure');assert.equal(f.hook.input.signal.aborted,true);f.hook.runGate.resolve();await run;
 });
+
+// Actual protocol + actual preparation tracker, fake native promises only.
+for(const nativeStage of ['shader-info','pipeline-create'])test('prepare loss captures '+nativeStage+' and progress before abort callbacks',async()=>{
+ const {compileLiveWorldPipeline,snapshotLiveWorldPreparation,drainLiveWorldPreparation}=await import('../src/direct-candidate/experimental-live-world-pipeline-cache.mjs');
+ const loss=deferred(),native=deferred(),entered=deferred(),messages=[];let capturedBeforeAbort=false,abortSawCapture=false,compiledError,deviceCalls=0;
+ const device={lost:loss.promise,createShaderModule(){return{getCompilationInfo(){if(nativeStage==='shader-info'){entered.resolve();return native.promise;}return Promise.resolve({messages:[]});}}},createComputePipelineAsync(){entered.resolve();return native.promise;}};
+ const protocol=createWorkerOwnerProtocol({expectedRevision:'prepare-test',getDeviceDiagnostics:()=>({userAgent:'test'}),getPreparationDiagnostics:d=>{capturedBeforeAbort=true;return snapshotLiveWorldPreparation(d);},requestDevice:async()=>{deviceCalls++;return device;},loadLibrary:async()=>({sourceRevision:'prepare-test',manifest:{structuralBounds:{}},lookupProgram:async()=>({engine:{resources:{totalOwnedBytes:0}},rawEngine:{}}),getScheduler:()=>({moduleBytes:new Uint8Array()})}),drainPreparation:drainLiveWorldPreparation,send:m=>messages.push(m),prepareSearch:async({signal,onPrepareProgress})=>{
+  onPrepareProgress({stage:'compile-start',pipelineIndex:2,totalPipelines:3,label:'world-N3-7',entryPoint:'main',shaderBytes:14});
+  const pending=compileLiveWorldPipeline(device,{code:'mock WGSL only',label:'world-N3-7',signal});
+  signal.addEventListener('abort',()=>{abortSawCapture=capturedBeforeAbort;},{once:true});
+  try{await pending;}catch(error){compiledError=error;throw error;}
+ }});
+ const prepare=protocol.handle({v:1,generation:7,id:1,op:'prepare',program:'search',width:3});await entered.promise;
+ loss.resolve({reason:'unknown',message:'original native loss'});await prepare;
+ const event=messages.find(m=>m.event==='lost'),d=event.error.deviceLoss.diagnostics;
+ assert.equal(event.error.deviceLoss.message,'original native loss');assert.equal(d.nativeStage,nativeStage);assert.equal(d.pipelineIndex,2);assert.equal(d.totalPipelines,3);assert.equal(d.label,'world-N3-7');assert.equal(d.shaderBytes,14);assert.equal(d.entryPoint,'main');assert.equal(d.width,3);assert.equal(d.requestId,1);assert.ok(d.prepareElapsedMs>=0);assert.ok(d.nativePreparationElapsedMs>=0);assert.equal(d.runElapsedMs,undefined);assert.equal(d.fulfilledFences,undefined);assert.ok(Object.isFrozen(d));assert.equal(abortSawCapture,true,'Loss evidence captured before any abort callback');assert.equal(compiledError.name,'AbortError');assert.equal(deviceCalls,1);assert.equal(messages.some(m=>m.ok===true),false);
+ native.resolve(nativeStage==='shader-info'?{messages:[]}:{});await tick();assert.equal(d.nativeStage,nativeStage);assert.equal(snapshotLiveWorldPreparation(device),null);
+});
+
+test('prepare diagnostic snapshot remains bounded and excludes native objects',async()=>{const {snapshotGPULossDiagnostics}=await import('../src/wasm-gpu/gpu-execution-diagnostics.mjs');const d=snapshotGPULossDiagnostics({nativeStage:'shader-info',label:'x'.repeat(1000),entryPoint:'main',pipelineIndex:2,totalPipelines:3,shaderBytes:42,prepareElapsedMs:10,nativePreparationElapsedMs:5,module:{secret:true},code:'secret source'});assert.equal(d.label.length,512);assert.equal(d.pipelineIndex,2);assert.equal(d.shaderBytes,42);assert.equal(d.prepareElapsedMs,10);assert.equal(d.nativePreparationElapsedMs,5);assert.equal('module'in d,false);assert.equal('code'in d,false);assert.ok(Object.isFrozen(d));});
+
+test('late prepare progress preserves original failure and cannot overwrite successor diagnostics',async()=>{
+ const loss=deferred(),gate=deferred(),callbacks=[],messages=[],original=Error('original prepare failure');let attempts=0;
+ const device={lost:loss.promise};
+ const protocol=createWorkerOwnerProtocol({expectedRevision:'late-test',requestDevice:async()=>device,loadLibrary:async()=>({sourceRevision:'late-test',manifest:{structuralBounds:{}},lookupProgram:async()=>({engine:{resources:{totalOwnedBytes:0}},rawEngine:{}}),getScheduler:()=>({moduleBytes:new Uint8Array()})}),drainPreparation:async()=>{},send:m=>messages.push(m),prepareSearch:async({signal,onPrepareProgress})=>{
+  callbacks.push(onPrepareProgress);if(++attempts===1)throw original;
+  onPrepareProgress({stage:'compile-start',pipelineIndex:2,totalPipelines:3,label:'successor'});
+  await new Promise((resolve,reject)=>{signal.addEventListener('abort',()=>reject(Error('successor aborted')),{once:true});gate.promise.then(resolve,reject);});
+ }});
+ await protocol.handle({v:1,generation:4,id:1,op:'prepare',program:'search',width:1});
+ const failed=messages.find(m=>m.id===1&&m.ok===false);assert.equal(failed.error.message,original.message);
+ assert.doesNotThrow(()=>callbacks[0]({stage:'compile-start',label:'late-while-idle',pipelineIndex:99}));
+ const successor=protocol.handle({v:1,generation:4,id:2,op:'prepare',program:'search',width:3});await tick();
+ assert.doesNotThrow(()=>callbacks[0]({stage:'compile-start',label:'stale-old-prepare',pipelineIndex:99}));
+ assert.equal(messages.filter(m=>m.id===1&&m.event==='progress').length,2,'Original late progress-send behavior preserved');
+ loss.resolve({reason:'unknown',message:'successor native loss'});await successor;
+ const d=messages.find(m=>m.event==='lost').error.deviceLoss.diagnostics;assert.equal(d.label,'successor');assert.equal(d.pipelineIndex,2);assert.equal(d.requestId,2);assert.equal(d.width,3);assert.equal(failed.error.message,original.message);
+ assert.doesNotThrow(()=>callbacks[0]({stage:'compile-start',label:'late-after-loss'}));assert.equal(d.label,'successor');gate.resolve();
+});

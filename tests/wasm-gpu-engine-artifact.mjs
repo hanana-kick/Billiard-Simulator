@@ -72,3 +72,26 @@ test('JSON parser rejects unsupported values and aliased source hash claims',asy
 });
 
 test.after(()=>console.log(JSON.stringify({artifactBytes:Buffer.byteLength(JSON.stringify(fullArtifact)),maxRSSKiB:process.resourceUsage().maxRSS,sourceCommands:fullArtifact.payload.lowered.sourcePlan.commands.indices.length,sourceUniqueCommands:fullArtifact.payload.lowered.sourcePlan.commands.dictionary.length,loweredUniqueCommands:fullArtifact.payload.lowered.commands.dictionary.length,sourceDefinitionsBytes:Buffer.byteLength(JSON.stringify(fullArtifact.payload.lowered.sourcePlan.definitions)),loweredDefinitionsBytes:Buffer.byteLength(JSON.stringify(fullArtifact.payload.lowered.definitions))})));
+
+// Regression: hashing an owned normalized snapshot must retain the public
+// canonical byte contract, admission checks and caller-mutation isolation.
+test('canonical serializer preserves numeric keys, Unicode, shared values and negative zero',()=>{
+ const shared={z:1,a:'한글\ud800'};
+ assert.equal(canonicalEngineArtifactJSON({'10':'a','2':'b','01':shared,z:-0,a:[shared,shared]}),JSON.stringify({'2':'b','10':'a','01':{a:'한글\ud800',z:1},a:[{a:'한글\ud800',z:1},{a:'한글\ud800',z:1}],z:0}));
+ assert.equal(canonicalEngineArtifactJSON(Object.assign(Object.create(null),{z:2,a:1})),'{"a":1,"z":2}');
+ let reads=0;const accessor={};Object.defineProperty(accessor,'a',{enumerable:true,get(){reads++;return 1;}});
+ const cycle={};cycle.self=cycle;
+ for(const value of [accessor,cycle,Infinity,()=>1,new Date()])assert.throws(()=>canonicalEngineArtifactJSON(value));
+ assert.equal(reads,0);
+});
+test('loader owns its normalized snapshot before asynchronous digest verification',async()=>{
+ const caller=clone(artifact),code=caller.payload.lowered.definitions[0].code;
+ const pending=loadWasmGpuEngineArtifact(caller,expected);
+ caller.payload.lowered.definitions[0].code='tampered after call';
+ caller.payload.lowered.sourcePlan.commands.dictionary.length=0;
+ const loaded=await pending;
+ assert.equal(loaded.lowered.definitions[0].code,code);
+ assert.deepEqual(loaded.lowered.sourcePlan.commands,smallPlan.commands);
+ assert.ok(Object.isFrozen(loaded.lowered.sourcePlan));
+ assert.deepEqual(await loadWasmGpuEngineArtifact(JSON.stringify(artifact),expected),loaded);
+});

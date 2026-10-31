@@ -58,6 +58,13 @@ function stateFor(device) {
   Promise.resolve(device.lost).then(lose, lose);
   return state;
 }
+/** Passive snapshot of the current native preparation await; no new observation/GPU call. */
+export function snapshotLiveWorldPreparation(device){
+ const detail=devices.get(device)?.diagnostic;
+ if(!detail)return null;
+ const {began,...values}=detail;
+ return Object.freeze({...values,nativePreparationElapsedMs:Math.max(0,performance.now()-began)});
+}
 function alive(state) { if (state.quarantined) throw state.quarantined; if (state.lost) throw state.lost; }
 function pending(state, work, context, signal, timeoutMs = LIVE_WORLD_PREPARATION_TIMEOUT_MS) {
   // Observe already-started native work even when this device was quarantined.
@@ -68,6 +75,8 @@ function pending(state, work, context, signal, timeoutMs = LIVE_WORLD_PREPARATIO
   settled.then(()=>state.native.delete(settled));
   if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 2_147_483_647) throw RangeError('Positive bounded preparation timeout required');
   alive(state);
+  const diagnostic={nativeStage:context?.stage,label:context?.label,entryPoint:context?.entryPoint,shaderBytes:context?.shaderBytes,began:performance.now()};
+  state.diagnostic=diagnostic;
   const annotate = error => {
     if (!context || error?.name === 'AbortError') return error;
     const diagnostic = Object.freeze({...context, elapsedMs: Math.max(0, Date.now() - context.startedAt), ...(error?.deviceLoss ? {deviceLoss: error.deviceLoss} : {})});
@@ -82,6 +91,7 @@ function pending(state, work, context, signal, timeoutMs = LIVE_WORLD_PREPARATIO
     const finish = (fn, value) => {
       if (done) return;
       done = true; clearTimeout(timer); state.pending.delete(fail);
+      if(state.diagnostic===diagnostic)state.diagnostic=null;
       signal?.removeEventListener('abort', stop); fn(value);
     };
     const fail = error => finish(reject, annotate(error));

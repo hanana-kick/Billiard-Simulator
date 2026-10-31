@@ -27,8 +27,8 @@ export function snapshotGPUEnvironment({navigator:nav,adapter,device,requiredLim
 export function snapshotGPULossDiagnostics(value){
  if(!value||typeof value!=='object')return null;
  const out={};
- for(const key of ['sourceRevision','manifestSha256','workerSha256','userAgent','platform','vendor','architecture','device','description','mode','nativeStage','observedAt']){const v=text(read(value,key));if(v!==null)out[key]=v;}
- for(const key of ['generation','runGeneration','requestId','width','requestedStorageBuffersPerShaderStage','maxStorageBuffersPerShaderStage','maxBufferSize','maxStorageBufferBindingSize','submittedCommands','confirmedCommands','submittedFences','fulfilledFences','runElapsedMs']){const v=number(read(value,key));if(v!==null)out[key]=v;}
+ for(const key of ['sourceRevision','manifestSha256','workerSha256','userAgent','platform','vendor','architecture','device','description','mode','nativeStage','observedAt','label','entryPoint']){const v=text(read(value,key));if(v!==null)out[key]=v;}
+ for(const key of ['generation','runGeneration','requestId','width','requestedStorageBuffersPerShaderStage','maxStorageBuffersPerShaderStage','maxBufferSize','maxStorageBufferBindingSize','submittedCommands','confirmedCommands','submittedFences','fulfilledFences','runElapsedMs','prepareElapsedMs','nativePreparationElapsedMs','pipelineIndex','totalPipelines','completedPipelines','shaderBytes']){const v=number(read(value,key));if(v!==null)out[key]=v;}
  for(const key of ['isFallbackAdapter','resultCopySubmitted']){const v=read(value,key);if(typeof v==='boolean')out[key]=v;}
  return Object.freeze(out);
 }
