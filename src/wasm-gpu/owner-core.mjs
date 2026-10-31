@@ -43,12 +43,12 @@ export async function prepareWasmGpuOwner({moduleBytes, device, bridge, chunkSiz
       if (onProgress !== undefined && typeof onProgress !== 'function') throw new TypeError('onProgress must be a function');
       if (onExecutionPhase !== undefined && typeof onExecutionPhase !== 'function') throw new TypeError('onExecutionPhase must be a function');
       const {begin, release = () => {}} = snapshotRun(input);
-      const token = {generation: runtime.start().generation, cancelled: null, promise: null};
+      const token = {generation: runtime.start().generation, cancelled: null, promise: null, began: globalThis.performance?.now()??Date.now()};
       active = token;
       const onAbort = () => cancel(signal.reason);
       token.promise = (async () => {
         let result, failure, phase = 'begin', submittedCommands = 0, chunkIndex = 0;
-        const began = globalThis.performance?.now() ?? Date.now();
+        const began = token.began;
         const detail = executionStage => Object.freeze({executionStage, generation: token.generation,
           chunkIndex, chunkCount: Math.ceil(bridge.commandCount / chunkSize), submittedCommands,
           totalCommands: bridge.commandCount, runElapsedMs: (globalThis.performance?.now() ?? Date.now()) - began});
@@ -116,5 +116,5 @@ export async function prepareWasmGpuOwner({moduleBytes, device, bridge, chunkSiz
     })();
     return disposal;
   }
-  return Object.freeze({run, cancel, dispose, status, experimental: true, productionEnabled: false, requiresExclusiveDevice: true, ...metadata});
+  return Object.freeze({run, cancel, dispose, status, diagnostics:()=>{let d=bridge.diagnostics?.();if(active&&d?.generation!==active.generation)d={generation:active.generation,nativeStage:'owner-before-upload',submittedCommands:0,confirmedCommands:0,submittedFences:0,fulfilledFences:0,resultCopySubmitted:false};return d?Object.freeze({...d,runGeneration:d.generation,...(active?{runElapsedMs:Math.max(0,(globalThis.performance?.now()??Date.now())-active.began)}:{})}):null;}, experimental: true, productionEnabled: false, requiresExclusiveDevice: true, ...metadata});
 }

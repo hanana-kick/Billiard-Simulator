@@ -1,3 +1,4 @@
+import {snapshotGPULossDiagnostics} from '../wasm-gpu/gpu-execution-diagnostics.mjs';
 import {canonicalPreparationAbort} from './canonical-page-preparation.mjs';
 /** Explicit fresh practice preset. Never imports or normalizes the live world.
  * Static geometry comes from a NEW unstepped authored table; bodies are authored
@@ -51,8 +52,9 @@ export async function startCanonicalPracticeInternal(c,{install,requestDevice,di
     // Capture before cancellation: cancel/late search completions can replace
     // routeError and progress. Keep the original loss evidence independently.
     c.state.canonicalPlayback??={};
-    const progress=c.state.routeProgress;
-    const deviceLoss=Object.freeze({reason:info.reason??'unknown',message:info.message??'',timestamp:new Date().toISOString(),
+    const progress=c.state.routeProgress,lossNow=performance.now();
+    const pageTiming=c.state.routeStatus==='searching'?canonicalSearchLossTiming(progress,lossNow):{};
+    const deviceLoss=Object.freeze({reason:info.reason??'unknown',message:info.message??'',timestamp:new Date().toISOString(),...pageTiming,...(info.diagnostics?{gpuDiagnostics:snapshotGPULossDiagnostics(info.diagnostics)}:{}),
      phase:c.state.canonicalPlayback.phase??'ready',routeStatus:c.state.routeStatus,
      searchProgress:progress?Object.freeze(Object.fromEntries(Object.entries(progress).filter(([,v])=>v===null||['string','number','boolean'].includes(typeof v)))):null});
     c.state.canonicalPlayback.deviceLoss=deviceLoss;c.state.canonicalPlayback.deviceLost=true;
@@ -63,10 +65,15 @@ export async function startCanonicalPracticeInternal(c,{install,requestDevice,di
      ' · 원인 코드: '+deviceLoss.reason+' · 마지막 단계: '+(last?.executionStage??last?.phase??deviceLoss.phase)+
      (Number.isSafeInteger(last?.chunkIndex)?' · 청크 '+last.chunkIndex+'/'+(last.chunkCount??'?'):'')+
      (Number.isSafeInteger(last?.submittedCommands)?' · 제출 명령 '+last.submittedCommands+'/'+(last.totalCommands??'?')+' (GPU 완료 수 아님)':'')+
-     (Number.isFinite(last?.elapsedMs)?' · 경과 '+Math.round(last.elapsedMs)+' ms':'');
+     (deviceLoss.gpuDiagnostics?.nativeStage?' · GPU 대기: '+deviceLoss.gpuDiagnostics.nativeStage:'')+
+     (Number.isFinite(deviceLoss.searchElapsedAtLossMs)?' · 손실 통지 수신 시 탐색 경과 '+Math.round(deviceLoss.searchElapsedAtLossMs)+' ms':Number.isFinite(last?.elapsedMs)?' · 마지막 진행 표시 시점 '+Math.round(last.elapsedMs)+' ms':'');
     c.state.forecastStatus=c.state.routeError;try{c.notify();}catch{}
    });
    try{c.repairRouteTargets();c.notify();}catch(error){c.state.canonicalPlayback??={};c.state.canonicalPlayback.entryWarning='GPU 모드는 시작됐지만 화면 갱신에 실패했습니다: '+(error.message??String(error));}return owner;
   }catch(error){if(!installed){c.game=saved.game;Object.assign(c.state,{gameMode:saved.gameMode,selectedId:saved.selectedId,settings:saved.settings,routeOptions:saved.routeOptions,predict:saved.predict,activePanel:saved.activePanel});try{c.notify();}catch{}}throw error;}
  }finally{try{if(!installed){store?.dispose();if(device)await cleanupDevice(device);}}finally{pending.delete(c);}}
 }
+
+/** Page notification receipt time, not the unknown physical GPU-loss instant.
+ * All values use the page monotonic clock; Worker receipt/run elapsed is separate. */
+export function canonicalSearchLossTiming(progress,now=performance.now()){const out={};if(Number.isFinite(progress?.searchStartedAtMs)&&progress.searchStartedAtMs<=now)out.searchElapsedAtLossMs=now-progress.searchStartedAtMs;if(Number.isFinite(progress?.sampledAtMs)&&progress.sampledAtMs<=now)out.lastProgressAgeMs=now-progress.sampledAtMs;return Object.freeze(out);}

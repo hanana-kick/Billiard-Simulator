@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {createRequire} from 'node:module';
-import {createCanonicalPracticePreset,startCanonicalPracticeInternal} from '../src/direct-candidate/canonical-practice-entry.mjs';
+import {createCanonicalPracticePreset,startCanonicalPracticeInternal,canonicalSearchLossTiming} from '../src/direct-candidate/canonical-practice-entry.mjs';
 const require=createRequire(import.meta.url),R=require('../vendor/rapier.cjs');await R.init();globalThis.RAPIER=R;
 for(const name of ['math','physics','game-rules','render-cadence','controller'])require('../src/'+name+'.js');
 const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return {resolve,promise};};
@@ -171,4 +171,26 @@ test('browser startup edit refusal cleans only the runtime and preserves changed
   await cleanupStarted.promise;assert.equal(installs,0);assert.equal(cleanups,1);assert.equal(f.c.lab,saved.lab);assert.equal(f.c.game,saved.game);assert.equal(f.c.state.settings,saved.settings);assert.equal(f.c.state.settings.angle,17);assert.equal(f.c.undoStack,saved.undo);assert.equal(f.c.redoStack,saved.redo);
   drain.resolve();await assert.rejects(pending,/바뀌었습니다/);assert.equal(f.destroyed,0);
  }finally{creation.resolve(runtime);drain.resolve();f.cleanup();}
+});
+
+
+test('loss timing uses the current page clock rather than stale progress or Worker clocks',()=>{
+ const progress={elapsedMs:12899,searchStartedAtMs:1000,sampledAtMs:13899};
+ assert.deepEqual(canonicalSearchLossTiming(progress,20000),{searchElapsedAtLossMs:19000,lastProgressAgeMs:6101});assert.equal(progress.elapsedMs,12899);
+ assert.deepEqual(canonicalSearchLossTiming({elapsedMs:12899},20000),{});
+ assert.deepEqual(canonicalSearchLossTiming({searchStartedAtMs:Infinity,sampledAtMs:30000},20000),{});
+});
+test('loss retains bounded Worker diagnostics and current page timing independently before cancel',async()=>{
+ const f=fixture();try{await startCanonicalPracticeInternal(f.c,{requestDevice:async()=>f.device,install(c){return c.canonicalPlayback={cancel(){c.state.routeProgress=null;}};}});
+ const now=performance.now();f.c.state.routeStatus='searching';f.c.state.routeProgress={elapsedMs:100,searchStartedAtMs:now-1000,sampledAtMs:now-900,executionStage:'finish-fence-and-readback'};
+ f.lost.resolve({reason:'unknown',message:'native loss',diagnostics:{nativeStage:'finish-map-pending',runElapsedMs:150,secret:'omit'}});await Promise.resolve();
+ const d=f.c.state.canonicalPlayback.deviceLoss;assert.ok(d.searchElapsedAtLossMs>=1000);assert.ok(d.lastProgressAgeMs>=900);assert.equal(d.gpuDiagnostics.runElapsedMs,150);assert.equal(d.gpuDiagnostics.nativeStage,'finish-map-pending');assert.equal('secret'in d.gpuDiagnostics,false);assert.match(f.c.state.routeError,/손실 통지 수신 시 탐색 경과/);assert.match(f.c.state.routeError,/finish-map-pending/);
+ }finally{f.cleanup();}
+});
+
+test('loss outside active search does not label old progress as current search elapsed',async()=>{
+ const f=fixture();try{await startCanonicalPracticeInternal(f.c,{requestDevice:async()=>f.device,install(c){return c.canonicalPlayback={cancel(){}};}});
+ f.c.state.routeStatus='idle';f.c.state.routeProgress={elapsedMs:100,searchStartedAtMs:0,sampledAtMs:0};f.lost.resolve({reason:'unknown',message:'idle loss'});await Promise.resolve();
+ assert.equal('searchElapsedAtLossMs'in f.c.state.canonicalPlayback.deviceLoss,false);assert.doesNotMatch(f.c.state.routeError,/손실 통지 수신 시 탐색 경과/);
+ }finally{f.cleanup();}
 });

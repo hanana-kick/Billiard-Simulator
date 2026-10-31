@@ -1,3 +1,4 @@
+import {createGPUExecutionDiagnostics} from './gpu-execution-diagnostics.mjs';
 import {WASM_GPU_COMMAND_CAPACITY} from './scheduler-limits.mjs';
 import {subscribeDeviceLoss} from './device-loss-subscriptions.mjs';
 import {createDeviceLossWaiters} from './device-loss-waiters.mjs';
@@ -77,13 +78,14 @@ export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximum
  let lost=null,disposed=false,active=null,lastGeneration=0,busy=false;
  const alive=()=>{if(disposed)throw Error('GPU bridge disposed');if(lost)throw lost;assertLiveWorldPreparationUsable(device);};
  // Device loss establishes that pending GPU work can no longer access resources.
- const lossWaiters=createDeviceLossWaiters();
+ const lossWaiters=createDeviceLossWaiters(),diagnostics=createGPUExecutionDiagnostics();
  const lose=(reason='GPU device lost')=>{if(!lost){lost=reason instanceof Error?reason:Error(String(reason));active=null;externalGroups.dispose();}};
  const deviceLost=reason=>{lose(reason);lossWaiters.deviceLost(lost);};
  const unsubscribeLoss=subscribeDeviceLoss(device,info=>deviceLost(info instanceof Error?info:'GPU device lost: '+(info?.message??'unknown')));
  const scoped=async(fn,preparation=false)=>{
   let result,failure,depth=0,gpuFailure;
   try{for(const kind of ['validation','internal','out-of-memory']){device.pushErrorScope(kind);depth++;}result=await fn();}catch(error){failure=error;}
+  if(!preparation)diagnostics.stage(diagnostics.snapshot()?.nativeStage?.startsWith('finish-')?'finish-error-scopes':'operation-error-scopes');
   while(depth--){try{const error=await (preparation?awaitLiveWorldPreparation(device,device.popErrorScope(),{signal,stage:'error-scope',label:'preparation-cleanup'}):device.popErrorScope());if(error&&!gpuFailure)gpuFailure=Error('GPU operation error: '+(error.message??String(error)));}catch(error){gpuFailure??=error;}}
   if(gpuFailure)lose(gpuFailure);if(failure)throw failure;if(gpuFailure)throw gpuFailure;return result;
  };
@@ -102,15 +104,16 @@ export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximum
   const guard=(generation)=>{alive();if(!active||active.generation!==generation||active.cancelled)throw Error('Stale or cancelled GPU generation');};
   const drain=async()=>{const work=pending.splice(0);const results=await Promise.allSettled(work);const failure=results.find(x=>x.status==='rejected');if(failure)throw failure.reason;};
   const releaseExternal=()=>{if(rawEngine)return;externalGroups.dispose();externalGroups=createLiveWorldRunBindGroups(device);for(let i=0;i<plan.allocations.length;i++)if(plan.allocations[i].external)buffers[i]=null;};
-  const submit=async (encoder,generation)=>{
-   alive();while(pending.length>=maxInFlight)await pending.shift();
-   guard(generation);device.queue.submit([encoder.finish()]);
-   const done=lossWaiters.wait(device.queue.onSubmittedWorkDone());done.catch(lose);pending.push(done);
+  const submit=async (encoder,generation,lastCommand,{resultCopy=false}={})=>{
+   alive();while(pending.length>=maxInFlight){diagnostics.stage(resultCopy?'finish-prior-fence-wait':'command-fence-wait');await pending.shift();}
+   guard(generation);diagnostics.stage(resultCopy?'finish-gate-copy-submit':'command-submit');device.queue.submit([encoder.finish()]);
+   const submission=diagnostics.submitted(lastCommand,{resultCopy});
+   const done=lossWaiters.wait(diagnostics.observe(device.queue.onSubmittedWorkDone(),submission));done.catch(lose);pending.push(done);
   };
   // Quarantined cleanup skips new scopes, but still awaits every submitted fence.
  const exclusive=async (fn,after,cleanup=false)=>{if(busy)throw Error('Concurrent GPU bridge operation');let unscoped=false;try{assertLiveWorldPreparationUsable(device);}catch(error){if(!cleanup)throw error;unscoped=error.code==='GPU_PREPARATION_TIMEOUT';}busy=true;try{const result=await (unscoped?fn():scoped(fn));return after?after(result):result;}finally{busy=false;}};
 
-  return Object.freeze({commandCount:commands.length,rawCommandCount:rawCommands.length,worldCommandCount:worldCommands.length,ownsRaw:!!rawEngine,count,experimental:true,productionEnabled:false,requiresExclusiveDevice:true,
+  return Object.freeze({diagnostics:()=>diagnostics.snapshot(),commandCount:commands.length,rawCommandCount:rawCommands.length,worldCommandCount:worldCommands.length,ownsRaw:!!rawEngine,count,experimental:true,productionEnabled:false,requiresExclusiveDevice:true,
    async beginRun({generation,initialUploads,externalBuffers,rawUploads,candidateIds}={}){return exclusive(async()=>{
     alive();if(active)throw Error('Prior GPU run must finish or cancel and drain');await drain();alive();
     if(!Number.isSafeInteger(generation)||generation<=lastGeneration||generation>0xffffffff)throw RangeError('Fresh positive u32 generation required');
@@ -130,6 +133,7 @@ export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximum
      if(next.length!==2||next[0][1]===next[1][1])throw Error('Distinct prepared/status outputs required');
      if(next.some(([i,b])=>buffers[i]!==b))releaseExternal();for(const [i,b]of next)buffers[i]=b;
     }
+    diagnostics.begin(generation);
     if(rawReset)for(const [i,bytes]of rawReset)device.queue.writeBuffer(rawBuffers[i],0,bytes);
     for(const [i,bytes]of uploads)device.queue.writeBuffer(buffers[i],0,bytes);
     device.queue.writeBuffer(fault,0,new Uint32Array(count));device.queue.writeBuffer(ids,0,candidateIds.slice());
@@ -139,7 +143,7 @@ export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximum
     guard(generation);if(!(handles instanceof Uint32Array)||handles.length<1||handles.length>4096)throw RangeError('Bounded owned u32 command chunk required');
     const copy=handles.slice(),start=active.cursor;
     for(let i=0;i<copy.length;i++)if(copy[i]!==start+i+1||copy[i]>commands.length)throw Error('Exact ordered command handles required');
-    const encoder=device.createCommandEncoder();let pass=null;
+    diagnostics.stage('command-encode');const encoder=device.createCommandEncoder();let pass=null;
     const closePass=()=>{const open=pass;pass=null;open?.end();};
     // Compute usage scopes and storage ordering are per dispatch. Only group
     // consecutive dispatches; encoder-level clears and chunk fences stay put.
@@ -152,14 +156,14 @@ export async function createWasmGpuWebGPUBridge(device,{engine,rawEngine,maximum
      const cache=!rawEngine&&!isRaw&&c.entries.some(e=>plan.allocations[e.buffer].external)?externalGroups:internalGroups;
      pass??=encoder.beginComputePass();pass.setPipeline(p);pass.setBindGroup(0,cache.get(p,entries));pass.dispatchWorkgroups(c.x,isRaw?1:count,1);
     }closePass();}catch(error){try{closePass();}catch{}throw error;}
-    await submit(encoder,generation);guard(generation);active.cursor+=copy.length;return active.cursor;
+    await submit(encoder,generation,start+copy.length);guard(generation);active.cursor+=copy.length;return active.cursor;
    });},
    async finish(generation){return exclusive(async()=>{
     guard(generation);if(active.cursor!==commands.length)throw Error('Incomplete GPU command schedule');
-    const encoder=device.createCommandEncoder(),pass=encoder.beginComputePass();pass.setPipeline(gate);pass.setBindGroup(0,internalGroups.get(gate,[fault,buffers[plan.readback],ids].map((buffer,binding)=>({binding,resource:{buffer}}))));pass.dispatchWorkgroups(count);pass.end();
+    diagnostics.stage('finish-encode');const encoder=device.createCommandEncoder(),pass=encoder.beginComputePass();pass.setPipeline(gate);pass.setBindGroup(0,internalGroups.get(gate,[fault,buffers[plan.readback],ids].map((buffer,binding)=>({binding,resource:{buffer}}))));pass.dispatchWorkgroups(count);pass.end();
     for(let i=0;i<count;i++)encoder.copyBufferToBuffer(buffers[plan.readback],(i*stride+stride-4)*4,read,i*16,16);
-    await submit(encoder,generation);await drain();guard(generation);let mapped=false;
-    try{await lossWaiters.wait(read.mapAsync(1));mapped=true;guard(generation);const result=new Uint32Array(read.getMappedRange()).slice();return result;}finally{if(mapped)read.unmap();}
+    await submit(encoder,generation,commands.length,{resultCopy:true});diagnostics.stage('finish-gate-copy-fence-wait');await drain();guard(generation);let mapped=false;
+    try{diagnostics.stage('finish-map-pending');await lossWaiters.wait(read.mapAsync(1));mapped=true;guard(generation);diagnostics.stage('finish-read-copy');const result=new Uint32Array(read.getMappedRange()).slice();return result;}finally{if(mapped){diagnostics.stage('finish-unmap');read.unmap();}}
    },result=>{guard(generation);active=null;releaseExternal();return result;});},
    cancel(generation){if(active?.generation===generation)active.cancelled=true;},
    async drain(){return exclusive(async()=>{try{await drain();}finally{if(active?.cancelled){active=null;releaseExternal();}}},undefined,true);},

@@ -1,3 +1,4 @@
+import {snapshotGPULossDiagnostics} from './gpu-execution-diagnostics.mjs';
 import {snapshotWorkerOwnerInputs} from './worker-owner-protocol.mjs';
 /** Private sealed transport. An endpoint is not a GPUDevice and never enters a native GPU API. */
 import{WASM_GPU_BUILD_CONFIGURATION as programs}from'./build-configuration.mjs';
@@ -21,7 +22,7 @@ export async function createSealedWorkerOwnerEndpoint({signal}={}){
    // Local reference cleanup is safe after terminal failure, but is not an
    // acknowledgement that native GPU work drained or its device was destroyed.
    for(const clear of descriptors)clear();descriptors.clear();
-   const info={reason:error.deviceLoss?.reason??'unknown',message:error.message,cleanupVerified:false};resolveLost(info);rejectReady(error);for(const item of pending.values()){clearTimeout(item.timer);item.finish();item.reject(error);}pending.clear();terminateWorker();
+   const info={reason:error.deviceLoss?.reason??'unknown',message:error.message,cleanupVerified:false,...(error.deviceLoss?.diagnostics?{diagnostics:snapshotGPULossDiagnostics({...error.deviceLoss.diagnostics,workerSha256:spec.sha256})}:{})};resolveLost(info);rejectReady(error);for(const item of pending.values()){clearTimeout(item.timer);item.finish();item.reject(error);}pending.clear();terminateWorker();
   }
   function invalid(message){const error=Error(message);fail(error);throw error;}
   function cancelRequest(id){const item=pending.get(id);if(!item||item.cancelSent)return;item.cancelSent=true;void request('cancel',{target:id}).catch(fail);}

@@ -6,7 +6,7 @@ import {prepareWasmGpuEngine} from '../src/wasm-gpu/engine.mjs';
 import {fixture,mock} from './helpers/wasm-gpu-fixture.mjs';
 const moduleBytes = await readFile(new URL('../artifacts/wasm-gpu-runtime.wasm',import.meta.url));
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
-const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return{promise,resolve};};
+const deferred=()=>{let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return{promise,resolve,reject};};
 const submitted=m=>m.events.filter(e=>Array.isArray(e)&&e[0]==='submit').length;
 async function until(predicate){for(let i=0;i<100;i++){if(predicate())return;await tick();}assert.fail('Expected host event did not occur');}
 async function setup(options={}){
@@ -143,4 +143,48 @@ test('execution observer failure after submission drains real fences and does no
 test('async execution observer rejected before uploads without poisoning the owner',async()=>{
  const s=await setup();await assert.rejects(s.owner.run({...s.input(),onExecutionPhase:async()=>{}}),/Synchronous execution/);
  assert.equal(submitted(s.m),0);assert.equal(s.owner.status().state,'ready');await s.owner.run(s.input(2));await s.owner.dispose();
+});
+
+// These are fault-injection lifecycle checks, not real-device qualification.
+// The public finish label covers three distinct native waits. A late native
+// completion after loss must never publish words or access a released mapping.
+for(const boundary of ['last-command-fence','result-copy-fence','map-readback'])test('finish boundary '+boundary+' rejects actual device loss without publishing or accessing late results',async()=>{
+ const s=await setup(),gate=deferred(),entered=deferred();let fences=0,maps=0,reads=0;
+ const read=s.m.buffers.find(b=>b.usage&1);assert.ok(read);
+ s.m.device.queue.onSubmittedWorkDone=()=>{fences++;if(boundary==='last-command-fence'&&fences===2||boundary==='result-copy-fence'&&fences===3){entered.resolve();return gate.promise;}return Promise.resolve();};
+ read.mapAsync=()=>{maps++;if(boundary==='map-readback'){entered.resolve();return gate.promise;}return Promise.resolve();};
+ read.getMappedRange=()=>{reads++;return read.bytes.buffer;};
+ const phases=[],run=s.owner.run({...s.input(),onExecutionPhase:p=>phases.push(p)}),rejected=assert.rejects(run,/device lost/i);
+ await entered.promise;
+ if(boundary==='last-command-fence')await until(()=>phases.some(p=>p.executionStage==='finish-fence-and-readback'));
+ if(boundary==='result-copy-fence')await until(()=>s.owner.diagnostics().nativeStage==='finish-gate-copy-fence-wait');
+ assert.equal(phases.at(-1).executionStage,'finish-fence-and-readback');
+ assert.equal(phases.at(-1).submittedCommands,phases.at(-1).totalCommands);
+ const diagnostic=s.owner.diagnostics();assert.equal(diagnostic.nativeStage,{'last-command-fence':'finish-prior-fence-wait','result-copy-fence':'finish-gate-copy-fence-wait','map-readback':'finish-map-pending'}[boundary]);assert.equal(diagnostic.submittedCommands,2);assert.equal(diagnostic.confirmedCommands,boundary==='last-command-fence'?1:2);assert.equal(diagnostic.fulfilledFences,boundary==='last-command-fence'?1:boundary==='result-copy-fence'?2:3);assert.equal(diagnostic.resultCopySubmitted,boundary!=='last-command-fence');
+ assert.equal(s.owner.status().scheduler.state,'complete');
+ assert.equal(submitted(s.m),boundary==='last-command-fence'?2:3);
+ assert.equal(maps,boundary==='map-readback'?1:0);
+ assert.equal(s.releases,0);assert.ok(s.m.buffers.every(b=>!b.dead));
+ s.m.lose();await rejected;assert.equal(s.owner.status().state,'lost');assert.equal(reads,0);
+ await assert.rejects(s.owner.run(s.input(2)),/device lost/i);
+ await s.owner.dispose();assert.equal(s.releases,1);assert.ok(read.dead);
+ gate.resolve();await tick();assert.equal(reads,0,'Late native fulfillment must not read released storage');assert.ok(Object.isFrozen(diagnostic));assert.equal(diagnostic.nativeStage,{'last-command-fence':'finish-prior-fence-wait','result-copy-fence':'finish-gate-copy-fence-wait','map-readback':'finish-map-pending'}[boundary],'Captured failure evidence cannot be rewritten by abort, disposal or late native fulfillment');
+});
+
+test('disposal during pending final map waits for native settlement and unmaps without reading cancelled words',async()=>{
+ const s=await setup(),gate=deferred(),entered=deferred();let reads=0,unmaps=0;
+ const read=s.m.buffers.find(b=>b.usage&1);read.mapAsync=()=>{entered.resolve();return gate.promise;};
+ read.getMappedRange=()=>{reads++;return read.bytes.buffer;};read.unmap=()=>unmaps++;
+ const run=s.owner.run(s.input()),rejected=assert.rejects(run,{name:'AbortError'});
+ await entered.promise;assert.equal(s.owner.status().scheduler.state,'complete');const disposal=s.owner.dispose();await tick();
+ assert.equal(read.dead,false);assert.equal(s.releases,0);assert.equal(reads,0);
+ gate.resolve();await rejected;await disposal;assert.equal(unmaps,1);assert.equal(reads,0);assert.equal(s.releases,1);assert.equal(read.dead,true);
+});
+
+for(const boundary of ['fence','map'])test('diagnostics preserve original '+boundary+' rejection identity',async()=>{
+ const s=await setup(),gate=deferred(),entered=deferred(),failure=Error('original native '+boundary);let fences=0;const read=s.m.buffers.find(b=>b.usage&1);
+ s.m.device.queue.onSubmittedWorkDone=()=>{if(boundary==='fence'&&++fences===3){entered.resolve();return gate.promise;}return Promise.resolve();};
+ read.mapAsync=()=>{if(boundary==='map'){entered.resolve();return gate.promise;}return Promise.resolve();};
+ const run=s.owner.run(s.input()),rejected=assert.rejects(run,e=>e===failure);await entered.promise;if(boundary==='fence')await until(()=>s.owner.diagnostics().nativeStage==='finish-gate-copy-fence-wait');
+ const diagnostic=s.owner.diagnostics();assert.equal(diagnostic.nativeStage,boundary==='fence'?'finish-gate-copy-fence-wait':'finish-map-pending');gate.reject(failure);await rejected;assert.equal(diagnostic.nativeStage,boundary==='fence'?'finish-gate-copy-fence-wait':'finish-map-pending');await s.owner.dispose();
 });

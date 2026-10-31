@@ -92,3 +92,16 @@ test('selected encoding failure closes pass without masking failure or submittin
  m.device.createCommandEncoder=()=>({clearBuffer(){},beginComputePass:()=>({setPipeline(){},setBindGroup(){},dispatchWorkgroups(){throw original;},end(){ended++;throw Error('end failure');}}),finish(){throw Error('must not finish');}});m.device.queue.submit=()=>submitted++;
  await bridge.beginRun({generation:1,initialUploads:uploads});await assert.rejects(bridge.encodeChunk(new Uint32Array([1,2,3,4]),1),e=>e===original);assert.equal(ended,1);assert.equal(submitted,0);bridge.cancel(1);await bridge.drain();await bridge.dispose();
 });
+
+// Lightweight fake-native diagnostics only: no capsule capture or GPU qualification.
+for(const output of ['world','trace'])test('selected diagnostics track fulfilled fence then '+output+' map boundary',async()=>{
+ const x=await setup(),fence=deferred(),map=deferred(),entered=deferred();
+ await x.bridge.beginRun({generation:1,initialUploads:x.uploads});x.m.setFence(fence);await encode(x);
+ const index=x.engine.outputs[output].buffer;x.m.setMap(b=>{if(b.id===index){entered.resolve();return map.promise;}});
+ const finish=x.bridge.finish(1);await Promise.resolve();
+ const waiting=x.bridge.diagnostics();assert.equal(waiting.nativeStage,'finish-command-fence-wait');assert.equal(waiting.submittedFences,1);assert.equal(waiting.fulfilledFences,0);assert.equal(waiting.confirmedCommands,0);assert.equal(waiting.resultCopySubmitted,false);
+ fence.resolve();await entered.promise;
+ const mapping=x.bridge.diagnostics();assert.equal(mapping.nativeStage,'finish-map-'+output+'-pending');assert.equal(mapping.submittedFences,1);assert.equal(mapping.fulfilledFences,1);assert.equal(mapping.submittedCommands,x.bridge.commandCount);assert.equal(mapping.confirmedCommands,x.bridge.commandCount);assert.equal(mapping.resultCopySubmitted,false);
+ assert.deepEqual(x.m.events.filter(e=>Array.isArray(e)&&e[0]==='map').map(e=>e[1]),output==='world'?[x.engine.outputs.world.buffer]:[x.engine.outputs.world.buffer,x.engine.outputs.trace.buffer]);
+ map.resolve();await finish;assert.equal(x.m.events.filter(e=>Array.isArray(e)&&e[0]==='submit').length,1,'Diagnostics add no submission');assert.equal(x.bridge.diagnostics().fulfilledFences,1);assert.equal(mapping.nativeStage,'finish-map-'+output+'-pending','Previously captured boundary remains immutable');assert.ok(Object.isFrozen(mapping));await x.bridge.dispose();
+});

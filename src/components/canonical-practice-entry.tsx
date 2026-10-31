@@ -24,9 +24,11 @@ export function canonicalPreparationLabel(progress:any){
 /** Optional build only. Opening or dismissing the dialog does not request a GPU. */
 export function CanonicalPracticeEntry({state:s,controller}:{state:any;controller:any}) {
  const [open,setOpen]=React.useState(false),[busy,setBusy]=React.useState(false),[error,setError]=React.useState(''),[progress,setProgress]=React.useState<any>(null),[interrupted,setInterrupted]=React.useState(false)
+ const [copyStatus,setCopyStatus]=React.useState('')
  const pending=React.useRef<AbortController|null>(null)
  React.useEffect(()=>()=>{pending.current?.abort();pending.current=null},[])
- const loss=s.canonicalPlayback?.deviceLoss,lossProgress=loss?.searchProgress
+ const loss=s.canonicalPlayback?.deviceLoss,lossProgress=loss?.searchProgress,gpu=loss?.gpuDiagnostics
+ const copyLoss=async()=>{try{await navigator.clipboard.writeText(JSON.stringify(loss,null,2));setCopyStatus('진단 정보를 복사했습니다.')}catch{setCopyStatus('복사하지 못했습니다. 아래 진단 정보를 직접 선택해 복사하세요.')}}
  const lossPhase=loss?.routeStatus==='searching'?canonicalSearchPhaseLabel(lossProgress):(playbackPhases[loss?.phase]??loss?.phase)
  const available=(globalThis as any).CANONICAL_GPU_ENTRY_AVAILABLE===true
  const disabled=busy||!s.ready||!s.paused||!s.canAim||!!s.activeStroke||s.routeStatus==='searching'||!!s.canonicalPlayback
@@ -64,6 +66,11 @@ export function CanonicalPracticeEntry({state:s,controller}:{state:any;controlle
    {lossProgress?.submittedCommands!=null?<p>제출 명령 {count(lossProgress.submittedCommands)} / {count(lossProgress.totalCommands)} · GPU 완료 수가 아닙니다.</p>:null}
    {lossProgress?.cachedDeviceOwnedBytes!=null?<p>엔진 소유 버퍼 {count(lossProgress.cachedDeviceOwnedBytes)} bytes · 드라이버 전체 메모리 사용량은 아닙니다.</p>:null}
    {lossProgress?<p>검색 진행: {count(lossProgress.tested)} / {count(lossProgress.total)}개</p>:null}
+   {gpu?<><p>GPU 대기: {gpu.nativeStage??'확인 불가'} · 완료 확인 명령 {count(gpu.confirmedCommands)} / 제출 {count(gpu.submittedCommands)} · 완료 확인 fence {count(gpu.fulfilledFences)} / 제출 {count(gpu.submittedFences)}</p><p>현재 GPU 실행 경과: {Number.isFinite(gpu.runElapsedMs)?Math.round(gpu.runElapsedMs):'—'} ms · {gpu.userAgent??'브라우저 정보 없음'} · {gpu.description||gpu.architecture||gpu.vendor||'GPU 정보 없음'}</p></>:null}
+   {Number.isFinite(loss.searchElapsedAtLossMs)?<p>손실 통지 수신 시 탐색 경과: {Math.round(loss.searchElapsedAtLossMs)} ms · 마지막 진행 표시 이후 {Math.round(loss.lastProgressAgeMs??0)} ms</p>:null}
+   <Button variant="outline" size="sm" onClick={copyLoss}>GPU 오류 진단 복사</Button>
+   {copyStatus?<p role="status">{copyStatus}</p>:null}
+   <details><summary>진단 정보 보기 · 자동 전송 없음</summary><pre className="max-h-64 overflow-auto whitespace-pre-wrap break-all text-xs">{JSON.stringify(loss,null,2)}</pre></details>
    <p>GPU 작업을 중단했습니다. 이 오류와 브라우저 이름·버전, 직전 동작을 알려 주세요. 새로고침하면 기본 모드에서 다시 시작할 수 있지만 현재 게임 기록은 사라집니다.</p>
   </AlertDescription></Alert>:null}
   {s.canonicalPlayback?.entryWarning?<Alert role="alert"><AlertTitle>화면 갱신 경고</AlertTitle><AlertDescription>{s.canonicalPlayback.entryWarning}</AlertDescription></Alert>:null}
