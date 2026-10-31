@@ -1,0 +1,32 @@
+name: Synthetic diagnostic error UI (not GPU reproduction)
+on:
+  push:
+    branches: ['backup/**']
+    paths: ['.github/workflows/diagnostic-ui.yml', 'playwright.diagnostic-ui.config.cjs', 'tools/build-diagnostic-ui-fixture.mjs', 'tests/browser-diagnostic-ui/**', 'tests/fixtures/diagnostic-ui/**', 'src/components/canonical-practice-entry.tsx']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diagnostic-ui:
+    if: startsWith(github.ref, 'refs/heads/backup/')
+    runs-on: macos-15
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Actual React error component and real clipboard, synthetic loss props
+        run: npx playwright test -c playwright.diagnostic-ui.config.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: synthetic-diagnostic-ui-not-gpu
+          path: |
+            test-results-diagnostic-ui/
+            playwright-diagnostic-ui-report/
+          retention-days: 14

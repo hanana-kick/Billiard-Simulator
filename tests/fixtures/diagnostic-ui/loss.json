@@ -1,0 +1,11 @@
+{
+  "reason": "unknown",
+  "message": "Synthetic UI fixture: native GPU loss is not reproduced by this test.",
+  "timestamp": "2026-10-31T00:00:00.000Z",
+  "phase": "ready",
+  "routeStatus": "searching",
+  "searchElapsedAtLossMs": 18000,
+  "lastProgressAgeMs": 5101,
+  "searchProgress": {"phase":"readback","executionStage":"finish-fence-and-readback","chunkIndex":210,"chunkCount":210,"submittedCommands":53751,"totalCommands":53751,"tested":0,"total":9},
+  "gpuDiagnostics": {"nativeStage":"finish-map-pending","confirmedCommands":53751,"submittedCommands":53751,"fulfilledFences":211,"submittedFences":211,"runElapsedMs":14000,"userAgent":"Synthetic Chrome fixture","description":"Synthetic adapter label","sourceRevision":"synthetic-ui-only","generation":4,"runGeneration":2,"requestId":7,"mode":"search","width":3}
+}
