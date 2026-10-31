@@ -4,6 +4,12 @@ on:
     branches: ['backup/**']
     paths: ['.github/workflows/production-blackbox.yml', 'playwright.production-blackbox.config.cjs', 'tests/browser-production-blackbox/**']
   workflow_dispatch:
+    inputs:
+      expected_source_revision:
+        description: Explicit independently verified deployed source revision (64 lowercase hex)
+        required: true
+        default: 75c09c39e6d97085f4c4bf8045f0f892f121130d00340128101602de7df0e2df
+        type: string
 permissions:
   contents: read
 jobs:
@@ -21,6 +27,8 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
       - name: Test unchanged public production UI with standard headed Chrome
+        env:
+          EXPECTED_SOURCE_REVISION: ${{ inputs.expected_source_revision || '75c09c39e6d97085f4c4bf8045f0f892f121130d00340128101602de7df0e2df' }}
         run: npx playwright test -c playwright.production-blackbox.config.cjs
       - name: Preserve compact production evidence
         if: always()

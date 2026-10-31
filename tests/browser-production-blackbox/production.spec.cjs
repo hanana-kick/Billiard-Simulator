@@ -1,7 +1,8 @@
 'use strict';
 const {test,expect}=require('@playwright/test');
 const fs=require('node:fs');const os=require('node:os');const {createHash}=require('node:crypto');
-const REV='fb8b37b71feda48dbb4a11d08f9add4742b7a8250175de3b1fc7770a426210ca';
+const REV=process.env.EXPECTED_SOURCE_REVISION;
+if(!/^[0-9a-f]{64}$/.test(REV))throw new Error('EXPECTED_SOURCE_REVISION must be 64 lowercase hex characters');
 // Only production DOM interaction. No app globals, injected scripts, API wrappers,
 // interception, GPU probes, CDP sampling, synthetic results, or local app server.
 const cases=[
