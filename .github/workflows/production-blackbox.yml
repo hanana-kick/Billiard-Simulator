@@ -22,6 +22,16 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - name: Test unchanged public production UI with standard headed Chrome
         run: npx playwright test -c playwright.production-blackbox.config.cjs
+      - name: Preserve compact production evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-mac-blackbox-compact
+          path: |
+            test-results-production-blackbox/**/production-evidence.json
+            test-results-production-blackbox/**/final.png
+          if-no-files-found: warn
+          retention-days: 14
       - name: Preserve reproduction evidence even on failure
         if: always()
         uses: actions/upload-artifact@v4
