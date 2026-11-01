@@ -1,0 +1,39 @@
+/* SPDX-License-Identifier: Apache-2.0
+ * Closed single-session request owner. The entry fixes initialize; tests may
+ * inject a labelled fake backend, never via production messages.
+ */
+import {RESIDENT_WORKER_PROTOCOL as PROTOCOL,RESIDENT_WORKER_CAPABILITY,validateWorkerRequest,copyWorkerRows,copyOwnedWorkerData,terminalRows,validatePublicRows,publicExecutionEvidence,STATUS,REASON,need,WorkerInterruption,WorkerUnavailable,errorData} from './worker-protocol.mjs';
+export function installResidentWorkerHost(port,initialize){
+ let sessionId=null,requestSequence=0,operationSequence=0,generation=0,sourceVersion=null,boot=null,backend=null,closed=false,lost=false,active=null,closing=null,removeLoss,lifecycleFailure=null,inFlight=0;
+ const post=x=>port.postMessage({protocol:PROTOCOL,sessionId,sourceVersion,...x});
+ const reply=(m,result)=>post({type:'reply',requestId:m.requestId,result});
+ const ready=m=>boot??=(async()=>{const value=await initialize({expectedSourceVersion:m.expectedSourceVersion});need(value.sourceVersion===m.expectedSourceVersion,'source version mismatch');backend=value;sourceVersion=value.sourceVersion;removeLoss=value.onDeviceLost?.(info=>{if(closed)return;lost=true;if(active){active.reason=REASON.DEVICE_LOST;active.abort.abort();void stop(active,REASON.DEVICE_LOST).catch(e=>post({type:'protocol-error',error:errorData(e)}));}post({type:'device-lost',reason:REASON.DEVICE_LOST,info:{reason:String(info?.reason??'unknown'),message:String(info?.message??'device lost')}});});return value;})();
+ const check=r=>{if(lost)throw new WorkerInterruption(REASON.DEVICE_LOST);if(r.generation!==generation)throw new WorkerInterruption(REASON.STALE_SOURCE);if(closed||r.abort.signal.aborted||r.reason!==null)throw new WorkerInterruption(r.reason??REASON.CANCELLED);};
+ function finish(r,result){if(r.terminal)return;const reason=lost?REASON.DEVICE_LOST:r.generation!==generation?REASON.STALE_SOURCE:r.reason;
+  const results=reason!==null?terminalRows(r.rows,reason===REASON.DEVICE_LOST?STATUS.FAILED:STATUS.CANCELLED,reason):validatePublicRows(result.results,r.rows);
+  const packet={type:'terminal',operationId:r.id,generation:r.generation,result:{results,evidence:{sourceVersion,generation:r.generation,sourceIdentity:r.identity?.sourceIdentity??null,preStrikeIdentity:r.identity?.preStrikeIdentity??null,generationIdentity:r.identity?.generationIdentity??null,numericallyQualified:false,defaultBackend:false,hostForwardFallback:false,allOrNothing:true,...(reason===null?{outcome:result.outcome??'unqualified-or-incomplete',execution:publicExecutionEvidence(result.evidence)}:{outcome:reason===REASON.STALE_SOURCE?'stale-source':reason===REASON.DEVICE_LOST?'device-lost':'cancelled',reasonCode:reason,...(r.cleanupError?{cleanupError:errorData(r.cleanupError),drained:false}:{})})}}};r.terminal=true;try{post(packet);}catch(e){r.terminal=false;throw e;}if(active===r)active=null;
+ }
+ async function failure(r,error){if(r.terminal)return;if(error instanceof WorkerInterruption||Object.values(REASON).includes(error?.reason))r.reason=error.reason;let cleanupError;try{await backend?.cancel();}catch(e){cleanupError=e;r.cleanupError=e;lifecycleFailure=e;}if(r.reason!==null||closed||lost||r.generation!==generation)finish(r,{results:[]});else finish(r,{results:terminalRows(r.rows,error instanceof WorkerUnavailable&&!cleanupError?STATUS.UNSUPPORTED:STATUS.FAILED,error instanceof WorkerUnavailable&&!cleanupError?REASON.PHYSICS_SCOPE:REASON.INCOMPLETE_COMMIT),outcome:cleanupError?'cleanup-failed':error instanceof WorkerUnavailable?'unsupported':'failed',evidence:{error:errorData(error),...(cleanupError?{cleanupError:errorData(cleanupError),drained:false}:{}),physicsEvaluated:false}});if(cleanupError)throw cleanupError;}
+ async function task(r,fn){need(!r.busy,'operation already busy');r.busy=true;r.pending=(async()=>{try{return await fn();}catch(e){await failure(r,e);return{operationId:r.id,terminal:r.terminal};}})();try{return await r.pending;}finally{r.busy=false;r.pending=null;}}
+ async function stop(r,reason){r.reason??=reason;r.abort.abort();if(r.pending)try{await r.pending;}catch{}if(r.cleanupError)throw r.cleanupError;if(!r.terminal){await backend?.cancel();finish(r,{results:[]});}return{operationId:r.id,drained:true,cancelled:true};}
+ async function dispose(){if(closing)return closing;closed=true;return closing=(async()=>{if(active)await stop(active,REASON.CANCELLED);if(boot)try{await boot;}catch{}await backend?.dispose();removeLoss?.();if(lifecycleFailure)throw lifecycleFailure;return{disposed:true,drained:true};})();}
+ const context=r=>({signal:r.abort.signal,check:()=>check(r),setIdentity:i=>{check(r);r.identity=Object.freeze({...i});}});
+ async function handle(m){
+  if(m.type==='open'){const b=await ready(m);return{status:closed?'disposed':'unqualified',sourceVersion:b.sourceVersion,generation,capability:RESIDENT_WORKER_CAPABILITY,deviceRequested:false,physicsEvaluated:false};}
+  if(m.type==='dispose')return dispose();need(!closed,'session disposed');
+  if(m.type==='invalidate'){need(m.generation>generation,'strictly newer source generation');generation=m.generation;if(active)await stop(active,REASON.STALE_SOURCE);return{generation,sourceInvalidated:true,drained:true};}
+  if(m.type==='cancel'){need(active&&active.id===m.operationId,'live operation to cancel');return stop(active,REASON.CANCELLED);}
+  if(m.type==='evaluate'||m.type==='begin'){
+   need(!active,'one complete candidate operation');need(m.operationId>operationSequence,'fresh operation ID');const rows=copyWorkerRows(m.rows);const owned=m.type==='begin'?{...m,input:copyOwnedWorkerData(m.input),rule:copyOwnedWorkerData(m.rule),caps:copyOwnedWorkerData(m.caps),rows}:null;operationSequence=m.operationId;const r={id:m.operationId,generation:m.generation,rows,abort:new AbortController(),identity:null,reason:null,terminal:false,busy:false,pending:null};active=r;
+   // Snapshot mutable message data before the first await. Never accept an
+   // externally constructed plan/runtime or a caller qualification override.
+   return task(r,async()=>{need(boot,'open handshake required');await boot;check(r);if(m.type==='evaluate'){finish(r,{results:terminalRows(rows,STATUS.UNSUPPORTED,REASON.PHYSICS_SCOPE),outcome:'numeric-qualification-unavailable',evidence:{physicsEvaluated:false,deviceRequested:false}});return{operationId:r.id,terminal:true};}const work=await backend.begin(owned,context(r));check(r);r.sequence=work.sequence;return{operationId:r.id,work};});
+  }
+  const r=active;need(r&&r.id===m.operationId,'live operation');need(m.generation===r.generation&&m.sequence===r.sequence,'current source generation and private receipt sequence');
+  return task(r,async()=>{check(r);if(m.type==='advance'){const cycles=copyOwnedWorkerData(m.cyclesByBank),work=await backend.advance(m.sequence,cycles,context(r));check(r);r.sequence=work.sequence;return{operationId:r.id,work};}need(m.type==='finalize','known retained command');const result=await backend.finalize(m.sequence,context(r));check(r);finish(r,result);return{operationId:r.id,terminal:true};});
+ }
+ function receive({data:m}){try{validateWorkerRequest(m);if(sessionId===null){need(m.type==='open','open first');sessionId=m.sessionId;generation=m.generation;}need(m.sessionId===sessionId,'session mismatch');need(m.requestId>requestSequence,'request sequence replay');need(m.type!=='open'||boot===null,'single open');requestSequence=m.requestId;need(inFlight<16,'bounded outstanding Worker requests');inFlight++;
+   void handle(m).then(result=>reply(m,result),error=>reply(m,{status:'failed',error:errorData(error),physicsEvaluated:false})).finally(()=>{inFlight--;});
+  }catch(error){post({type:'protocol-error',requestId:m?.requestId??null,error:errorData(error)});}}
+ port.addEventListener('message',receive);return Object.freeze({dispose,removeListener:()=>port.removeEventListener('message',receive)});
+}
