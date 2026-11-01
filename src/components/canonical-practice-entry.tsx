@@ -73,6 +73,7 @@ export function CanonicalPracticeEntry({state:s,controller}:{state:any;controlle
    <details><summary>진단 정보 보기 · 자동 전송 없음</summary><pre className="max-h-64 overflow-auto whitespace-pre-wrap break-all text-xs">{JSON.stringify(loss,null,2)}</pre></details>
    <p>GPU 작업을 중단했습니다. 이 오류와 브라우저 이름·버전, 직전 동작을 알려 주세요. 새로고침하면 기본 모드에서 다시 시작할 수 있지만 현재 게임 기록은 사라집니다.</p>
   </AlertDescription></Alert>:null}
+  {s.canonicalPlayback?.phase==='calculating'?<p id="canonicalLongGpuNotice" role="status">GPU 타격 계산 중입니다. 소프트웨어 GPU 등 느린 장치에서는 오래 걸릴 수 있습니다. 완료 청크의 진행이 10분 동안 없거나 전체 계산이 30분을 넘으면 중단합니다. 취소할 수 있으며 CPU 계산으로 전환하지 않습니다.</p>:null}
   {s.canonicalPlayback?.entryWarning?<Alert role="alert"><AlertTitle>화면 갱신 경고</AlertTitle><AlertDescription>{s.canonicalPlayback.entryWarning}</AlertDescription></Alert>:null}
   <Dialog open={open} onOpenChange={changeOpen}><DialogContent>
    <DialogHeader><DialogTitle>GPU 실험 새 게임을 시작할까요?</DialogTitle>

@@ -15,3 +15,6 @@ test-results/
 
 playwright-canonical-report/
 test-results-canonical/
+
+# Reproducible compiled release staging (not runtime assets)
+.compiled-build/

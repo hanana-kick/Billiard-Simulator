@@ -1,0 +1,51 @@
+/** Experimental canonical integer transport, not a production backend.
+ * No Number/f64, resident source-PC pump, CPU physics, or result substitution.
+ * Exact source scalar bytecode is data. Unknown instructions fail closed.
+ */
+import {MICROCODE_ISA as ABI} from '../resident-candidate/microcode-isa.mjs';
+const expressions={MOV:'a',UADD:'a+b',IADD:'a+b',USUB:'a-b',ISUB:'a-b',UMUL:'a*b',IMUL:'a*b',UDIV:'a/b',UREM:'a%b',IDIV:'bitcast<u32>(bitcast<i32>(a)/bitcast<i32>(b))',IREM:'bitcast<u32>(bitcast<i32>(a)%bitcast<i32>(b))',AND:'a&b',OR:'a|b',XOR:'a^b',SHL:'a<<(b&31u)',USHR:'a>>(b&31u)',ISHR:'bitcast<u32>(bitcast<i32>(a)>>(b&31u))',EQ:'select(0u,1u,a==b)',NE:'select(0u,1u,a!=b)',ULT:'select(0u,1u,a<b)',ULE:'select(0u,1u,a<=b)',UGT:'select(0u,1u,a>b)',UGE:'select(0u,1u,a>=b)',ILT:'select(0u,1u,bitcast<i32>(a)<bitcast<i32>(b))',ILE:'select(0u,1u,bitcast<i32>(a)<=bitcast<i32>(b))',IGT:'select(0u,1u,bitcast<i32>(a)>bitcast<i32>(b))',IGE:'select(0u,1u,bitcast<i32>(a)>=bitcast<i32>(b))',NOT:'~a',LNOT:'select(0u,1u,a==0u)',INEG:'0u-a',UCLZ:'countLeadingZeros(a)',UCTZ:'countTrailingZeros(a)',POPCOUNT:'countOneBits(a)',SELECT:'select(a,b,c!=0u)'};
+const unary=new Set(['MOV','NOT','LNOT','INEG','UCLZ','UCTZ','POPCOUNT']);
+const special={HALT:[],SET:[1,2],LOAD:[1,2,3],STORE:[2,3,4],LENGTH:[1,2],LOCAL_LOAD:[1,2],LOCAL_STORE:[2,3],JUMP:[2],BRANCH:[2,3,4],CALL:[2],RET:[],GUARD:[2]};
+export const INTEGER_OPERATIONS=Object.freeze([...Object.keys(special),...Object.keys(expressions)]);
+const regs=name=>name in expressions?[1,2,...(unary.has(name)?[]:[3]),...(name==='SELECT'?[4]:[])]:({SET:[1],LOAD:[1,3],STORE:[3,4],LENGTH:[1],LOCAL_LOAD:[1,2],LOCAL_STORE:[2,3],BRANCH:[2],GUARD:[2]})[name]??[];
+const used=name=>special[name]??regs(name);
+export function admitIntegerProgram(c){
+ if(c?.kind!=='canonical-wgsl-microcode-v1'||!(c.instructions instanceof Uint32Array)||c.instructions.length%8||!c.instructions.length||!Array.isArray(c.sourceStoragePolicy)||!c.sourceStoragePolicy.length||c.sourceStoragePolicy.length>10)throw Error('Explicit canonical integer source compilation required');
+ for(const k of ['localWords','callDepth'])if(!Number.isSafeInteger(c[k])||c[k]<1||c[k]>1048576)throw Error('Bounded local/stack capacity required');
+ for(let ip=0;ip<c.instructions.length;ip+=8){const row=c.instructions.subarray(ip,ip+8),name=ABI.names[row[0]];if(!INTEGER_OPERATIONS.includes(name))throw Error('Unsupported integer opcode '+name);for(let i=1;i<8;i++)if(!used(name).includes(i)&&row[i])throw Error('Nonzero unused operand');for(const i of regs(name))if(row[i]>=c.localWords)throw Error('Register outside local frame');if(['LOAD','STORE','LENGTH'].includes(name)&&!c.sourceStoragePolicy.some(p=>p.binding===row[2]))throw Error('Undeclared storage binding');if(name==='STORE'&&!c.sourceStoragePolicy.some(p=>p.binding===row[2]&&p.access==='read_write'))throw Error('Readonly storage write');for(const i of name==='BRANCH'?[3,4]:['CALL','JUMP'].includes(name)?[2]:[])if(row[i]>=c.instructions.length/8)throw Error('Branch outside program');}
+ return Object.freeze({instructions:c.instructions.length/8,locals:c.localWords,stack:c.callDepth,stride:16+c.callDepth+c.localWords});
+}
+export function integerKernelWGSL({locals,stack,stride,instructions}, {budget=1024,operations=INTEGER_OPERATIONS}={}){
+ if(stride!==16+stack+locals||![locals,stack,instructions,budget].every(x=>Number.isInteger(x)&&x>0&&x<=1048576))throw Error('Exact bounded transport layout required');
+ const failure=n=>`state[2u]=3u;state[3u]=${n}u;return;`,store=v=>`state[lb+dst]=${v};`;
+ if(!Array.isArray(operations)||!operations.length||operations.some(x=>!INTEGER_OPERATIONS.includes(x))||new Set(operations).size!==operations.length)throw Error("Exact supported integer opcode subset required");
+ const cases=operations.map(name=>{const id=ABI.opcodes[name];let body='';const r=regs(name);if(r.length)body+=`if(${r.map(i=>['','dst','aa','bb','cc'][i]+'>=localCount').join('||')}){${failure(1)}}`;for(let i=1;i<8;i++)if(!used(name).includes(i))body+=`if(code[ip+${i}u]!=0u){${failure(2)}}`;
+ const reads=new Set(r.filter(i=>i>1));for(const i of reads)body+=`let ${['','','a','b','c'][i]}=state[lb+${['','','aa','bb','cc'][i]}];`;
+ if(name in expressions){if(['UDIV','UREM','IDIV','IREM'].includes(name))body+=`if(b==0u){${failure(3)}}`;if(['IDIV','IREM'].includes(name))body+=`if(a==0x80000000u&&b==0xffffffffu){${failure(3)}}`;body+=store(expressions[name]);}
+ else if(name==='HALT')body+='state[2u]=2u;';else if(name==='SET')body+=store('aa');
+ else if(name==='GUARD')body+=`if(a==0u){${failure(3)}}`;
+ else if(['JUMP','BRANCH','CALL'].includes(name)){body+=`next=${name==='BRANCH'?'select(cc,bb,a!=0u)':'aa'};`;if(name==='CALL')body+=`let sp=state[5u];if(sp>=stackCount){${failure(4)}}state[16u+sp]=pc+1u;state[5u]=sp+1u;`;}
+ else if(name==='RET')body+=`let sp=state[5u];if(sp==0u){state[2u]=2u;}else{if(sp>stackCount){${failure(4)}}next=state[16u+sp-1u];state[5u]=sp-1u;}`;
+ else if(['LOAD','STORE','LENGTH'].includes(name)){body+=`if(aa>=arrayLength(&views)/4u){${failure(5)}}let v=aa*4u;let offset=views[v];let length=views[v+1u];if(offset>arrayLength(&arena)||length>arrayLength(&arena)-offset){${failure(5)}}`;if(name==='LENGTH')body+=store('length');else{body+=`if(b>=length){${failure(5)}}`;body+=name==='LOAD'?store('arena[offset+b]'):`if(views[v+2u]!=1u){${failure(6)}}arena[offset+b]=c;`;}}
+ else if(name==='LOCAL_LOAD'||name==='LOCAL_STORE')body+=`if(a>=localCount){${failure(1)}}`+(name==='LOCAL_LOAD'?store('state[lb+a]'):'state[lb+a]=b;');
+ return `case ${id}u:{${body}}`;
+ }).join('\n');
+ return `@group(0) @binding(0) var<storage,read> code:array<u32>;
+@group(0) @binding(1) var<storage,read_write> state:array<u32>;
+@group(0) @binding(2) var<storage,read_write> arena:array<u32>;
+@group(0) @binding(3) var<storage,read> views:array<u32>;
+@compute @workgroup_size(1) fn main(){
+if(arrayLength(&state)<16u){return;}
+let localCount=state[10u];let stackCount=state[11u];let instructionCount=state[12u];let stateStride=state[13u];let instructionBudget=state[14u];
+if(localCount==0u||localCount>1048576u||stackCount==0u||stackCount>1048576u||instructionCount==0u||instructionCount>1048576u||instructionBudget==0u||instructionBudget>1048576u||stateStride!=16u+stackCount+localCount||arrayLength(&state)!=stateStride||arrayLength(&code)!=instructionCount*8u||state[15u]!=0u){${failure(7)}}
+if(state[0u]!=0x4349564du||state[1u]!=1u||state[5u]>stackCount){${failure(7)}}
+if(state[2u]!=1u){return;}let lb=16u+stackCount;
+for(var step=0u;step<instructionBudget;step++){
+let pc=state[4u];if(pc>=instructionCount){${failure(8)}}let ip=pc*8u;let op=code[ip];let dst=code[ip+1u];let aa=code[ip+2u];let bb=code[ip+3u];let cc=code[ip+4u];var next=pc+1u;
+switch op{${cases}\ndefault:{${failure(2)}}}
+if(state[2u]==1u&&next>=instructionCount){${failure(8)}}state[4u]=next;if(state[6u]==0xffffffffu&&state[7u]==0xffffffffu){${failure(9)}}state[6u]++;if(state[6u]==0u){state[7u]++;}if(state[2u]!=1u){return;}
+}
+if(state[8u]==0xffffffffu){${failure(9)}}state[8u]++;
+}`;
+}
+export function initialIntegerState(layout,{budget=1024}={}){if(!Number.isInteger(budget)||budget<1||budget>1048576)throw Error('Bounded instruction slice required');const s=new Uint32Array(layout.stride);s.set([0x4349564d,1,1]);s.set([layout.locals,layout.stack,layout.instructions,layout.stride,budget,0],10);return s;}

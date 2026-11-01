@@ -1,0 +1,41 @@
+// SPDX-License-Identifier: Apache-2.0
+// Pinned native substep.rs:447/516 chronology: completed collisions, actual
+// awake-island order, retained force prediction, then the inactive solve dt.
+// This is a distinct h2 owner, not the initial cue-first source-wrapper profile.
+import {assertThreeBallFirstHPlan} from './three-ball-first-h.mjs';
+import {createThreeBallInitialPreCcdPlan,assertThreeBallInitialPreCcdPlan} from './three-ball-initial-pre-ccd.mjs';
+import CCD from '../experimental-ccd-inactive.js';
+import {compileGraph} from './numeric-program.mjs';
+import {SCENE_LAYOUT as S} from './scene-activation.mjs';
+import {SCENE_WORLD_LAYOUT as W} from './scene-world.mjs';
+import {CONTACT_JOURNAL_LAYOUT as J} from './contact-journal.mjs';
+import {numberWords} from './source-number.mjs';
+import {generateNativeCurrentPreCcdHelpers} from './native-current-pre-ccd.mjs';
+const owned=new WeakMap(),need=(p,m)=>{if(!p)throw Object.assign(new RangeError('Three-ball current pre CCD: '+m),{code:'three-ball-current-pre-ccd-unsupported'});};
+export const THREE_BALL_CURRENT_PRE_CCD_LAYOUT=Object.freeze({words:512,params:32,input:112,output:432,header:Object.freeze({status:2,phase:3,cursor:4,completed:5,awakeMask:6,checkedMask:7,skippedMask:8,epoch:9,dt:10,pending:11,failureRole:12,evaluations:13,reason:14,order:17,count:22,solveDt:23})});
+export function createThreeBallCurrentPreCcdPlan(first){need(arguments.length===1,'one authentic first-h plan');assertThreeBallFirstHPlan(first);const original=createThreeBallInitialPreCcdPlan(first.template),source=CCD.sourcePlans().pre,compiled=compileGraph(source),initialWords=original.initialWords.slice();initialWords[0]=0x52334343;need(compiled.program.length===original.program.length&&compiled.program.every((x,i)=>x===original.program[i]),'unchanged original numeric pre graph');const plan=Object.freeze({kind:'resident-three-ball-current-pre-ccd-plan-v1',first,template:first.template,sourceIdentity:first.sourceIdentity,original,initialWords,program:original.program,layout:THREE_BALL_CURRENT_PRE_CCD_LAYOUT,scratchWords:compiled.scratchWords,capability:Object.freeze({fixedInnerH:2,actualAwakeIslandOrder:true,nativeCollisionBeforePreCcd:true,activeCcd:false,sourceProgramOnly:true,wholeH:false,gpuQualified:false,runtimeIntegrated:false})});Object.preventExtensions(initialWords);owned.set(plan,{seal:initialWords.slice(),compiled,source,h:numberWords(first.template.seed.application.dt/first.template.seed.application.strokeSubsteps)});return plan;}
+export function assertThreeBallCurrentPreCcdPlan(plan){const r=owned.get(plan);need(r,'local current pre plan');assertThreeBallFirstHPlan(plan.first);assertThreeBallInitialPreCcdPlan(plan.original);need(plan.initialWords.length===r.seal.length&&plan.initialWords.every((x,i)=>x===r.seal[i]),'initial metadata mutated');return plan;}
+export function generateThreeBallCurrentPreCcdWGSL(plan,at){return generatePre(plan,at,null);}
+export function generateThreeBallRetainedPreCcdWGSL(plan,at,controlBase){need(Number.isSafeInteger(controlBase)&&controlBase>=0&&controlBase<0x10000000,'bounded retained source control base');return generatePre(plan,at,controlBase);}
+function generatePre(plan,at,controlBase){assertThreeBallCurrentPreCcdPlan(plan);need(at&&Object.keys(at).sort().join(',')==='programBase,scratchBase,stateBase','exact three bases');for(const x of Object.values(at))need(Number.isSafeInteger(x)&&x>=0&&x<0x10000000,'bounded base');const{stateBase:c,programBase:p,scratchBase:t}=at,d=plan.first.layout,b=d.bodies,q=d.cue,j=d.journal,w=d.energy,L=plan.layout,r=owned.get(plan),meta=plan.original.rows.map((_,i)=>Array.from(plan.initialWords.slice(L.params+i*16,L.params+(i+1)*16))),retained=controlBase!==null,frame=retained?`rc_state[${controlBase+6}u]`:'2u',sequence=retained?`rc_state[${controlBase+8}u]`:'2u',proof=retained?`rc_state[${controlBase}u]!=0x52335248u||rc_state[${controlBase+1}u]!=1u||rc_state[${controlBase+2}u]!=1u||rc_state[${controlBase+3}u]!=2u||rc_state[${controlBase+25}u]!=1u||rc_state[${c+15}u]!=rc_state[${controlBase+6}u]||`:'';
+ need(c>=plan.first.layout.words,'private current owner does not overlap first-h bank');return generateNativeCurrentPreCcdHelpers({state:c,scene:0,bodies:b,bridge:w,registration:plan.template.registration.layout.numericOutputs,scratch:t,sphereCount:3,bodyCount:5,params:L.params,input:L.input,order:17})+`
+fn rc_three_current_pre_fail(reason:u32,role:u32)->bool{if(rc_state[${c+2}u]!=4u){rc_state[${c+2}u]=4u;rc_state[${c+12}u]=role;rc_state[${c+14}u]=reason;}return false;}
+fn rc_three_current_pre_identity(role:u32)->bool{${meta.map((a,i)=>`if(role==${i}u){let p=${c+L.params+i*16}u;return ${a.map((x,k)=>`rc_state[p+${k}u]==${x}u`).join('&&')};}`).join('')}return false;}
+fn rc_three_current_pre_begin()->bool{
+ if(${proof}rc_state[${c}u]!=0x52334343u||rc_state[${c+1}u]!=1u||rc_state[${c+2}u]!=1u||rc_state[${c+3}u]!=0u||rc_state[${c+5}u]!=0u||rc_state[${d.control+3}u]!=11u||rc_state[${d.control+6}u]!=1u||rc_state[${S.header.status}u]!=1u||rc_state[${S.header.phase}u]!=5u||rc_state[${S.header.bodyCount}u]!=22u||rc_state[${w+W.header.status}u]!=1u||rc_state[${w+W.header.phase}u]!=1u||rc_state[${w+W.header.firstPending}u]!=0u||rc_state[${j}u]!=0u||rc_state[${j+J.header.phase}u]!=3u||rc_state[${j+J.header.sequence}u]!=${sequence}||rc_state[${j+J.header.events}u]!=0u||rc_state[${q+2}u]!=1u||rc_state[${q+4}u]!=1u||rc_state[${q+7}u]!=${frame}||rc_state[${q+12}u]!=1u||rc_state[${q+195}u]!=rc_state[${c+10}u]||rc_state[${q+24}u]!=${r.h[0]}u||rc_state[${q+25}u]!=${r.h[1]}u){return rc_three_current_pre_fail(1u,0xffffffffu);}
+ if(!rc_native_current_pre_capture()){return false;}return true;
+}
+fn rc_native_current_pre_identity(state:u32,role:u32)->bool{if(state!=${c}u){return false;}return rc_three_current_pre_identity(role);}
+fn rc_native_current_pre_fail(state:u32,reason:u32,role:u32)->bool{if(state!=${c}u){return false;}return rc_three_current_pre_fail(reason,role);}
+fn rc_three_current_pre_gather(){rc_native_current_pre_gather_body();}
+fn rc_three_current_pre_evaluate(){if(rc_state[${c+2}u]!=1u||rc_state[${c+3}u]!=1u||rc_state[${c+11}u]!=1u){return;}let role=rc_state[${c+17}u+rc_state[${c+4}u]];if(rc_num_eval(${p}u,${t}u)!=1u){rc_three_current_pre_fail(4u,role);return;}let out=${c+L.output}u+role*16u;${Array.from(r.compiled.outputSlots,(x,i)=>`if((rc_scratch[${t+x}u]&0x7f800000u)==0x7f800000u){rc_three_current_pre_fail(4u,role);return;}rc_state[out+${i}u]=rc_scratch[${t+x}u];`).join('')}rc_state[${c+11}u]=2u;rc_state[${c+13}u]++;}
+fn rc_three_current_pre_scatter(){if(rc_state[${c+2}u]!=1u||rc_state[${c+3}u]!=1u||rc_state[${c+11}u]!=2u){return;}let role=rc_state[${c+17}u+rc_state[${c+4}u]];let out=${c+L.output}u+role*16u;if(rc_state[out+${r.source.layout.active.offset}u]!=0u||rc_state[out+${r.source.layout.supported.offset}u]!=0x3f800000u){rc_three_current_pre_fail(5u,role);return;}rc_state[${c+7}u]=rc_state[${c+7}u]|(1u<<role);rc_state[${c+4}u]++;rc_state[${c+11}u]=0u;}
+fn rc_three_current_pre_finish()->bool{if(rc_state[${c+2}u]!=1u||rc_state[${c+3}u]!=1u||rc_state[${c+11}u]!=0u||rc_state[${c+4}u]!=rc_state[${c+22}u]||rc_state[${c+6}u]!=rc_state[${c+7}u]||(rc_state[${c+7}u]|rc_state[${c+8}u])!=31u||rc_state[${c+9}u]!=rc_state[${S.header.epoch}u]||rc_state[${S.header.phase}u]!=5u){return rc_three_current_pre_fail(6u,0xffffffffu);}rc_state[${c+23}u]=rc_state[${c+10}u];rc_state[${c+3}u]=2u;rc_state[${c+5}u]=1u;return true;}
+`+(retained?`
+fn rc_three_current_pre_rearm()->bool{
+ let c=${c}u;let h=${controlBase}u;if(rc_state[h]!=0x52335248u||rc_state[h+1u]!=1u||rc_state[h+2u]!=1u||rc_state[h+3u]!=2u||rc_state[h+25u]!=1u||rc_state[h+6u]!=rc_state[h+5u]+1u||rc_state[c]!=0x52334343u||rc_state[c+1u]!=1u||rc_state[c+2u]!=1u){return rc_three_current_pre_fail(7u,0xffffffffu);}
+ if(rc_state[c+15u]==0u){if(rc_state[h+24u]!=0u||rc_state[c+3u]!=0u||rc_state[c+5u]!=0u){return rc_three_current_pre_fail(7u,0xffffffffu);}}
+ else{if(rc_state[c+15u]!=rc_state[h+5u]||rc_state[c+3u]!=2u||rc_state[c+5u]!=1u){return rc_three_current_pre_fail(7u,0xffffffffu);}}
+ for(var n=3u;n<10u;n++){rc_state[c+n]=0u;}for(var n=11u;n<24u;n++){rc_state[c+n]=0u;}rc_state[c+15u]=rc_state[h+6u];return true;
+}
+`:'');}
