@@ -1,0 +1,2102 @@
+[
+  {
+    "path": "build-sources/runtime/src/wasm-gpu/compact-search-backend.mjs",
+    "bytes": 16119,
+    "sha256": "024f77709d4a9ce4fc06ebbd5245a9e814bf5bbcbd274cdeb78ba10df40c07cb",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/wasm-gpu/device-loss-subscriptions.mjs",
+    "bytes": 1070,
+    "sha256": "ac56bfb6839008f04deccd3bed8b7d2b5c48d53a02e77f904c16bed5a92ba091",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/wasm-gpu/selected-engine.mjs",
+    "bytes": 1741,
+    "sha256": "26f8acdfe1889fe0bbd9fe228f911e26dba8aac64bdb0d74b0f9a2149ef6f5fc",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/wasm-gpu/selected-artifact-builder.mjs",
+    "bytes": 6787,
+    "sha256": "5815f35e0c9593472ffb257abdc169fcbd504ab33f1b935fd0280f25b07c11f5",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/wasm-gpu/input-library.mjs",
+    "bytes": 7831,
+    "sha256": "d39947ef09ee5948beaba3d1cd5be37b961d7054153f8896ce5b81a5461783bb",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/wasm-gpu/selected-session-backend.mjs",
+    "bytes": 8728,
+    "sha256": "608c0b042f6fefa1fd9e899f2d9c95e86e3bb2a14b56a066f1206db5d28c8fb9",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/wasm-gpu/selected-shader-contract.mjs",
+    "bytes": 1840,
+    "sha256": "d4efb44c933208215b5cdaaadd04385e42be8cb7a3b66bf56c0c891069fba90b",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/wasm-gpu/query-view.mjs",
+    "bytes": 301,
+    "sha256": "114f3aeac477e2affdd84d42f3b93dd1ab13b6cbcb78acba3a9b039d0c6e8939",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/wasm-gpu/pipeline-priming-budget.mjs",
+    "bytes": 1839,
+    "sha256": "365d129f4ede355383517e2e0c9c99cf128c930ad3741cfbbd87bee5cf109cda",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/wasm-gpu/input-contract.mjs",
+    "bytes": 10808,
+    "sha256": "4049040c78398550692ec0b5fb357789c1f374866e9907e4568d0275758d89ff",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/wasm-gpu/device-loss-waiters.mjs",
+    "bytes": 1357,
+    "sha256": "f6fcb8f77adebd4322ed70062fea5310e422853c83f4d647664d198d608fc4d1",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/wasm-gpu/build-configuration.mjs",
+    "bytes": 211,
+    "sha256": "468bafebf7c372ceb0cb496a080d9fb70c0c7bfecb020563968f45bffd2cde6f",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/wasm-gpu/engine.mjs",
+    "bytes": 3446,
+    "sha256": "0741454686f07a4f54b5e0b7dff39ba23b045ee4e330bb026e679a75ec528f8b",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/wasm-gpu/query-program-lowering.mjs",
+    "bytes": 7090,
+    "sha256": "3c453d8154af9326f0b2d2656b254e87edf909f9ee3c2cae43e9a3e3f27ee56f",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/wasm-gpu/world-inputs.mjs",
+    "bytes": 12512,
+    "sha256": "e7d6de5bd4d1e344d333d1fbf7639f680f1944a986ea06f1668d942b6bbeaa0c",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/wasm-gpu/input-contract-builder.mjs",
+    "bytes": 1673,
+    "sha256": "a1cd17b04a97c75108405b072a7f0b63cd724bfcc1e8382768a9bdf4e85123c7",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/wasm-gpu/raw-artifact.mjs",
+    "bytes": 5859,
+    "sha256": "9e97dcf864906c128756601c02fbcf53ae04b08faef0dcf661698d178510f007",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/wasm-gpu/worker-owner-protocol.mjs",
+    "bytes": 11225,
+    "sha256": "78cafbea5a8ef938901cba18ecbe8ac44d1033cfdeb27cdd152d54c62c1659c8",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/wasm-gpu/selected-webgpu-bridge.mjs",
+    "bytes": 13684,
+    "sha256": "977ad410dc7fff86269634726cc438596cd897490e0f588af2a9a8c4922eecc1",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/wasm-gpu/device-coordinator.mjs",
+    "bytes": 5388,
+    "sha256": "7c3b36fa8224e86218345d938d90b78fa470f8029c66761674faa64d137bae4f",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/wasm-gpu/webgpu-bridge.mjs",
+    "bytes": 19444,
+    "sha256": "7f7f22037e64191087cc4d3b2df87beafdb031decd3368796e3a8d0273be6ffc",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/wasm-gpu/cushion-program-lowering.mjs",
+    "bytes": 9371,
+    "sha256": "47c40bc206175ae6c0f73f9e2087b7793779453d3ad18c5f9743b88f00b0258e",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/wasm-gpu/worker-owner-entry.mjs",
+    "bytes": 3828,
+    "sha256": "f9e4d18cee91d24216355ab84cac07838d40b3f72de0d56aa48d19402fb0bfe7",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/settled-world.mjs",
+    "bytes": 9443,
+    "sha256": "6e5d608624329961eaf00a05fdccab082dc96d70e0370b7880c76a78ca4a49d6",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/live-world.mjs",
+    "bytes": 12162,
+    "sha256": "f7587f5ac63e5e383152ef1fd6e2223e777b3721ec5f0720643519d7ef25c6cf",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/live-three-ball-capture.mjs",
+    "bytes": 13003,
+    "sha256": "34cb030d9820b07f5a0a2ecdd62d74673d72898e73d7605139ba4b0b369485fc",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/settled-initialization.mjs",
+    "bytes": 10169,
+    "sha256": "d066ef83ef2da9f6c11355660e449006b5bb3d68a99bf7828936f3d685751374",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/initial-body.mjs",
+    "bytes": 3302,
+    "sha256": "298ad046b6334ec13cdb0b91913bff9999d2cf0ae7bca50e5b9870c5d21ab5bb",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/live-registered-three-ball.mjs",
+    "bytes": 15825,
+    "sha256": "24309dbdf22b695656d684342beeacd881b22a5d57bfccb60658b37e1e74c6c2",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/live-broad-graph.mjs",
+    "bytes": 11008,
+    "sha256": "bed23564522ac65f0f4066d1b1e0be4db3bbcb082b072e8cbb473a17564e394c",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/live-initial-contact.mjs",
+    "bytes": 13073,
+    "sha256": "1aa69f6b381af7cb0bb9762bd89ace91bedf37b98a24a0237653ff9c7fe951d9",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/prepare-live-candidate.mjs",
+    "bytes": 7292,
+    "sha256": "0dc4c4e70849b85fee7e90789ecc7e0de3ae01ac57e981121941161c009705b6",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/goal-world.mjs",
+    "bytes": 11604,
+    "sha256": "2a353909329985b24feb8e4b19d09e7bada74436e5184e7f4cc1397633538c99",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/exact-data.mjs",
+    "bytes": 7685,
+    "sha256": "1b68b07e2446b23acb3810d99297352766d1ca8ebf4655690217ed97435334f0",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/live-three-ball-owner-data.mjs",
+    "bytes": 11829,
+    "sha256": "435ce87f4929fcb16cc86b75bb35d858cb2696a562a1d1b4677f4a3a1a5566d8",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/configured-four-ball.mjs",
+    "bytes": 14486,
+    "sha256": "cbf03472f1087b54d43cbbd9ca052eceb4cccd30fa17197dd5a95620863382dc",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/live-three-ball-initialization.mjs",
+    "bytes": 3744,
+    "sha256": "d48a02d5b804c28a19b3c2638084c82b0c019fe58407b06ba38c8a09a191076a",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/settled-broad-graph.mjs",
+    "bytes": 6150,
+    "sha256": "214e145fc8b2504b0ed5d4cc077114be0303371aa8ab8076f38941b5ecf21e42",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/goal-initial-contact.mjs",
+    "bytes": 12278,
+    "sha256": "c6f96ce11ac6c875e7ba9cb8e04fc5957864d2cdae9b5a89e1c83cfb505b81e6",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/initial-cloth.mjs",
+    "bytes": 5913,
+    "sha256": "7a06a9598297c9e2f36215a7c8df2ca65a558c6cf13cfd0b8aebc5285068379a",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/live-three-ball-first-step.mjs",
+    "bytes": 22574,
+    "sha256": "8998a04058a743a3163d9877dc757b24894e8504ef640c5ea9415230b269ec57",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/live-capture.mjs",
+    "bytes": 40472,
+    "sha256": "ca200f81a0879c9a037e05fd968d8633657f6728715a0b9f9c7a64df7edf591e",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/live-registered-four-ball.mjs",
+    "bytes": 12849,
+    "sha256": "4adfe78d17a4e56f9093bb58a94656570f7ed55ffe1dbd96d7bea71ae18d586d",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/cue-joints.mjs",
+    "bytes": 7180,
+    "sha256": "dc822792c6fafbba194b4c6adfd101989f1c0b59881d89be3ba6e5a9df067944",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/live-three-ball-broad.mjs",
+    "bytes": 1107,
+    "sha256": "ca9c0418db0c2ebc39a1b694dbc18153a003307b5784a6c0eb0997fd6161b0e8",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/live-three-ball-collision.mjs",
+    "bytes": 7702,
+    "sha256": "bb91c5e077f10f94e8c32ee2edb2c606a2ad74d0402df60979a692a5e7c8319f",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/live-three-ball-step-seed.mjs",
+    "bytes": 4312,
+    "sha256": "9c3b63457870cac7ac5292bb0f7a5b61fd37afc3ffce303efc750cafc339f11b",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/live-initialization.mjs",
+    "bytes": 12991,
+    "sha256": "29f1bc7871a48f89a333daba743b4060ca6b7d7e0893cce28102835b4af1742f",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/goal-broad-graph.mjs",
+    "bytes": 10133,
+    "sha256": "fc3d51b2a24245b0f7d805533ec56355ddedefeed21239685e4b2d696fdaafe3",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/four-ball.mjs",
+    "bytes": 40617,
+    "sha256": "1f069f2d78d00e3951513c1fc6a2ab9076adb1220952b8cba54c36fcba5fff76",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/browser-initial-import/goal-initialization.mjs",
+    "bytes": 14391,
+    "sha256": "8ebf836cca552615a1ec8714b8e36e2573160ddcc49b526ea82e2c70ef56ace7",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-mixed-motion-query.mjs",
+    "bytes": 17303,
+    "sha256": "e29a7b84ed48cdd28ab4f650ff55aa0cbeddefd97e15eeac77ef0e1a1b7143c2",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-cushion-time.mjs",
+    "bytes": 10541,
+    "sha256": "0344a68c2ca9d9ed30f034417df2f12de312efd83b5698ad984a553159b05c26",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-controller-browser-entry.mjs",
+    "bytes": 3011,
+    "sha256": "dd24c715abfd1fbe9db483e7f9bf4be3d13e34bc1517348d96563010cd758957",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-world-rolling-stop-v2.mjs",
+    "bytes": 17926,
+    "sha256": "9b78479b003c22bb80eb849cdb32d9144b9f23327886e54c0a623989e73bb742",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-microtail-world-gpu.mjs",
+    "bytes": 15856,
+    "sha256": "d6187153f88f1e53692f8c1f43ba5c4cc7b21d9136d1fd75fcf6f35a18ff6609",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-canonical-spin.mjs",
+    "bytes": 935,
+    "sha256": "701613f9f88401adb7c47eccb3bd909b48c10d971f4ceb26e88bf300cdaf9c43",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-search-domain.mjs",
+    "bytes": 2319,
+    "sha256": "e00ec6b8c8f8be2dd34d412e181ee8bf52ec493b892646427c99ad114ef1a737",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-recurring-gpu.mjs",
+    "bytes": 10466,
+    "sha256": "98c34dfd3130abba291913d0e3a4d51dc522b492ebebbdbcce15bdf73e9805d4",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-world-cushion-commit.mjs",
+    "bytes": 7977,
+    "sha256": "0f2e497e2557049615688454c0d53d8380fe9ef710b460e26a5b640fa42b1ecc",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/experimental-raw-world-batch-binding.mjs",
+    "bytes": 6377,
+    "sha256": "3d4cdf3cdeb298771e415de230d99378ebb23305041c0b61f82a7dbd5f29e385",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-recurring-stages.mjs",
+    "bytes": 14674,
+    "sha256": "843d9454b6e0b0cbc0af4fb955b361ac929f7cbfdf9a5d289bf8424d72fd750c",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/source-law-normal-spin.mjs",
+    "bytes": 12762,
+    "sha256": "fc172c54afdafa83fc89f0ec28eb9c595e0a713313ebe26f4fa0f9c13ae42b4d",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-selected-mmq2-source.mjs",
+    "bytes": 3704,
+    "sha256": "26ae3ce178da522efddb18839bc01ef0cde941b26cd1b651d39c05f3254cde25",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/event-linear-gpu.mjs",
+    "bytes": 8294,
+    "sha256": "aaeb5fac20dec5006385a9590122dd244dc323be3a7e1203972fa47aa4296c8d",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-resident-microtail-source.mjs",
+    "bytes": 3866,
+    "sha256": "83010881866a1c3aa38a4b60019b22329e60db39e362aa5a80a8185b32608a6c",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-raw-world.mjs",
+    "bytes": 20707,
+    "sha256": "562f62d1885370a5bc74de54185122a5e14b654d0c0f000f9f2a4c3ff2eb787a",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-world-trace-capture.mjs",
+    "bytes": 1856,
+    "sha256": "becafe4f4d68acebdc2322a6c49881cac5914e3b1d5965e72bcc845853f1b4e1",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-rolling-bounds.mjs",
+    "bytes": 5483,
+    "sha256": "c408f4cf3a03795ebebf2558ba572d7d207861f073d0955f360c2f25e995e55f",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-practice-entry.mjs",
+    "bytes": 9790,
+    "sha256": "a758f5421c423b0b0a8e29f1093aaf2670494c7f374b51afc81310e15fdf98d4",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-intrinsic-cushion.mjs",
+    "bytes": 9310,
+    "sha256": "be7ffdedd7362b8723c2e73e12b3606386c2d8ac73e692e36f01f5ae53146967",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/source-law-nonaxial-rhs.mjs",
+    "bytes": 4423,
+    "sha256": "c63a58db4202b7847f3ecc4172b437bd70a7bbf643828c31471a4af0a33ec9bd",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-rolling-trace.mjs",
+    "bytes": 2092,
+    "sha256": "7a83e125f5a56491e5692f4631ca3a52496aca26d66a18f4c8a5fb1e742ccb85",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/cue-runner.mjs",
+    "bytes": 3966,
+    "sha256": "6565ebc24faaf8b2d9c69529a83cd3774485e92e55be8386f3c2cc1f156a49b4",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-controller-projection.mjs",
+    "bytes": 7384,
+    "sha256": "1e1009c9d00ec9ce3ff45a0ccc15097814de66c1cd43bfa6d578eb0b81a8f741",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/experimental-live-world-raw-resources.mjs",
+    "bytes": 3729,
+    "sha256": "9e14fa2816320e8edb6b733ef8d63f10c4891dddf256b9347922324b75e2436d",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-world-cushion-route.mjs",
+    "bytes": 3202,
+    "sha256": "3f287480f56bbdbcba499122c995e06623f531276030cb466c43ceb26a03e93a",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-selected-trace-resident.mjs",
+    "bytes": 2028,
+    "sha256": "dffcd36b59efb916c9e84f22bf73d6136d104646bf49d1ef9c900daace3b72ba",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/source-law-general-segment.mjs",
+    "bytes": 13096,
+    "sha256": "d9ce655b4f8ef73d7bd3062bd445b381871d4d5d59f79110a6448a542d423e51",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/cue-slice.mjs",
+    "bytes": 13539,
+    "sha256": "ef1c344f528c9efaed3b0b77006b89c75919ef4c0718eb995817ad64fb0e7512",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/raw-pose.mjs",
+    "bytes": 11987,
+    "sha256": "66e15c8198c4c6957b2215c1e7615944069fe8b097ccfe7fa1164e99294280c8",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-microtail-fraction.mjs",
+    "bytes": 7274,
+    "sha256": "0ae54aa762c583ea28444bd43cd435785c2deadc6cbffd092b72bf4755f8438a",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/experimental-raw-world-batch-gpu.mjs",
+    "bytes": 12742,
+    "sha256": "c185d83641396cc49f3c7ca2450648c9fa0f7f968aced3fb24786eff8a1cbb38",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-selected-mmq2-snapshot.mjs",
+    "bytes": 1826,
+    "sha256": "b8a365b090eb4933699de65db8253065e8132714cf8af45fc35d32d6b686b3c2",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-raw-journal-prefix.mjs",
+    "bytes": 3373,
+    "sha256": "bec42b30710230c1455b0c2e4cdf1a354cab950267b84044c53e5b33db1b654a",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-cushion-resolver.mjs",
+    "bytes": 21085,
+    "sha256": "85bed9b49e49264fb9118b5ea567447f47a23178fc2901f8471f92c5af9bbdfd",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-microtail-phase-trace.mjs",
+    "bytes": 3370,
+    "sha256": "673186d82eb8cbe2afc8059be5c4c59fc4a455d44c04ff995eaf92eb0d5afddf",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-world-journal.mjs",
+    "bytes": 11118,
+    "sha256": "330c3f9c7af14e2d36b92c706bb60e665120f95409e87f4d503d2e2d4d4f2279",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-rolling-pair-world.mjs",
+    "bytes": 9332,
+    "sha256": "8c9d1c814df1bb01477b149ee36730545b2882daf523288b9ce421f5ca0beb1e",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/experimental-raw-strike-chunks.mjs",
+    "bytes": 9038,
+    "sha256": "93276cf43763c5e41f446ad69b2fbb9b0bfb680c012791e70283f0f56a9f27e1",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-q-continuation.mjs",
+    "bytes": 35762,
+    "sha256": "0c02f8e897c1b416ff2ac954fc45f986506db9ab2afb5451088d4f21c8446fad",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/event-core.mjs",
+    "bytes": 7953,
+    "sha256": "bcd80c5e488cf217d6a8ebf5fdb9d50cf8bdbb756c199da828300a11bbbf9825",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-cushion-geometry.mjs",
+    "bytes": 18770,
+    "sha256": "9fa4ef24346d5afbfdd5014ef2b82c90789ade7949647ae155b43e6d44c47ea3",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/source-law-collinear-segment.mjs",
+    "bytes": 7988,
+    "sha256": "713571ab3e71ca09cf76cac1ad1ca432d3eab2cdd6baa6a67a042ceafd267117",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-cloth-microtail.mjs",
+    "bytes": 10596,
+    "sha256": "476ecf8117eb741257200daf68a5a1b26f91fede520df02a5c0c59368a1973d0",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/experimental-live-indirect.mjs",
+    "bytes": 3187,
+    "sha256": "694abde427f4ea271f9ff5337c17f3b1702fe7847b4923db4a75e51a55484c31",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-tube-prefix.mjs",
+    "bytes": 24214,
+    "sha256": "9e37c41fbc1fcd98d178e7725fe430386595293a523e8f85f66e6e68716105f1",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-contact-3d-bridge.mjs",
+    "bytes": 7200,
+    "sha256": "ce70554ccbfb5fbe356a90f72e256865dae037a52dc1b8305e5674eb299da87c",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-mixed-cushion-v2.mjs",
+    "bytes": 9527,
+    "sha256": "e63b81a99c3192126cee6d8bcb8bca81d04e8124fa1b830d07223a70d1e855ad",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-rules.mjs",
+    "bytes": 7420,
+    "sha256": "9ac8c0072b5fa1cf6f1333a895d984cbd596417f19255d8da614719aca1e7370",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-mixed-motion-v2-producer.mjs",
+    "bytes": 4011,
+    "sha256": "a702c6660e04a2daebe513526a823604abf387dc95bc86280387c4e71f4935a2",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-recurring-batch-audit.mjs",
+    "bytes": 3184,
+    "sha256": "36966298c76d4d0d2ba26adb093164e9075260c132c4c57f7df17e97f2560941",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-resident-microtail-phase.mjs",
+    "bytes": 3455,
+    "sha256": "a3e4cc9fa1c894f18c085162fc37d811c6ceb5f934b4aaf35698506d4b5b6f0a",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-q-recurrence.mjs",
+    "bytes": 23379,
+    "sha256": "a6324a1580c555e1f2b147b7b844adf51ce7737002c92cdb7e7cc9852de5a722",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-page-preparation.mjs",
+    "bytes": 2497,
+    "sha256": "0193842cdec3c1087b5905d56556b85de15d85fda9f745c173fc2626376a992a",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-selected-world-trace-hydrate.mjs",
+    "bytes": 4986,
+    "sha256": "77182af76a47a5830b1ab32e4d27d5ca7088606678f82ae79527930334757658",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-mixed-motion-v2.mjs",
+    "bytes": 9901,
+    "sha256": "2f14982817801b03037d7cc071caf6c4b7644c238c710a9c7dc56a8e66814fd7",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-engine-contract.mjs",
+    "bytes": 41824,
+    "sha256": "614162b19ee8eed6b021d87360464afebffee16a8bc472e95d812691c6c5dfe2",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-world-stages.mjs",
+    "bytes": 13083,
+    "sha256": "9c190be0a80d051eabc92e9b2d0b0f74b22baded2977ebe85b453eb9aade438c",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-selected-world-trace-v2-hydrate.mjs",
+    "bytes": 3404,
+    "sha256": "949a2084384643d5f21049ca4d9be3c03e2d0adb77ac98257175ce786a953edd",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-physical-rules.mjs",
+    "bytes": 5148,
+    "sha256": "2c69bc50216487da12d8dfff9b295ee5f65ca8b4ffb833fa09aa9689b429abd7",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/experimental-live-world-pipeline-cache.mjs",
+    "bytes": 11311,
+    "sha256": "cbdce6f50fa5db7987441ade845ecb43b007283096e8b7a820185e9ba512d60d",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/experimental-exact-collinear-world.mjs",
+    "bytes": 4421,
+    "sha256": "fc34ecfb7bcdfee267672ec2b813744d9328cd4a0a74297cc3f7236ecb069a69",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-checked-contact-math.mjs",
+    "bytes": 3042,
+    "sha256": "a88e06fb3d9c83f65de9112f68cecc48b89c0843abfb4fdb0b1227e32a215a9f",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-hull-entry-staged.mjs",
+    "bytes": 2718,
+    "sha256": "655c061a0f0300e0d9c6f53fbc7c5fc608d65f492ddd69c9617706a53c2725c8",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-selected-world-trace-v2-gpu.mjs",
+    "bytes": 11841,
+    "sha256": "b9627df13ee240d89db05227768d66c47d68eaf2d1b2ad8a155fa38f447db090",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/source-law-landing-event.mjs",
+    "bytes": 5633,
+    "sha256": "8ffdcccb37f05b6aab6f20b3bb2f6c33bc52a8fc33d8df64f32cd57394de56ce",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-landing-chain.mjs",
+    "bytes": 20141,
+    "sha256": "859764b5cf8fd778fb47a806a7c1f320492643d68c1233c3123eed789a14ccd9",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/experimental-live-world-resources.mjs",
+    "bytes": 13401,
+    "sha256": "9c43aca2f942d0978fdab2ed6897dc8b7f44a6e94ef4218ba35f47da412bc6d7",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/experimental-early-qt-world.mjs",
+    "bytes": 2753,
+    "sha256": "b592fc0117e3aa6f204d21842abdc598caab12a0cb1902c9217b205452c60d83",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-mixed-motion-v2-gpu.mjs",
+    "bytes": 10731,
+    "sha256": "6dd6baf2f0a5b9f06ee0cedec6312e1d81b2cfd979a5c989ee758eeefd5a41c1",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/experimental-live-world-uploads.mjs",
+    "bytes": 7440,
+    "sha256": "a6931f45c9a41716fd7fa3d3cfae9862636514bf47fd545fd2ecda14eb64ab10",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-smooth-segment.mjs",
+    "bytes": 29492,
+    "sha256": "ac167a917c84c15bcc1351487b905b6d2569323a9f4cafb52a3781e5b12615cf",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/layout.mjs",
+    "bytes": 6264,
+    "sha256": "d3666f9423726326347ee3f03c0ed3882fc713f25b0dea0be620b76770a1c2e1",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-mixed-clear-v2.mjs",
+    "bytes": 6340,
+    "sha256": "bb2f1da110f0fb4fa6bfbef9ee8a7dfaf222a6bac0b3d7da66f4ae8a0d19a09f",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-mixed-pair-entry.mjs",
+    "bytes": 16037,
+    "sha256": "ea8b2dbbbbae2a9e5cdf3eaed933a1a0f600e5b7a138526944cf77c087ca49d7",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-hull-query-staged.mjs",
+    "bytes": 2024,
+    "sha256": "6490da82724f3bb0ca8a795246e733c069b211d057cef07a90530ba913385346",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-selected-trace-cpu.mjs",
+    "bytes": 11411,
+    "sha256": "517a500df52e798465eec91a94bbac114eed67a36e4733a7449ebb953e084884",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/experimental-raw-world-batch-sources.mjs",
+    "bytes": 381508,
+    "sha256": "003a1a206b1b9f65c086a0ebf69eaf2bd91b9e23e998886a61bdbf1222b756ac",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-compile-cache-device.mjs",
+    "bytes": 7747,
+    "sha256": "093e7501eb75fa2028c669e248114b2291cdc3d19472906fd00903d2dffe79e2",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-cushion-resolver-v2.mjs",
+    "bytes": 22697,
+    "sha256": "df1f48200d5dcb14283ea22c518e3031522d7ec0c02e9658d2b42bab9c3831f5",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-qt-bridge.mjs",
+    "bytes": 16859,
+    "sha256": "569286faf1eb47a684fc0c03d918fd5995fe3bd59e9b75d40a2f694c28173d9b",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-world-mixed-v2-gpu.mjs",
+    "bytes": 9729,
+    "sha256": "24a9f4938210ea98a4351f52388ba90b82a6cdd28b7b0eb3f9b343d3ebe47323",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/experimental-raw-world-batch-phases.mjs",
+    "bytes": 4837,
+    "sha256": "a62b6aab07ad7d02c4b971edf23942150e85c420c32b54fe10dbc951716e413d",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-world-supported-stages.mjs",
+    "bytes": 2724,
+    "sha256": "52fc56774da4756464bf746542c742cbef8932d40892967cf7fb1246a6a3bca4",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-world-mixed-v2.mjs",
+    "bytes": 5214,
+    "sha256": "791c63b23323f81d4bdbf1e2c52837e5864e65c104d7fa4d322815b5c01bb39f",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-candidate-finalizer.mjs",
+    "bytes": 2663,
+    "sha256": "046afcd9b545a30e4a1f33701c2c3a00873eb00cf9ad0f0a60632ed9580d18bd",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-contact.mjs",
+    "bytes": 17124,
+    "sha256": "3a098a9559b8ddc4f1ff5881cc60d5a254798136db76e8a6e142c28c7b676f01",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-smooth-staged.mjs",
+    "bytes": 3884,
+    "sha256": "7a368930c8471df73f442f048050fabcd27297ec599bae527c2543cf7e91297f",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-recurring-loop.mjs",
+    "bytes": 12336,
+    "sha256": "684b59a846669465ff2b097c43ddbcbc2a6aaadf346b392e4cd517490996619c",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-slip-bridge.mjs",
+    "bytes": 13228,
+    "sha256": "371c70cf5355750718d4ae765007078084552a1fa7a41d78dbf5288e873b295d",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-selected-world-trace-gpu.mjs",
+    "bytes": 8881,
+    "sha256": "dd2283dce0a7780206e207b14d515d911e03aea55feb5db69e67370e4b289a9a",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/source-law-candidate-evaluator.mjs",
+    "bytes": 5568,
+    "sha256": "03c709051c423dab0dfb94e9521cfb05aad69dbb55ef858a1b69d1bea43043fd",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/experimental-guarded-storage-lift.mjs",
+    "bytes": 8617,
+    "sha256": "ce0eb8f182c9dd9c6cc47c7e8a9d137a38bb0e8fad80243b436453528d9ca1d6",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-microtail-world.mjs",
+    "bytes": 10545,
+    "sha256": "0dbc7e1bec220e87eee599e4e5029579c789504ae07776e3a0d3424d7b01d2f5",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-controller-search.mjs",
+    "bytes": 9300,
+    "sha256": "391672a6790b860479f06d173337965e374b0354e9ecb1ecd61a32dd35cf2659",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-q-pair.mjs",
+    "bytes": 14608,
+    "sha256": "fc1475209045eb928916aa49855559285884ebe0f413513689139f4ab8a3f23c",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-resident-transition.mjs",
+    "bytes": 20043,
+    "sha256": "02a4e4d71c6d8d5531f66f198749c82569d3a422f20c260ef3aac4499b419c8c",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-mixed-cushion-entry.mjs",
+    "bytes": 28782,
+    "sha256": "e6aa1716207a6a079872dd7a95b100d9f115a59a3497f745f811442acc5de2b6",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-cushion-release-v2.mjs",
+    "bytes": 8207,
+    "sha256": "2f7b8c7e369da434b879b1df2ad67d9619f2d846d4e7c712feb2abb5a5e8217c",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/source-geometry-horizon.mjs",
+    "bytes": 9274,
+    "sha256": "ce5a6009bf880cfc0dbe4f871f2b7a88643a57a86cdb30ea94499958a7d0d6af",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-prepared-world-gpu.mjs",
+    "bytes": 30375,
+    "sha256": "55a8181a64c237f34a3d803c1abd48fa0a706fc0600dafb61dbd180ceca47b09",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/source-law-raw-candidate.mjs",
+    "bytes": 16174,
+    "sha256": "975f7c1908a708b89fd16dffe06d25735f22e73fce3c72dd654ba56e31494338",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-microtail-trace.mjs",
+    "bytes": 6902,
+    "sha256": "3af1d4ba232bb2ede35dea00368f84eb4c280158ad2ccec3715244b6e93c0e3f",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-kiss-coverage-bank.mjs",
+    "bytes": 23001,
+    "sha256": "cb4af57fc54667ed5bed4f8396fb39859b12adcdad7b21ab5fa0c24ce2dca2a8",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-prepared-world.mjs",
+    "bytes": 10381,
+    "sha256": "f7556e2df3d39e5754e7602649691a3dfe0b86f6858259754e0c1a369fce727a",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-raw-strike.mjs",
+    "bytes": 40352,
+    "sha256": "2948af86d56b9dcd26e46de502dfc2844a5d4aa72c0917f2c64f55c0e619fc67",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/experimental-exact-collinear.mjs",
+    "bytes": 6494,
+    "sha256": "74cf1379d587b56246570d8598d3d00771940217d30fdeee62df54a73e310433",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/source-law-axial-advance.mjs",
+    "bytes": 10331,
+    "sha256": "dbc24626138ba1474795165ae3f0ef097651a3f326419ca5174b131718357582",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-spin-recurrence.mjs",
+    "bytes": 10099,
+    "sha256": "b6b3d0cfcadadcc64d96a8aba73244e14c5cd6ea6f3f5701bea5d359b99bafa3",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-state-store.mjs",
+    "bytes": 10414,
+    "sha256": "ffc4d53b6f4c91be8b6a46275cc31072277867c3dd15c2266eb701a54b7dabb7",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-axial.mjs",
+    "bytes": 13480,
+    "sha256": "62ff34eeb33b73af9a66d26dc357befb8f504240323779fc38d7e497627a7aaf",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-cushion-response.mjs",
+    "bytes": 22493,
+    "sha256": "270b555a5b118d6d2edcd072fca83ad8b179c23b05f6bb787b1f42015ff5c591",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/conservative-pair-cull.mjs",
+    "bytes": 4369,
+    "sha256": "cbf1779d4c1f40ec76a2b518a3e6b698018b73c956f0a27d6bb223086bd059a0",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-rolling-fraction.mjs",
+    "bytes": 4428,
+    "sha256": "55a9569c7a27c56a0c041b4320b07d8845b6ba882208169a772c60fa642dedcc",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-world-supported.mjs",
+    "bytes": 10038,
+    "sha256": "2b555c74e4867c41ba0d7da927482046d53936edccc93064b8caa49811c616db",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-recurring-batch.mjs",
+    "bytes": 3633,
+    "sha256": "55a4f8788eb0f132f2e8953c860f81338ddb389b28693723fa41c59b330c19b8",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/experimental-live-world-bind-groups.mjs",
+    "bytes": 1924,
+    "sha256": "b34c938a52ef59690c5dc5c425300f2a684a27622037382734ed0dc72e76da52",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-landing-3d.mjs",
+    "bytes": 14395,
+    "sha256": "85653473cacc700a5a0fbd612c885e48b731f4ad44536afd9937e07a996381cb",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/experimental-live-world-submissions.mjs",
+    "bytes": 1285,
+    "sha256": "fe3d215c05ea30b1b0bc6c113b8d603d3878e0bfc44737635b7f32af165d0ccb",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/experimental-live-world-sealed-entry.mjs",
+    "bytes": 550,
+    "sha256": "e1fb4781ab3b54ba78ffecd906e2bbfe96dbb43f9e3fc91ca31d05de6de8c085",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-mixed-pair-v2.mjs",
+    "bytes": 10884,
+    "sha256": "2b8f8dbf13544a6a55b5a49da23359cbe7c77943be9aff49e0b03cbd0bed3697",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-global-cushion.mjs",
+    "bytes": 22549,
+    "sha256": "c5edb0ddbbb9f6350bfe63e1db50b9722779814a408e888ea01883e02794e014",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-state-domain.mjs",
+    "bytes": 2060,
+    "sha256": "7c1b08d5b8d0dbcc2db1f1ed02ca62110761fd97ac8e6f3e22b4e75457e767bb",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-application-adapter.mjs",
+    "bytes": 15909,
+    "sha256": "e91fac9ff02830d4c55802272352801b3ceacff54d873f46f45b5d8553aea0f2",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-bridge-trace.mjs",
+    "bytes": 3779,
+    "sha256": "f23617a8ae7ca330ba4a5239bacd50f27f6d33c898acb8c5b199f16ee68116e4",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-prepared-world-inputs.mjs",
+    "bytes": 4308,
+    "sha256": "00ca73821979ea8e83ad3cf2160cdf6105f60282e168af49d29c9f7ec2bfb0f4",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-cushion-admission.mjs",
+    "bytes": 11799,
+    "sha256": "c1a2af08b24a992ebb0aa0d2a3d74b301d4604e52ee34950ef578235e722a530",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-mixed-clear-prefix.mjs",
+    "bytes": 7539,
+    "sha256": "8b29956c2b64ef9e07f933ded21a9454b340de1a561a2ea7103c58d52c5cf3e2",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-contact-math.mjs",
+    "bytes": 4955,
+    "sha256": "ead7a060f45328ac44c69460f190062b7d437d860c886282395f1082440641e7",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/experimental-raw-world-batch-revision.mjs",
+    "bytes": 562,
+    "sha256": "15668bc4681b39ad9a280c46608abaf1cc605ddf762d5540d544e579d45b9149",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-mixed-cushion-v2-gpu.mjs",
+    "bytes": 13484,
+    "sha256": "8e14218305f3a709f4e965f13af723e302f853b3c62d15984843f81b2ed525cb",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/experimental-raw-world-batch-audit.mjs",
+    "bytes": 9863,
+    "sha256": "9870bfb13b3f7c350a2b13e432a3ac131eb821534e5837bc5807cc20847b094c",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-recurring-batch-phases.mjs",
+    "bytes": 7989,
+    "sha256": "1064ef92399c907ccf7e4b2c0840830914024e6dfcaf423c39e2e8e4a86c1d66",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-recurring-batch-gpu.mjs",
+    "bytes": 10973,
+    "sha256": "2fa73ee22fa10387c139d79b0269120cfcc55ee8ac02088eb6ffaa42be826c32",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-recurring-world.mjs",
+    "bytes": 16416,
+    "sha256": "a0f6ca378ddf6c8a4b61d4b58435aafe8a0a1ef305c23b932eb6f64c7951ef07",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-prepared-world-readback.mjs",
+    "bytes": 1530,
+    "sha256": "a8741e29e60dfc683b93e8e68c18b4735e1a9bf723943f4cc8c55c959e3587d4",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-rolling-pair-entry.mjs",
+    "bytes": 17999,
+    "sha256": "3792e891f7204d9e420f320467e77b6fd478fc50f1628c83890d8888443948a9",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-selected-trace.mjs",
+    "bytes": 9278,
+    "sha256": "c3d0786f7e4d3f11abff146b89cd8512cbbaaa35480b7a63311b0328095abc10",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-world-mixed-resolution.mjs",
+    "bytes": 7854,
+    "sha256": "30b13624a5511f7977c9d0de0fd37e6bc8022c84976c5788c846968030481a20",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-rolling-partial.mjs",
+    "bytes": 11671,
+    "sha256": "048ac903e2a8e17c715031583423b2410248214db5bf6a2ec832df471496b9d4",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-cushion-release.mjs",
+    "bytes": 11237,
+    "sha256": "812b65adc2ab9a9e1113ba224c15325c18530b9d63f3382dc94798af3b34d118",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-directional-event.mjs",
+    "bytes": 28053,
+    "sha256": "56ed8f39a5f6410d2eecc895685eeadf9a2d485c59c9a4ccec084aba417e216e",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-event-rules.mjs",
+    "bytes": 12063,
+    "sha256": "7fbc2ad3ed710f17b2ff3797164f6ddbb94d802a196dd3cfe75dbc803566c9e3",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-kiss-separation.mjs",
+    "bytes": 11503,
+    "sha256": "4337ed1965f6c9d40c3c654f9345b10836b35eb26bc97a79488dc85e332ecb7a",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-session-service.mjs",
+    "bytes": 12410,
+    "sha256": "8abae1491771abe8bbcef9ac898343de6b5c411248a39cead99732fb0ac9d3f0",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-compact-search-service.mjs",
+    "bytes": 12282,
+    "sha256": "0ebc83a2b077f652aa0f3e7fafcb678e26cb91659d7b0367651f3f396600f074",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-contact-3d.mjs",
+    "bytes": 15726,
+    "sha256": "e8495ffd6b4e8ec1d65574f3513bf4828593aba31d544200ef5020593d479835",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/experimental-raw-strike-fusion.mjs",
+    "bytes": 4761,
+    "sha256": "e89b1995896c1d1dc99abb5e6aacd41dfa348b827461376593ab307364f62bc9",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-journal-rules.mjs",
+    "bytes": 7766,
+    "sha256": "b638da1fc5225717bf6282f4227cc71e734a596f48efd8cbb6b369dbd09c2ca2",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-world-continuation.mjs",
+    "bytes": 12267,
+    "sha256": "32086a7073c1a99a5166f9a8c4ebc92c6bd159826771509580e5b85d6cf8f777",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-rolling-tail.mjs",
+    "bytes": 14705,
+    "sha256": "872720c15aea8026c2d0eeaf67a5eadebe1763833bf318d0988401205c1d2885",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/experimental-raw-world-batch-schedule.mjs",
+    "bytes": 17030,
+    "sha256": "f2f06eee150863c7039d5c1a89ab64b4ad17cff7ad9988ce8acb6ce19cc569cc",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/experimental-live-world-capture.mjs",
+    "bytes": 10800,
+    "sha256": "586054f80c7e9237a38c6dffb6b9aefb82bb79ec25e2ffe4b0ff50d6fe0d5a40",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-cushion-release-staged.mjs",
+    "bytes": 2912,
+    "sha256": "4e8ea084336b013c273e2e244e942dee0f827ffef9b803760430c1d34b0f527c",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/deterministic-cushion-resolver-v2-inputs.mjs",
+    "bytes": 2223,
+    "sha256": "f769a249a250cd5fcafdde56c0083ae03f613ade0d2acc4d6938930a60d4c3dd",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/source-law-retained-advance.mjs",
+    "bytes": 3115,
+    "sha256": "904e162544b057366d4e584aa7f7066b8dbdc9965f9ca2399a9c6778f9e329dd",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/experimental-live-world-batch.mjs",
+    "bytes": 24165,
+    "sha256": "792500aa5f3aad69e6c1257010e24d5c5a45e48269cef065f8f8cba95700410c",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-controller-integration.mjs",
+    "bytes": 22319,
+    "sha256": "4442a1a4ba8038b84445c6afb0f5a7d61695221480f744c72427e7bd8facf3b7",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/experimental-live-world-build-seal.mjs",
+    "bytes": 184,
+    "sha256": "f8b8de8c9fed5e44deaa2bc7de6f88cfbc1acf014e28494d8c12752525bb33b2",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/direct-candidate/canonical-bridge-phase-trace.mjs",
+    "bytes": 4201,
+    "sha256": "daf678250c88ae9bb1007f9d04576480badae88fef9bf07f5f42eadb46d4cc47",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/selected-input-owner.mjs",
+    "bytes": 4177,
+    "sha256": "3dbae9577e4f23a75ae92d81795b65d21ff00b7202428597b64779f9b68c59b3",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/selected-artifact.mjs",
+    "bytes": 8369,
+    "sha256": "d791724fa7cb3139b366e9a4e296d4433fb7d43ad4566f3371dfa614eaf2cf1c",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/resident-scheduler-runner.mjs",
+    "bytes": 10230,
+    "sha256": "2fcdd2116942d5a9c843b960065ca286c916bed59dd45f06b3bf570f34045b5b",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/selected-scheduler-kernel.mjs",
+    "bytes": 11195,
+    "sha256": "68ea70ee3c05bd431982ec6aa1103ef17e3e9c0bf6dadf5d26d51ed24e10d020",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/isa.mjs",
+    "bytes": 822,
+    "sha256": "f4c72faca25bc989f00a28fe4513100001164e5307ce4dce8f0c36f159c1f2d4",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/owned-bytes.mjs",
+    "bytes": 728,
+    "sha256": "0fb7f3c321cc239fdac9b24bdae0a45c1c2e57f1f4e80a845ff87b60c057a440",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/selected-scheduler-runner.mjs",
+    "bytes": 11055,
+    "sha256": "dac34aaf83517729a25ae32d2cbf913ab25acbcbf429884cced58ddffc80130f",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/compiled-plan-resource-admission.mjs",
+    "bytes": 1089,
+    "sha256": "e72daecec75fb8250c51248001dccda23bb120ca08fa0cf4c40f87ea5a51a783",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/selected-worker-protocol.mjs",
+    "bytes": 2485,
+    "sha256": "696239606be43f738d7b5f4c6b8da175cdc3056152e4bc6728558dca2ab06e73",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/resident-pipeline-cache.mjs",
+    "bytes": 3169,
+    "sha256": "d38dc30a3bcd09af3ad37ecc5ad502c13cf752b42f13b74df3ac2069f5767544",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/kernel.mjs",
+    "bytes": 7377,
+    "sha256": "bdf6944380935d0fe684d922d715ac63a0b38fed8472c734feba0118b4d95d58",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/experimental-width-worker-protocol.mjs",
+    "bytes": 3651,
+    "sha256": "a70b7e86853d21d8954d0a21a4afe91428e1cd8211081ebeef6d6e4aa3e84963",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/experimental-worker-protocol.mjs",
+    "bytes": 3074,
+    "sha256": "6c331aab7d82df6ab61189c8dc333c72dc9ef522d598e6897d912e66a55ffca9",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/selected-profile.mjs",
+    "bytes": 2800,
+    "sha256": "c10e957d39a153fe2d1c0b210abfef0ef1937d2e103a67136c9d25627ebb6520",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/constant-stage.mjs",
+    "bytes": 13155,
+    "sha256": "10148b9eb44b25821aeb91e1667387288852e2afc5c46d7ca1bc6806f88c5229",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/experimental-input-owner.mjs",
+    "bytes": 4660,
+    "sha256": "d8c8e0c87bfbebd15569ae7e1f4cbea528dd2e6b40372ba3659a17b5f88d8926",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/exact-wide-source.mjs",
+    "bytes": 507,
+    "sha256": "0fae3dfb961d8cddf177101883601127d369ced4c800b2d841576179a979d9f4",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/compiled-app-policy-protocol.mjs",
+    "bytes": 12010,
+    "sha256": "7ac34a59eadf60b9d51eafb03408cfbc9588037c16d553d768f1f3c02bbafdcf",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/selected-input-arena.mjs",
+    "bytes": 1249,
+    "sha256": "b0a5095367b146bec73b15baf85bee57d3d7d81aee48d7fef70b633ff40a2f45",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/frontend-build-configuration.mjs",
+    "bytes": 139,
+    "sha256": "2a330ef448b819149e6337505c8aac8e2fbfdde1db9d76b734e4020859236579",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/integer-core.mjs",
+    "bytes": 10357,
+    "sha256": "b6bdceb8986699132cfce8d4686e40a9cc9dcecf8598b6cf80dfe917b9cd5caa",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/compiled-production-runtime.mjs",
+    "bytes": 18517,
+    "sha256": "26ecc71d471248825b419c0caadd50b36ad80ad298280721ba4c3ff9ce178d15",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/opcode-cost.mjs",
+    "bytes": 219,
+    "sha256": "6485616069ca37eda5dd9df02db424247763f450655f1a38919ceeed97047032",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/exact-wide-cost.mjs",
+    "bytes": 637,
+    "sha256": "009636eb9c95bf59839c93e145c5661cc5a2377c6adba0e7aaaa20b447e49fb9",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/runner.mjs",
+    "bytes": 4923,
+    "sha256": "f27fe4283b27ae76b6353b1f4137781c66550e1dac262e8b8713292950f44e6d",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/parallel-kernel.mjs",
+    "bytes": 3109,
+    "sha256": "c3c0e1aaf371cb27d9ef6e3f33760a88abf02f4a3669d69f8229e54dc4e1d764",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/selected-policy-owner-protocol.mjs",
+    "bytes": 9132,
+    "sha256": "732624dd4c85925695340f0407cf34f77da79c863fdad05f6f11cd8986e4aad3",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/width-profiles.mjs",
+    "bytes": 2853,
+    "sha256": "665daaf4f9db0f170f19daaaeecfae257fd5fddec41e14bb4d281774cbd1ba92",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/compiled-app-worker-protocol.mjs",
+    "bytes": 4680,
+    "sha256": "4ddcbe151aa2412539b1dddbda7d4d234ef4b2eecf4dad127d738a813c1b6297",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/program-admission.mjs",
+    "bytes": 4186,
+    "sha256": "5e6101dc9ad69069f8eb174dd974d8a6b2c63d06f30dc4ea87f31139e79cb23a",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/views.mjs",
+    "bytes": 2187,
+    "sha256": "032d43fa3cd2c037b7b46af9e2a505a14d0c132a10be9bbfaf2b7f404d48df5c",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/compiled-selected-session-backend.mjs",
+    "bytes": 8893,
+    "sha256": "e8ec57fe90299e1323742e075631767c006db82c7f10283f8a7c00403ca2a0d4",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/frontend-resource-policy.mjs",
+    "bytes": 4949,
+    "sha256": "e8d189fbdb73c8a764efa056ee6f4f1db92fe7d1f883b6a775e84b43cfe7da02",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/exact-divide-cost.mjs",
+    "bytes": 559,
+    "sha256": "a8a39f373f9a13639e43abf9581f6947488ca4f8b43183a42bf6d108cff3a441",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/selected-scheduler-plan.mjs",
+    "bytes": 5088,
+    "sha256": "4c2dde03264bbab9f66eb3fc50ced9ab632d1450a24df068e4499b95857ec8a9",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/resident-scheduler-kernel.mjs",
+    "bytes": 10574,
+    "sha256": "d7d4a8e4d1e83ceefe320e9c9c53caa58ecc05f6f1ad3afc0171f3ca3d44348e",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/compiled-compact-search-backend.mjs",
+    "bytes": 16377,
+    "sha256": "8a1d0ac82748bcb467f026f04572c286f1ad546d65c12c5acce93fd367af3cfc",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/program-artifact.mjs",
+    "bytes": 12396,
+    "sha256": "b9a4648d1e1a9946c0ad7d65a583a1c35e20d91977e40e09fbd8e609bde70c58",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/experimental-worker-owner.mjs",
+    "bytes": 7455,
+    "sha256": "55c86fccaa39d343a7f4186ebe446d39887912c1182d4af5d6f66ad91269041d",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/exact-divide-source.mjs",
+    "bytes": 537,
+    "sha256": "309fc10a6d7972bb3b88f23b4fba2bff585035f3a6f1a8dfb450e7de57291db9",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/runtime-admission.mjs",
+    "bytes": 315,
+    "sha256": "a15f41829ab07fb8b5f0a980cfbe76456388d2d9f0292253ca87a09053335107",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/selected-program-library.mjs",
+    "bytes": 6381,
+    "sha256": "ec05eff978bd2a3f4452c2ac33858fe48093de8092bfbd813069e1a1561d4ea1",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/runtime-runner.mjs",
+    "bytes": 8512,
+    "sha256": "b2e2224813d2d317d9e9c21b3709883bff47ab8b5d23ac653dfc8fb2d72d1d73",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/parallel-runner.mjs",
+    "bytes": 8515,
+    "sha256": "7ae93d69ab41a0f316422c877d9793c4467c91c0bb181dbaa7ccf2b54e6b3edd",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/kernel-common-guards.mjs",
+    "bytes": 428,
+    "sha256": "5c4e47e8f37a5032633b7eee4ceb42b64426f489297cbc06a4c6a470276cfe9b",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/compiled-policy-owner-protocol.mjs",
+    "bytes": 11671,
+    "sha256": "c0e021871c3a24f468a100b891121e5179bde4cbeecd0da52966667a56869bf3",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/resident-scheduler-plan.mjs",
+    "bytes": 7598,
+    "sha256": "e883004dc90b73e93398dc0c4de53afecab3a33af0b5e063eac2f06de74ad163",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/runtime-closure.mjs",
+    "bytes": 2169,
+    "sha256": "e7e6e8a49509ece49d9c38dcc3b22d8b6bce1b22ede13182bd4492a0c42ca686",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/compiled-program-library.mjs",
+    "bytes": 7231,
+    "sha256": "8604c0879b37a0509d3810f1dfc1bb6c27266f7ab530397c4d3b34ebc3ef24bc",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/selected-input-snapshot.mjs",
+    "bytes": 1292,
+    "sha256": "96534e72c81f3f50cfaf4624f463bf40c3abb4b6b8113f0cc9c25e294dad9b80",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/canonical-integer-transport/compiled-resource-policy.mjs",
+    "bytes": 1673,
+    "sha256": "638abc69da3adfd54b821460731ea0c137e5281e994736b295e7a8a5184c9e34",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/bounded-gpu-shot/four-ball-worker-protocol.mjs",
+    "bytes": 5777,
+    "sha256": "07484a80ad3b7b3b27a74c16249bdd7460f9cd3c05bd33cf72f90b3ff0ef30d7",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/bounded-gpu-shot/evaluation-service.mjs",
+    "bytes": 1016,
+    "sha256": "201448990737079da98961b2da8ac6a5dedfeffbe6753dca4188d1febb14de52",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/bounded-gpu-shot/evaluation-queue.mjs",
+    "bytes": 13973,
+    "sha256": "02be8624b48ac5d228a6ed71e99e34518eb5bbd936ddee8b4c404db49a9ba29d",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/bounded-gpu-shot/current-source-worker-entry.mjs",
+    "bytes": 572,
+    "sha256": "4fdd8ecd89d98cc4daf29f638ae71154b831a09dbbe761d9dddb9d4f67a2ddcb",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/bounded-gpu-shot/current-source-worker-client.mjs",
+    "bytes": 1068,
+    "sha256": "9b58bb0918cd6974fed6e806504b757ffb95bda4f050e4d98a5c0c6fe8e410ee",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/bounded-gpu-shot/four-ball-worker-client.mjs",
+    "bytes": 980,
+    "sha256": "35485f36eb81f45d6b053cfefff1239a8d0b1a3a1f1d766f955488e30a2d31bd",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/bounded-gpu-shot/lifecycle.mjs",
+    "bytes": 13199,
+    "sha256": "17d498363828677a992d601d487f1c6c85f3c4d98cae16a5586699b0679dd6cc",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/bounded-gpu-shot/evaluation.mjs",
+    "bytes": 900,
+    "sha256": "6c959083b9456d59a63c0e3f90c7495c600016b27fb48745b05fff30fb0c3e02",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/bounded-gpu-shot/evaluation-input.mjs",
+    "bytes": 4155,
+    "sha256": "0ce8e3b8f5f366bb3e9ade5952d390307b80768547c2bf6398ad9d5222a47759",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/bounded-gpu-shot/four-ball-worker-bootstrap.mjs",
+    "bytes": 1936,
+    "sha256": "2332838878be986351ed9220fd105d2139277a700fe88c559e3e7ad1511a5a52",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/bounded-gpu-shot/four-ball-worker-host.mjs",
+    "bytes": 5402,
+    "sha256": "d4a94d2d7547ef0908a175ab306b4daf2f1268acbe1888e03ccb49ae70039e57",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/bounded-gpu-shot/four-ball-worker-runtime.mjs",
+    "bytes": 3519,
+    "sha256": "a6df816da0709df9fc0245e6fdb2a916ad16d7ab36076688bbe2e7dc43ac2640",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/bounded-gpu-shot/four-ball-worker-entry.mjs",
+    "bytes": 416,
+    "sha256": "75c59c0eed2add6e98de2acf2428f48a28fa33f4fb7998b0e712066a81545cff",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/bounded-gpu-shot/four-ball-worker-transport.mjs",
+    "bytes": 7104,
+    "sha256": "dea9dad29ccb58304633b1f527e434b78993f89b741b5d197e43b9d78e91afed",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/bounded-gpu-shot/resources.mjs",
+    "bytes": 2206,
+    "sha256": "847d8629c230831f012c5b14a18b9deca102c0a3f2a72edc527e385a9f7bd7e5",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/bounded-gpu-shot/four-ball.mjs",
+    "bytes": 6597,
+    "sha256": "6749ef05c3d714ae52ad19d46902292506764d47b65517360b401613c946abec",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-created-owner.mjs",
+    "bytes": 10709,
+    "sha256": "26a3f4097a48c32982c3de1d0427ffeddab62bd135264e5caf683fd40db9eb96",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/world-query-owner.mjs",
+    "bytes": 6064,
+    "sha256": "01079baa49eab58cca61a28c6133f21a7427882062058ea3d4742adb382e9f35",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/inverse-observation-reducer.mjs",
+    "bytes": 12509,
+    "sha256": "276c6f5b2a75fe99731a08ce456061133698e04530ef833394dc048b7c94b0c7",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/scene-world.mjs",
+    "bytes": 31095,
+    "sha256": "2e3512793d729eae90575af0dc89acb71df05bb9575c2ebd6e80acf980252dd5",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/world-current-pre-ccd.mjs",
+    "bytes": 17194,
+    "sha256": "33855dc12050c6a51bb46e086cc6c69bcb68279cd2e7a95089f2d28826361aa4",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/initial-microcode-batch-plan.mjs",
+    "bytes": 7847,
+    "sha256": "7cfee00d0281a9189b4932351307465b9427ebb044f66d49ff0a0ec53adf4f75",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/numeric-request.mjs",
+    "bytes": 4578,
+    "sha256": "ded2dee91efcf850f16b0c9199fcff4073093966f85fc9fb42a8b70aaa6620bd",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-first-numerical-source.mjs",
+    "bytes": 9174,
+    "sha256": "7b0817c386dbabf5fa612e59eec0312af9b4bf9233b1757b5292125482c32461",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-current-empty-pairs.mjs",
+    "bytes": 27514,
+    "sha256": "4b9874884dd9c2585eaaafa4323bf020be179a86848650d7a01331412cf44247",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/microcode-preparation.mjs",
+    "bytes": 7899,
+    "sha256": "b32092db3c82128d678fb3a0e5dd934532c56ef2f3452fa2e7fb0f5370963e58",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/source-number.mjs",
+    "bytes": 14595,
+    "sha256": "608f397b5131453881b184395b63a939bbd55951153eaaa535a7b29d452193da",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/geometry-world.mjs",
+    "bytes": 5926,
+    "sha256": "b75c0c552ef604ff30fb9eff86c50ddcfbce6fb008b55478927cb245d543a084",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-retained-h.mjs",
+    "bytes": 19689,
+    "sha256": "9a56e1deb71ac7dc28707fc9619d9bad77b5c5d4ca1638d773c270afa81a5acc",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-current-roster.mjs",
+    "bytes": 10540,
+    "sha256": "ebc408d97b646d748ec59a597384d14ccd99b81090ade8a67dae2e01ed72a2a3",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/source-sha256.mjs",
+    "bytes": 4575,
+    "sha256": "efbe142f7aee3ca8bea15e53536b87b97740a8d604f48b1dd9ab33e27bf34647",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/worker-host.mjs",
+    "bytes": 7904,
+    "sha256": "bb60b222b9353fcfaf981a7679ebf6a3cee1cd6294bb93c3fe7fa13ad9b69689",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-first-final-mass.mjs",
+    "bytes": 11303,
+    "sha256": "f8d47a3479884c1373deead52e6e8ec540a4c8b670d311cebaadcf22806ad6ec",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-current-floor.mjs",
+    "bytes": 16562,
+    "sha256": "349f5d36eb356c6c454dccff22ff910b72849c653e768d44d912295aa00758dc",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/macro-launch-data.mjs",
+    "bytes": 2516,
+    "sha256": "b7b91b8be5be23f9b77351f7b528e27eb1bdee57d784decccecc8ec14730ba6b",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-retained-tape.mjs",
+    "bytes": 5925,
+    "sha256": "4509403baff050267694b32c9ef15dfe08e8cad49ae0d84e50dd1c3476fc53ae",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-outer-bookkeeping.mjs",
+    "bytes": 7218,
+    "sha256": "4b35767bc75fc29e26fd441ead668ebd3ce512ce6f1fc75b391b0a0056b7e0a5",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/microcode-source-macros.mjs",
+    "bytes": 7857,
+    "sha256": "fe9bc7271c014f79bc1f79a563b73daeebd6662b1f21c78ab32bba282e890706",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-first-broad-post.mjs",
+    "bytes": 22506,
+    "sha256": "bf8b29cf4fff3a980eaed86c502aade527f1012897fd979e122defc6aa8bf3df",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-initial-broad.mjs",
+    "bytes": 16102,
+    "sha256": "22f06b26025182e8a38e41f74950a3e8921202c563538652f18e695288672ed2",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/cue.mjs",
+    "bytes": 9545,
+    "sha256": "d2eb0d48f03a839a7de29fc2bc5b2b168f43827e50bed61e4f45f9b374d58e76",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/coupled-flat.mjs",
+    "bytes": 5938,
+    "sha256": "9da986ad7cf2ffba261c141483e1d5b4f57a538a18283a30e8e678f5381c4b47",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/world-application.mjs",
+    "bytes": 18359,
+    "sha256": "29fcd4fa6388b4ddc3e05914ae133ebb6a93f51c47596bb67ef8149d7e96fc70",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-first-roster.mjs",
+    "bytes": 6673,
+    "sha256": "149838cbdd24fb486892c539c71e417ea325751fbb0d5aaf9ebfe519d3dd5cdb",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-created-control-layout.mjs",
+    "bytes": 12846,
+    "sha256": "f63fab001798d955aca23f7f7921e532b021bf7f59727585c259e5aeba7951f6",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/worker-entry.mjs",
+    "bytes": 405,
+    "sha256": "b25e82e5975a398b71910e155a224b4dd7355af9b08ff680c616bd5b1adbb38d",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/worker-protocol.mjs",
+    "bytes": 6511,
+    "sha256": "9357e17a44180712366cc2f122c3067977b794d25d37ec6a5d3292c14dd7ad53",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-first-numerical.mjs",
+    "bytes": 16409,
+    "sha256": "2caa61b144bd3f1bfd906fe8020441e8256f39c7dee61663b2be68e84b36f94e",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/abi.mjs",
+    "bytes": 6588,
+    "sha256": "703a91112592c14d32dab16b278bb0f1d9ddc0bcb76ad6adeb3361146057df90",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/world-h.mjs",
+    "bytes": 28943,
+    "sha256": "80772132a29223b220468162767cf223e2e2d789cd00875f67e90c44e2a63807",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/strike-microcode-checkpoints.mjs",
+    "bytes": 16736,
+    "sha256": "9a6ac8c493e63f88c9f6ed7d154515835d4a609ca0dd783498cb09fb8d2da5a3",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/contact-journal.mjs",
+    "bytes": 25103,
+    "sha256": "cec8ced1e061d078239ba9ae971bdd58b58da329fb39e8d62b6e93e9a02874e1",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-second-prefix.mjs",
+    "bytes": 11782,
+    "sha256": "ceba077e4a34f8080502b2fe017473c015ea7c401e7f916d9291e2e6b5e5ebfe",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/integer-f32.mjs",
+    "bytes": 5141,
+    "sha256": "cc88180542fe0874e2d75309fb35583c13d3b6f5d1d459b62b7f21265b854152",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/initial-microcode-launch.mjs",
+    "bytes": 13529,
+    "sha256": "c20e54762ebda17a295b80bdc0fee609912403cdc3a8306b396f7455df9526c6",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/numeric-continuation.mjs",
+    "bytes": 6901,
+    "sha256": "e4ad75bd2d5aa0a1cdb4e84a9439ad6ff072414b0d8f1531283ac026c510d4f5",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/cue-empty-caches.mjs",
+    "bytes": 11641,
+    "sha256": "5490e66081cf6a159bf273d25e0f42c0ce99b080199503acf64a2930279cf164",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/initial-microcode-publication.mjs",
+    "bytes": 4573,
+    "sha256": "4a9d5265e466872c5e1930d9ed8755fb311899b7fd23637da7f8f562e260f8e1",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-first-sphere.mjs",
+    "bytes": 13759,
+    "sha256": "d96aa153818c71beb0c941d61d0305e78379ce10a3a066db185d6bbafbdb48e7",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/worker-client.mjs",
+    "bytes": 3872,
+    "sha256": "87e367f1d75ce1bfb589614aeee37481d1e415b144dcba5a9db70f8f294b3a2b",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-resident-roster.mjs",
+    "bytes": 3985,
+    "sha256": "d0ea3dad5e6b5aea8896582ebf171c994825755ea80d7e8c902713193ff726fd",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/inverse-observation-layout.mjs",
+    "bytes": 8449,
+    "sha256": "4e964644297e4eb361e527d1fd9a3bd234a0ab49f54169a2a7b029dce90a7cae",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-second-numerical.mjs",
+    "bytes": 13869,
+    "sha256": "d67b2552976a30050c63464c1fc6a1c57184592ac6fc22fda046c57014b1a002",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/microcode-source-intrinsics.mjs",
+    "bytes": 9304,
+    "sha256": "5b2209fdfbe3fdd58c0dc130239c9e8684e4d0a777f45bae27621bec0726ca5b",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-second-application.mjs",
+    "bytes": 19950,
+    "sha256": "12ebb7df6c063b165e98d6fb5b5dfc065b77a07dc530db94ea221f96946fd543",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/batch-protocol.mjs",
+    "bytes": 17862,
+    "sha256": "ffefaf1ccfab5df5797d3e3bbe34a7a730237ed81b9688a63e108c07182fef89",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/retained-microcode-executor.mjs",
+    "bytes": 18745,
+    "sha256": "393afc916589fe5b6001b9754cb4823b59b020bd6a442a13eb99b7a90440e4bc",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/numeric-profile.mjs",
+    "bytes": 7759,
+    "sha256": "90170db77099e64a910832c522dd8df989563e993db995e3ff113687ace401b5",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/microcode-vm.mjs",
+    "bytes": 44642,
+    "sha256": "70272ccc1974f6080464688d28ded97b6e2982e49cef72a4f7116d09e919a461",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/world-compact-owners.mjs",
+    "bytes": 3824,
+    "sha256": "2bc14fd397453c11c9b32d3b5b0cbce488b0cf0105da1a70a4dd91967fa009df",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/scene-activation.mjs",
+    "bytes": 62944,
+    "sha256": "0c0863e78fb46b9b53b6fcf57ac6573b1362e8b19d2ca78b329b38c45531d6b8",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/bvh.mjs",
+    "bytes": 44441,
+    "sha256": "3fefcde2b969226d0b666a151298214e56d928c650ec8b5594886fbf49fca17e",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/convex-point-continuation.mjs",
+    "bytes": 4747,
+    "sha256": "485eee7651fdc11ad06080a3bcf7997c05ea534c896205be944caaaf06e6bea7",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/macro-launch-profile.mjs",
+    "bytes": 19925,
+    "sha256": "9b1abcbe32d11f8df3155c7a9616ba1ef22bca002756a3820cc30f3cb075388b",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/microcode-isa.mjs",
+    "bytes": 5464,
+    "sha256": "c882ab7b19e6d47744cd3ad4a3012c368e1faf5516dbcb65869219147ae1c6a4",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-game.mjs",
+    "bytes": 4946,
+    "sha256": "8559e3d48604f3614ac62e227ffe779234049fffacbb3a9e29208edfae2a212c",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/source-number-continuation.mjs",
+    "bytes": 7979,
+    "sha256": "8c40da91936b8ece5bc2d0dedc66a59babaf09f8b602e1fbc0053ec88e0c2c8a",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/remaining-numeric-owner.mjs",
+    "bytes": 13572,
+    "sha256": "1a9a20714185a05b1ea4d410b1082df53ed57d8dbba4ca12bb69750a53a34a65",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-current-numerical-kernels.mjs",
+    "bytes": 11762,
+    "sha256": "1fe71cc61c4f6a477ff28f03cf2222e0836c1f6ce5609abb554accb87e019277",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/world-cue-geometry.mjs",
+    "bytes": 22112,
+    "sha256": "4570f16269897e683c4890fed1b23a5bacba74d5efffe9ad7c08705e9bdc6e1b",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-scene-first-collision.mjs",
+    "bytes": 19250,
+    "sha256": "caa5dedb1f4231bdf75d753c62061ab11000dd2e9cac3e2672d52bbc14f1a6a9",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/executor.mjs",
+    "bytes": 17273,
+    "sha256": "1ea4bc494e70d37cf7821db9872be70abe85937d143da877d9f991f0f38b492f",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/launch-view-ownership.mjs",
+    "bytes": 1945,
+    "sha256": "770d96823665896eb2b68af82833071989a989ac6f307c48405984869218c07a",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/world-microcode-source.mjs",
+    "bytes": 5150,
+    "sha256": "37e0da68516a24ce6a523a4428f944f0ea21f3c5f22c6b3ff14a1f073ad216ff",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/world-geometry.mjs",
+    "bytes": 7798,
+    "sha256": "662391f224115d5cf2ad3386e6e5aa896b3086963de9cd800a5d4c9a80a9038f",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/world-state.mjs",
+    "bytes": 15801,
+    "sha256": "77e5976a0f6cdb56e5aedc995ad6fe976f1d91bc0ed8486f614d5723c5b37149",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/inverse-world-query-join.mjs",
+    "bytes": 17331,
+    "sha256": "4d1ce9df6dd3981770b36ffff35ebd8494f6fa4ff7d3a1014b5f495d90d71bdd",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/number-program-macro-admission.mjs",
+    "bytes": 2715,
+    "sha256": "3f101a3d5637f064f357388f1e81e637c54861b9e4c5e10659f5f98cd66034fb",
+    "added": true
+  }
+]

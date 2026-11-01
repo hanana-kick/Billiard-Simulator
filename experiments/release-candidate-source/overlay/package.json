@@ -1,0 +1,58 @@
+{
+  "name": "billiard-simulator",
+  "version": "10.0.0",
+  "private": true,
+  "description": "3D rigid-body billiards laboratory with official Base UI shadcn components",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node build.cjs",
+    "start": "node server.cjs",
+    "test": "node --test --test-concurrency=2 tests/physics.cjs tests/accuracy.cjs tests/repair-v5.cjs tests/optimizer.cjs tests/route-families.cjs tests/official-ui.cjs tests/search-repair-v8.cjs tests/ui-inventory.cjs tests/four-ball.cjs tests/three-ball-turns.cjs tests/four-ball-search.cjs tests/physical-scoring-seam.cjs tests/table-geometry.cjs tests/physics-invariants.cjs tests/search-options.cjs tests/render-service.cjs tests/search-motion.cjs tests/worker-pool.cjs tests/four-ball-integration.cjs tests/frame-cap.cjs tests/controller-render-cap.cjs tests/seo.cjs tests/inverse-solver.cjs tests/inverse-integration.cjs tests/cue-feasibility.cjs tests/direct-input.cjs tests/responsive-performance.cjs tests/responsive-performance-raster.cjs && node --test tests/deterministic-workers.cjs && node --test tests/inverse-geometry.cjs tests/inverse-constraint-solver.cjs tests/inverse-planner.cjs && INVERSE_EVENTS_PHYSICS=1 node --test tests/inverse-events.cjs && node --test tests/inverse-physical-pipeline.cjs && node --test tests/inverse-events-corner.cjs",
+    "test:routes": "node --test tests/route-families.cjs",
+    "test:provenance": "node tools/install-official-ui.cjs --check",
+    "test:sensitivity": "node tests/sensitivity.cjs",
+    "test:ui": "playwright test",
+    "test:layout": "playwright test",
+    "test:inventory": "node --test tests/ui-inventory.cjs",
+    "prepare:engine": "node tools/prepare-engine.cjs",
+    "test:deterministic-event": "node --test --test-concurrency=1 tests/deterministic-axial.mjs tests/deterministic-spin-recurrence.mjs tests/deterministic-contact.mjs tests/deterministic-resident-transition.mjs tests/deterministic-q-continuation.mjs tests/deterministic-q-landing.mjs tests/deterministic-q-recurrence.mjs tests/deterministic-q-pair-recurrence.mjs tests/deterministic-rules.mjs tests/deterministic-physical-rules.mjs tests/deterministic-candidate-finalizer.mjs tests/deterministic-contact-3d.mjs tests/deterministic-contact-3d-bridge.mjs tests/deterministic-cushion-geometry.mjs tests/deterministic-cushion-time.mjs tests/deterministic-cushion-admission.mjs tests/deterministic-directional-event.mjs tests/deterministic-cushion-response.mjs tests/deterministic-smooth-segment.mjs tests/deterministic-global-cushion.mjs tests/deterministic-intrinsic-cushion.mjs tests/deterministic-tube-prefix.mjs tests/deterministic-landing-3d.mjs tests/deterministic-landing-chain.mjs tests/canonical-physical-acceptance.mjs tests/deterministic-slip-bridge.mjs tests/deterministic-rolling-tail.mjs tests/deterministic-rolling-partial.mjs tests/deterministic-rolling-bounds.mjs tests/deterministic-rolling-pair-world.mjs tests/deterministic-recurring-loop.mjs tests/deterministic-rolling-pair-entry.mjs tests/deterministic-recurring-world.mjs tests/canonical-engine-contract.mjs tests/deterministic-raw-strike.mjs tests/deterministic-raw-world.mjs tests/canonical-world-continuation.mjs tests/deterministic-qt-bridge.mjs",
+    "test:source-law": "npm run prepare:engine && node tools/run-source-law-tests.cjs",
+    "test:e2e": "playwright test",
+    "test:workers": "node tests/worker-benchmark.cjs",
+    "typecheck": "tsc --noEmit",
+    "test:parity-components": "node tools/run-parity-components.cjs",
+    "test:resident:host": "node tools/run-resident-qualification.cjs",
+    "test:resident:source": "node tools/run-resident-source-qualification.cjs",
+    "test:resident:native": "node tools/run-resident-native-qualification.cjs",
+    "test:canonical-state-domain": "node --test --test-concurrency=1 tests/deterministic-state-domain.mjs tests/deterministic-state-gates.mjs tests/deterministic-geometry-state-domain.mjs tests/deterministic-contact-3d.mjs tests/deterministic-contact-3d-bridge.mjs tests/deterministic-directional-event.mjs tests/deterministic-smooth-segment.mjs tests/deterministic-slip-bridge.mjs tests/deterministic-tube-prefix.mjs tests/deterministic-landing-chain.mjs tests/deterministic-cushion-response.mjs tests/deterministic-global-cushion.mjs tests/deterministic-intrinsic-cushion.mjs tests/deterministic-landing-3d.mjs",
+    "test:canonical-components": "npm run test:deterministic-event && npm run test:canonical-state-domain && node --test --test-concurrency=1 tests/canonical-event-rules.mjs tests/deterministic-recurring-batch.mjs tests/deterministic-recurring-batch-schedule.mjs tests/canonical-world-journal.mjs tests/canonical-raw-journal-prefix.mjs tests/deterministic-cloth-microtail.mjs tests/deterministic-mixed-motion-query.mjs tests/deterministic-raw-approach.mjs tests/canonical-kiss-separation.mjs tests/deterministic-mixed-pair-entry.mjs tests/canonical-raw-backend-parity.mjs tests/deterministic-landing-clock-domain.mjs tests/deterministic-microtail-world.mjs tests/deterministic-mixed-clear-prefix.mjs tests/deterministic-mixed-cushion-entry.mjs tests/deterministic-tube-release-derivative.mjs tests/deterministic-world-cushion-commit.mjs tests/canonical-kiss-coverage-bank.mjs tests/deterministic-world-cushion-route.mjs tests/deterministic-world-repeated-pairs.mjs tests/deterministic-cushion-resolver.mjs tests/deterministic-mixed-motion-v2.mjs tests/deterministic-mixed-cushion-v2.mjs tests/deterministic-mixed-clear-v2.mjs tests/deterministic-mixed-pair-v2.mjs tests/deterministic-cushion-release-v2.mjs tests/deterministic-cushion-resolver-v2.mjs tests/deterministic-world-rolling-stop-v2.mjs tests/canonical-selected-trace.mjs tests/canonical-bridge-trace.mjs tests/deterministic-microtail-trace.mjs tests/experimental-raw-world-batch.mjs tests/experimental-raw-world-batch-roster.mjs tests/deterministic-cushion-release.mjs tests/deterministic-cushion-finite-clear.mjs tests/deterministic-cushion-inactive-gate.mjs tests/canonical-compile-cache-device.mjs tests/canonical-selected-world-trace-gpu.mjs tests/canonical-selected-world-trace-hydrate.mjs tests/canonical-selected-trace-raw.mjs tests/canonical-session-service.mjs tests/canonical-fixture-imports.mjs tests/deterministic-world-rolling-stop-v2-proof.mjs && npm run test:canonical-integration:cpu",
+    "test:canonical-integration:cpu": "node tools/run-canonical-integration-cpu.cjs",
+    "build:wasm-gpu": "node tools/wasm-gpu-runtime/build.mjs",
+    "test:wasm-gpu:host": "node tools/run-wasm-gpu-host.cjs",
+    "build:release": "node build.cjs --canonical-controller-assets"
+  },
+  "dependencies": {
+    "@base-ui/react": "1.9.0",
+    "@dimforge/rapier3d-compat": "0.21.0",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "cn": "^0.5.0",
+    "lucide-react": "0.468.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "tailwind-merge": "3.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "esbuild": "0.25.5",
+    "shadcn": "^4.22.1",
+    "tailwindcss": "4.1.10",
+    "tw-animate-css": "^1.4.0",
+    "typescript": "5.8.3"
+  }
+}

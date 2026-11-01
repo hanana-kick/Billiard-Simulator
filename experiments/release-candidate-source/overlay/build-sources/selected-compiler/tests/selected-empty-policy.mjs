@@ -1,0 +1,7 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import{compileMicrocodeWGSL}from'../src/resident-candidate/microcode-compiler.mjs';
+import{admitIntegerProgram}from'../src/canonical-integer-transport/kernel-common-guards.mjs';
+import{validateIntegerProgramStructure}from'../src/canonical-integer-transport/program-admission.mjs';
+import{CANONICAL_MICROCODE_ISA as ISA}from'../src/canonical-integer-transport/isa.mjs';
+test('Explicit zero-binding selected entry compiles exact trampoline with ABI padding',()=>{for(const entry of ['main','initialize','snapshot','finish']){const c=compileMicrocodeWGSL(`@compute @workgroup_size(1) fn ${entry}(){}`,{entry,sourceStoragePolicy:[]});assert.equal(c.kind,'canonical-wgsl-microcode-v1');assert.equal(c.localWords,1);assert.deepEqual(Array.from({length:3},(_,i)=>ISA.names[c.instructions[i*8]]),['CALL','HALT','RET']);assert.deepEqual(validateIntegerProgramStructure(c),admitIntegerProgram(c));}});
+test('Empty policy never authorizes storage source or forged storage opcode',()=>{assert.throws(()=>compileMicrocodeWGSL('@group(0) @binding(0) var<storage,read> a:array<u32>;@compute @workgroup_size(1) fn main(){let x=a[0u];}',{sourceStoragePolicy:[]}));const c=compileMicrocodeWGSL('@compute @workgroup_size(1) fn main(){}',{sourceStoragePolicy:[]}),words=c.instructions.slice();words.fill(0,0,8);words[0]=ISA.names.indexOf('LOAD');assert.throws(()=>validateIntegerProgramStructure({...c,instructions:words,words}),/Undeclared storage binding/);});

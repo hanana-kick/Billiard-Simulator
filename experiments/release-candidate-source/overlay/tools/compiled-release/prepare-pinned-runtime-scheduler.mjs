@@ -1,0 +1,5 @@
+/** Restore the original Git-tracked scheduler into a source-only runtime overlay. */
+import fs from'node:fs';import path from'node:path';import assert from'node:assert/strict';import{createHash}from'node:crypto';
+const c=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));for(const k of['originalRoot','integrationRoot'])assert.ok(typeof c[k]==='string'&&path.isAbsolute(c[k]));
+const expected='396145c6ff702e8e28b9ca9acb6aa489322e486a6c18bae9f080a284e727806e',sha=b=>createHash('sha256').update(b).digest('hex'),rel='artifacts/wasm-gpu-runtime.wasm',bytes=fs.readFileSync(path.join(c.originalRoot,rel));assert.equal(sha(bytes),expected);assert.equal(bytes.length,16343);
+const target=path.join(c.integrationRoot,rel);fs.mkdirSync(path.dirname(target),{recursive:true});if(fs.existsSync(target))assert.equal(sha(fs.readFileSync(target)),expected);else fs.writeFileSync(target,bytes,{flag:'wx'});console.log(JSON.stringify({kind:'original-pinned-scheduler-restoration',sha256:expected,bytes:bytes.length,recompiled:false}));

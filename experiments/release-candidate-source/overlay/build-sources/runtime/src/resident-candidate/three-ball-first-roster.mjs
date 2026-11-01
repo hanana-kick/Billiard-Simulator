@@ -1,0 +1,33 @@
+// SPDX-License-Identifier: Apache-2.0
+// Exact original hint/roster preparation from produced floor/energy words.
+// No HOST metadata rows, booleans, awake order, or current graph receipts.
+import {assertThreeBallInitialFloorPlan} from './three-ball-initial-floor.mjs';
+import {assertThreeBallFirstNumericalPlan} from './three-ball-first-numerical.mjs';
+import {generateContactHintWGSL} from './scene-integration.mjs';
+import {CONTACT_JOURNAL_LAYOUT as J,generateContactJournalWGSL} from './contact-journal.mjs';
+import {CONTACT_ROSTER_LAYOUT as R,generateContactRosterWGSL} from './contact-roster.mjs';
+import {SCENE_LAYOUT as S,generateSceneActivationWGSL} from './scene-activation.mjs';
+import {SCENE_WORLD_LAYOUT as W,generateSceneWorldWGSL} from './scene-world.mjs';
+import {linkResidentWGSL} from './wgsl-linker.mjs';
+const owned=new WeakMap();const need=(p,m)=>{if(!p)throw Object.assign(new RangeError('Three-ball first roster: '+m),{code:'three-ball-first-roster-unsupported'});};
+export function createThreeBallFirstRosterPlan(numerical,floor){need(arguments.length===2,'exact numerical and floor plans');assertThreeBallFirstNumericalPlan(numerical);assertThreeBallInitialFloorPlan(floor);need(numerical.first.template===floor.template,'same authentic template');const initialWords=Uint32Array.from([0x5233524f,1,1,0,0,0,0,0]),plan=Object.freeze({kind:'resident-three-ball-first-roster-plan-v1',numerical,floor,sourceIdentity:floor.sourceIdentity,stateWords:8,initialWords,capability:Object.freeze({currentHintEquations:true,currentSourceAwakeOrder:true,sourceComponentOnly:true,wholeH:false,nativeBoundaryVerified:false,gpuQualified:false,runtimeIntegrated:false})});Object.preventExtensions(initialWords);owned.set(plan,{initial:initialWords.slice(),compiled:new Map()});return plan;}
+export function assertThreeBallFirstRosterPlan(plan){const p=owned.get(plan);need(p,'local roster plan');assertThreeBallFirstNumericalPlan(plan.numerical);assertThreeBallInitialFloorPlan(plan.floor);need(plan.initialWords.length===p.initial.length&&plan.initialWords.every((x,i)=>x===p.initial[i]),'initial state mutated');return plan;}
+export function generateThreeBallFirstRosterWGSL(plan,{stateBase:c,floorBase:f}={}){assertThreeBallFirstRosterPlan(plan);need(Number.isSafeInteger(c)&&Number.isSafeInteger(f)&&c>=plan.numerical.initialWords.length&&f>=plan.numerical.first.template.initialWords.length&&c>=f+plan.floor.stateWords,'disjoint exact bases');const d=plan.numerical.layout,L=plan.floor.layout,j=d.journal,r=d.roster,w=d.energy,cache=d.caches;
+ return generateContactHintWGSL()+`\n
+fn rc_three_roster_fail()->bool{rc_state[${c+2}u]=4u;return false;}
+fn rc_three_roster_prepare()->bool{
+ let c=${c}u;let f=${f}u;let j=${j}u;let r=${r}u;let w=${w}u;
+ if(rc_state[c]!=0x5233524fu||rc_state[c+1u]!=1u||rc_state[c+2u]!=1u||rc_state[c+3u]!=0u||rc_state[f+2u]!=1u||rc_state[f+3u]!=4u||rc_state[f+5u]!=1u||rc_state[f+6u]!=7u||rc_state[${S.header.status}u]!=1u||rc_state[${S.header.phase}u]!=6u||rc_state[w+${W.header.status}u]!=1u||rc_state[w+${W.header.phase}u]!=2u||rc_state[w+${W.header.continuation}u]!=10u||rc_state[j]!=0u||rc_state[j+${J.header.phase}u]!=3u||rc_state[j+${J.header.sequence}u]!=1u||rc_state[j+${J.header.edges}u]!=3u||rc_state[j+${J.header.operations}u]!=0u||rc_state[j+${J.header.changes}u]!=0u||rc_state[j+${J.header.events}u]!=0u||rc_state[r]!=0u||rc_state[r+${R.header.phase}u]!=0u||rc_state[r+${R.header.edgeCount}u]!=3u){return rc_three_roster_fail();}
+ // Calculate/validate all hint outcomes before mutating the actual roster.
+ for(var n=0u;n<3u;n++){let rec=f+${L.records}u+n*16u;let edge=rc_state[rec+12u];if(edge>=3u){return rc_three_roster_fail();}let e=j+${J.edgeOffset}u+edge*${J.edgeStride}u;let prior=f+${L.prior}u+n*8u;let old=r+${R.edgeOffset}u+edge*${R.edgeStride}u;let body=${cache}u+n*144u;
+ if(rc_state[e]!=rc_state[rec+3u]||rc_state[e+1u]!=rc_state[rec+4u]||rc_state[e+2u]!=1u||rc_state[e+3u]!=rc_state[prior]||rc_state[e+4u]!=rc_state[prior+1u]||rc_state[body+137u]!=0u||rc_state[body+138u]>1u||rc_state[body+128u]!=1u||rc_state[body+129u]!=1u||rc_state[body+130u]!=1u||rc_state[body+131u]!=1u){return rc_three_roster_fail();}
+ ${[9,10,11,12,15,16,17,21].map((at,k)=>`if(rc_state[old+${at}u]!=rc_state[prior+${k}u]){return rc_three_roster_fail();}`).join('')}
+ let refreshed=(rc_state[f+8u]&(1u<<n))!=0u;var manifolds=rc_state[prior+4u];var flags=rc_state[prior+5u];var contacts=rc_state[prior+6u];if(refreshed){manifolds=rc_state[body+129u];flags=1u;contacts=rc_state[body+131u];}
+ if(!rc_world_scene_hint(prior,true,rc_state[rec+9u],rc_state[rec+10u]!=0u,refreshed,manifolds,flags,contacts,f+${L.hints}u+n*7u)){return rc_three_roster_fail();}
+ }
+ rc_journal_apply_roster(j,r);if(rc_state[j]!=0u||rc_state[r]!=0u){return rc_three_roster_fail();}if(rc_state[${S.header.invalidatesSolver}u]!=0u){rc_state[r+${R.header.valid}u]=0u;}
+ for(var n=0u;n<3u;n++){let out=f+${L.hints}u+n*7u;let edge=rc_state[f+${L.records+12}u+n*16u];rc_roster_metadata(r,edge,rc_state[out+1u]!=0u,rc_state[out+2u]!=0u,rc_state[out],rc_state[out+4u],rc_state[out+5u],rc_state[out+6u]);if(rc_state[r]!=0u){return rc_three_roster_fail();}}
+ if(!rc_scene_world_roster(0u,w,r,rc_state[r+${R.header.multibodyEpoch}u])){return rc_three_roster_fail();}rc_state[c+3u]=1u;rc_state[c+4u]=1u;return true;
+}
+`;}
+export async function executeThreeBallFirstRosterWordsForTest(plan,words,{stateBase,floorBase,testOnly=false}={}){need(testOnly===true,'explicit test-only');const code=generateThreeBallFirstRosterWGSL(plan,{stateBase,floorBase}),r=owned.get(plan),key=stateBase+':'+floorBase;let compiled=r.compiled.get(key);if(!compiled){const{compileMicrocodeWGSL}=await import('./microcode-compiler.mjs');compiled=compileMicrocodeWGSL(linkResidentWGSL(['@group(0) @binding(0) var<storage,read_write> rc_state:array<u32>;',generateSceneActivationWGSL(),generateContactRosterWGSL(),generateContactJournalWGSL(),generateSceneWorldWGSL({includeNumericLibrary:false,includeRosterBridge:true,continuationOnly:true}),code],{entry:'rc_three_roster_prepare'}).code,{entry:'rc_three_roster_prepare'});r.compiled.set(key,compiled);}const{createMicrocodeVmReferenceForTest}=await import('./microcode-vm.mjs'),vm=createMicrocodeVmReferenceForTest({testOnly:true,code:compiled.instructions,count:1,localWords:compiled.localWords,stackCapacity:compiled.callDepth,entryPc:compiled.entryPc,bindings:[words,new Uint32Array(1),new Uint32Array(1),new Uint32Array(1),new Uint32Array(1)]});vm.begin();let status=1,chunks=0;while(status===1){status=vm.advance(0,65536);need(++chunks<32,'bounded roster transport');}need(status===2,'emitted roster VM error '+vm.state[3]);return words;}

@@ -1,0 +1,740 @@
+[
+  {
+    "path": "build-sources/runtime/src/resident-candidate/initial-microcode-runtime.mjs",
+    "bytes": 13067,
+    "sha256": "01cd9caff226eb580ec6a56f1e9574996bf2814a104ca69c8384f96dd13d63c3",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/initial-microcode-batch-executor.mjs",
+    "bytes": 15578,
+    "sha256": "7ec06fc4a6ce5731162912ddb87dc21d7e39920b1404dc5323ef59e999478fda",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/browser-runtime-entry.mjs",
+    "bytes": 2589,
+    "sha256": "d46d98ed178317cf49511c2086b26babf360cdba836ea87e46ec2671bd0d14bf",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-initial-rigid-exclusion.mjs",
+    "bytes": 25894,
+    "sha256": "6f8befe713aae2e99b05439cf3020b7e7b5691d54315357d6beebcc6d554c51e",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/cue-orchestration.mjs",
+    "bytes": 22278,
+    "sha256": "f96b5288d25573a71755297ebfc9c14b690e2a9b7369397a6b57d9ee2e06d481",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/inverse-terminal-observation.mjs",
+    "bytes": 16251,
+    "sha256": "7caf91fbd9fb95aeafdb17613e6f50858f22ffcadea0be60e79f7df6adba1d25",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/microcode-compiler.mjs",
+    "bytes": 41287,
+    "sha256": "7897a838e3b0ef0bd950ce23233c4787ff2e2eecdcb463c53feaab19fc7572f0",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-second-physical.mjs",
+    "bytes": 30439,
+    "sha256": "3487f4b04cfbda6a6d6297263e74075d2ad6d2c7af501eb7599a2de9aeef0469",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-initial-floor.mjs",
+    "bytes": 13851,
+    "sha256": "b45f29eebdd39e137f0b09ddae4119f819b09b89ff2fa578e769268e099d86ef",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/bvh-integer.mjs",
+    "bytes": 6462,
+    "sha256": "7aa2a5d7fbc11b4cb39773ac0770e4f37d09cd81c3284c88feeb31fdf7ea5054",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-retained-control.mjs",
+    "bytes": 1163,
+    "sha256": "98e7301777d3d3a2b32d0631985e3cab6173146de8b9165d1b256e309170c208",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/worker-retained-backend.mjs",
+    "bytes": 4576,
+    "sha256": "d881b72665e24c05085dbb98c8346fdc5aaddd910c19061ae1729659846b4040",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/scene-integration.mjs",
+    "bytes": 19150,
+    "sha256": "5d9e643e462c203c410d91587c2758f192c9079fcbf84c49094d1f88137e9679",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-first-h.mjs",
+    "bytes": 25627,
+    "sha256": "7034e6a9a230c4aa677482ed2fe9cc3b3ed8353e02aafd94ce1b8ce818fc259e",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/world-owners.mjs",
+    "bytes": 5413,
+    "sha256": "97c984e83cbbc84e9c58ac2ae3def8975995de23e76ff859fd9178970d3cc0c4",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/microcode-resources.mjs",
+    "bytes": 22236,
+    "sha256": "d1b9f02995dc7cc3a17edbf3b571d6d27d141953f1b79170f3ee8e9f0df21269",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/cue-flat.mjs",
+    "bytes": 8939,
+    "sha256": "9b8431e8e32ff874f251bba42875bc86badacd484185e96350da74f801ee2813",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/ccd-flat.mjs",
+    "bytes": 12132,
+    "sha256": "6967d271a8a512ecccad4892b1a379cfc6f8657f2a34a70650181a5c87b17bff",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-created-initialization.mjs",
+    "bytes": 7928,
+    "sha256": "39695ee327ca8f485240893e2774a3bd287088b17d3e3dee6f0c4df8029aeff5",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/initial-microcode-budget.mjs",
+    "bytes": 5314,
+    "sha256": "bb1316855e9871909713a930a4cd44c1f904d8cddd60cb54183b9c20100bbd8d",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/world-device-pc.mjs",
+    "bytes": 15866,
+    "sha256": "b52115292b4cb787c4c0dda6ee075726075044d5749efdb630d1f9a16a2c6e9d",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/world-initialization.mjs",
+    "bytes": 16915,
+    "sha256": "49d9a31161a717e264f4f248798b26ecd6f4e08325d922c3a331f9ebbbf47f87",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/numeric-program.mjs",
+    "bytes": 22406,
+    "sha256": "71549369be59aec279138cc142f11cdd3a7434748f0dc4fed50795bc135a7d12",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/inverse-audited-query-join.mjs",
+    "bytes": 2677,
+    "sha256": "cc57fc21ccaa4908955c0307b2b8164608a704eb91eef25d556be25906719904",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/microcode-numeric-continuation.mjs",
+    "bytes": 10542,
+    "sha256": "83bd3c0253c560cab73fac4762fde2d042e4a784117aec50cd4b84ba8aaf354e",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/world-initial-history.mjs",
+    "bytes": 5743,
+    "sha256": "93662c7e3f23e2c4eb3a2cc9b1ea2af16a4bfa3ffe6a079fb8d7b9851d56d2f9",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/narrowphase.mjs",
+    "bytes": 12554,
+    "sha256": "b9c63996dd3df4e8111ffb90532edd24c566277039fbb990435bf49249550ba6",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/world-ccd.mjs",
+    "bytes": 16155,
+    "sha256": "1643ac36c3d3e58d00faf8b93c9f9f17750c625f09aae73739ee05b3fce42235",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/initial-microcode-executor.mjs",
+    "bytes": 15607,
+    "sha256": "848104ca45e8d2b429d2ddcb3143f9b799f1b1cade0408a29027b4e8e0df7a2c",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/microcode-control-cache.mjs",
+    "bytes": 7560,
+    "sha256": "d85317915ea8ba5673876066e6e03f06dbc7a755ce77bd5f06601434df409727",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-first-application.mjs",
+    "bytes": 19951,
+    "sha256": "2a735a521338a3d5d6c3227e36c84bfa33f72276f7a21aba91ae2b3004d96c3d",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/world-owner-routing.mjs",
+    "bytes": 13973,
+    "sha256": "ac44b01168077c7e9abebdc30acc8fddabe552048bd66a65e5164fdc49ebc035",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/world-shared-graph-owner.mjs",
+    "bytes": 4832,
+    "sha256": "b67f6580f45614277d26df7a8413eba721ef4ad6b2490faa9399634ed9e79ab0",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/world-solver.mjs",
+    "bytes": 14168,
+    "sha256": "19b277fb1d6a0a99baab6dbe512d9a11d244d63fc042667de3ae33b0a85202e2",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/raw-creation.mjs",
+    "bytes": 4139,
+    "sha256": "839357b3a8e41f6bdf1ce0d3137634383081a5d98a5a8fd132b585e7bb6f2aed",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-initial-pre-ccd.mjs",
+    "bytes": 18734,
+    "sha256": "6f8308d4497ca5c3dd1281317f8ae96e1a39b538acc1bd9581b11b003aa8f1fb",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/worker-bootstrap.mjs",
+    "bytes": 1822,
+    "sha256": "c51636e60001cf4d546a1cc92d56a13249e547853adf296714820fc3ec21fc0b",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/raw-microcode-source.mjs",
+    "bytes": 14990,
+    "sha256": "edf2bd1a73e18f2b4c65d0917fc0ff4bc4b96f878970cb4443df7a3ef61edf61",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/inverse-world-observation.mjs",
+    "bytes": 20709,
+    "sha256": "3e7147e92c7f814501853e1107cf685554edd3224b5c16a561bb8696f5123276",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/microcode-parser.mjs",
+    "bytes": 10884,
+    "sha256": "8d084d13af53d4c34fce043355daf24791c7233e1fe7e0dcfdf72f1a0bbfd680",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/geometry-state.mjs",
+    "bytes": 5937,
+    "sha256": "ec45e8d2b02836d058008ea8f26e008ce33a42d85780985a37218d437d00d189",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/world-broad.mjs",
+    "bytes": 15638,
+    "sha256": "2aa4ce8f4cf2d15c905bde791c263af916bd8cc93a6cbd3beda14b5a705a8cae",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-host-admission.mjs",
+    "bytes": 13042,
+    "sha256": "3fe99bdd94bf3d6e7f50f70374d55fafd74c8078ae6f6da3fa6dc044bc6e1cfd",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/world-application-flat.mjs",
+    "bytes": 8391,
+    "sha256": "054e330157e994064abfe3b7a3ec113283769b6b618e7ccd1eaaa7a20deb0f97",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/inverse-observation-storage.mjs",
+    "bytes": 14808,
+    "sha256": "7ba8a7ce946b0516ef4a24de85acf21f9945d6c88451909741ebb104c65c0a18",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-first-post.mjs",
+    "bytes": 17034,
+    "sha256": "f7830243bb5f516bd534afa05c5ffdc9ae57c3064ba8fe7f31b7d4a52b146839",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/microcode-allocation.mjs",
+    "bytes": 9007,
+    "sha256": "bccb3c134d009664939449b3393add31aa8b59fffa74b4566bea448b8cb4abef",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/integer-narrowphase.mjs",
+    "bytes": 4903,
+    "sha256": "6774ee5101a70d583b2466e7deafe90fdd723214e854d17e397b8f889b1b1c16",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/convex-point.mjs",
+    "bytes": 5024,
+    "sha256": "c93e0a3db388d7d88b7a1d970f39a1c349372659b775b32c8efc963d13e81621",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/inverse-wave-adapter.mjs",
+    "bytes": 9064,
+    "sha256": "ebfede263083e1c65e7b19f2794a2fcd69a94d90fec9a1a60f3193e8e5c27663",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-second-collision.mjs",
+    "bytes": 18624,
+    "sha256": "37479cb284ea21f3a9ee689eadb01d35c27e0542920cadb45867ac4410ca41bd",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-solver.mjs",
+    "bytes": 13334,
+    "sha256": "c67fbdf803ae379f0b3159cfc48b4772c5cb4cbf534697a41cbc25837465a542",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/application.mjs",
+    "bytes": 33652,
+    "sha256": "4a8be6105f5356b2281b094a48a0d8edf607d57d6d83a10793357a688bc517c2",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/raw-strike.mjs",
+    "bytes": 89945,
+    "sha256": "2a3f70d84762fd456f826a8734b1bfa47926ca6cbdda7fe2f2a61fafebdd59a7",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/retained-microcode-plan.mjs",
+    "bytes": 5235,
+    "sha256": "feb612b7666e492e2b98363bc516e2cc4ed77729fe127db823f541c6d20e390c",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/wgsl-linker.mjs",
+    "bytes": 3871,
+    "sha256": "a32430af97fa193b04a0c66b1a46d4ff7767b997c92f08b871e74b7d59361ea4",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/cue-cloth-cache.mjs",
+    "bytes": 13556,
+    "sha256": "4fafda750411dbd4d7e5559d9fc8017dbe74a5c0e3ed0dc0881155d31a7cce3f",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/creation-template.mjs",
+    "bytes": 12168,
+    "sha256": "c9eafb09d09dd224f0e4913a23d2e2641dbd5fe9f761b7bcf6c9d65d50d496ad",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-first-h-numerical.mjs",
+    "bytes": 8258,
+    "sha256": "eae132873823f52622a3d52cd4ffaa22f56e3c0f90cd1c3fd25f64e2572f653e",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/inverse-observation-probe.mjs",
+    "bytes": 7501,
+    "sha256": "7802cdbff31c3476dd5a565a5ea1822271ac79d8900d62385ab383d9b39193c5",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/world-withdrawal-pre-ccd.mjs",
+    "bytes": 12490,
+    "sha256": "c4e2dcfe7907425c00ae1dec40f5812fd7b929b88e1640a294235ee0b4a59404",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/coupled-solver.mjs",
+    "bytes": 38528,
+    "sha256": "3df514bac3cfbd52e385bb24254ab06943a76c751f39e2ffe58e3f1b9ae98b8e",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/physical-rules.mjs",
+    "bytes": 27005,
+    "sha256": "3a4ab06e31cb9046c8502369292d6d204632b24d80776991defe9f13f435f49b",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/tip-impact-microcode-checkpoints.mjs",
+    "bytes": 15175,
+    "sha256": "99fff1f858cc235290a8c4f8695623aea64494a9bd91ecf7ac676954c7b093ce",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/coupled-transport.mjs",
+    "bytes": 15050,
+    "sha256": "dd9c1772439d36d6b9b80f1bc82830fa060996542c9a1e26a55373713d5b0237",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-initial-cue-prefix.mjs",
+    "bytes": 11970,
+    "sha256": "b338ba4f3267a278388728babfb4003f6a516dca4155757d7cb7affaa25a1597",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-current-pre-ccd.mjs",
+    "bytes": 8206,
+    "sha256": "ab6e2ee33046fdfd0f84d9622debac6cc7cfd58fb18537ade1c3ebdb7c96ee8e",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/cue-bridge.mjs",
+    "bytes": 8165,
+    "sha256": "c17026a7bca22e1b460fc7e7f86d0f9a2218e503362e9cf786d56d91d7e1bd9b",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/native-current-pre-ccd.mjs",
+    "bytes": 5990,
+    "sha256": "3cab9dbd7c4f402d1da77aa13168f4c5381eaef156d66325404bdd05095f53ec",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/contact-roster.mjs",
+    "bytes": 24428,
+    "sha256": "4bbb46ff5ad7042560a156f34a90900c218493b5ecab019f3c3bc8194d57eb32",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/geometry-preparation-source-v1.mjs",
+    "bytes": 10440,
+    "sha256": "a931145f5ec008989a0e142462ac251cf9e692556ff9c77c00d5775f77b568e7",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/world-creation.mjs",
+    "bytes": 2892,
+    "sha256": "f3d670fba0bfdf9ef253ab1d7894a7e2df3fcd50609e3b2ae63fae0a9da4fcaf",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/scene-initialization.mjs",
+    "bytes": 15457,
+    "sha256": "4db4f2a5376524c3ca3eac2179d132cb0f14dd739360b354ceacc6e674e0fdd2",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/three-ball-first-cue.mjs",
+    "bytes": 14698,
+    "sha256": "c83ac3fa4a79e129551db93142085973defc873415a21494ed019d583b64da4a",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/ccd.mjs",
+    "bytes": 44522,
+    "sha256": "d1e3dfb99c853c6d7ab39d3d4096c6b4b0654dcbffd5be59be6acf56e1f86c14",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/resident-candidate/geometry-numeric-owner.mjs",
+    "bytes": 13905,
+    "sha256": "0a83ec9f2a44e673f5b012df19362c8ba866528435ad5356024382738eed7a38",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/canonical-practice-entry.tsx",
+    "bytes": 9213,
+    "sha256": "4d3bab6db1de475a3b1ae14f639ca861e6d3a2f071a07dd52d7baaba7c52ae25",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/canonical-route-planner.tsx",
+    "bytes": 8497,
+    "sha256": "bcbfa27fc6a3a2c52035fd6255a796e9fd9e0ea6e3f745465ec14c34985a7b03",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/inspector-section.tsx",
+    "bytes": 956,
+    "sha256": "35b83f01cb501e0438ec26dc3bb6d9dcc577df8086c6fdad9290d854054ea3db",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/canonical-search-grid-draft.mjs",
+    "bytes": 1503,
+    "sha256": "15220e3650a0d53c1908aabe9b2f0141ad8dc5a8aa8454c1f8d099a144777efc",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/canonical-search-progress.tsx",
+    "bytes": 2585,
+    "sha256": "ea8f2ff9beefd5dac95b5ba822c6968f349356647133127ee3f63a441ab8b5c6",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/canonical-practice-action.mjs",
+    "bytes": 1171,
+    "sha256": "dc68d2d04cb76b9f1e4a0b85991cdd9ef6f8e482a721054211af87d158984392",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/controls.tsx",
+    "bytes": 3120,
+    "sha256": "aae74a55b45495dadecfe96364f9f1d088dcc65657f0923e2acf366e851bd59f",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/route-planner.tsx",
+    "bytes": 19621,
+    "sha256": "6d7af94492b3ab0bb1221c8b2720a92c61a0b34da4e3724778758bdcc6e7d042",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/canonical-search-grid.tsx",
+    "bytes": 5171,
+    "sha256": "c2cab1185742d3d6fbfe8615a83581ce309d70cb74c79e13c8003987a3011bd0",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/ui/tooltip.tsx",
+    "bytes": 2845,
+    "sha256": "148a49f38381d6ff9d844478d950e5fb68f37a27aa7e9c2606d5077b4b3e959e",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/ui/popover.tsx",
+    "bytes": 2573,
+    "sha256": "5e1dddd627a256162a47b382dd027d190b41cc6ad33a3367519f9a27a79ff1d2",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/ui/button.tsx",
+    "bytes": 3239,
+    "sha256": "3042fe03197e2afbc1e5f53f1018439add52a66363bd85f2f439b7b2cfa9039a",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/ui/label.tsx",
+    "bytes": 517,
+    "sha256": "64d4eea0fd5979b5d0ae940521131a621d2e6d43f2b6f4b000d4ba935f73cc17",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/ui/checkbox.tsx",
+    "bytes": 1539,
+    "sha256": "b9d0b0bea832daeb435a4c3c7005a3423d35481d84118ecdc370192ffe4bacf0",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/ui/slider.tsx",
+    "bytes": 1873,
+    "sha256": "e438d502a2fdbe45e6a91cc2be9187c599feae3ae13117d7a7df27f494cc92a5",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/ui/toggle-group.tsx",
+    "bytes": 3183,
+    "sha256": "3f5c3103a68b14a8539121315db585970e8471fd214a5fe5c3c720cbd9fa7f80",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/ui/tabs.tsx",
+    "bytes": 3496,
+    "sha256": "af5cfa41cbb87e44aa922b766e8bdb902deb7369a5aae04d5cb4ca5a6deb6c6c",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/ui/switch.tsx",
+    "bytes": 1810,
+    "sha256": "f1e91a30f88ab2f5ff5ca5ff1127a893cc8ec3b35e4c6d758dddda915f1cc430",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/ui/progress.tsx",
+    "bytes": 1739,
+    "sha256": "0872260f30510b47174ea4ba6e7c38013c72de30905acf7f1b19edaef9eacbfd",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/ui/badge.tsx",
+    "bytes": 1924,
+    "sha256": "968ba07bf3bc8d65b1120eae9be0318c465932a5a795a6fdb678343f8fc167ed",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/ui/skeleton.tsx",
+    "bytes": 275,
+    "sha256": "8110bba70d0cb9fe968c0b7bd092ad12258caef40b028b4a87f402bdab907faf",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/ui/accordion.tsx",
+    "bytes": 2654,
+    "sha256": "25b8825632f8d1e9ef819de5ffdbffb5ce595a533bb7d679f81ae0d8d563f0de",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/ui/input.tsx",
+    "bytes": 1039,
+    "sha256": "65848da76834211a6c0c24c226b9444421f42e8c96c8cada642137ebcdbc16c9",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/ui/select.tsx",
+    "bytes": 6765,
+    "sha256": "dd8925edd51a9c30118c68f5e0d0ecd078442a520be3f8edfc4a5a3e8493ba4c",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/ui/field.tsx",
+    "bytes": 6266,
+    "sha256": "48c093a17462877a88ab905a5f19451a307a9229942db3058f6d8f38240e781c",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/ui/alert.tsx",
+    "bytes": 2047,
+    "sha256": "798218fddd9446e86b9e9e53a80a86c0026c3e0f9f68ffdcd1c2d902fa115043",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/ui/separator.tsx",
+    "bytes": 544,
+    "sha256": "70b278bbbfd1f0de60dd36f3d2ac5fc257856958f999ab37c4c0c3d77fd63974",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/ui/sheet.tsx",
+    "bytes": 4436,
+    "sha256": "46fddd98a48efbcff853e974aeb1cef9b1fb8e527d7ebf806684bd16676973ff",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/ui/card.tsx",
+    "bytes": 2632,
+    "sha256": "8b8f57b4b78193b9483e3a052d7253563bbedbb48dabed6ad930ab1451a4cbb3",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/ui/toggle.tsx",
+    "bytes": 1761,
+    "sha256": "464e27aa915153b423a7349a947726bcc5bb3055c17f0fe3accefd1f3083326b",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/ui/dialog.tsx",
+    "bytes": 4078,
+    "sha256": "4427f21222666401211192815e33ad2ee2605168b01b9e92735f64cd334e421a",
+    "added": true
+  },
+  {
+    "path": "build-sources/runtime/src/components/ui/sidebar.tsx",
+    "bytes": 21671,
+    "sha256": "1aabbd00921c974d1cd16e7fd81463af9284dd36ba573918f2b711496692d8a2",
+    "added": true
+  },
+  {
+    "path": "tools/compiled-release/prepare-pinned-n3-build-inputs.mjs",
+    "bytes": 7010,
+    "sha256": "18e8cebf42b78a22e827e6d65f27d1ed1ed8c5046585efa5997b2f5f47b7db3a",
+    "added": true
+  },
+  {
+    "path": "tools/compiled-release/build-app-runtime-closure.mjs",
+    "bytes": 3047,
+    "sha256": "3848f00375196f9b39c119527459b0ba0d9ff952e52cd0d81687af543ce08faf",
+    "added": true
+  },
+  {
+    "path": "tools/compiled-release/check-release-http.py",
+    "bytes": 2961,
+    "sha256": "58e3b719b541bfb69b4c72ecea13d4f70c91e8e6651048f599a6ea7d5dcdfe63",
+    "added": true
+  },
+  {
+    "path": "tools/compiled-release/rebuild-original-program-assets.mjs",
+    "bytes": 1304,
+    "sha256": "39ca12b1d078194f9b36510de960cdcb641244e4d793d2197501db704f9fcef8",
+    "added": true
+  },
+  {
+    "path": "tools/compiled-release/build-canonical-app-candidate.mjs",
+    "bytes": 15643,
+    "sha256": "d80d8b2d171d747e7ecd93b480b9296dd79a87cbeab2b34c1749374b017bac19",
+    "added": true
+  },
+  {
+    "path": "tools/compiled-release/build-release-assets.mjs",
+    "bytes": 2398,
+    "sha256": "2ac0bc396afff7fc48d45bd4ac3c346e3ec390818c6223f8ab50b0c919078239",
+    "added": true
+  },
+  {
+    "path": "tools/compiled-release/compare-release-assets.mjs",
+    "bytes": 3168,
+    "sha256": "719a0f72fb94ae3b8d7c5c32e81b77e63519a7a81b02365b798c84f8aedb10f6",
+    "added": true
+  },
+  {
+    "path": "tools/compiled-release/compare-candidate-builds.mjs",
+    "bytes": 2447,
+    "sha256": "1f48fa7d4d35443276d427b6b69bed9cc3bc3633fddb29a94ab2b7c89f534629",
+    "added": true
+  },
+  {
+    "path": "tools/compiled-release/check-built-app-http.py",
+    "bytes": 2855,
+    "sha256": "b02937203e2a22989ff75ae24839d988b41f11e54ad8cdfbb7b42b040dbd3822",
+    "added": true
+  },
+  {
+    "path": "tools/compiled-release/prepare-pinned-runtime-scheduler.mjs",
+    "bytes": 1026,
+    "sha256": "97588e8daf86cf7624b17aaec6f57c6cb3d019e669129b049cbb0761a9c7285f",
+    "added": true
+  },
+  {
+    "path": "tools/compiled-release/prepare-pinned-n1-build-inputs.mjs",
+    "bytes": 6102,
+    "sha256": "5c2f5abc6904c63b1ac8e11d790c26243a48814e996bca7ba2edc55f5daf63cf",
+    "added": true
+  },
+  {
+    "path": "tools/compiled-release/build-compiled-assets.mjs",
+    "bytes": 13752,
+    "sha256": "872208e8701fbc0649c96558b148e5afff0436f6b6b0e9ba913526444a17522f",
+    "added": true
+  },
+  {
+    "path": "tools/compiled-release/derive-compiled-app-resource.mjs",
+    "bytes": 2670,
+    "sha256": "7ba01d0f797977ec86e0fda057ed7493188d78161dcd9d31d4dedcecee034596",
+    "added": true
+  },
+  {
+    "path": "tools/compiled-release/compiled-app-worker-entry.mjs",
+    "bytes": 6005,
+    "sha256": "f9d01581d64629ca18b07bf95639ddadef7276bbc2227135bdb54db39385cad8",
+    "added": true
+  },
+  {
+    "path": "tools/compiled-release/prepare-reproduction-configs.mjs",
+    "bytes": 4066,
+    "sha256": "68ea62a425611da9681d097b5dd531d8d9a9f2b5f3684243741c15ff347a0aee",
+    "added": true
+  }
+]

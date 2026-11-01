@@ -1,0 +1,36 @@
+{
+  "baseGit": "ee1c1cfca7a930eaa8d376a009da6f0aad2c08e6",
+  "kind": "isolated-source-only-overlay",
+  "excludedGeneratedOrBinary": [
+    "build-sources/runtime/artifacts/wasm-gpu-runtime.wasm",
+    "src/styles.compiled.css",
+    "src/ui-externals.json"
+  ],
+  "sourceFileParts": [
+    {
+      "file": "source-files-1.json",
+      "sha256": "0ddf57b730f48a19d83d769b1b641e0288f565eb9f3eb15e97c3ad86acdb90c2",
+      "count": 350
+    },
+    {
+      "file": "source-files-2.json",
+      "sha256": "e93135bcf6a5ba9b96f757431c0492d5ca3cb05a1fb5eb0fb7f280364e90f103",
+      "count": 350
+    },
+    {
+      "file": "source-files-3.json",
+      "sha256": "98882f1b9ae3ff144cc4200eb78fe27c5843ab9ec830f2576517600dadb858a3",
+      "count": 350
+    },
+    {
+      "file": "source-files-4.json",
+      "sha256": "e797c158f9f63f7526d8f6f10e80b6892e75f7cc22d7901bb58b5a6e09c3b913",
+      "count": 350
+    },
+    {
+      "file": "source-files-5.json",
+      "sha256": "afed6629715842a0333e112bd347c448d267730f736dcab73da119f3e5fd0147",
+      "count": 123
+    }
+  ]
+}
