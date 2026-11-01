@@ -1,0 +1,41 @@
+{
+  "kind": "selected-divide-owned-plan-input-preflight",
+  "artifactSHA256": "226b524d67368b15795a11ccc071351a86d6ffa19315da3c3149348a4a922d31",
+  "compilerRevision": "23b4e960113ca740d4345d30b94e7e277df914c17ef7f574f094aa38bce15c35",
+  "programs": 125,
+  "commands": 66317,
+  "wideOpcodes": 67,
+  "pureDivideOpcodes": 52,
+  "sceneDivideRemainScalar": [
+    94,
+    95,
+    96,
+    97,
+    98,
+    99
+  ],
+  "bufferBytes": [
+    4949440,
+    1598464,
+    8785284,
+    160,
+    4,
+    64,
+    1024,
+    709348,
+    128,
+    16
+  ],
+  "readbackBytes": 4194368,
+  "totalOwnedBytes": 20238300,
+  "allocationCeilingBytes": 25165824,
+  "budget": 16384,
+  "maxSlices": 50000,
+  "inputManifestSHA256": "93a054d02c7299178f4e61e0dfdff8d82732ecb27797b36fcd1838f0c19c6191",
+  "freshUploads": 232,
+  "worldReferenceWords": 2916,
+  "normalizedReferenceRecords": 89,
+  "gpuExecuted": false,
+  "physicsRecomputed": false,
+  "budgetCaveat": "Conservative helper charge and whole-op slice fragmentation may reject earlier; source-work upper bound not relaxed."
+}

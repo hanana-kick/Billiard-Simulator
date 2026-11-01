@@ -1,0 +1,140 @@
+{
+  "kind": "real-Deno-Worker-HTTP-compiled-search",
+  "count": 3,
+  "success": true,
+  "nativeExecuted": true,
+  "browserUIQualified": false,
+  "ChromeMetalQualified": false,
+  "workerURLMode": "blob",
+  "harnessReceiptSHA256": "554cb89728b9eb7eefc36692f6ff361569a0d47f78ff3037b48fca4e5d733158",
+  "pins": {
+    "count": 3,
+    "physicsSourceRevision": "75c09c39e6d97085f4c4bf8045f0f892f121130d00340128101602de7df0e2df",
+    "compilerRevision": "b4b9ceeea9ff0548547a519c40cf4a6fdd4f55576a7ae30fe67a3ac396d867db",
+    "runtimeRevision": "ea1b4e4c93be5eb0dfc93cfa85afe818f8c603b7a4561f8e768a4fa82084ba4c",
+    "compiledManifestSHA256": "b81906a76f7af75bdff4c309cb806bdafe25ee033168edb9a987254356ef9e25",
+    "compiledArtifactSHA256": "80c7e07360aefc859997162a3759456176583315aac1bd84857a0ed893fb55f1",
+    "inputManifestSHA256": "93f9bcc033060761a0a5dd445c4c8bf43eeca4c5088878d83e187c40fe628f02",
+    "schedulerSHA256": "396145c6ff702e8e28b9ca9acb6aa489322e486a6c18bae9f080a284e727806e"
+  },
+  "inputManifestSHA256": "294947de1dad2968d77e2f532e287e90c8f655de8f522753606ffe7209384da3",
+  "sourceInputManifestSHA256": "db8222f00a62cfcd3839b1878228f63f9b588d0d6e99cf8737b09adc34c57014",
+  "inputOrigin": "fresh-unstepped-public-preset",
+  "gpuConditionedInput": false,
+  "applicationFallback": false,
+  "stages": [
+    {
+      "stage": "HTTP-owned-inputs-ready",
+      "elapsedMs": 105.55017199999999,
+      "uploadCount": 208
+    },
+    {
+      "stage": "real-worker-ready",
+      "elapsedMs": 852.244737
+    },
+    {
+      "stage": "native-owner-prepared",
+      "elapsedMs": 1035.784695
+    },
+    {
+      "stage": "cancel-acknowledged-after-native-drain",
+      "elapsedMs": 6851.445073,
+      "submittedCommands": 256
+    },
+    {
+      "stage": "restart-progress",
+      "elapsedMs": 27451.443795,
+      "submittedCommands": 8192
+    },
+    {
+      "stage": "restart-progress",
+      "elapsedMs": 77367.887471,
+      "submittedCommands": 16384
+    },
+    {
+      "stage": "restart-progress",
+      "elapsedMs": 176050.325997,
+      "submittedCommands": 24576
+    },
+    {
+      "stage": "restart-progress",
+      "elapsedMs": 292455.962406,
+      "submittedCommands": 32768
+    },
+    {
+      "stage": "restart-progress",
+      "elapsedMs": 403492.800759,
+      "submittedCommands": 40960
+    },
+    {
+      "stage": "restart-progress",
+      "elapsedMs": 419913.480212,
+      "submittedCommands": 49152
+    },
+    {
+      "stage": "real-worker-full-search-compact-match",
+      "elapsedMs": 429228.479978
+    },
+    {
+      "stage": "worker-drain-destroy-acknowledged",
+      "elapsedMs": 429269.506797
+    }
+  ],
+  "latestProgress": {
+    "executionStage": "chunk-submitted",
+    "generation": 2,
+    "chunkIndex": 210,
+    "chunkCount": 210,
+    "submittedCommands": 53751,
+    "totalCommands": 53751,
+    "runElapsedMs": 422251.389714
+  },
+  "adapter": {
+    "vendor": "65541",
+    "architecture": "",
+    "device": "0",
+    "description": "llvmpipe (LLVM 19.1.7, 256 bits)",
+    "maxStorageBuffersPerShaderStage": 10,
+    "isFallbackAdapter": null
+  },
+  "typedRPC": true,
+  "callerInputsStillIntact": true,
+  "compact": [
+    1,
+    1,
+    0,
+    1,
+    2,
+    2,
+    1,
+    0,
+    3,
+    1,
+    0,
+    1
+  ],
+  "expectedCompact": [
+    1,
+    1,
+    0,
+    1,
+    2,
+    2,
+    1,
+    0,
+    3,
+    1,
+    0,
+    1
+  ],
+  "cleanup": {
+    "generation": 1,
+    "dead": false,
+    "closed": true,
+    "acknowledged": true,
+    "pending": 0,
+    "workerRetained": false
+  },
+  "httpRequests": 218,
+  "elapsedMs": 429269.665506
+}

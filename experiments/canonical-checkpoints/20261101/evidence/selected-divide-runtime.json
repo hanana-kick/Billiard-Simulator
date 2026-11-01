@@ -1,0 +1,88 @@
+{
+  "kind": "parsed-selected-native-runtime-closure-v1",
+  "entryPoints": [
+    "src/canonical-integer-transport/selected-artifact.mjs",
+    "src/canonical-integer-transport/selected-scheduler-plan.mjs",
+    "src/canonical-integer-transport/selected-input-arena.mjs",
+    "src/canonical-integer-transport/selected-scheduler-runner.mjs"
+  ],
+  "files": {
+    "src/canonical-integer-transport/exact-divide-cost.mjs": "a8a39f373f9a13639e43abf9581f6947488ca4f8b43183a42bf6d108cff3a441",
+    "src/canonical-integer-transport/exact-divide-source.mjs": "309fc10a6d7972bb3b88f23b4fba2bff585035f3a6f1a8dfb450e7de57291db9",
+    "src/canonical-integer-transport/exact-wide-cost.mjs": "009636eb9c95bf59839c93e145c5661cc5a2377c6adba0e7aaaa20b447e49fb9",
+    "src/canonical-integer-transport/exact-wide-source.mjs": "0fae3dfb961d8cddf177101883601127d369ced4c800b2d841576179a979d9f4",
+    "src/canonical-integer-transport/integer-core.mjs": "b6bdceb8986699132cfce8d4686e40a9cc9dcecf8598b6cf80dfe917b9cd5caa",
+    "src/canonical-integer-transport/isa.mjs": "f4c72faca25bc989f00a28fe4513100001164e5307ce4dce8f0c36f159c1f2d4",
+    "src/canonical-integer-transport/opcode-cost.mjs": "6485616069ca37eda5dd9df02db424247763f450655f1a38919ceeed97047032",
+    "src/canonical-integer-transport/parallel-kernel.mjs": "c3c0e1aaf371cb27d9ef6e3f33760a88abf02f4a3669d69f8229e54dc4e1d764",
+    "src/canonical-integer-transport/program-admission.mjs": "5e6101dc9ad69069f8eb174dd974d8a6b2c63d06f30dc4ea87f31139e79cb23a",
+    "src/canonical-integer-transport/selected-artifact.mjs": "476004d564d6d2181569e664735b4c47df33c065dd9194522e8016b009878c5f",
+    "src/canonical-integer-transport/selected-input-arena.mjs": "b0a5095367b146bec73b15baf85bee57d3d7d81aee48d7fef70b633ff40a2f45",
+    "src/canonical-integer-transport/selected-profile.mjs": "c10e957d39a153fe2d1c0b210abfef0ef1937d2e103a67136c9d25627ebb6520",
+    "src/canonical-integer-transport/selected-scheduler-kernel.mjs": "68ea70ee3c05bd431982ec6aa1103ef17e3e9c0bf6dadf5d26d51ed24e10d020",
+    "src/canonical-integer-transport/selected-scheduler-plan.mjs": "4c2dde03264bbab9f66eb3fc50ced9ab632d1450a24df068e4499b95857ec8a9",
+    "src/canonical-integer-transport/selected-scheduler-runner.mjs": "dac34aaf83517729a25ae32d2cbf913ab25acbcbf429884cced58ddffc80130f",
+    "src/resident-candidate/microcode-isa.mjs": "c882ab7b19e6d47744cd3ad4a3012c368e1faf5516dbcb65869219147ae1c6a4",
+    "src/resident-candidate/source-sha256.mjs": "efbe142f7aee3ca8bea15e53536b87b97740a8d604f48b1dd9ab33e27bf34647",
+    "src/wasm-gpu/device-loss-subscriptions.mjs": "ac56bfb6839008f04deccd3bed8b7d2b5c48d53a02e77f904c16bed5a92ba091",
+    "src/wasm-gpu/device-loss-waiters.mjs": "f6fcb8f77adebd4322ed70062fea5310e422853c83f4d647664d198d608fc4d1"
+  },
+  "imports": {
+    "src/canonical-integer-transport/exact-divide-cost.mjs": [],
+    "src/canonical-integer-transport/exact-divide-source.mjs": [],
+    "src/canonical-integer-transport/exact-wide-cost.mjs": [],
+    "src/canonical-integer-transport/exact-wide-source.mjs": [],
+    "src/canonical-integer-transport/integer-core.mjs": [
+      "src/canonical-integer-transport/exact-wide-cost.mjs",
+      "src/canonical-integer-transport/opcode-cost.mjs",
+      "src/canonical-integer-transport/exact-divide-cost.mjs",
+      "src/canonical-integer-transport/exact-divide-source.mjs",
+      "src/canonical-integer-transport/exact-wide-source.mjs",
+      "src/canonical-integer-transport/isa.mjs"
+    ],
+    "src/canonical-integer-transport/isa.mjs": [
+      "src/resident-candidate/microcode-isa.mjs"
+    ],
+    "src/canonical-integer-transport/opcode-cost.mjs": [
+      "src/canonical-integer-transport/exact-wide-cost.mjs",
+      "src/canonical-integer-transport/exact-divide-cost.mjs"
+    ],
+    "src/canonical-integer-transport/parallel-kernel.mjs": [
+      "src/canonical-integer-transport/integer-core.mjs"
+    ],
+    "src/canonical-integer-transport/program-admission.mjs": [
+      "src/canonical-integer-transport/isa.mjs"
+    ],
+    "src/canonical-integer-transport/selected-artifact.mjs": [
+      "src/resident-candidate/source-sha256.mjs",
+      "src/canonical-integer-transport/isa.mjs",
+      "src/canonical-integer-transport/program-admission.mjs",
+      "src/canonical-integer-transport/selected-profile.mjs"
+    ],
+    "src/canonical-integer-transport/selected-input-arena.mjs": [
+      "src/canonical-integer-transport/selected-scheduler-plan.mjs"
+    ],
+    "src/canonical-integer-transport/selected-profile.mjs": [],
+    "src/canonical-integer-transport/selected-scheduler-kernel.mjs": [
+      "src/canonical-integer-transport/opcode-cost.mjs",
+      "src/canonical-integer-transport/parallel-kernel.mjs"
+    ],
+    "src/canonical-integer-transport/selected-scheduler-plan.mjs": [
+      "src/canonical-integer-transport/selected-artifact.mjs"
+    ],
+    "src/canonical-integer-transport/selected-scheduler-runner.mjs": [
+      "src/canonical-integer-transport/selected-scheduler-plan.mjs",
+      "src/canonical-integer-transport/selected-scheduler-kernel.mjs",
+      "src/wasm-gpu/device-loss-subscriptions.mjs",
+      "src/wasm-gpu/device-loss-waiters.mjs"
+    ],
+    "src/resident-candidate/microcode-isa.mjs": [],
+    "src/resident-candidate/source-sha256.mjs": [],
+    "src/wasm-gpu/device-loss-subscriptions.mjs": [],
+    "src/wasm-gpu/device-loss-waiters.mjs": []
+  },
+  "generatedWGSL_SHA256": "047b6a6a8b2e8f8b7d1329ca93cf9906eafd7c60477c200d54efb1dc4f9f52ab",
+  "generatedWGSLBytes": 18920,
+  "compilerFrontendImported": false,
+  "doesNotProveBrowserOrSealedWorkerExecution": true
+}

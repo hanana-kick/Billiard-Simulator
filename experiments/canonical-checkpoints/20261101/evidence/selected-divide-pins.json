@@ -1,0 +1,12 @@
+{
+  "expectedSHA256": "226b524d67368b15795a11ccc071351a86d6ffa19315da3c3149348a4a922d31",
+  "expectedCompilerRevision": "23b4e960113ca740d4345d30b94e7e277df914c17ef7f574f094aa38bce15c35",
+  "expectedSourceRevision": "75c09c39e6d97085f4c4bf8045f0f892f121130d00340128101602de7df0e2df",
+  "metadataBytes": 3259721,
+  "payloadBytes": 7919104,
+  "programs": 125,
+  "commands": 66317,
+  "sourceArenaBytes": 8785284,
+  "exactRoundtrip": true,
+  "gpuExecuted": false
+}
