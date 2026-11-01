@@ -1,0 +1,77 @@
+{
+  "kind": "portable-candidate-source-inventory-v1",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 3490,
+      "sha256": "6b4c5e1b7a7457d595636e78e4ca3e35ea7d6e25e455cf6c0af64bb524fbe22c"
+    },
+    {
+      "path": "REPRODUCING.md",
+      "bytes": 6303,
+      "sha256": "1c90ae05014ecf84b8a59d717d39895fd2e952a9c6094717e0d0c6809d75a175"
+    },
+    {
+      "path": "tests/e2e/canonical-compiled-real-flow.spec.cjs",
+      "bytes": 6236,
+      "sha256": "cad3bddf85869dd39c9af290b247b1cb62c63e492f62a3efd7454252ec8cb326"
+    },
+    {
+      "path": "tools/build-canonical-app-candidate.mjs",
+      "bytes": 15643,
+      "sha256": "d80d8b2d171d747e7ecd93b480b9296dd79a87cbeab2b34c1749374b017bac19"
+    },
+    {
+      "path": "tools/build-app-runtime-closure.mjs",
+      "bytes": 3047,
+      "sha256": "3848f00375196f9b39c119527459b0ba0d9ff952e52cd0d81687af543ce08faf"
+    },
+    {
+      "path": "tools/derive-compiled-app-resource.mjs",
+      "bytes": 2670,
+      "sha256": "7ba01d0f797977ec86e0fda057ed7493188d78161dcd9d31d4dedcecee034596"
+    },
+    {
+      "path": "tools/compiled-app-worker-entry.mjs",
+      "bytes": 6005,
+      "sha256": "f9d01581d64629ca18b07bf95639ddadef7276bbc2227135bdb54db39385cad8"
+    },
+    {
+      "path": "tools/rebuild-original-program-assets.mjs",
+      "bytes": 1304,
+      "sha256": "39ca12b1d078194f9b36510de960cdcb641244e4d793d2197501db704f9fcef8"
+    },
+    {
+      "path": "tools/prepare-pinned-n1-build-inputs.mjs",
+      "bytes": 6102,
+      "sha256": "5c2f5abc6904c63b1ac8e11d790c26243a48814e996bca7ba2edc55f5daf63cf"
+    },
+    {
+      "path": "tools/prepare-pinned-n3-build-inputs.mjs",
+      "bytes": 7010,
+      "sha256": "18e8cebf42b78a22e827e6d65f27d1ed1ed8c5046585efa5997b2f5f47b7db3a"
+    },
+    {
+      "path": "tools/prepare-pinned-runtime-scheduler.mjs",
+      "bytes": 1026,
+      "sha256": "97588e8daf86cf7624b17aaec6f57c6cb3d019e669129b049cbb0761a9c7285f"
+    },
+    {
+      "path": "tools/prepare-reproduction-configs.mjs",
+      "bytes": 4066,
+      "sha256": "68ea62a425611da9681d097b5dd531d8d9a9f2b5f3684243741c15ff347a0aee"
+    },
+    {
+      "path": "tools/compare-candidate-builds.mjs",
+      "bytes": 2447,
+      "sha256": "1f48fa7d4d35443276d427b6b69bed9cc3bc3633fddb29a94ab2b7c89f534629"
+    },
+    {
+      "path": "tools/check-built-app-http.py",
+      "bytes": 2855,
+      "sha256": "b02937203e2a22989ff75ae24839d988b41f11e54ad8cdfbb7b42b040dbd3822"
+    }
+  ],
+  "runtimeChanged": false,
+  "note": "Detailed execution qualification receipt omitted from public source-only backup."
+}
