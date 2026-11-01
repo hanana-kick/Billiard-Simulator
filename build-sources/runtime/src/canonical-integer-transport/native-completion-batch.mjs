@@ -1,0 +1,7 @@
+/** Sealed native-only completion policy. Not a caller-selected resource/work limit. */
+export const NATIVE_COMPLETION_ABI='native-selected-completion-batch-v1';
+export const NATIVE_COMPLETION_POLICY=Object.freeze({abi:NATIVE_COMPLETION_ABI,logicalChunkSize:256,maximumLogicalChunks:4,earlySourceBoundary:9216,maximumSourceCommands:1024});
+export function assertNativeCompletionPolicy(value){if(!value||Object.keys(value).sort().join()!==Object.keys(NATIVE_COMPLETION_POLICY).sort().join()||Object.keys(NATIVE_COMPLETION_POLICY).some(k=>value[k]!==NATIVE_COMPLETION_POLICY[k]))throw Error('Exact pinned native completion policy required');return NATIVE_COMPLETION_POLICY;}
+export function nativeBatchEnd(start,total){if(!Number.isSafeInteger(total)||total<1||!Number.isSafeInteger(start)||start<0||start>=total||start%256!==0)throw Error('Exact native logical source boundary required');return Math.min(total,start+(start<9216?256:1024));}
+export function nativeBatchEndpoints(start,end){if(!Number.isSafeInteger(start)||start<0||start%256!==0||!Number.isSafeInteger(end)||end<=start||end>start+(start<9216?256:1024))throw Error('Bounded native completion interval required');const out=[];for(let n=start+256;n<end;n+=256)out.push(n);out.push(end);return Object.freeze(out);}
+export function nativeBatchCount(total){let n=0,start=0;while(start<total){start=nativeBatchEnd(start,total);n++;}return n;}

@@ -1,5 +1,5 @@
 import{COMPILED_FRONTEND_BUILD_CONFIGURATION}from'./frontend-build-configuration.mjs';
-import{loadCompiledFrontendResourcePolicy,compiledResourceFor}from'./frontend-resource-policy.mjs';
+import{loadCompiledFrontendResourcePolicy,compiledResourceProfile,compiledResourceFor}from'./frontend-resource-policy.mjs';
 import {createComputeGenerationFacade} from '../wasm-gpu/compute-generation-facade.mjs';
 /** Inert until the verified bundler replaces both independent build stubs.
  * Public callers cannot inject a seal, program library, source revision or owner.
@@ -27,8 +27,8 @@ async function loadFrontendPolicy(config,library,signal){
 }
 async function createWorkerGenerationRuntime(options={},shared={}){
  const config=configuration();
- if(Object.keys(options).some(k=>!['device','signal','onProgress'].includes(k)))throw TypeError('WASM runtime has no caller seal/library/owner override');
- const {device,signal,onProgress}=options;
+ if(Object.keys(options).some(k=>!['device','signal','onProgress','prepareSelected'].includes(k)))throw TypeError('WASM runtime has no caller seal/library/owner override');
+ const {device,signal,onProgress,prepareSelected=true}=options;
  assertWorkerOwnerEndpoint(device); // Private lifecycle endpoint; never a native GPUDevice.
  if(signal&&(typeof signal.addEventListener!=='function'||typeof signal.removeEventListener!=='function'))throw TypeError('AbortSignal required');
  if(onProgress!==undefined&&typeof onProgress!=='function')throw TypeError('Synchronous preparation progress callback required');
@@ -63,6 +63,7 @@ async function createWorkerGenerationRuntime(options={},shared={}){
  const wrap=item=>Object.freeze({requiresExclusiveDevice:true,ownsRaw:true,...(item.group==='selected'?{selected:true}:{}),
   run(args){if(item.destroyed)throw Error('WASM program owner disposed');return coordinator.run(({signal})=>item.owner.run({...args,signal}),{signal:args.signal,onCancel:reason=>item.owner.cancel(reason)});},
   cancel(reason){return item.owner.cancel(reason);},
+  resetAfterCancellation(){if(item.destroyed||item.group!=='selected'||typeof item.owner.resetAfterCancellation!=='function')throw Error('Native selected reset capability required');return coordinator.run(()=>item.owner.resetAfterCancellation(),{cleanup:true});},
   dispose(){if(item.destroyed)return Promise.resolve();return coordinator.run(()=>destroy(item),{cleanup:true});},
   status:()=>item.owner.status(),
  });
@@ -93,7 +94,7 @@ async function createWorkerGenerationRuntime(options={},shared={}){
  };
  search=createWasmGpuCompactSearchBackendHarness({resourcePolicy,sourceRevision,workerEndpoint:device,maximumOwnedBytes:resourcePolicy.groupBudgets.search,maximumCachedPrograms:2,lookupProgram:(selector,options)=>library.lookupProgram(selector,options),prepareEngine:demandOwner});
  selected=createWasmGpuSelectedSessionBackendHarness({resourcePolicy,device,sourceRevision,workerEndpoint:device,maximumOwnedBytes:resourcePolicy.groupBudgets.selected,lookupProgram:(selector,options)=>library.lookupSelectedProgram(selector,options),prepareEngine:demandOwner});
- try{progress({phase:'ready',program:'runtime',allocatedBytes:0,preparation:'on-demand'});}catch(error){await search.dispose();await selected.dispose();await coordinator.dispose();throw error;}
+ try{if(prepareSelected){await selected.prepare({signal,onPrepareProgress:progress});residentMode='selected';modeEpoch++;progress({phase:'ready',program:'selected',allocatedBytes:compiledResourceProfile(resourcePolicy,'selected-N1').totalOwnedBytes,preparation:'native-pipelines-ready'});}else progress({phase:'unprepared',program:'selected',preparation:'search-generation'});}catch(error){await search.dispose();await selected.dispose();await coordinator.dispose();throw error;}
  const open=otherDevice=>{if(disposed)throw Error('WASM production runtime disposed');if(otherDevice!==device)throw Error('WASM runtime cannot change its exclusive device');};
  function cancelSearch(reason){searchGeneration++;for(const abort of creations)abort.abort(reason);search.cancel(reason);}
  function cancelSelected(reason){selectedGeneration++;selected.cancel(reason);}
@@ -115,14 +116,16 @@ async function createWorkerGenerationRuntime(options={},shared={}){
   async createSelectedEngine(otherDevice,binding,{request,candidate,strikeBackend='staged'}={}){
    open(otherDevice);if(strikeBackend!=='staged'||!request||!candidate)throw Error('Current owned selected request/candidate and staged backend required');let released=false,active=null;
    return Object.freeze({buildRevision:sourceRevision,preparation:'wasm-program-selected',requiresExclusiveDevice:true,buildSealed:true,integrityVerified:true,provenance:'sealed-source-wasm-selected',
-    async runRaw(batch,{signal,selectedTrace,selectedTraceMaxRecords}={}){
+    async runRaw(batch,{signal,selectedTrace,selectedTraceMaxRecords,onPrefix}={}){
      open(device);if(released||active)throw Error('Selected view disposed or active');if(selectedTrace!==true||selectedTraceMaxRecords!==256)throw Error('Exact selected trace256 capsule required');
      const ticket=selectedGeneration,abort=new AbortController(),relay=()=>abort.abort(signal.reason),scope=createCanonicalPreparationScope({signal:abort.signal});active=abort;
-     try{signal?.addEventListener('abort',relay,{once:true});if(signal?.aborted)relay();scope.check();const result=await withMode('selected',()=>selected.evaluate({request,candidate,binding,batch,maximumRecords:256,signal:scope.signal}),{check:()=>{scope.check();if(released||ticket!==selectedGeneration)throw abortError();}});open(device);scope.check();if(released||ticket!==selectedGeneration||abort.signal.aborted)throw abortError(abort.signal.reason);return Object.freeze({...result,buildSealed:true,integrityVerified:true,provenance:'sealed-source-wasm-selected',gpuExecutionQualified:false});}finally{try{signal?.removeEventListener('abort',relay);}finally{scope.dispose();active=null;}}
+     try{signal?.addEventListener('abort',relay,{once:true});if(signal?.aborted)relay();scope.check();const result=await withMode('selected',()=>selected.evaluate({request,candidate,binding,batch,maximumRecords:256,signal:scope.signal,onPrefix}),{check:()=>{scope.check();if(released||ticket!==selectedGeneration)throw abortError();}});open(device);scope.check();if(released||ticket!==selectedGeneration||abort.signal.aborted)throw abortError(abort.signal.reason);return Object.freeze({...result,buildSealed:true,integrityVerified:true,provenance:'sealed-source-wasm-selected',gpuExecutionQualified:false});}finally{try{signal?.removeEventListener('abort',relay);}finally{scope.dispose();active=null;}}
     },
     dispose(){released=true;active?.abort('Selected view disposed');},
    });
   },
+  nativeReusableCancellation:true,
+  cancelAndReset(reason){if(disposed||residentMode!=='selected')return Promise.reject(Error('Prepared selected mode required for reusable reset'));cancelSelected(reason);return modeTail.then(()=>selected.cancelAndReset(reason));},
   cancelSearch,cancelSelected,cancel,dispose,status:()=>Object.freeze({disposed,sourceRevision,residentMode,modeEpoch,coordinator:coordinator.status()}),
  });
  runtimes.set(runtime,{device});return runtime;
@@ -131,10 +134,10 @@ async function createWorkerGenerationRuntime(options={},shared={}){
 /** Stable service identity; compute devices are private mode generations. */
 export async function createWasmGpuProductionRuntime(options={}){
  const config=configuration();if(Object.keys(options).some(k=>!['signal','onProgress'].includes(k)))throw TypeError('WASM runtime has no caller Worker/device/seal/library/owner override');
- const {signal,onProgress}=options,shared={};let first=true,endpoint=null;
+ const {signal,onProgress}=options,shared={};let first=true,endpoint=null,nativePreparation=Object.freeze({phase:'preparing',program:'selected',completedPipelines:0,totalPipelines:109});
  try{
   endpoint=await createSealedWorkerOwnerEndpoint({signal});
-  const facade=await createComputeGenerationFacade({device:endpoint,signal,requestDevice:createSealedWorkerOwnerEndpoint,createGeneration:(nextEndpoint,nextSignal)=>{const progress=first?onProgress:undefined;first=false;return createWorkerGenerationRuntime({device:nextEndpoint,signal:nextSignal,onProgress:progress},shared);}});
-  const runtime=Object.freeze({...facade,sourceRevision:config.sourceRevision,expectedPreparation:'wasm-program',requiresExclusiveDevice:true,experimental:true,productionEnabled:false,gpuExecutionQualified:false,buildSealed:true});runtimes.set(runtime,{device:facade.identity});endpoint=null;return runtime;
+  const facade=await createComputeGenerationFacade({device:endpoint,signal,requestDevice:createSealedWorkerOwnerEndpoint,createGeneration:(nextEndpoint,nextSignal,context)=>{const initial=first;first=false;nativePreparation=Object.freeze({phase:'preparing',program:'selected',completedPipelines:0,totalPipelines:109});const progress=detail=>{nativePreparation=Object.freeze({...detail});if(initial)onProgress?.(detail);};return createWorkerGenerationRuntime({device:nextEndpoint,signal:nextSignal,onProgress:progress,prepareSelected:context?.mode!=='search'},shared);}});
+  const runtime=Object.freeze({...facade,async cancelAndReset(reason){try{const receipt=await facade.cancelAndReset(reason);nativePreparation=receipt?.kind==='native-selected-reset-receipt-v1'&&receipt.disposed===false&&receipt.destroyed===false?Object.freeze({phase:'ready',program:'selected',completedPipelines:109,totalPipelines:109,reusedAfterCancellation:true}):Object.freeze({phase:'unprepared',program:'selected',completedPipelines:0,totalPipelines:109});return receipt;}catch(error){nativePreparation=Object.freeze({phase:'unprepared',program:'selected',completedPipelines:0,totalPipelines:109});throw error;}},async cancelAndDrain(reason){await facade.cancelAndDrain(reason);nativePreparation=Object.freeze({phase:'unprepared',program:'selected',completedPipelines:0,totalPipelines:109});},status:()=>Object.freeze({...facade.status(),nativePreparation}),sourceRevision:config.sourceRevision,expectedPreparation:'wasm-program',requiresExclusiveDevice:true,experimental:true,productionEnabled:false,gpuExecutionQualified:false,buildSealed:true});runtimes.set(runtime,{device:facade.identity});endpoint=null;return runtime;
  }catch(error){if(endpoint)try{await endpoint.destroy();}catch(cleanup){throw new AggregateError([error,cleanup],'Initial Worker cleanup failed');}throw error;}
 }

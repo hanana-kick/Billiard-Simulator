@@ -1,4 +1,5 @@
 /** Repository-relative source rebuild. No network, deployment, pin updates or fallback. */
+import{buildNativeSelectedProgram}from'./build-native-selected-program.mjs';
 import fs from 'node:fs';import path from 'node:path';import assert from 'node:assert/strict';import {spawnSync} from 'node:child_process';import {fileURLToPath} from 'node:url';
 const root=path.resolve(process.argv[2]),out=path.resolve(process.argv[3]),here=path.dirname(fileURLToPath(import.meta.url));
 assert.equal(process.argv.length,4);assert.ok(out.startsWith(root+path.sep),'Output must belong to this checkout');
@@ -9,7 +10,7 @@ function run(argv,label){const r=spawnSync(argv[0],argv.slice(1),{cwd:root,encod
 run([process.execPath,path.join(here,'prepare-reproduction-configs.mjs'),layoutFile],'configure');
 const recipe=JSON.parse(fs.readFileSync(path.join(layout.outputRoot,'steps.json')));assert.equal(recipe.steps.length,9);
 for(const [i,s]of recipe.steps.slice(0,8).entries())run(s.argv,'step-'+(i+1));
-const cfile=path.join(layout.outputRoot,'app-build.json'),c=JSON.parse(fs.readFileSync(cfile));c.assetsOutputDirectory=path.join(work,'assets');fs.writeFileSync(cfile,JSON.stringify(c));
+const cfile=path.join(layout.outputRoot,'app-build.json'),c=JSON.parse(fs.readFileSync(cfile));const nativeFile=path.join(work,'native-selected-program.json'),nativePins=await buildNativeSelectedProgram({originalAssets:c.programDirectory,fusedShader:path.join(here,'native-selected-fivephase.wgsl'),output:nativeFile});c.programs['selected-N1']={transport:'native-wgsl',artifactFile:nativeFile,...nativePins};c.assetsOutputDirectory=path.join(work,'assets');fs.writeFileSync(cfile,JSON.stringify(c));
 const manifest=JSON.parse(run([process.execPath,path.join(here,'build-compiled-assets.mjs'),cfile],'compiled-assets'));
 // Only replace the build output after complete compilation and source/pin admission.
 fs.rmSync(out,{recursive:true,force:true});fs.mkdirSync(path.dirname(out),{recursive:true});fs.renameSync(c.assetsOutputDirectory,out);

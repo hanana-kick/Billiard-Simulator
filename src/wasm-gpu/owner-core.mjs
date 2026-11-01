@@ -106,17 +106,14 @@ export async function prepareWasmGpuOwner({moduleBytes, device, bridge, chunkSiz
     if (disposal) return disposal;
     // Reserve disposal before any await; a run cannot enter during cleanup.
     cancel('WASM GPU engine disposed');
-    // A synchronous upload observer can dispose before run() has published
-    // token.promise. Publish disposal first, then read the run receipt in the
-    // next microtask; never destroy ahead of its drain/adopted-lease cleanup.
-    disposal = Promise.resolve().then(async () => {
-      const pending = active?.promise;
+    const pending = active?.promise;
+    disposal = (async () => {
       try {
         if (pending) await pending.catch(() => {});
         runtime.dispose();
         await bridge.dispose();
       } finally { disposed = true; unsubscribeLoss(); }
-    });
+    })();
     return disposal;
   }
   return Object.freeze({run, cancel, dispose, status, diagnostics:()=>{let d=bridge.diagnostics?.();if(active&&d?.generation!==active.generation)d={generation:active.generation,nativeStage:'owner-before-upload',submittedCommands:0,confirmedCommands:0,submittedFences:0,fulfilledFences:0,resultCopySubmitted:false};return d?Object.freeze({...d,runGeneration:d.generation,...(active?{runElapsedMs:Math.max(0,(globalThis.performance?.now()??Date.now())-active.began)}:{})}):null;}, experimental: true, productionEnabled: false, requiresExclusiveDevice: true, ...metadata});
