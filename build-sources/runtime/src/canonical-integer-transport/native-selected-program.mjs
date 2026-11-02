@@ -32,6 +32,6 @@ export async function loadNativeSelectedProgram(bytes,{expectedSHA256,expectedSo
  const rawExpected=[94,...Array.from({length:2048},()=>[95,96,97,98]).flat(),99,100];for(let i=0;i<8195;i++){const c=command(i);if(c.kind!=='dispatch'||c.definition!==rawExpected[i]||c.x!==1||c.indirect||c.entries!==(i===8194?1:0))throw Error('Original raw prefix required');}
  if(p.bindings[0][1].buffer!==1||p.bindings[0][1].size!==64||p.bindings[0][3].buffer!==3||p.bindings[0][3].offset!==0||p.bindings[0][3].size!==128||p.allocations[3].usage!==136)throw Error('Exact raw control view required');
  exact(p.outputs,['world','trace']);if(p.outputs.world.buffer!==102||p.outputs.world.bytes!==11664||p.outputs.trace.buffer!==70||p.outputs.trace.bytes!==4194368||p.allocations[102].usage!==9||p.allocations[70].usage!==9)throw Error('Original full output profile required');
- const bufferBytes=[...p.allocations.map(a=>a.size),512],totalOwnedBytes=bufferBytes.reduce((a,b)=>a+b,0)+262208;if(totalOwnedBytes!==9048004||totalOwnedBytes>24*1024*1024)throw Error('Native resource ceiling');
+ const bufferBytes=[...p.allocations.map(a=>a.size),4096],totalOwnedBytes=bufferBytes.reduce((a,b)=>a+b,0)+262208;if(totalOwnedBytes!==9051588||totalOwnedBytes>24*1024*1024)throw Error('Native resource ceiling');
  const program=freeze({...p,artifactSHA256:expectedSHA256,commandCount:66317,resources:{bufferBytes,readbackBytes:262208,totalOwnedBytes,maximumOwnedBytes:24*1024*1024},traceControlBuffer:68,traceRecordsBuffer:69});OWNED.add(program);return program;
 }

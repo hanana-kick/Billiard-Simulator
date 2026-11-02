@@ -2,6 +2,8 @@
 const V=0x53574702, M=0x4d4d5102, RECORD_WORDS=4096, MAX_RECORDS=256, MAX_PACKET_RECORDS=16;
 const identityKeys=['sourceRevision','artifactSHA256','generation','runId','sceneKey','requestKey','candidateId','bodyCount'];
 const uint=x=>Number.isInteger(x)&&x>=0&&x<=0xffffffff;
+const senderCancellationCapabilities=new WeakSet();
+export const isNativePrefixCancellationCapability=value=>senderCancellationCapabilities.has(value);
 const abort=reason=>Object.assign(new Error(String(reason??'Selected prefix cancelled')),{name:'AbortError'});
 export function snapshotPrefixIdentity(value){
  if(!value||Object.keys(value).sort().join()!==[...identityKeys].sort().join()||!['sourceRevision','artifactSHA256'].every(k=>/^[a-f0-9]{64}$/.test(value[k]))||!['generation','runId','sceneKey','requestKey','candidateId','bodyCount'].every(k=>uint(value[k]))||value.generation<1||value.runId<1||![3,4].includes(value.bodyCount))throw TypeError('Exact bound prefix source/run identity required');
@@ -29,11 +31,14 @@ export function createNativeSelectedPrefixReceiver({identity,slotToId,isCurrent,
   return Object.freeze({decoded,ack:Object.freeze({kind:'native-selected-prefix-ack-v1',identity:bound,sequence:packet.sequence,recordCount:count}),recordCount:count,lastTick,complete:false});
  }});
 }
-export function createNativeSelectedPrefixSender({identity,send,isCurrent,signal,acknowledgmentTimeoutMs=30000}){
- const bound=snapshotPrefixIdentity(identity);if(typeof send!=='function'||typeof isCurrent!=='function'||!Number.isInteger(acknowledgmentTimeoutMs)||acknowledgmentTimeoutMs<1||acknowledgmentTimeoutMs>30000)throw TypeError('Bounded prefix sender required');let sequence=0,count=0,pending=null,closed=false,busy=false;
- const assertCurrent=()=>{if(closed||signal?.aborted||!isCurrent())throw abort(signal?.reason??'Stale selected prefix');};
- const cancel=()=>{closed=true;if(pending){clearTimeout(pending.timer);pending.reject(abort(signal?.reason));pending=null;}};signal?.addEventListener('abort',cancel,{once:true});
- return Object.freeze({async publish({sourceBoundary,words}){assertCurrent();if(busy)throw Error('Only one prefix packet may be outstanding');const snapshot=snapshotPrefixWords(words,MAX_PACKET_RECORDS*RECORD_WORDS);if(!snapshot.length||snapshot.length%RECORD_WORDS||count+snapshot.length/RECORD_WORDS>MAX_RECORDS)throw RangeError('Bounded complete prefix packet required');const next=count+snapshot.length/RECORD_WORDS,packet={kind:'native-selected-prefix-v1',identity:bound,sequence,firstRecord:count,sourceBoundary,final:false,words:snapshot};
-  busy=true;try{await new Promise((resolve,reject)=>{const timer=setTimeout(()=>{closed=true;pending=null;reject(Error('Selected prefix acknowledgment deadline'));},acknowledgmentTimeoutMs);pending={sequence,next,resolve,reject,timer};try{send(packet,[snapshot.buffer]);}catch(e){clearTimeout(timer);pending=null;closed=true;reject(e);}});assertCurrent();count=next;sequence++;return count;}finally{busy=false;}
+export function createNativeSelectedPrefixSender({identity,send,isCurrent,signal,isCancellationCurrent=()=>true,acknowledgmentTimeoutMs=30000}){
+ const bound=snapshotPrefixIdentity(identity);if(typeof send!=='function'||typeof isCurrent!=='function'||typeof isCancellationCurrent!=='function'||!Number.isInteger(acknowledgmentTimeoutMs)||acknowledgmentTimeoutMs<1||acknowledgmentTimeoutMs>30000)throw TypeError('Bounded prefix sender required');let sequence=0,count=0,pending=null,closed=false,busy=false;
+ const cancellationErrors=new WeakSet();
+ const signalCancellation=()=>{const error=abort(signal.reason);cancellationErrors.add(error);return error;};
+ const cancellationCapability=Object.freeze({isCancellationError:error=>signal?.aborted===true&&cancellationErrors.has(error)&&isCancellationCurrent()===true});senderCancellationCapabilities.add(cancellationCapability);
+ const assertCurrent=()=>{if(signal?.aborted)throw signalCancellation();if(closed||!isCurrent())throw abort('Stale selected prefix');};
+ const cancel=()=>{closed=true;if(pending){clearTimeout(pending.timer);pending.reject(signal?.aborted?signalCancellation():abort('Selected prefix disposed'));pending=null;}};signal?.addEventListener('abort',cancel,{once:true});
+ return Object.freeze({cancellationCapability,async publish({sourceBoundary,words}){assertCurrent();if(busy)throw Error('Only one prefix packet may be outstanding');const snapshot=snapshotPrefixWords(words,MAX_PACKET_RECORDS*RECORD_WORDS);if(!snapshot.length||snapshot.length%RECORD_WORDS||count+snapshot.length/RECORD_WORDS>MAX_RECORDS)throw RangeError('Bounded complete prefix packet required');const next=count+snapshot.length/RECORD_WORDS,packet={kind:'native-selected-prefix-v1',identity:bound,sequence,firstRecord:count,sourceBoundary,final:false,words:snapshot};
+  let sendFailure,hasSendFailure=false;busy=true;try{await new Promise((resolve,reject)=>{const timer=setTimeout(()=>{closed=true;pending=null;reject(Error('Selected prefix acknowledgment deadline'));},acknowledgmentTimeoutMs);pending={sequence,next,resolve,reject,timer};try{send(packet,[snapshot.buffer]);}catch(e){hasSendFailure=true;sendFailure=e;clearTimeout(timer);pending=null;closed=true;reject(e);}}).catch(error=>{throw hasSendFailure?sendFailure:error;});if(hasSendFailure)throw sendFailure;assertCurrent();count=next;sequence++;return count;}finally{busy=false;}
  },acknowledge(ack){assertCurrent();if(!pending||ack?.kind!=='native-selected-prefix-ack-v1'||identityKeys.some(k=>ack.identity?.[k]!==bound[k])||ack.sequence!==pending.sequence||ack.recordCount!==pending.next)throw RangeError('Exact current prefix acknowledgment required');const p=pending;pending=null;clearTimeout(p.timer);p.resolve();},dispose(){cancel();signal?.removeEventListener('abort',cancel);},get pending(){return pending!==null;}});
 }

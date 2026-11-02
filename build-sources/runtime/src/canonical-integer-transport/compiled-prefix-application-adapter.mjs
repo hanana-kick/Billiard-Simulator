@@ -1,3 +1,5 @@
+import {preserveSelectedFailure} from './selected-failure-preservation.mjs';
+import{withPreparedManualTicket}from'./prepared-manual-ticket.mjs';
 /** Opt-in application boundary; submission/presentation remain read-only.
  * Stored manual results may explicitly commit canonical REST. It never strikes/steps/restores a
  * PhysicsLab, mutates the game, or treats a selected-shot loop as batch search. */
@@ -36,7 +38,7 @@ export function canonicalApplicationRules(game, selectedId, objectIds) {
   return Object.freeze({game:objectIds.length,firstId,secondId,opponentId,threeCushion,
     search:false,method:'carom',minCushions:threeCushion?3:0,allowKiss:true,kissFacts:false,conditionOnly:false});
 }
-function core({lab,stateStore,selectedWorldProfile,readContext,session},implementation) {
+function core({lab,stateStore,selectedWorldProfile,readContext,session,captureResultGuard,reserveSpeculativeSelection,settleSupersededSelection},implementation) {
   const canonicalSource=stateStore!==undefined;
   if(canonicalSource && (!stateStore || ['readScene','readRevision','readProvenance','readClock'].some(k=>typeof stateStore[k]!=='function') ||
       !['mmq1-ball-ball','mmq2-cushion'].includes(selectedWorldProfile) ||
@@ -46,6 +48,7 @@ function core({lab,stateStore,selectedWorldProfile,readContext,session},implemen
   if ((!canonicalSource && (!lab || typeof lab.snapshot!=='function' || !Array.isArray(lab.objects) || !Array.isArray(lab.statics))) ||
       typeof readContext!=='function' || typeof session?.runSelected!=='function' || typeof session?.cancel!=='function')
     throw TypeError('Complete PhysicsLab, context reader and selected-session interface required');
+  const staleResults=new WeakSet();const stale=message=>{const e=fail('STALE_APPLICATION_RESULT',message);staleResults.add(e);return e;};
   let epoch=0,disposed=false;
   const open=()=>{if(disposed)throw fail('APPLICATION_DISPOSED','Create a new application adapter');};
   const capture=()=>{
@@ -57,7 +60,7 @@ function core({lab,stateStore,selectedWorldProfile,readContext,session},implemen
       if(provenance!==null && (provenance.selectedWorldProfile!==selectedWorldProfile ||
           (selectedWorldProfile==='mmq2-cushion' && provenance.identity?.selectedWorldProfile!==selectedWorldProfile)))
         throw fail('APPLICATION_SOURCE_PROVENANCE_MISMATCH','State provenance must retain the selected-world profile');
-      if(revision!==stateStore.readRevision())throw fail('STALE_APPLICATION_RESULT','State changed during capture');
+      if(revision!==stateStore.readRevision())throw stale('State changed during capture');
       return {context,admission:{admitted:true,scene},revision,clock,stamp:stable({sceneId:scene.sceneId,provenance,clock,context})};
     }
     // Snapshot is authoritative. No rounding, height snap, subset, material
@@ -71,7 +74,7 @@ function core({lab,stateStore,selectedWorldProfile,readContext,session},implemen
     return {context,admission,stamp};
   };
   const invalidate=reason=>{epoch++;session.cancel(reason);};
-  return Object.freeze({
+  const adapter=Object.freeze({
     capabilities:Object.freeze({...CANONICAL_APPLICATION_CAPABILITIES,implementation,
       ...(canonicalSource?{stateSource:'canonical-state-store-v1',selectedWorldProfile}:{}),
       selectedSession:own(session.capabilities??{})}),
@@ -79,16 +82,16 @@ function core({lab,stateStore,selectedWorldProfile,readContext,session},implemen
     dispose(){if(!disposed){disposed=true;invalidate('application disposed');session.dispose?.();}},
     runSearch(){throw fail('APPLICATION_SEARCH_UNIMPLEMENTED','Use an explicitly compatible current-source batch service; selected-shot loops and frozen-model fallback are forbidden');},
     async runSelected({purpose,requestId,candidateId,raw,continuation,budget,executionProfile,
-      maximumRecords=128,strikeBackend='staged',signal,onPrefix}={}) {
+      maximumRecords=128,strikeBackend='staged',signal,onPrefix,speculativeSelection}={}) {
       open();invalidate('application request replacement');const token=epoch;
       if (!['manual','forecast'].includes(purpose)) throw fail('APPLICATION_PURPOSE_UNSUPPORTED','Only selected manual/forecast requests are implemented');
       const start=capture();
       if(canonicalSource&&start.clock!==null&&raw?.absoluteTick!==start.clock)throw fail('APPLICATION_CLOCK_MISMATCH','Request must retain the owned absolute clock');
       const current=(expectedRevision=start.revision)=>{
-        open();if(token!==epoch)throw fail('STALE_APPLICATION_RESULT','Application request was superseded');
+        open();if(token!==epoch)throw stale('Application request was superseded');
         if(signal?.aborted)throw fail('CANCELLED','Discard externally cancelled result');
-        let now;try{now=capture();}catch{invalidate('live scene unavailable');throw fail('STALE_APPLICATION_RESULT','Live scene cannot still authorize this result');}
-        if(now.stamp!==start.stamp || now.revision!==expectedRevision){invalidate('physical scene or game/context changed');throw fail('STALE_APPLICATION_RESULT','Physical scene, settings, game or clock changed');}
+        let now;try{now=capture();}catch{invalidate('live scene unavailable');throw stale('Live scene cannot still authorize this result');}
+        if(now.stamp!==start.stamp || now.revision!==expectedRevision){invalidate('physical scene or game/context changed');throw stale('Physical scene, settings, game or clock changed');}
       };
       current();
       if(!start.admission.admitted)return Object.freeze({kind:'canonical-application-rejected-v1',implementation,
@@ -96,7 +99,7 @@ function core({lab,stateStore,selectedWorldProfile,readContext,session},implemen
       const rules=canonicalApplicationRules(start.context.game,start.context.selectedId,start.admission.scene.slotToId);
       const input=own({request:{scene:start.admission.scene,requestId,selectedId:start.context.selectedId,purpose,rules,executionProfile,budget},
         candidateId,settings:start.context.settings,raw,continuation,maximumRecords,strikeBackend});
-      let result;try{result=await session.runSelected({...own(input),signal,onPrefix:onPrefix===undefined?undefined:prefix=>{current();if(typeof onPrefix!=='function'||prefix.kind!=='canonical-session-selected-prefix-v1'||prefix.complete!==false)throw fail('APPLICATION_PREFIX_CONTRACT','Explicit incomplete selected prefix required');const pr=createCanonicalRequest({...input.request,epoch:prefix.identity?.epoch}),pc=createCanonicalCandidate(pr,candidateId,input.settings),base=canonicalResultIdentity(pc),wanted=canonicalSource&&selectedWorldProfile==='mmq2-cushion'?{...base,selectedWorldProfile}:base;if(stable(wanted)!==stable(prefix.identity))throw fail('APPLICATION_PREFIX_IDENTITY','Prefix must match current exact scene/request/candidate');const valid=()=>{current();prefix.assertCurrent();};valid();const sampleAt=(tick,options)=>{valid();const sample=own(prefix.sampleAt(tick,options));valid();if(['exact-boundary','exact-source'].includes(sample.status)&&(sample.tick!==tick||sample.interpolation!==false||stable(sample.slotToId)!==stable(pr.slotToId)||!(sample.state instanceof Uint32Array)||sample.state.length!==40||pr.slotToId.some((id,i)=>sample.state[10*i]!==id)))throw fail('APPLICATION_PREFIX_CONTRACT','Exact prefix sample requires complete original roster/clock');return sample;};const receipt=Object.freeze({kind:'canonical-application-selected-prefix-v1',identity:own(wanted),startTick:prefix.startTick,certifiedThroughTick:prefix.certifiedThroughTick,recordCount:prefix.recordCount,normalizedRecordCount:prefix.normalizedRecordCount,complete:false,physicsResultComplete:false,scoreAndTurnCommitted:false,assertCurrent:valid,sampleAt,presentAt(tick,present,options){if(typeof present!=='function')throw TypeError('Presentation callback required');const sample=sampleAt(tick,options);if(!['exact-boundary','exact-source'].includes(sample.status))return{presented:false,sample};valid();present(own(sample));valid();return{presented:true,sample};}});const value=onPrefix(receipt);if(value&&typeof value.then==='function')throw TypeError('Synchronous application prefix callback required');valid();}});}catch(error){current();throw error;}
+      let result;try{result=await session.runSelected({...own(input),signal,speculativeSelection,onPrefix:onPrefix===undefined?undefined:prefix=>{current();if(typeof onPrefix!=='function'||prefix.kind!=='canonical-session-selected-prefix-v1'||prefix.complete!==false)throw fail('APPLICATION_PREFIX_CONTRACT','Explicit incomplete selected prefix required');const pr=createCanonicalRequest({...input.request,epoch:prefix.identity?.epoch}),pc=createCanonicalCandidate(pr,candidateId,input.settings),base=canonicalResultIdentity(pc),wanted=canonicalSource&&selectedWorldProfile==='mmq2-cushion'?{...base,selectedWorldProfile}:base;if(stable(wanted)!==stable(prefix.identity))throw fail('APPLICATION_PREFIX_IDENTITY','Prefix must match current exact scene/request/candidate');const valid=()=>{current();prefix.assertCurrent();};valid();const sampleAt=(tick,options)=>{valid();const sample=own(prefix.sampleAt(tick,options));valid();if(['exact-boundary','exact-source'].includes(sample.status)&&(sample.tick!==tick||sample.interpolation!==false||stable(sample.slotToId)!==stable(pr.slotToId)||!(sample.state instanceof Uint32Array)||sample.state.length!==40||pr.slotToId.some((id,i)=>sample.state[10*i]!==id)))throw fail('APPLICATION_PREFIX_CONTRACT','Exact prefix sample requires complete original roster/clock');return sample;};const receipt=Object.freeze({kind:'canonical-application-selected-prefix-v1',identity:own(wanted),startTick:prefix.startTick,certifiedThroughTick:prefix.certifiedThroughTick,recordCount:prefix.recordCount,normalizedRecordCount:prefix.normalizedRecordCount,complete:false,physicsResultComplete:false,scoreAndTurnCommitted:false,assertCurrent:valid,sampleAt,presentAt(tick,present,options){if(typeof present!=='function')throw TypeError('Presentation callback required');const sample=sampleAt(tick,options);if(!['exact-boundary','exact-source'].includes(sample.status))return{presented:false,sample};valid();present(own(sample));valid();return{presented:true,sample};}});const value=onPrefix(receipt);if(value&&typeof value.then==='function')throw TypeError('Synchronous application prefix callback required');valid();}});}catch(error){try{current();}catch(authorityFailure){throw preserveSelectedFailure(error,authorityFailure,'application authority changed',staleResults.has(authorityFailure));}throw error;}
       current();
       if(!result?.identity)throw fail('APPLICATION_IDENTITY_MISMATCH','Session output is missing its immutable identity');
       const request=createCanonicalRequest({...input.request,epoch:result.identity.epoch});
@@ -167,6 +170,7 @@ function core({lab,stateStore,selectedWorldProfile,readContext,session},implemen
       });
     },
   });
+  return withPreparedManualTicket(adapter,{snapshotContext:()=>{open();const value=capture();return stable({stamp:value.stamp,revision:value.revision,clock:value.clock});},captureResultGuard,reserveSpeculativeSelection,settleSupersededSelection,isBenignStale:error=>staleResults.has(error)});
 }
 export function createCanonicalApplicationAdapter({lab,readContext,device}={}) {
   return core({lab,readContext,session:createCanonicalSessionService({device})},'webgpu-session-adapter-v1');
@@ -180,9 +184,11 @@ export function createCanonicalApplicationAdapterHarness({lab,readContext,sessio
  * runSelected stays read-only; manual results offer an explicit commitState(). */
 export function createCanonicalStateApplicationAdapter({stateStore,selectedWorldProfile,readContext,device,productionRuntime}={}) {
   return core({stateStore,selectedWorldProfile,readContext,
+    reserveSpeculativeSelection:productionRuntime===undefined?undefined:()=>productionRuntime.reserveSpeculativeSelection(),settleSupersededSelection:productionRuntime===undefined?undefined:async(token,reason)=>Object.freeze({receipt:await productionRuntime.settleSupersededSelection(token,reason),acceptsCancellationFailure:error=>productionRuntime.isSpeculativeCancellationFailure(token,error)}),
+    captureResultGuard:productionRuntime===undefined?undefined:()=>productionRuntime.captureSelectedResultGuard(),
     session:productionRuntime===undefined?createCanonicalSessionService({device,selectedWorldProfile}):createCanonicalWasmSessionService({device,selectedWorldProfile,productionRuntime})},'webgpu-state-session-adapter-v1');
 }
 /** Injected lifecycle evidence only, not native GPU physics qualification. */
 export function createCanonicalStateApplicationAdapterHarness({stateStore,selectedWorldProfile,readContext,session}={}) {
-  return core({stateStore,selectedWorldProfile,readContext,session},'injected-test-state-adapter-v1');
+  return core({stateStore,selectedWorldProfile,readContext,session,reserveSpeculativeSelection:typeof session?.reserveSpeculativeSelection==='function'?()=>session.reserveSpeculativeSelection():undefined,settleSupersededSelection:typeof session?.settleSupersededSelection==='function'?(token,reason)=>session.settleSupersededSelection(token,reason):undefined,captureResultGuard:typeof session?.captureSelectedResultGuard==='function'?()=>session.captureSelectedResultGuard():undefined},'injected-test-state-adapter-v1');
 }

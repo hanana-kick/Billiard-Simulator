@@ -4,7 +4,7 @@ export function snapshotNativeResetIdentity(value){
  const keys=['sourceRevision','artifactSHA256','nativeProgramSHA256','transformRevision','runtimeRevision','ownedBytes','retainedBuffers','retainedPipelines'];
  if(!value||Object.keys(value).sort().join()!==keys.sort().join())throw Error('Exact native reset identity required');
  for(const key of ['sourceRevision','artifactSHA256','nativeProgramSHA256','transformRevision','runtimeRevision'])if(!sha(value[key]))throw Error('Pinned native reset identity required');
- if(value.ownedBytes!==9048004||value.retainedBuffers!==234||value.retainedPipelines!==109)throw Error('Exact native retained resources required');
+ if(value.ownedBytes!==9051588||value.retainedBuffers!==234||value.retainedPipelines!==109)throw Error('Exact native retained resources required');
  return Object.freeze({...value});
 }
 export function validateNativeResetReceipt(receipt,{identity,generation,targetRunId,targetRunGeneration,resetSequence}){

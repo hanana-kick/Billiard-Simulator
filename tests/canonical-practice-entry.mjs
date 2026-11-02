@@ -207,3 +207,11 @@ test('device loss preserves exact false cleanup qualification and leaves missing
   }finally{f.cleanup();}
  }
 });
+
+test('normal UI action enables idle preparation after actual entry and compiled controller installation without waiting for a shot',async()=>{
+ const {loadAndStartCanonicalPractice,setCanonicalManualPreparation}=await import('../src/components/canonical-practice-action.mjs');
+ const {installCanonicalControllerHarness}=await import('../build-sources/runtime/src/canonical-integer-transport/compiled-controller-integration.mjs');
+ const f=fixture();let calculations=0;f.c.renderer={render(){},isFallback:false};f.c.scheduleFrame=()=>{};
+ const session={selectedWorldProfile:'mmq2-cushion',capabilities:{selectedWorldProfile:'mmq2-cushion'},cancel(){},runSelected(){calculations++;throw Error('No physics in HOST entry test');}};
+ try{const owner=await loadAndStartCanonicalPractice(f.c,undefined,async()=>({startCanonicalPractice(c,options){return startCanonicalPracticeInternal(c,{...options,requestDevice:async()=>f.device,install:(controller,args)=>installCanonicalControllerHarness(controller,{...args,session})});}}));assert.equal(owner,f.c.canonicalPlayback);assert.equal(f.c.state.canonicalPlayback.manualPreparation.enabled,true);assert.equal(f.c.state.canonicalPlayback.phase,'ready');assert.equal(calculations,0);assert.equal(f.c.lab.shots,0);assert.equal(f.c.undoStack.length,0);assert.equal(setCanonicalManualPreparation(f.c,false),true);assert.equal(f.c.state.canonicalPlayback.manualPreparation.enabled,false);await new Promise(r=>setTimeout(r,180));assert.equal(calculations,0);}finally{f.cleanup();}
+});

@@ -8,3 +8,28 @@ test('shared/tag-spoofed/subclass buffers rejected and snapshots detached from c
 test('one outstanding packet includes acknowledge-to-publish microtask gap; cancellation rejects pending',async()=>{let sent;const abort=new AbortController(),sender=createNativeSelectedPrefixSender({identity,signal:abort.signal,isCurrent:()=>true,send:p=>sent=p});const first=sender.publish({sourceBoundary:8207,words:row(0,0,0)});await assert.rejects(sender.publish({sourceBoundary:8208,words:row(1,0,1)}),/one prefix/i);sender.acknowledge({kind:'native-selected-prefix-ack-v1',identity,sequence:0,recordCount:1});await assert.rejects(sender.publish({sourceBoundary:8208,words:row(1,0,1)}),/one prefix/i);assert.equal(await first,1);const next=sender.publish({sourceBoundary:8208,words:row(1,0,1)});assert.equal(sent.sequence,1);assert.equal(sent.firstRecord,1);abort.abort('cancelled');await assert.rejects(next,{name:'AbortError'});sender.dispose();});
 test('record count cap, roster tamper and decoder failure poison rejected packets',()=>{const receiver=createNativeSelectedPrefixReceiver({identity,slotToId:ids,isCurrent:()=>true,onRecords:()=>{throw Error('recipe invalid');}});const r=row(0,0,0);r[96]=999;assert.throws(()=>receiver.accept(packet(0,r)),/roster/);assert.throws(()=>receiver.accept(packet(0,row(0,0,0))),/recipe invalid/);assert.throws(()=>receiver.accept(packet(0,row(0,0,0))),{name:'AbortError'});});
 test('packet allocation cap and regressing source boundary reject before decoding',()=>{let decoded=0;const r=createNativeSelectedPrefixReceiver({identity,slotToId:ids,isCurrent:()=>true,onRecords(){decoded++;}});assert.throws(()=>r.accept(packet(0,new Uint32Array(17*4096))),/bounded/i);assert.equal(decoded,0);r.accept(packet(0,row(0,0,0),9000));assert.throws(()=>r.accept(packet(1,row(1,0,1),8999)),/Stale/);assert.equal(decoded,1);});
+
+test('signal cancellation capability is private, sender-specific and current-target-bound',async()=>{
+ const {isNativePrefixCancellationCapability}=await import('../build-sources/runtime/src/canonical-integer-transport/native-selected-prefix-protocol.mjs');
+ const a=new AbortController();let current=true;
+ const sender=createNativeSelectedPrefixSender({identity,signal:a.signal,isCurrent:()=>true,isCancellationCurrent:()=>current,send(){}});
+ const other=createNativeSelectedPrefixSender({identity,signal:a.signal,isCurrent:()=>true,send(){}});
+ assert.equal(isNativePrefixCancellationCapability(sender.cancellationCapability),true);assert.equal(isNativePrefixCancellationCapability({isCancellationError:()=>true}),false);
+ const pending=sender.publish({sourceBoundary:12288,words:row(0,0,0)});a.abort('RPC cancellation');let failure;try{await pending;}catch(e){failure=e;}
+ assert.equal(sender.cancellationCapability.isCancellationError(failure),true);assert.equal(other.cancellationCapability.isCancellationError(failure),false);
+ assert.equal(sender.cancellationCapability.isCancellationError(Object.assign(Error('RPC cancellation'),{name:'AbortError'})),false);
+ current=false;assert.equal(sender.cancellationCapability.isCancellationError(failure),false);sender.dispose();other.dispose();
+});
+for(const reason of['dispose','stale','timeout','send'])test('non-signal sender failure stays foreign after later abort: '+reason,async()=>{
+ const a=new AbortController(),foreign=Object.assign(Error('RPC cancellation'),{name:'AbortError'});
+ const sender=createNativeSelectedPrefixSender({identity,signal:a.signal,isCurrent:()=>reason!=='stale',acknowledgmentTimeoutMs:1,send(){if(reason==='send')throw foreign;}});
+ const pending=sender.publish({sourceBoundary:12288,words:row(0,0,0)});if(reason==='dispose')sender.dispose();let failure;try{await pending;}catch(e){failure=e;}
+ a.abort('RPC cancellation');assert.equal(sender.cancellationCapability.isCancellationError(failure),false);sender.dispose();
+});
+
+test('synchronous send failure racing owned signal cancellation preserves actual failure',async()=>{
+ const a=new AbortController(),failure=Object.assign(Error('postMessage failed'),{name:'AbortError'});
+ const sender=createNativeSelectedPrefixSender({identity,signal:a.signal,isCurrent:()=>true,send(){a.abort('RPC cancellation');throw failure;}});
+ let error;try{await sender.publish({sourceBoundary:12288,words:row(0,0,0)});}catch(e){error=e;}
+ assert.equal(error,failure);assert.equal(sender.cancellationCapability.isCancellationError(error),false);sender.dispose();
+});

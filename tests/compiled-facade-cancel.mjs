@@ -50,7 +50,7 @@ test('eager native selected activation retires before search and forwards exact 
  assert.deepEqual(modes,['selected']);assert.equal(runtime.status().residentMode,'selected');const search=await runtime.createSearchEngine(runtime.identity,{});assert.equal(await search.run({}),'search');assert.equal(first.destroyed,1);assert.deepEqual(modes,['selected','search']);const selected=await runtime.createSelectedEngine(runtime.identity,{},{});assert.equal(await selected.runRaw({},{}),'selected');assert.deepEqual(modes,['selected','search','selected']);await runtime.dispose();
 });
 
-const resetReceipt=sequence=>Object.freeze({kind:'native-selected-reset-receipt-v1',runSettled:true,gpuFenced:true,prefixDrained:true,mapsOpen:0,mutableStateReset:true,needsFullInputUpload:true,retainedPipelines:109,retainedBuffers:234,ownedBytes:9048004,disposed:false,destroyed:false,resetSequence:sequence});
+const resetReceipt=sequence=>Object.freeze({kind:'native-selected-reset-receipt-v1',runSettled:true,gpuFenced:true,prefixDrained:true,mapsOpen:0,mutableStateReset:true,needsFullInputUpload:true,retainedPipelines:109,retainedBuffers:234,ownedBytes:9051588,disposed:false,destroyed:false,resetSequence:sequence});
 async function reusableFixture(){
  const f=await fixture();let sequence=0;f.resetGate=null;f.resetCalls=0;f.receipt=null;
  Object.assign(f.children[0],{nativeReusableCancellation:true,async cancelAndReset(){f.resetCalls++;if(f.resetGate)await f.resetGate.promise;return f.receipt??resetReceipt(++sequence);}});
@@ -61,7 +61,7 @@ test('native reusable cancellation awaits run and reset, blocks admission, retai
  const run=f.view.runRaw({},{}),rejected=assert.rejects(run,{name:'AbortError'});await tick();
  const stop=r.cancelAndReset();assert.equal(r.cancelAndReset(),stop);await assert.rejects(r.createSelectedEngine(r.identity,{},{}),/still draining/);
  assert.equal(f.control.resetCalls,0);f.hook.runGate.resolve();await rejected;await tick();assert.equal(f.control.resetCalls,1);assert.equal(f.first.destroyed,0);
- f.control.resetGate.resolve();const receipt=await stop;assert.equal(receipt.ownedBytes,9048004);assert.equal(r.status().residentMode,'selected');
+ f.control.resetGate.resolve();const receipt=await stop;assert.equal(receipt.ownedBytes,9051588);assert.equal(r.status().residentMode,'selected');
  f.hook.runGate=null;assert.equal(await f.view.runRaw({},{}),'one');assert.equal((await r.cancelAndReset()).resetSequence,2);assert.equal(f.next.length,0);assert.equal(f.first.destroyed,0);await r.dispose();assert.equal(f.first.destroyed,1);
 });
 test('destructive cancellation requested during reset queues distinct true retirement',async()=>{

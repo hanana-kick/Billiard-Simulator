@@ -3,7 +3,9 @@ import {assertCompiledFrontendResourcePolicy} from './frontend-resource-policy.m
 /** One device-global operation queue and memory ledger for search + selected.
  * A cancelled task retains the lock until its owner has actually drained. */
 const coordinators=new WeakSet(),devices=new WeakMap();
-const abortError=reason=>{const e=Error(String(reason??'GPU operation cancelled'));e.name='AbortError';return e;};
+const ownedCancellations=new WeakSet();
+export const isCompiledCoordinatorCancellation=error=>ownedCancellations.has(error);
+const abortError=reason=>{const e=Error(String(reason??'GPU operation cancelled'));e.name='AbortError';ownedCancellations.add(e);return e;};
 export function assertWasmGpuDeviceCoordinator(value,device){if(!coordinators.has(value)||device&&value.device!==device)throw TypeError('Owned matching GPU device coordinator required');return value;}
 /** Exact compiled profile policy, not caller-selected raised limits. The original
  * source coordinator and its 16/8/12 MiB caps remain unchanged. */

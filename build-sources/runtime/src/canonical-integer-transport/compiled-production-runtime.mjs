@@ -9,13 +9,14 @@ import {createComputeGenerationFacade} from '../wasm-gpu/compute-generation-faca
 import {WASM_GPU_BUILD_CONFIGURATION} from '../wasm-gpu/build-configuration.mjs';
 import {LIVE_WORLD_UPLOAD_SOURCE_SEALED,LIVE_WORLD_UPLOAD_SOURCE_REVISION} from '../direct-candidate/experimental-live-world-build-seal.mjs';
 import {createWasmGpuInputLibrary,assertIntegrityVerifiedWasmGpuInputLibrary} from '../wasm-gpu/input-library.mjs';
-import {createCompiledWorkerCoordinator} from './compiled-device-coordinator.mjs';
+import {createCompiledWorkerCoordinator,isCompiledCoordinatorCancellation} from './compiled-device-coordinator.mjs';
 import {createSealedWorkerOwnerEndpoint,assertWorkerOwnerEndpoint} from '../wasm-gpu/worker-owner-client.mjs';
 import {createWasmGpuCompactSearchBackendHarness} from './compiled-compact-search-backend.mjs';
 import {createWasmGpuSelectedSessionBackendHarness} from './compiled-selected-session-backend.mjs';
 import {createCanonicalPreparationScope} from '../direct-candidate/canonical-page-preparation.mjs';
 const runtimes=new WeakMap(),MiB=1024*1024;
-const abortError=reason=>{const e=Error(String(reason??'WASM runtime preparation cancelled'));e.name='AbortError';return e;};
+const ownedAborts=new WeakSet(),selectedAborts=new WeakSet();
+const abortError=reason=>{const e=Error(String(reason??'WASM runtime preparation cancelled'));e.name='AbortError';ownedAborts.add(e);return e;};
 export function assertWasmGpuProductionRuntime(runtime,device){const owned=runtimes.get(runtime);if(!owned||device&&owned.device!==device)throw TypeError('Owned sealed WASM GPU production runtime required');return runtime;}
 function configuration(){
  const c=WASM_GPU_BUILD_CONFIGURATION;
@@ -64,6 +65,7 @@ async function createWorkerGenerationRuntime(options={},shared={}){
  const wrap=item=>Object.freeze({requiresExclusiveDevice:true,ownsRaw:true,...(item.group==='selected'?{selected:true}:{}),
   run(args){if(item.destroyed)throw Error('WASM program owner disposed');return coordinator.run(({signal})=>item.owner.run({...args,signal}),{signal:args.signal,onCancel:reason=>item.owner.cancel(reason)});},
   cancel(reason){return item.owner.cancel(reason);},
+  settleSupersededRun(target){if(item.destroyed||item.group!=='selected')throw Error('Live selected owner required');return coordinator.run(()=>item.owner.settleSupersededRun(target),{cleanup:true});},
   resetAfterCancellation(){if(item.destroyed||item.group!=='selected'||typeof item.owner.resetAfterCancellation!=='function')throw Error('Native selected reset capability required');return coordinator.run(()=>item.owner.resetAfterCancellation(),{cleanup:true});},
   dispose(){if(item.destroyed)return Promise.resolve();return coordinator.run(()=>destroy(item),{cleanup:true});},
   status:()=>item.owner.status(),
@@ -118,14 +120,15 @@ async function createWorkerGenerationRuntime(options={},shared={}){
   async createSelectedEngine(otherDevice,binding,{request,candidate,strikeBackend='staged'}={}){
    open(otherDevice);if(strikeBackend!=='staged'||!request||!candidate)throw Error('Current owned selected request/candidate and staged backend required');let released=false,active=null;
    return Object.freeze({buildRevision:sourceRevision,preparation:'wasm-program-selected',requiresExclusiveDevice:true,buildSealed:true,integrityVerified:true,provenance:'sealed-source-wasm-selected',
-    async runRaw(batch,{signal,selectedTrace,selectedTraceMaxRecords,onPrefix}={}){
+    async runRaw(batch,{signal,selectedTrace,selectedTraceMaxRecords,onPrefix,onOwnedSelectedTarget}={}){
      open(device);if(released||active)throw Error('Selected view disposed or active');if(selectedTrace!==true||selectedTraceMaxRecords!==256)throw Error('Exact selected trace256 capsule required');
-     const ticket=selectedGeneration,abort=new AbortController(),relay=()=>abort.abort(signal.reason),scope=createCanonicalPreparationScope({signal:abort.signal});active=abort;
-     try{signal?.addEventListener('abort',relay,{once:true});if(signal?.aborted)relay();scope.check();const result=await withMode('selected',()=>selected.evaluate({request,candidate,binding,batch,maximumRecords:256,signal:scope.signal,onPrefix}),{check:()=>{scope.check();if(released||ticket!==selectedGeneration)throw abortError();}});open(device);scope.check();if(released||ticket!==selectedGeneration||abort.signal.aborted)throw abortError(abort.signal.reason);return Object.freeze({...result,buildSealed:true,integrityVerified:true,provenance:'sealed-source-wasm-selected',gpuExecutionQualified:false});}finally{try{signal?.removeEventListener('abort',relay);}finally{scope.dispose();active=null;}}
+     const ticket=selectedGeneration,abort=new AbortController(),relay=()=>abort.abort(signal.reason),scope=createCanonicalPreparationScope({signal:abort.signal});let scopeAbortedIndependently=scope.signal.aborted&&!abort.signal.aborted;scope.signal.addEventListener('abort',()=>{if(!abort.signal.aborted)scopeAbortedIndependently=true;},{once:true});const checkScope=()=>{try{scope.check();}catch(error){if(abort.signal.aborted&&!scopeAbortedIndependently&&error===scope.signal.reason)ownedAborts.add(error);throw error;}};active=abort;
+     try{signal?.addEventListener('abort',relay,{once:true});if(signal?.aborted)relay();checkScope();const result=await withMode('selected',()=>selected.evaluate({request,candidate,binding,batch,maximumRecords:256,signal:scope.signal,onPrefix,onOwnedSelectedTarget:onOwnedSelectedTarget===undefined?undefined:target=>onOwnedSelectedTarget(Object.freeze({settle:target.settle,acceptsCancellationFailure:error=>!scopeAbortedIndependently&&(ownedAborts.has(error)||isCompiledCoordinatorCancellation(error)||target.acceptsCancellationFailure(error))}))}),{check:()=>{checkScope();if(released||ticket!==selectedGeneration)throw abortError();}});open(device);checkScope();if(released||ticket!==selectedGeneration||abort.signal.aborted)throw abortError(abort.signal.reason);return Object.freeze({...result,buildSealed:true,integrityVerified:true,provenance:'sealed-source-wasm-selected',gpuExecutionQualified:false});}catch(error){if(!scopeAbortedIndependently&&(ownedAborts.has(error)||isCompiledCoordinatorCancellation(error)||selected.isOwnedCancellation(error)))selectedAborts.add(error);throw error;}finally{try{signal?.removeEventListener('abort',relay);}finally{scope.dispose();active=null;}}
     },
     dispose(){released=true;active?.abort('Selected view disposed');},
    });
   },
+  isOwnedSelectedCancellation:error=>selectedAborts.has(error),
   nativeReusableCancellation:true,
   cancelAndReset(reason){if(disposed||residentMode!=='selected')return Promise.reject(Error('Prepared selected mode required for reusable reset'));cancelSelected(reason);return modeTail.then(()=>selected.cancelAndReset(reason));},
   cancelSearch,cancelSelected,cancel,dispose,status:()=>Object.freeze({disposed,sourceRevision,residentMode,modeEpoch,coordinator:coordinator.status()}),

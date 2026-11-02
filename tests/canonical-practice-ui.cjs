@@ -20,7 +20,7 @@ test('cancel before load or during async import never starts the replacement gam
 });
 test('confirmed handoff forwards exact controller and cancellation signal and preserves failure',async()=>{
  const {loadAndStartCanonicalPractice}=await import('../src/components/canonical-practice-action.mjs'),controller={},abort=new AbortController();let calls=0;
- const value=await loadAndStartCanonicalPractice(controller,abort.signal,async()=>({startCanonicalPractice(c,options){calls++;assert.equal(c,controller);assert.equal(options.signal,abort.signal);assert.equal(options.selectedWorldProfile,'mmq2-cushion');return 'installed';}}));assert.equal(calls,1);assert.equal(value,'installed');
+ const owner={setManualPreparationEnabled(value){assert.equal(value,true);return true;}};const value=await loadAndStartCanonicalPractice(controller,abort.signal,async()=>({startCanonicalPractice(c,options){calls++;assert.equal(c,controller);assert.equal(options.signal,abort.signal);assert.equal(options.selectedWorldProfile,'mmq2-cushion');c.canonicalPlayback=owner;return owner;}}));assert.equal(calls,1);assert.equal(value,owner);
  await assert.rejects(()=>loadAndStartCanonicalPractice(controller,abort.signal,async()=>({})),/모듈/);
  await assert.rejects(()=>loadAndStartCanonicalPractice(controller,abort.signal,async()=>({startCanonicalPractice(){throw Error('GPU unavailable');}})),/GPU unavailable/);
 });
@@ -32,8 +32,8 @@ test('real UI requires explicit confirm and aborts dismissal/unmount with access
 
 test('one public GPU mode defaults to ball and cushion; legacy choice cannot load a device',async()=>{
  const {loadAndStartCanonicalPractice}=await import('../src/components/canonical-practice-action.mjs');let loads=0;
- const load=async()=>{loads++;return {startCanonicalPractice(c,options){return options.selectedWorldProfile;}}};
- assert.equal(await loadAndStartCanonicalPractice({},undefined,load),'mmq2-cushion');
+ let selectedProfile;const load=async()=>{loads++;return {startCanonicalPractice(c,options){selectedProfile=options.selectedWorldProfile;const owner={setManualPreparationEnabled(){return true;}};c.canonicalPlayback=owner;return owner;}}};
+ await loadAndStartCanonicalPractice({},undefined,load);assert.equal(selectedProfile,'mmq2-cushion');
  for(const profile of ['mmq1-ball-ball','unknown'])await assert.rejects(()=>loadAndStartCanonicalPractice({},undefined,load,profile),/통합 모드/);assert.equal(loads,1);
  const source=fs.readFileSync(path.join(root,'src/components/canonical-practice-entry.tsx'),'utf8');for(const text of ['바인딩 10개','미지원·미완료를 실패로 바꾸지 않습니다','초기 9개는 3개씩','최대 배치 폭은 3개','최대 4096개를 대기열로','자동 GPU 검증 미완료','수동 테스트용'])assert.ok(source.includes(text),text);
  assert.doesNotMatch(source,/canonicalPracticeProfile|MMQ[12]|mmq[12]|최대 16개/);
@@ -58,13 +58,13 @@ test('durable device-loss alert renders localized stage and original compile/com
 test('preparation forwarding drops late progress after cancel, failure and completed handoff',async()=>{
  const {loadAndStartCanonicalPractice}=await import('../src/components/canonical-practice-action.mjs');
  for(const ending of ['cancel','failure','success']){
-  const abort=new AbortController(),seen=[];let callback,resolve,reject,entered;
+  const abort=new AbortController(),seen=[],controller={},owner={setManualPreparationEnabled(){return true;}};let callback,resolve,reject,entered;
   const started=new Promise(r=>entered=r),wait=new Promise((a,b)=>{resolve=a;reject=b;});
-  const result=loadAndStartCanonicalPractice({},abort.signal,async()=>({startCanonicalPractice(c,o){callback=o.onProgress;entered();return wait;}}),undefined,p=>seen.push(p));
+  const result=loadAndStartCanonicalPractice(controller,abort.signal,async()=>({startCanonicalPractice(c,o){c.canonicalPlayback=owner;callback=o.onProgress;entered();return wait;}}),undefined,p=>seen.push(p));
   await started;callback({stage:'compile-start',pipelineIndex:1});assert.equal(seen.length,1);
-  if(ending==='cancel'){abort.abort();callback({pipelineIndex:2});resolve();await result;}
+  if(ending==='cancel'){abort.abort();callback({pipelineIndex:2});resolve(owner);await assert.rejects(result,{name:'AbortError'});}
   else if(ending==='failure'){const rejected=assert.rejects(result,/failed/);reject(Error('failed'));await rejected;}
-  else {resolve();await result;}
+  else {resolve(owner);await result;}
   callback({pipelineIndex:3});assert.equal(seen.length,1);
  }
 });
@@ -77,3 +77,11 @@ test('preparation status describes program slots rather than claiming fresh nati
  const source=fs.readFileSync(path.join(root,'src/components/canonical-practice-entry.tsx'),'utf8');
  assert.match(source,/if\(pending.current!==request\|\|request.signal.aborted\)return\s+setProgress/);assert.ok(source.includes('setProgress(null)'));
 });
+
+test('idle precompute defaults ON only after successful explicit entry, without awaiting background completion',async()=>{
+ const{loadAndStartCanonicalPractice,setCanonicalManualPreparation}=await import('../src/components/canonical-practice-action.mjs');for(const preference of[undefined,false,true]){const c={},events=[],owner={setManualPreparationEnabled(v){events.push(['enable',v]);return true;}};let resolve;const starting=new Promise(r=>resolve=r),result=loadAndStartCanonicalPractice(c,undefined,async()=>({async startCanonicalPractice(){events.push(['start']);await starting;c.canonicalPlayback=owner;return owner;}}),undefined,undefined,preference);await new Promise(r=>setImmediate(r));assert.deepEqual(events,[['start']]);resolve();assert.equal(await result,owner);assert.deepEqual(events,[['start'],['enable',preference??true]]);assert.equal(setCanonicalManualPreparation(c,false),true);assert.equal(events.at(-1)[1],false);}
+});
+test('entry failure or late cancellation cannot silently enable precompute; refusal is explicit',async()=>{const{loadAndStartCanonicalPractice}=await import('../src/components/canonical-practice-action.mjs');let enabled=0;const c={},owner={setManualPreparationEnabled(){enabled++;return false;}};await assert.rejects(loadAndStartCanonicalPractice(c,undefined,async()=>({startCanonicalPractice(){throw Error('GPU failed');}})),/GPU failed/);assert.equal(enabled,0);await assert.rejects(loadAndStartCanonicalPractice(c,undefined,async()=>({startCanonicalPractice(){c.canonicalPlayback=owner;return owner;}})),/설정이 거부/);assert.equal(enabled,1);});
+test('visible control persists during active phases and is controlled by public state',()=>{const old=globalThis.CANONICAL_GPU_ENTRY_AVAILABLE;globalThis.CANONICAL_GPU_ENTRY_AVAILABLE=true;try{for(const phase of['ready','rest','calculating','playing','buffering','canceling']){const html=render({canonicalPlayback:{phase,manualPreparation:{enabled:true,state:'ready'}}});assert.match(html,/id="canonicalIdlePrecompute"/);assert.match(html,/현재 입력 준비됨/);assert.match(html,/정지 중에도 GPU를 사용합니다/);const control=html.match(/<button[^>]*id="canonicalIdlePrecompute"[^>]*>/)?.[0]??html.match(/<[^>]*id="canonicalIdlePrecompute"[^>]*>/)?.[0];assert.ok(control);if(!['ready','rest'].includes(phase))assert.match(control,/disabled/);}assert.doesNotMatch(render(),/id="canonicalIdlePrecompute"/);const s=fs.readFileSync(path.join(root,'src/components/canonical-practice-entry.tsx'),'utf8');assert.match(s,/useState\(true\)/);assert.match(s,/id="canonicalStartIdlePrecompute"/);assert.match(s,/모든 타격의 즉각 반응을 보장하지 않습니다/);assert.match(s,/setCanonicalManualPreparation\(controller,value\)/);}finally{globalThis.CANONICAL_GPU_ENTRY_AVAILABLE=old;}});
+test('Base UI switch supplied id addresses native checkbox; visible switch owns ARIA checked state',()=>{const old=globalThis.CANONICAL_GPU_ENTRY_AVAILABLE;globalThis.CANONICAL_GPU_ENTRY_AVAILABLE=true;try{for(const enabled of[true,false]){const html=render({canonicalPlayback:{phase:'ready',manualPreparation:{enabled,state:enabled?'ready':'disabled'}}});const visible=html.match(/<span[^>]*role="switch"[^>]*>/)?.[0],input=html.match(/<input[^>]*id="canonicalIdlePrecompute"[^>]*>/)?.[0];assert.ok(visible);assert.ok(input);assert.match(visible,new RegExp('aria-checked="'+enabled+'"'));assert.match(visible,/aria-label="유휴 GPU 타격 미리 계산"/);assert.match(input,/type="checkbox"/);assert.match(input,/aria-hidden="true"/);assert.equal(/\schecked(?:=""|>)/.test(input),enabled);assert.doesNotMatch(input,/aria-checked/);}}finally{globalThis.CANONICAL_GPU_ENTRY_AVAILABLE=old;}});
+test('V7 public preparation budget is explicitly five minutes while shot watchdog disclosure remains unchanged',()=>{const source=fs.readFileSync(path.join(root,'src/components/canonical-practice-entry.tsx'),'utf8');assert.match(source,/최초 준비와 재준비는 최대 5분/);assert.match(source,/최초 준비·재준비를 최대 5분/);assert.match(source,/넘으면 실패로 중단/);assert.match(source,/진행 표시와 취소 요청/);assert.match(source,/완료 청크의 진행이 10분 동안 없거나 전체 계산이 30분을 넘으면/);assert.match(source,/모든 타격의 즉각 반응을 보장하지 않습니다/);});

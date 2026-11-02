@@ -1,3 +1,4 @@
+import {preserveSelectedFailure} from './selected-failure-preservation.mjs';
 /** Experimental selected-shot orchestration only. No application/default switch,
  * search batching, checkpoint restore, Rapier fallback, or CPU physics replay. */
 import {createCanonicalEpochGate, createCanonicalRequest, createCanonicalCandidate,
@@ -37,7 +38,7 @@ function core(device, runtime, implementation, selectedWorldProfile = 'mmq1-ball
     cancel(reason = 'cancelled') { gate.cancel(reason); },
     dispose() { disposed = true; gate.cancel('disposed'); return submissionTail; },
     async runSelected({request: requestOptions, candidateId, settings, raw, continuation,
-      maximumRecords = 128, strikeBackend = 'staged', signal,onPrefix} = {}) {
+      maximumRecords = 128, strikeBackend = 'staged', signal,onPrefix,speculativeSelection} = {}) {
       assertOpen();
       if (signal?.aborted) throw new DOMException('Cancelled', 'AbortError');
       // A new attempted scene/rule request invalidates the previous result even
@@ -63,10 +64,10 @@ function core(device, runtime, implementation, selectedWorldProfile = 'mmq1-ball
       // Preserve the existing MMQ1 contract; opt-in receipts cannot be mistaken
       // for MMQ1 by consumers comparing the complete result identity.
       const identity = mmq2 ? Object.freeze({...gateIdentity, selectedWorldProfile}) : gateIdentity;
-      const current = () => { assertOpen(); if (signal?.aborted) throw error('CANCELLED', 'Discard externally cancelled output'); gate.assertCurrent(gateIdentity); };
+      const ownedCurrentCancellations=new WeakSet(); const current = () => { assertOpen(); if (signal?.aborted) { const e=error('CANCELLED', 'Discard externally cancelled output'); ownedCurrentCancellations.add(e); throw e; } gate.assertCurrent(gateIdentity); };
       const cancel = () => { if (gate.validate(gateIdentity).ok) gate.cancel(signal.reason ?? 'cancelled'); };
       signal?.addEventListener('abort', cancel, {once: true});
-      let releaseTurn,engine,resultReady=false;
+      let releaseTurn,engine,resultReady=false,pendingFailure,hasPendingFailure=false;
       try {
         if (signal?.aborted) cancel();
         current();
@@ -87,7 +88,7 @@ function core(device, runtime, implementation, selectedWorldProfile = 'mmq1-ball
         current();
         engine = await runtime.createEngine(device, binding, {request,candidate,strikeBackend: input.strikeBackend});
         current();
-        const run = await engine.runRaw(batch, {signal: epoch.signal, selectedTrace: true, selectedTraceMaxRecords: input.maximumRecords,onPrefix:onPrefix===undefined?undefined:prefix=>{current();prefix.assertCurrent();if(typeof onPrefix!=='function'||prefix.complete!==false)throw TypeError('Nonfinal prefix callback required');const receipt=Object.freeze({kind:'canonical-session-selected-prefix-v1',identity,traceSourceIdentity:prefix.identity,startTick:prefix.startTick,certifiedThroughTick:prefix.certifiedThroughTick,recordCount:prefix.recordCount,normalizedRecordCount:prefix.normalizedRecordCount,complete:false,physicsResultComplete:false,scoreAndTurnCommitted:false,assertCurrent(){current();prefix.assertCurrent();},sampleAt(tick,options){current();prefix.assertCurrent();return prefix.sampleAt(tick,options);},presentAt(tick,present,options){current();return prefix.presentAt(tick,sample=>{current();present(sample);current();},options);}});const value=onPrefix(receipt);if(value&&typeof value.then==='function')throw TypeError('Synchronous presentation prefix callback required');current();}});
+        const run = await engine.runRaw(batch, {speculativeSelection,signal: epoch.signal, selectedTrace: true, selectedTraceMaxRecords: input.maximumRecords,onPrefix:onPrefix===undefined?undefined:prefix=>{current();prefix.assertCurrent();if(typeof onPrefix!=='function'||prefix.complete!==false)throw TypeError('Nonfinal prefix callback required');const receipt=Object.freeze({kind:'canonical-session-selected-prefix-v1',identity,traceSourceIdentity:prefix.identity,startTick:prefix.startTick,certifiedThroughTick:prefix.certifiedThroughTick,recordCount:prefix.recordCount,normalizedRecordCount:prefix.normalizedRecordCount,complete:false,physicsResultComplete:false,scoreAndTurnCommitted:false,assertCurrent(){current();prefix.assertCurrent();},sampleAt(tick,options){current();prefix.assertCurrent();return prefix.sampleAt(tick,options);},presentAt(tick,present,options){current();return prefix.presentAt(tick,sample=>{current();present(sample);current();},options);}});const value=onPrefix(receipt);if(value&&typeof value.then==='function')throw TypeError('Synchronous presentation prefix callback required');current();}});
         current();
         const status = run?.rawHandoffStatus;
         if (!(status instanceof Uint32Array) || status.length !== 16 || status[0] !== candidate.candidateId ||
@@ -133,8 +134,8 @@ function core(device, runtime, implementation, selectedWorldProfile = 'mmq1-ball
           sample(tick, options) { current(); const sample = runtime.sample(trace.trace, tick, options); current(); return own(sample); },
           assertCurrent: current,
         });
-      } catch (failure) { current(); throw failure; }
-      finally { try { await engine?.dispose?.(); if(resultReady)current(); } finally { releaseTurn?.(); signal?.removeEventListener('abort', cancel); } }
+      } catch (failure) { hasPendingFailure=true; pendingFailure=failure; try { current(); } catch (authorityFailure) { pendingFailure=preserveSelectedFailure(failure, authorityFailure, 'session authority changed',ownedCurrentCancellations.has(authorityFailure)); } throw pendingFailure; }
+      finally { try { await engine?.dispose?.(); if(resultReady)current(); } catch(cleanupFailure) { if(hasPendingFailure)throw preserveSelectedFailure(pendingFailure,cleanupFailure,'session cleanup failed'); throw cleanupFailure; } finally { releaseTurn?.(); signal?.removeEventListener('abort', cancel); } }
     },
   });
 }
