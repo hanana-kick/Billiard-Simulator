@@ -17,7 +17,7 @@ function timingHarness(){
  const worker={postMessage:m=>messages.push(m),terminate(){}};
  const c=new context.LabController();c.lab=lab;c.renderer=new context.WorkerRenderer(canvas,worker);c.state.previewCueVisible=true;c.state.predict=false;
  c.notify=()=>{c.dirty=true};c.finishGameShot=c.renderSide=c.updateHandles=c.scheduleFrame=()=>{};
- return {c,context,messages,draws,time:n=>now=n,frame(n){now=n;c.frame(n)},complete(id){worker.onmessage({data:{type:'frame',id,bitmap:{close(){}},renderMs:3}})}};
+ return {c,context,messages,draws,time:n=>now=n,frame(n){now=n;c.frame(n)},complete(id){const message=messages.find(m=>m.id===id);assert.ok(message,'Matching submitted render frame required');worker.onmessage({data:{type:'frame',id,bitmap:{width:Math.round(message.size.width*message.size.dpr),height:Math.round(message.size.height*message.size.dpr),close(){}},renderMs:3}})}};
 }
 
 test('worker input timing ends at its matching canvas draw, not submit or completion',()=>{

@@ -4,7 +4,7 @@ import{createWasmGpuInputLibrary}from'compiled-app-runtime/wasm-gpu/input-librar
 import{snapshotGPUEnvironment}from'compiled-app-runtime/wasm-gpu/gpu-execution-diagnostics.mjs';
 import{loadCompiledFrontendResourcePolicy}from'compiled-app-runtime/canonical-integer-transport/frontend-resource-policy.mjs';
 import{createExperimentalCompiledInputLibrary}from'compiled-app-runtime/canonical-integer-transport/compiled-program-library.mjs';
-import{createCompiledSelectedInputLibrary}from'compiled-app-runtime/canonical-integer-transport/selected-program-library.mjs';
+import{createNativeSelectedInputLibrary}from'compiled-app-runtime/canonical-integer-transport/native-selected-library.mjs';
 import{createCompiledAppWorkerProtocol}from'compiled-app-runtime/canonical-integer-transport/compiled-app-worker-protocol.mjs';
 let protocol=null,initialized=false,initializing=false,diagnostics=null;
 const send=message=>{const transfers=[];const visit=x=>{if(!x||typeof x!=='object')return;if(ArrayBuffer.isView(x)){if(x.buffer instanceof ArrayBuffer&&!transfers.includes(x.buffer))transfers.push(x.buffer);return;}for(const v of Object.values(x))visit(v);};visit(message);self.postMessage(message,transfers);};
@@ -28,7 +28,7 @@ self.onmessage=async event=>{if(initialized){void protocol.handle(event.data);re
  const loadCompiledLibrary=async(key,{signal}={})=>{const p=PINS.programs[key];if(!p||!['search-N1','search-N3','selected-N1'].includes(key))throw Error('Unregistered compiled profile');
   const manifestBytes=await asset(base,p.manifestFile,p.manifestSHA256,1024*1024,signal),compiledBytes=await asset(base,p.artifactFile,p.artifactSHA256,p.artifactByteLength,signal);
   const options={inputLibrary,manifestBytes,compiledBytes,expectedManifestSHA256:p.manifestSHA256,expectedPhysicsSourceRevision:PINS.physicsSourceRevision,expectedCompilerRevision:p.compilerRevision,expectedRuntimeRevision:PINS.runtimeRevision,signal};
-  return key==='selected-N1'?createCompiledSelectedInputLibrary(options):createExperimentalCompiledInputLibrary(options);
+  return key==='selected-N1'?createNativeSelectedInputLibrary({...options,expectedTransformRevision:p.transformRevision}):createExperimentalCompiledInputLibrary(options);
  };
  protocol=await createCompiledAppWorkerProtocol({inputLibrary,resourcePolicy,moduleBytes,loadCompiledLibrary,initialGeneration:m.generation,send,getDeviceDiagnostics:()=>diagnostics,requestDevice:async signal=>{
   if(signal.aborted)throw new DOMException('Cancelled','AbortError');if(!navigator.gpu)throw Error('Worker WebGPU unavailable');const adapter=await navigator.gpu.requestAdapter();if(signal.aborted)throw new DOMException('Cancelled','AbortError');if(!adapter||adapter.limits.maxStorageBuffersPerShaderStage<10)throw Error('Worker requires ten storage bindings');

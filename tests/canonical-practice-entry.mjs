@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {createRequire} from 'node:module';
-import {createCanonicalPracticePreset,startCanonicalPracticeInternal,canonicalSearchLossTiming} from '../src/direct-candidate/canonical-practice-entry.mjs';
+import {createCanonicalPracticePreset,startCanonicalPracticeInternal,canonicalSearchLossTiming} from '../build-sources/runtime/src/canonical-integer-transport/compiled-practice-entry.mjs';
 const require=createRequire(import.meta.url),R=require('../vendor/rapier.cjs');await R.init();globalThis.RAPIER=R;
 for(const name of ['math','physics','game-rules','render-cadence','controller'])require('../src/'+name+'.js');
 const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return {resolve,promise};};
@@ -193,4 +193,25 @@ test('loss outside active search does not label old progress as current search e
  f.c.state.routeStatus='idle';f.c.state.routeProgress={elapsedMs:100,searchStartedAtMs:0,sampledAtMs:0};f.lost.resolve({reason:'unknown',message:'idle loss'});await Promise.resolve();
  assert.equal('searchElapsedAtLossMs'in f.c.state.canonicalPlayback.deviceLoss,false);assert.doesNotMatch(f.c.state.routeError,/손실 통지 수신 시 탐색 경과/);
  }finally{f.cleanup();}
+});
+
+// Negative cleanup qualification only: never synthesize successful native ACK.
+test('device loss preserves exact false cleanup qualification and leaves missing or nonfalse unclaimed',async()=>{
+ for(const sample of [{cleanupVerified:false},{},{cleanupVerified:true},{cleanupVerified:'false'},{cleanupVerified:null}]){
+  const f=fixture();let canceled=0,requested=0;try{
+   await startCanonicalPracticeInternal(f.c,{requestDevice:async()=>{requested++;return f.device;},install(c){const owner={cancel(){canceled++;}};c.state.canonicalPlayback={phase:'playing'};c.canonicalPlayback=owner;return owner;}});
+   f.lost.resolve({reason:'unknown',message:'original native loss',...sample});await Promise.resolve();
+   const d=f.c.state.canonicalPlayback.deviceLoss,has=sample.cleanupVerified===false;
+   assert.equal(Object.hasOwn(d,'cleanupVerified'),has);assert.equal(Object.hasOwn(JSON.parse(JSON.stringify(d)),'cleanupVerified'),has);if(has)assert.equal(d.cleanupVerified,false);
+   assert.equal(d.reason,'unknown');assert.equal(d.message,'original native loss');assert.equal(d.phase,'playing');assert.ok(Object.isFrozen(d));assert.equal(canceled,1);assert.equal(requested,1);assert.equal(f.c.state.routeStatus,'error');assert.equal(f.c.state.canonicalPlayback.deviceLost,true);assert.equal(f.destroyed,0);
+  }finally{f.cleanup();}
+ }
+});
+
+test('normal UI action enables idle preparation after actual entry and compiled controller installation without waiting for a shot',async()=>{
+ const {loadAndStartCanonicalPractice,setCanonicalManualPreparation}=await import('../src/components/canonical-practice-action.mjs');
+ const {installCanonicalControllerHarness}=await import('../build-sources/runtime/src/canonical-integer-transport/compiled-controller-integration.mjs');
+ const f=fixture();let calculations=0;f.c.renderer={render(){},isFallback:false};f.c.scheduleFrame=()=>{};
+ const session={selectedWorldProfile:'mmq2-cushion',capabilities:{selectedWorldProfile:'mmq2-cushion'},cancel(){},runSelected(){calculations++;throw Error('No physics in HOST entry test');}};
+ try{const owner=await loadAndStartCanonicalPractice(f.c,undefined,async()=>({startCanonicalPractice(c,options){return startCanonicalPracticeInternal(c,{...options,requestDevice:async()=>f.device,install:(controller,args)=>installCanonicalControllerHarness(controller,{...args,session})});}}));assert.equal(owner,f.c.canonicalPlayback);assert.equal(f.c.state.canonicalPlayback.manualPreparation.enabled,true);assert.equal(f.c.state.canonicalPlayback.phase,'ready');assert.equal(calculations,0);assert.equal(f.c.lab.shots,0);assert.equal(f.c.undoStack.length,0);assert.equal(setCanonicalManualPreparation(f.c,false),true);assert.equal(f.c.state.canonicalPlayback.manualPreparation.enabled,false);await new Promise(r=>setTimeout(r,180));assert.equal(calculations,0);}finally{f.cleanup();}
 });

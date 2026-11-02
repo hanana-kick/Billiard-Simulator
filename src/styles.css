@@ -222,3 +222,16 @@
 
 .scene-action { display: flex; flex-shrink: 0; justify-content: space-between; align-items: center; gap: 12px; padding-bottom: env(safe-area-inset-bottom); }
 .workspace-header h1 { font-size: 16px; font-weight: 600; }
+
+/* Reserve naturally wrapped status height throughout one active GPU shot.
+   Hidden alternatives remain layout-only; no clipped or fixed-height messages. */
+.canonical-shot-status-region { flex: 1 0 100%; min-width: 0; display: grid; gap: 8px; }
+.canonical-shot-status-messages, .canonical-shot-button-label { display: grid; min-width: 0; }
+.canonical-shot-status-messages > *, .canonical-shot-button-label > * { grid-area: 1 / 1; }
+.canonical-shot-message, .canonical-shot-pending { margin: 0; overflow-wrap: anywhere; }
+.canonical-shot-message[data-active="false"], .canonical-shot-pending[data-active="false"], .canonical-shot-button-label > [data-active="false"] { visibility: hidden; pointer-events: none; }
+.canonical-shot-count { display: inline-block; min-width: 3ch; text-align: right; font-variant-numeric: tabular-nums; }
+.canonical-shot-status-region > button { justify-self: start; }
+/* Short/narrow or enlarged-text viewports must keep every status and Cancel reachable. */
+.stage-region:has(.canonical-shot-status-region) { overflow-y: auto; overflow-x: hidden; }
+.stage-region:has(.canonical-shot-status-region) > .stage-toolbar { flex-shrink: 0; }

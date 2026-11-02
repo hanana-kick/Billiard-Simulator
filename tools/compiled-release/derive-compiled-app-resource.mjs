@@ -3,6 +3,9 @@ import fs from 'node:fs/promises';import path from 'node:path';import{pathToFile
 const sha=b=>createHash('sha256').update(b).digest('hex');
 export async function deriveCompiledAppResource(c){
  if(!['search','selected'].includes(c.kind)||![1,3].includes(c.count)||c.kind==='selected'&&c.count!==1)throw Error('Closed compiled app profile required');
+ if(c.kind==='selected'&&c.transport==='native-wgsl'){
+  const base=path.resolve(c.runtimeRoot,'src/canonical-integer-transport'),a=await import(pathToFileURL(path.join(base,'native-selected-program.mjs'))),bytes=new Uint8Array(await fs.readFile(c.artifactFile));const p=await a.loadNativeSelectedProgram(bytes,{expectedSHA256:c.artifactSHA256,expectedSourceRevision:c.physicsSourceRevision,expectedSelectedArtifactSHA256:c.selectedArtifactSHA256,expectedTransformRevision:c.transformRevision});return{kind:'selected',count:1,transport:'native-wgsl',compiledArtifactSHA256:c.artifactSHA256,transformRevision:p.transformRevision,sourceArtifacts:{selected:p.selectedArtifactSHA256},bufferBytes:p.resources.bufferBytes,readbackBytes:p.resources.readbackBytes,totalOwnedBytes:p.resources.totalOwnedBytes};
+ }
  for(const k of['artifactSHA256','compilerRevision','physicsSourceRevision'])if(!/^[a-f0-9]{64}$/.test(c[k]??''))throw Error('Independent expected '+k+' required');
  const base=path.resolve(c.runtimeRoot,'src/canonical-integer-transport'),bytes=new Uint8Array(await fs.readFile(c.artifactFile));if(sha(bytes)!==c.artifactSHA256)throw Error('External artifact pin mismatch');
  const expected={expectedSHA256:c.artifactSHA256,expectedCompilerRevision:c.compilerRevision,expectedSourceRevision:c.physicsSourceRevision,expectedCount:c.count};let pack,plan;
