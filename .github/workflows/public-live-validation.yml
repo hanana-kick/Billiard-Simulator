@@ -1,0 +1,48 @@
+name: Verify deployed CPU event-window v7 in the real public browser
+on:
+  push:
+    branches: ['validation/public-cpu-event-window-v7-20261104']
+permissions:
+  contents: read
+concurrency:
+  group: public-cpu-event-window-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  public-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      RUN_OUT: ${{ github.workspace }}/public-cpu-event-window-evidence
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify exact successful Pages deployment and source pins
+        run: node scripts/public-live-validation/verify-deployment.cjs
+      - run: npm ci --no-audit --no-fund
+      - name: Confirm preinstalled standard Chrome
+        run: google-chrome --version
+      - name: Test real public experimental UI with normal sandbox and TLS
+        timeout-minutes: 6
+        run: python3 scripts/public-live-validation/run-browser-bounded.py
+      - name: Require browser and owned-process cleanup success
+        run: |
+          node - <<'JS'
+          const fs=require('node:fs'),assert=require('node:assert/strict'),p=process.env.RUN_OUT;
+          const browser=JSON.parse(fs.readFileSync(p+'/public-result.json'));
+          const timing=JSON.parse(fs.readFileSync(p+'/browser-timing.json'));
+          assert.equal(browser.passed,true);assert.equal(browser.cases.length,3);assert.ok(browser.cases.every(c=>c.passed));
+          assert.equal(timing.passed,true);assert.equal(timing.liveProcessCleanupVerified,true);assert.deepEqual(timing.remainingLiveOwnedProcesses,[]);
+          JS
+      - name: Preserve browser, source, font, score, and cleanup evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-cpu-event-window-v7-evidence
+          path: public-cpu-event-window-evidence/
+          if-no-files-found: warn
+          retention-days: 14
