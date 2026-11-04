@@ -203,7 +203,7 @@ function begin(R,req,topology,settings,options={}){
  }
  const expected=expectedEvents(topology),strictReq={...req,testBudget:true,settings:{...req.settings,elevation:settings.elevation},options:{...req.options,budget:1,elevationMode:'fixed',inputStrategy:'hybrid',targetId:topology.firstId??req.options.targetId,secondId:topology.secondId??req.options.secondId,methodId:topology.method??req.options.methodId,methods:undefined}};
  G.ShotSearchCore.validate(strictReq);
- const e={...createObservation(topology),req,settings:{...settings},expected,topologyId:topology.id||topology.topologyId||JSON.stringify(expected),purpose:options.purpose||'evaluate',done:false,disposed:false,inequalities:inputInequalities(req,settings)};
+ const e={...createObservation(topology),req,settings:{...settings},expected,topologyId:topology.id||topology.topologyId||JSON.stringify(expected),purpose:options.purpose||'evaluate',eventPrefixOnly:options.eventPrefixOnly===true,done:false,disposed:false,inequalities:inputInequalities(req,settings)};
  if(finalizationPolicy?.effective==='final-gameplay-verify'){e.finalizationPolicy=finalizationPolicy;e.finalizationIdentity=G.LabSourceFinalizationRequest.evaluationBindingFor(options.finalizationAdmission,req,topology,settings,'verify');}
  // A feasibility query observes geometry only. It never launches a candidate
  // or certifies a shot; an independent normal stroke/replay remains required.
@@ -256,6 +256,15 @@ function advance(e,stepBatch=240){
   for(let i=0;i<stepBatch&&!e.done;i++){
    e.done=e.finalizationOwner?G.LabSourceGameplayFinalizationOwner.advance(e.finalizationOwner,complete=>finalizationRoute(e,complete)):G.ShotSearchCore.stepTrial(e.search,e.trial,1);
    if(e.finalizationOwner&&e.unavailable){e.finalizationReceipt=G.LabSourceGameplayFinalizationOwner.interrupt(e.finalizationOwner,'unsupported',e.unavailable);e.done=true;}
+   // The observer freezes the active residual at the first wrong event. Later
+   // motion cannot repair an ordered-prefix mismatch. Root probes need only
+   // this exact prefix, not a speculative complete gameplay outcome. Require
+   // the first object impact too: contactCell otherwise depends on the future.
+   // Explicit
+   // verify and finalization-owner evaluations ALWAYS retain their full run.
+   if(e.eventPrefixOnly&&!e.done&&((e.mismatch&&e.firstImpact)||e.eventPrefix===e.expected.length)&&['residual','jacobian','trial'].includes(e.purpose)&&!e.finalizationOwner){
+    e.prefixOnly=true;e.done=true;
+   }
    // Observation already ran after EACH underlying solver step, including
    // every cue substep. Never replay the final impulse at the outer boundary.
   }
@@ -269,7 +278,10 @@ function finish(e){
  let physicalResult=null;
  if(e.trial){
   restoreObserver(e);
-  if(e.finalizationOwner){
+  if(e.prefixOnly){
+   // Do not ask finishTrial to score a truncated world or label it a full miss.
+   e.trial.lab.dispose();
+  }else if(e.finalizationOwner){
    physicalResult=G.ShotSearchCore.physicalResult(e.search.req.options,e.trial,e.trial.lab.time);
    e.finalizationReceipt=e.finalizationReceipt||G.LabSourceGameplayFinalizationOwner.result(e.finalizationOwner);
    G.LabSourceGameplayFinalizationOwner.restore(e.finalizationOwner);e.trial.lab.dispose();
@@ -277,7 +289,10 @@ function finish(e){
   e.disposed=true;
  }
  const result=projectResult(e,physicalResult,e.trial?.steps||0);
- if(!e.finalizationPolicy)return e.result=result;
+ if(!e.finalizationPolicy)return e.result=e.prefixOnly?{...result,
+  physicalResult:null,goalVerified:false,verified:false,completePhysicalReplay:false,
+  prefixOnly:true,physicalGoal:result.topologyMatched&&e.inequalities.every(v=>Number.isFinite(v)&&v<=0),
+  terminationReason:result.topologyMatched?'ordered-topology-complete-needs-replay':'irreversible-ordered-topology-mismatch'}:result;
  const finalization=e.finalizationReceipt,qualified=finalization?.status==='verified-final-gameplay'&&finalization.gameplayVerified===true;
  if(!finalization)throw new Error('Missing terminal gameplay decision');
  if(qualified&&(!result.goalVerified||!result.physicalResult?.success))throw new Error('Final gameplay proof disagrees with original route projection');
