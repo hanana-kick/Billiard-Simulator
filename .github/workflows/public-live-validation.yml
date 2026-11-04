@@ -1,0 +1,59 @@
+name: Verify deployed public billiards with one worker
+on:
+  push:
+    branches: ['validation/public-live-search-one-worker-20261104']
+permissions:
+  contents: read
+concurrency:
+  group: public-live-validation-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  public-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PUBLIC_APP_URL: https://dangoo.hananakick.cc/
+      EXPECTED_INVERSE_SHA256: 8270056c7e65e4ced77f32b3568f57d07ba7fde68fa97565b4e8b4a128b3e167
+      EXPECTED_PHYSICS_SHA256: a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d
+      RUN_OUT: ${{ github.workspace }}/public-browser-one-worker-evidence
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Validate frozen deployed pins
+        run: |
+          node - <<'JS'
+          const fs=require('fs'),assert=require('assert/strict');const p=JSON.parse(fs.readFileSync('scripts/public-live-validation/deployed-pins.json'));
+          assert.equal(p.publicURL,'https://dangoo.hananakick.cc/');assert.match(p.deployedCommit||'',/^[a-f0-9]{40}$/);assert.match(String(p.deploymentRunId||''),/^[0-9]+$/);assert.match(p.htmlSha256||'',/^[a-f0-9]{64}$/);
+          fs.appendFileSync(process.env.GITHUB_ENV,`EXPECTED_DEPLOY_COMMIT=${p.deployedCommit}\nEXPECTED_DEPLOY_RUN_ID=${p.deploymentRunId}\nEXPECTED_HTML_SHA256=${p.htmlSha256}\n`);
+          JS
+      - name: Verify successful exact Pages deployment
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_DEPLOY_COMMIT" =~ ^[a-f0-9]{40}$ ]]
+          [[ "$EXPECTED_DEPLOY_RUN_ID" =~ ^[0-9]+$ ]]
+          [[ "$EXPECTED_HTML_SHA256" =~ ^[a-f0-9]{64}$ ]]
+          mkdir -p "$RUN_OUT"
+          curl --fail --show-error --retry 2 --retry-delay 2 --max-time 30 "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/runs/$EXPECTED_DEPLOY_RUN_ID" > "$RUN_OUT/deployment-run.json"
+          node - <<'JS'
+          const fs=require('fs'),assert=require('assert/strict');const r=JSON.parse(fs.readFileSync(process.env.RUN_OUT+'/deployment-run.json'));
+          assert.equal(r.head_sha,process.env.EXPECTED_DEPLOY_COMMIT);assert.equal(r.status,'completed');assert.equal(r.conclusion,'success');assert.equal(r.head_branch,'main');assert.equal(r.path,'.github/workflows/pages.yml');
+          JS
+      - run: npm ci --no-audit --no-fund
+      - name: Confirm preinstalled standard sandboxed Chrome
+        run: google-chrome --version
+      - name: Test the real public HTTPS site without interception
+        timeout-minutes: 6
+        run: python3 scripts/public-live-validation/run-browser-bounded.py
+      - name: Preserve public browser and cleanup evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-browser-one-worker-evidence
+          path: public-browser-one-worker-evidence/
+          if-no-files-found: warn
+          retention-days: 14
