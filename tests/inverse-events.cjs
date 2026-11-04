@@ -212,3 +212,29 @@ test('actual static clearance query preserves source snapshot and bounds without
   assert.equal(lab.shots,0);assert.deepEqual(Buffer.from(lab.world.takeSnapshot()),bytes);
  }finally{lab.dispose();}
 });
+
+test('native frame refreshes demanded cushion projection and detaches retained measurements',()=>{
+ const h=harness([{positions:{1:{x:.1,y:.03,z:0}}},{positions:{1:{x:.2,y:.03,z:0}}}],{success:false});
+ const e=h.api.begin(null,h.req,{events:[rail('x+')]},h.settings);
+ const wall=e.trial.lab.statics.find(x=>x.rail==='x+');let projections=0;const shared={point:{x:1,y:.03,z:0},isInside:false};
+ wall.collider.projectPoint=()=>{projections++;shared.point.x=1+projections;return shared;};
+ h.api.advance(e,1);assert.equal(projections,1);const first=e.nativeObservationFrame.rails.find(x=>x.rail==='x+').projection;
+ shared.point.x=999;assert.equal(first.point.x,2);h.api.advance(e,1);assert.equal(projections,2);
+ assert.equal(e.nativeObservationFrame.rails.find(x=>x.rail==='x+').projection.point.x,3);h.api.finish(e);
+ const objects=harness([{positions:{1:{x:.1,y:.03,z:0}}},{positions:{1:{x:.2,y:.03,z:0}}}],{success:false});
+ const oe=objects.api.begin(null,objects.req,{events:[object(2)]},objects.settings);objects.api.advance(oe,1);const measurement=oe.previousMeasurement;
+ objects.api.advance(oe,1);assert.equal(measurement.cue.x,.1);assert.equal(oe.previousMeasurement.cue.x,.2);objects.api.finish(oe);
+});
+test('native observation projection and contact errors propagate and dispose evaluation',()=>{
+ for(const kind of ['projection','contact']){
+  const h=harness([{}]);const e=h.api.begin(null,h.req,{events:[rail('x+')]},h.settings);
+  if(kind==='projection')e.trial.lab.statics.find(x=>x.rail==='x+').collider.projectPoint=()=>{throw Error('projection failed');};
+  else e.trial.lab.world.contactPair=()=>{throw Error('contact failed');};
+  assert.throws(()=>h.api.advance(e,1),new RegExp(kind+' failed'));assert.equal(e.disposed,true);assert.equal(h.disposed(),1);assert.equal(e.trial.lab.world.step,e.originalWorldStep);
+ }
+});
+test('native frame refreshes mutable cue and target radii and object identity',()=>{
+ const h=harness([{}],{success:false});const e=h.api.begin(null,h.req,{events:[object(2)]},h.settings);
+ e.cue.radius=.04;e.trial.lab.get(2).radius=.05;e.trial.lab.get(3).id=4;
+ h.api.advance(e,1);assert.equal(e.nativeObservationFrame.cue.radius,.04);assert.equal(e.nativeObservationFrame.objects[0].radius,.05);assert.equal(e.nativeObservationFrame.objects[1].id,4);h.api.finish(e);
+});

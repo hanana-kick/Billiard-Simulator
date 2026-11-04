@@ -1,0 +1,7 @@
+'use strict';
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),path=require('node:path'),root=path.resolve(__dirname,'..'),{createRequire}=require('node:module'),rq=createRequire(root+'/package.json'),R=rq('./vendor/rapier.cjs');
+for(const n of ['math','physics','game-rules','route-rules','route-sampler','optimizer-core','optimizer','inverse-geometry','inverse-solver','inverse-planner'])rq('./src/'+n+'.js');
+(async()=>{await R.init();const job=require('./fixtures/private-map-job.cjs');assert.ok(job);
+let disposed=0,restored=0;const dispose=PhysicsLab.prototype.dispose;PhysicsLab.prototype.dispose=function(){disposed++;assert.equal(Object.hasOwn(this.world,'mapNewSoftBodies'),false);assert.equal(Object.hasOwn(this.world.softBodies.raw,'insert'),false);assert.equal(this.world.step,R.World.prototype.step);restored++;return dispose.call(this);};
+let source=fs.readFileSync(__dirname+'/../src/inverse-events.js','utf8');const marker='function readNativeObservation(e,time,stepDt,initial=false){';assert.ok(source.includes(marker));source=source.replace(marker,marker+'\n if(initial)throw new Error("injected initial observation failure");');vm.runInThisContext(source,{filename:'initial-observation-fault-injection.js'});
+assert.throws(()=>LabInverseEvents.begin(R,job.req,job.topology,job.settings,{purpose:job.purpose}),/injected initial observation failure/);assert.equal(disposed,1);assert.equal(restored,1);console.log(JSON.stringify({passed:true,disposed,restored}));})().catch(e=>{console.error(e);process.exitCode=1});
