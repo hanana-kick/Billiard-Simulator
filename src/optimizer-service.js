@@ -119,6 +119,23 @@ class OptimizerService{
   this.retention.backgroundRecoverySteps=this.retainedState().inFlightSteps;
   this.suspended=false;this.releaseCooperative();return true;
  }
+ // Foreground coordinator yields remain tasks, but do not inherit the nested
+ // timer clamp. A channel belongs to one wake and is closed before resuming.
+ // Background pacing and main-thread fallback keep their existing timers.
+ cooperativeYield(id){
+  if(this.background||!this.coordinator||typeof G.MessageChannel!=='function')return new Promise(r=>setTimeout(r,this.background?4:0));
+  return new Promise(resolve=>{
+   let channel,settled=false;
+   const finish=()=>{if(settled)return;settled=true;this.taskYields?.delete(finish);if(channel){channel.port1.onmessage=null;channel.port1.close();channel.port2.close();}resolve();};
+   try{
+    channel=new G.MessageChannel();this.taskYields??=new Set();this.taskYields.add(finish);
+    channel.port1.onmessage=()=>{finish();};
+    if(id!==this.version){finish();return;}
+    channel.port2.postMessage(null);
+   }catch{if(channel){channel.port1.onmessage=null;channel.port1.close();channel.port2.close();}this.taskYields?.delete(finish);setTimeout(finish,0);}
+  });
+ }
+ releaseTaskYields(){for(const finish of this.taskYields||[])finish();}
  async fallback(req,id){
   let evaluation,evaluator,state,lastReport=0;
   const dispose=()=>{if(evaluation){if(evaluator)evaluator.dispose(evaluation);else evaluation.trial?.lab.dispose();evaluation=null;}if(this.cooperativeState===state)this.cooperativeState=null;};
@@ -138,13 +155,13 @@ class OptimizerService{
       const until=performance.now()+(this.background?8:this.coordinator?32:8),block=this.coordinator&&!this.background?64:16;
       do{done=job.kind==='inverse-constraint'?evaluator.advance(evaluation,block):G.ShotSearchCore.stepTrial(evaluation.search,evaluation.trial,block);}while(!done&&performance.now()<until);
       if(performance.now()-lastReport>160){this.report(false);lastReport=performance.now();}
-      if(!done)await new Promise(r=>setTimeout(r,this.background?4:0));
+      if(!done)await this.cooperativeYield(id);
       if(id!==this.version){dispose();return;}
      }
      this.outcomes.set(job.id,job.kind==='inverse-constraint'?evaluator.finish(evaluation):G.ShotSearchCore.finishCandidate(evaluation));evaluation=null;if(this.cooperativeState===state)this.cooperativeState=null;this.report(false);if(id!==this.version)return;
      if(this.handoffAfterEvaluation&&!this.background){this.handoffAfterEvaluation=false;if(this.outcomes.size===this.jobs.length&&this.completeWave())return;if(id!==this.version)return;this.queue=this.jobs.filter(j=>!this.outcomes.has(j.id));this.startPool(req,id,this.plan.requestedWorkers);return;}
     }
-    if(this.suspended)await this.cooperativeGate(id);if(id!==this.version)return;if(this.completeWave())return;if(['inverse-constraints','cpu-event-inverse','cpu-event-window-inverse'].includes(req.options.searchAlgorithm))await new Promise(r=>setTimeout(r,this.background?4:0));
+    if(this.suspended)await this.cooperativeGate(id);if(id!==this.version)return;if(this.completeWave())return;if(['inverse-constraints','cpu-event-inverse','cpu-event-window-inverse'].includes(req.options.searchAlgorithm))await this.cooperativeYield(id);
    }
   }catch(e){try{dispose();}catch{}this.fail(e,id);}
  }
@@ -173,7 +190,7 @@ class OptimizerService{
  }
  cancel(){
   const state=this.cooperativeState;if(state&&state.id===this.version&&!state.accounted){state.accounted=true;this.retryOverhead.tested++;this.retryOverhead.physicsSteps+=state.evaluation?.trial?.steps||state.evaluation?.steps||0;}
-  this.suspended=false;this.handoffAfterEvaluation=false;this.releaseCooperative();if(this.search&&this.latest)this.api?.pause?.(this.search);this.version++;this.stopWorkers();this.busy.clear();this.latest=null;this.recovering=null;}
+  this.suspended=false;this.handoffAfterEvaluation=false;this.releaseCooperative();if(this.search&&this.latest)this.api?.pause?.(this.search);this.version++;this.releaseTaskYields();this.stopWorkers();this.busy.clear();this.latest=null;this.recovering=null;}
  dispose(){this.cancel();}
 }
 G.OptimizerService=OptimizerService;G.OptimizerPool={workerLimit,workerPlan,mergeResults};
