@@ -1,0 +1,15 @@
+{
+  "frozenAtUTC":"2026-11-05T03:47:21Z",
+  "repetitions":4,
+  "recipes":[
+    {"name":"diagnostic-three-default","mode":"free","settings":{"angle":0,"elevation":8,"speed":2,"tipX":0,"tipY":0},"exposure":"previously observed diagnostic"},
+    {"name":"fresh-three-diagonal","mode":"free","moves":[[1,-0.82,-0.18],[2,0.32,0.27],[3,0.93,-0.31]],"settings":{"angle":12,"elevation":8,"speed":1.4,"tipX":0,"tipY":0},"exposure":"new frozen manual-shot layout"},
+    {"name":"fresh-three-upper-left","mode":"free","moves":[[1,-1.05,0.34],[2,-0.05,-0.22],[3,0.88,0.19]],"settings":{"angle":-18,"elevation":30,"speed":1.6,"tipX":0,"tipY":0},"exposure":"new frozen manual-shot layout"},
+    {"name":"fresh-four-diagonal","mode":"four","moves":[[1,-0.75,-0.25],[2,-0.24,0.29],[3,0.55,0.12],[4,0.94,-0.33]],"settings":{"angle":20,"elevation":8,"speed":1.1,"tipX":0,"tipY":0},"exposure":"new frozen manual-shot layout"},
+    {"name":"fresh-four-staggered","mode":"four","moves":[[1,-0.88,0.28],[2,0.16,-0.31],[3,0.58,0.32],[4,0.99,-0.12]],"settings":{"angle":-25,"elevation":8,"speed":1.2,"tipX":0,"tipY":0},"exposure":"new frozen manual-shot layout"}
+  ],
+  "extraSlowRecipe":"fresh-four-staggered",
+  "slowRate":0.25,
+  "limits":{"navigation":60000,"ready":60000,"prediction":60000,"rest":180000,"routeAfterRest":180000,"replay":180000},
+  "policy":"48 planned balanced attempts. Preserve every failure, timeout, no-route and physical replay rejection. No layout adjustment based on search outcomes."
+}

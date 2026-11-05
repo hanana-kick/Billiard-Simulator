@@ -166,10 +166,11 @@ function readNativeObservation(e,time,stepDt,initial=false){
  frame.phase=initial?'initial-before-world-step':OBSERVATION_PHASE;
  frame.sequence=initial?0:e.observedSubsteps+1;frame.time=time;frame.stepDt=stepDt;
  frame.cue.radius=e.cue.radius;frame.cue.position={...e.cue.body.translation()};
+ if(!initial&&e.nativeContactGroups)for(const group of e.nativeContactGroups){group.handles.clear();lab.world.contactPairsWith(group.collider,group.collect);}
  for(const target of e.episodeTargets){
   const {other,cushion,cueCollider,otherCollider,observationRecord:record}=target;
   record.impact=false;
-  if(!initial)lab.world.contactPair(cueCollider,otherCollider,target.observeImpact);
+  if(!initial&&(!e.nativeContactGroups||target.contactGroup.handles.has(otherCollider.handle)))lab.world.contactPair(cueCollider,otherCollider,target.observeImpact);
   if(cushion){record.sampled=false;record.projectionValue=null;}
   else{record.id=other.id;record.radius=other.radius;record.position={...other.body.translation()};}
  }
@@ -234,7 +235,7 @@ function begin(R,req,topology,settings,options={}){
   const cushion=other.kind==='cushion',rail=cushion?G.LabRouteRules.railId(other):null;
   return{other,cushion,rail,key:cushion?'cushion:'+rail:'object:'+other.id,cueCollider:cushion?e.cue.collider:(e.cue.pairCollider||e.cue.collider),otherCollider:cushion?other.collider:(other.pairCollider||other.collider)};
  });
- try{installRigidOnlyMapping(e,lab.world);}catch(error){dispose(e);throw error;}
+ try{installContactGraphBatch(e,lab);installRigidOnlyMapping(e,lab.world);}catch(error){dispose(e);throw error;}
  e.originalWorldStep=lab.world.step;e.observedSubsteps=0;e.observationStart=e.trial.start;
  e.observedWorldStep=function(...args){
   const stepDt=lab.world.integrationParameters.dt,time=lab.time+stepDt;
@@ -369,7 +370,36 @@ function installRigidOnlyMapping(e,world){
  }catch(error){restore();return;}
  e.restoreRigidOnlyMapping=restore;
 }
-function restoreObserver(e){if(e.originalWorldStep&&e.trial?.lab?.world)e.trial.lab.world.step=e.originalWorldStep;if(e.restoreRigidOnlyMapping){e.restoreRigidOnlyMapping();e.restoreRigidOnlyMapping=null;}}
+// Exact native contact-graph batching in this private evaluator only. The
+// narrow-phase adjacency is rebuilt after every solver substep, never guessed
+// from distance or retained from a previous step. Non-edges have no manifolds.
+function installContactGraphBatch(e,lab){
+ if(e.finalizationOwner)return;
+ const R=e.search.R,world=lab.world;
+ if(!R||typeof R.World!=='function'||!(world instanceof R.World)||typeof R.version!=='function'||R.version()!=='0.21.0'||
+  world.contactPairsWith!==R.World.prototype.contactPairsWith||world.contactPair!==R.World.prototype.contactPair)return;
+ const groups=new Map(),objects=new Map();
+ for(const target of e.episodeTargets){
+  const key=target.cueCollider.handle;
+  let group=groups.get(key);
+  if(!group){const handles=new Set();group={collider:target.cueCollider,handles,collect:other=>handles.add(other.handle)};groups.set(key,group);}
+  target.contactGroup=group;
+  if(!target.cushion)objects.set(target.other.id,target);
+ }
+ e.nativeContactGroups=[...groups.values()];
+ // The original outer observer asks only for the selected sphere's pair
+// impulses. The last substep's narrow-phase impulses remain unchanged by
+// application torques, event logging, and cue removal. No manifold escapes.
+ const input=e.trial.input,original=input?.positiveImpulse;
+ if(typeof original!=='function')return;
+ input.positiveImpulse=function(a,b){
+  const target=a===e.cue.id?objects.get(b):null;
+  if(target&&e.observedSubsteps>0)return target.observationRecord.impact;
+  return original(a,b);
+ };
+ e.restoreContactGraphBatch=()=>{input.positiveImpulse=original;};
+}
+function restoreObserver(e){if(e.restoreContactGraphBatch){e.restoreContactGraphBatch();e.restoreContactGraphBatch=null;}if(e.originalWorldStep&&e.trial?.lab?.world)e.trial.lab.world.step=e.originalWorldStep;if(e.restoreRigidOnlyMapping){e.restoreRigidOnlyMapping();e.restoreRigidOnlyMapping=null;}}
 function dispose(e){if(e.trial&&!e.disposed){restoreObserver(e);if(e.finalizationOwner)G.LabSourceGameplayFinalizationOwner.restore(e.finalizationOwner);e.trial.lab.dispose();e.disposed=true;}e.done=true;}
 G.LabInverseEvents={observation:Object.freeze({phase:OBSERVATION_PHASE,create:createObservation,initial:observeInitial,step:observeSubstep}),projectResult,begin,advance,finish,interrupt,dispose,expectedEvents,inputInequalities,sphereResidual,relativeSegmentResidual,railResidual};
 })(globalThis);

@@ -1,0 +1,73 @@
+name: Contact graph Chrome investigation (no deployment)
+on:
+  push:
+    branches: ['backup/contact-graph-chrome-20261105']
+permissions:
+  contents: read
+jobs:
+  repeated:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    env:
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Verify source identity and Chrome security
+        run: |
+          test "$(id -u)" != 0
+          google-chrome --version | tee chrome-environment.log
+          node --version | tee -a chrome-environment.log
+          git rev-parse HEAD | tee -a chrome-environment.log
+          node verification/contact-graph/verify-source.cjs
+      - name: Build both frozen-source arms
+        id: builds
+        run: |
+          set -euo pipefail
+          BASE="$RUNNER_TEMP/baseline"
+          mkdir "$BASE"
+          tar --exclude=.git --exclude=node_modules --exclude=dist --exclude=.compiled-build -cf - . | tar -xf - -C "$BASE"
+          ln -s "$GITHUB_WORKSPACE/node_modules" "$BASE/node_modules"
+          cp verification/contact-graph/baseline-inverse-events.js "$BASE/src/inverse-events.js"
+          npm run prepare:engine
+          node build.cjs --canonical-controller-assets
+          node verification/contact-graph/stamp-build.cjs "$GITHUB_WORKSPACE" candidate
+          (cd "$BASE" && npm run prepare:engine && node build.cjs --canonical-controller-assets)
+          node verification/contact-graph/stamp-build.cjs "$BASE" baseline
+      - name: Repeated contact graph comparison, all 48 attempts
+        if: steps.builds.outcome == 'success'
+        run: |
+          set -euo pipefail
+          HOST=127.0.0.1 PORT=8793 node "$RUNNER_TEMP/baseline/server.cjs" > baseline-server.log 2>&1 &
+          BASE_PID=$!
+          HOST=127.0.0.1 PORT=8794 node server.cjs > candidate-server.log 2>&1 &
+          CAND_PID=$!
+          trap 'kill "$BASE_PID" "$CAND_PID" || true' EXIT
+          for p in 8793 8794; do
+            for attempt in $(seq 1 30); do
+              if curl -fsS "http://127.0.0.1:$p/" -o /dev/null; then break; fi
+              sleep 1
+            done
+          done
+          CPU_WINDOW_RELEASED=yes BOUNDED_CANDIDATE_PASSED=yes MODE=pacing BASELINE_LABEL="Pressure-recovery baseline 0434bb76" EXPERIMENT=contact-graph APP_ROOT="$GITHUB_WORKSPACE" BASELINE_ROOT="$RUNNER_TEMP/baseline" CANDIDATE_ROOT="$GITHUB_WORKSPACE" BASELINE_URL=http://127.0.0.1:8793/ CANDIDATE_URL=http://127.0.0.1:8794/ OUT_DIR="$GITHUB_WORKSPACE/chrome-pacing-raw" node verification/contact-graph/browser-comparison.cjs | tee chrome-pacing.log
+      - name: Preserve every attempt and provenance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chrome-contact-graph-all-attempts
+          path: |
+            chrome-pacing-raw/
+            chrome-pacing.log
+            chrome-environment.log
+            baseline-server.log
+            candidate-server.log
+            precompute-integration-manifest.json
+            verification/contact-graph/
+          retention-days: 30

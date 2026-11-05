@@ -1,0 +1,13 @@
+[
+  ".github/workflows/contact-graph-chrome.yml",
+  "src/inverse-events.js",
+  "verification/contact-graph/README.md",
+  "verification/contact-graph/algorithm-browser-recipes.json",
+  "verification/contact-graph/baseline-inverse-events.js",
+  "verification/contact-graph/browser-comparison.cjs",
+  "verification/contact-graph/experiment-source-hashes.json",
+  "verification/contact-graph/planned-paths.json",
+  "verification/contact-graph/provenance.json",
+  "verification/contact-graph/stamp-build.cjs",
+  "verification/contact-graph/verify-source.cjs"
+]
