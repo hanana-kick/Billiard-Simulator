@@ -95,13 +95,29 @@ class OptimizerService{
   for(const task of this.busy.values()){this.retryOverhead.tested++;this.retryOverhead.physicsSteps+=task.steps;}
   this.stopWorkers();this.busy.clear();this.queue=this.jobs.filter(job=>!this.outcomes.has(job.id));this.mode='cooperative';this.fallback(req,id);
  }
- retainedState(){const state=this.cooperativeState;return{...(this.retention||{}),suspended:!!this.suspended,inFlightSteps:state?.evaluation?.trial?.steps||state?.evaluation?.steps||0,inFlightCandidateId:state?.job?.id??null};}
+ retainedState(){const state=this.cooperativeState;return{...(this.retention||{}),suspended:!!this.suspended,backgroundRecoverable:!!this.canResumeBackground(),inFlightSteps:state?.evaluation?.trial?.steps||state?.evaluation?.steps||0,inFlightCandidateId:state?.job?.id??null};}
  releaseCooperative(){const wake=this.cooperativeWake;this.cooperativeWake=null;wake?.();}
  async cooperativeGate(id){if(id!==this.version)return false;if(this.suspended)await new Promise(resolve=>{this.cooperativeWake=resolve;});return id===this.version;}
  suspend(){
   if(!this.coordinator||this.mode!=='cooperative'||!this.latest||this.suspended)return false;
   this.suspended=true;this.api?.pause?.(this.search);this.retention.suspensions++;
   this.retention.preservedSteps=Math.max(this.retention.preservedSteps,this.retainedState().inFlightSteps);return true;
+ }
+ canResumeBackground(){
+  return this.background&&this.coordinator&&this.mode==='cooperative'&&!!this.latest&&this.suspended&&
+   [G.LabCPUEventPlanner,G.LabCPUEventWindowPlanner].includes(this.api)&&!!this.search?.core&&
+   !this.search.finished&&!this.search.core.finished&&!this.search.core.cancelled&&
+   this.search.core.paused===true&&Number.isFinite(this.search.core.deadline);
+ }
+ resumeBackground(){
+  if(!this.canResumeBackground())return false;
+  // Pressure only set these pause markers. Undo that pause without the public
+  // resume API: it grants a new budget and may reopen or rotate planner roots.
+  // Keep the original absolute deadline, pending wave, live world and epoch.
+  this.search.core.paused=false;this.search.pausedAt=null;
+  this.retention.backgroundRecoveries=(this.retention.backgroundRecoveries||0)+1;
+  this.retention.backgroundRecoverySteps=this.retainedState().inFlightSteps;
+  this.suspended=false;this.releaseCooperative();return true;
  }
  async fallback(req,id){
   let evaluation,evaluator,state,lastReport=0;

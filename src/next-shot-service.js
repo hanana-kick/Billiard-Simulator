@@ -76,10 +76,31 @@ class NextShotService{
  }
  observeFrame(deltaMs){
   const job=this.job,c=this.controller;
-  if(!job||job.promoted||job.suspended||c.state.paused||!job.optimizer?.plan||performance.now()-job.startedAt<250)return;
-  const now=performance.now();job.lateFrames=(job.lateFrames||[]).filter(t=>now-t<1200);
+  if(!job||!this.current(job)||job.promoted||job.result||!job.optimizer?.plan)return;
+  const now=performance.now();
+  if(c.state.paused||G.document?.hidden){job.healthySince=null;job.lastObservedFrameAt=null;return;}
+  if(now-job.startedAt<250)return;
+  if(job.suspended){
+   // Require an uninterrupted run of healthy visible playback frames, not a
+   // wall-clock timeout while the page is hidden or frame observation is idle.
+   const gap=job.lastObservedFrameAt==null?0:now-job.lastObservedFrameAt;
+   job.lastObservedFrameAt=now;
+   if(!Number.isFinite(deltaMs)||deltaMs<=0||deltaMs>40||gap>40){job.healthySince=null;return;}
+   if(job.healthySince==null)job.healthySince=now;
+   if(now-job.healthySince>=750&&job.optimizer.retainedState?.backgroundRecoverable===true&&job.optimizer.resumeBackground()){
+    job.suspended=false;job.healthySince=null;job.lateFrames=[];
+    job.pressureRecoveries=(job.pressureRecoveries||0)+1;job.lastRecoveryAt=now;
+    this.status('searching',{reason:'playback-recovered'});c.notify(false);
+   }
+   return;
+  }
+  job.lateFrames=(job.lateFrames||[]).filter(t=>now-t<1200);
   if(deltaMs>40)job.lateFrames.push(now);
-  if(deltaMs>120||job.lateFrames.length>=3){if(job.optimizer.suspend()){job.suspended=true;this.status('suspended',{reason:'playback-pressure'});c.notify(false);}}
+  if(deltaMs>120||job.lateFrames.length>=3){if(job.optimizer.suspend()){
+   job.suspended=true;job.healthySince=null;job.lastObservedFrameAt=now;
+   job.pressureSuspensions=(job.pressureSuspensions||0)+1;job.lastPressureAt=now;
+   this.status('suspended',{reason:'playback-pressure'});c.notify(false);
+  }}
  }
  settle(){
   const job=this.job,c=this.controller;if(!job||job.promoted)return false;

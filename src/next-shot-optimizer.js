@@ -15,6 +15,12 @@ function coordinatorBootstrap(){
   if(data.type==='suspend'){suspended=service?.suspend()===true;reply('retained',service?.retainedState());return;}
   try{await ready;if(token!==requestId)return;const current=ensure();
    if(data.type==='request'){suspended=false;lastResult=null;current.request(data.req);}
+   else if(data.type==='recover-background'){
+    const revision=errorRevision,completed=resultRevision;
+    const recovered=current.resumeBackground();suspended=!!current.suspended;
+    if(recovered)reply('retained',current.retainedState());
+    else if(revision===errorRevision&&completed===resultRevision&&!current.latest&&lastResult)reply('result',lastResult);
+   }
    else if(data.type==='resume'){const revision=errorRevision;if(!current.resume()&&revision===errorRevision)reply('result',lastResult||{results:[],continuable:false});}
    else if(data.type==='promote'){const continueUnresolved=data.options?.continueUnresolved===true||(suspended&&(!lastResult||lastResult.results?.length===0))||(!current.latest&&lastResult?.results?.length===0&&lastResult?.continuable===true);suspended=false;const revision=errorRevision,completed=resultRevision;current.promoteToForeground({continueUnresolved});if(revision===errorRevision&&completed===resultRevision&&!current.latest)reply('result',lastResult||{results:[],continuable:false});}
   }catch(error){if(token===requestId)reply('error',String(error.message||error));}
@@ -42,6 +48,7 @@ class NextShotOptimizer{
  send(type,extra={}){if(!this.worker||this.disposed){this.onError(this.creationError||'Search worker unavailable');return false;}this.worker.postMessage({type,requestId:this.version,...extra});return true;}
  request(req){this.version++;this.latest=req;this.result=null;this.workers=this.worker?[this.worker]:[];return this.send('request',{req});}
  suspend(){if(!this.background||!this.latest||this.suspended||!this.plan)return false;this.suspended=true;this.version++;this.workers=[];return this.send('suspend');}
+ resumeBackground(){if(this.disposed||!this.worker||!this.background||!this.latest||!this.suspended)return false;this.version++;this.suspended=false;this.workers=[this.worker];return this.send('recover-background');}
  promoteToForeground(options={}){this.suspended=false;this.version++;this.background=false;if(this.latest||options.continueUnresolved)this.workers=this.worker?[this.worker]:[];return this.send('promote',{options});}
  resume(){if(this.disposed||!this.worker||this.result?.continuable===false)return false;this.version++;this.workers=[this.worker];return this.send('resume');}
  cancel(){this.version++;this.latest=null;this.workers=[];if(this.worker&&!this.disposed)this.send('cancel');}

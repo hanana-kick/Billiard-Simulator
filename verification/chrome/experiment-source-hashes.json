@@ -1,0 +1,14 @@
+{
+  "next-shot-optimizer.js": {
+    "baseline": "4fa9900f6bf05824dbfd6aba4eaef748a3641a4b3b0b4ff8c7c9aa6701fed405",
+    "candidate": "18a6a61c2c01852ed084285fed0314691e84879a2c1849362572ab9eb36a62f8"
+  },
+  "next-shot-service.js": {
+    "baseline": "1cf0c1a5cd130d1bbf47006f8c1d249b32ba059d8b83680245d99140f03f9de1",
+    "candidate": "9d03d767dbb346edfe9eacbe315f768f343b3306c3e3dbbbbb46f073a2cbb147"
+  },
+  "optimizer-service.js": {
+    "baseline": "e0258591997e15531f7dfe310fa81557904cc9f9f2589abc082b0321d8850ae2",
+    "candidate": "ef8eea55de7886b57103d834fe103b39e422109c30c6ec357cbb588c2c68ba5f"
+  }
+}

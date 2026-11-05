@@ -1,0 +1,136 @@
+--- a/src/next-shot-optimizer.js
++++ b/src/next-shot-optimizer.js
+@@ -15,6 +15,12 @@
+   if(data.type==='suspend'){suspended=service?.suspend()===true;reply('retained',service?.retainedState());return;}
+   try{await ready;if(token!==requestId)return;const current=ensure();
+    if(data.type==='request'){suspended=false;lastResult=null;current.request(data.req);}
++   else if(data.type==='recover-background'){
++    const revision=errorRevision,completed=resultRevision;
++    const recovered=current.resumeBackground();suspended=!!current.suspended;
++    if(recovered)reply('retained',current.retainedState());
++    else if(revision===errorRevision&&completed===resultRevision&&!current.latest&&lastResult)reply('result',lastResult);
++   }
+    else if(data.type==='resume'){const revision=errorRevision;if(!current.resume()&&revision===errorRevision)reply('result',lastResult||{results:[],continuable:false});}
+    else if(data.type==='promote'){const continueUnresolved=data.options?.continueUnresolved===true||(suspended&&(!lastResult||lastResult.results?.length===0))||(!current.latest&&lastResult?.results?.length===0&&lastResult?.continuable===true);suspended=false;const revision=errorRevision,completed=resultRevision;current.promoteToForeground({continueUnresolved});if(revision===errorRevision&&completed===resultRevision&&!current.latest)reply('result',lastResult||{results:[],continuable:false});}
+   }catch(error){if(token===requestId)reply('error',String(error.message||error));}
+@@ -42,6 +48,7 @@
+  send(type,extra={}){if(!this.worker||this.disposed){this.onError(this.creationError||'Search worker unavailable');return false;}this.worker.postMessage({type,requestId:this.version,...extra});return true;}
+  request(req){this.version++;this.latest=req;this.result=null;this.workers=this.worker?[this.worker]:[];return this.send('request',{req});}
+  suspend(){if(!this.background||!this.latest||this.suspended||!this.plan)return false;this.suspended=true;this.version++;this.workers=[];return this.send('suspend');}
++ resumeBackground(){if(this.disposed||!this.worker||!this.background||!this.latest||!this.suspended)return false;this.version++;this.suspended=false;this.workers=[this.worker];return this.send('recover-background');}
+  promoteToForeground(options={}){this.suspended=false;this.version++;this.background=false;if(this.latest||options.continueUnresolved)this.workers=this.worker?[this.worker]:[];return this.send('promote',{options});}
+  resume(){if(this.disposed||!this.worker||this.result?.continuable===false)return false;this.version++;this.workers=[this.worker];return this.send('resume');}
+  cancel(){this.version++;this.latest=null;this.workers=[];if(this.worker&&!this.disposed)this.send('cancel');}
+--- a/src/next-shot-service.js
++++ b/src/next-shot-service.js
+@@ -76,10 +76,31 @@
+  }
+  observeFrame(deltaMs){
+   const job=this.job,c=this.controller;
+-  if(!job||job.promoted||job.suspended||c.state.paused||!job.optimizer?.plan||performance.now()-job.startedAt<250)return;
+-  const now=performance.now();job.lateFrames=(job.lateFrames||[]).filter(t=>now-t<1200);
++  if(!job||!this.current(job)||job.promoted||job.result||!job.optimizer?.plan)return;
++  const now=performance.now();
++  if(c.state.paused||G.document?.hidden){job.healthySince=null;job.lastObservedFrameAt=null;return;}
++  if(now-job.startedAt<250)return;
++  if(job.suspended){
++   // Require an uninterrupted run of healthy visible playback frames, not a
++   // wall-clock timeout while the page is hidden or frame observation is idle.
++   const gap=job.lastObservedFrameAt==null?0:now-job.lastObservedFrameAt;
++   job.lastObservedFrameAt=now;
++   if(!Number.isFinite(deltaMs)||deltaMs<=0||deltaMs>40||gap>40){job.healthySince=null;return;}
++   if(job.healthySince==null)job.healthySince=now;
++   if(now-job.healthySince>=750&&job.optimizer.retainedState?.backgroundRecoverable===true&&job.optimizer.resumeBackground()){
++    job.suspended=false;job.healthySince=null;job.lateFrames=[];
++    job.pressureRecoveries=(job.pressureRecoveries||0)+1;job.lastRecoveryAt=now;
++    this.status('searching',{reason:'playback-recovered'});c.notify(false);
++   }
++   return;
++  }
++  job.lateFrames=(job.lateFrames||[]).filter(t=>now-t<1200);
+   if(deltaMs>40)job.lateFrames.push(now);
+-  if(deltaMs>120||job.lateFrames.length>=3){if(job.optimizer.suspend()){job.suspended=true;this.status('suspended',{reason:'playback-pressure'});c.notify(false);}}
++  if(deltaMs>120||job.lateFrames.length>=3){if(job.optimizer.suspend()){
++   job.suspended=true;job.healthySince=null;job.lastObservedFrameAt=now;
++   job.pressureSuspensions=(job.pressureSuspensions||0)+1;job.lastPressureAt=now;
++   this.status('suspended',{reason:'playback-pressure'});c.notify(false);
++  }}
+  }
+  settle(){
+   const job=this.job,c=this.controller;if(!job||job.promoted)return false;
+--- a/src/optimizer-service.js
++++ b/src/optimizer-service.js
+@@ -95,13 +95,29 @@
+   for(const task of this.busy.values()){this.retryOverhead.tested++;this.retryOverhead.physicsSteps+=task.steps;}
+   this.stopWorkers();this.busy.clear();this.queue=this.jobs.filter(job=>!this.outcomes.has(job.id));this.mode='cooperative';this.fallback(req,id);
+  }
+- retainedState(){const state=this.cooperativeState;return{...(this.retention||{}),suspended:!!this.suspended,inFlightSteps:state?.evaluation?.trial?.steps||state?.evaluation?.steps||0,inFlightCandidateId:state?.job?.id??null};}
++ retainedState(){const state=this.cooperativeState;return{...(this.retention||{}),suspended:!!this.suspended,backgroundRecoverable:!!this.canResumeBackground(),inFlightSteps:state?.evaluation?.trial?.steps||state?.evaluation?.steps||0,inFlightCandidateId:state?.job?.id??null};}
+  releaseCooperative(){const wake=this.cooperativeWake;this.cooperativeWake=null;wake?.();}
+  async cooperativeGate(id){if(id!==this.version)return false;if(this.suspended)await new Promise(resolve=>{this.cooperativeWake=resolve;});return id===this.version;}
+  suspend(){
+   if(!this.coordinator||this.mode!=='cooperative'||!this.latest||this.suspended)return false;
+   this.suspended=true;this.api?.pause?.(this.search);this.retention.suspensions++;
+   this.retention.preservedSteps=Math.max(this.retention.preservedSteps,this.retainedState().inFlightSteps);return true;
++ }
++ canResumeBackground(){
++  return this.background&&this.coordinator&&this.mode==='cooperative'&&!!this.latest&&this.suspended&&
++   [G.LabCPUEventPlanner,G.LabCPUEventWindowPlanner].includes(this.api)&&!!this.search?.core&&
++   !this.search.finished&&!this.search.core.finished&&!this.search.core.cancelled&&
++   this.search.core.paused===true&&Number.isFinite(this.search.core.deadline);
++ }
++ resumeBackground(){
++  if(!this.canResumeBackground())return false;
++  // Pressure only set these pause markers. Undo that pause without the public
++  // resume API: it grants a new budget and may reopen or rotate planner roots.
++  // Keep the original absolute deadline, pending wave, live world and epoch.
++  this.search.core.paused=false;this.search.pausedAt=null;
++  this.retention.backgroundRecoveries=(this.retention.backgroundRecoveries||0)+1;
++  this.retention.backgroundRecoverySteps=this.retainedState().inFlightSteps;
++  this.suspended=false;this.releaseCooperative();return true;
+  }
+  async fallback(req,id){
+   let evaluation,evaluator,state,lastReport=0;
+--- a/tests/next-shot-lifecycle.cjs
++++ b/tests/next-shot-lifecycle.cjs
+@@ -53,3 +53,10 @@
+ 
+  test('idle warm worker contains no request and survives ordinary input invalidation',()=>{const h=harness();h.c.state.paused=true;h.c.game.pending=null;h.service.warm();const worker=h.service.warmed;assert.ok(worker);assert.equal(worker.req,undefined);h.service.cancel('settings');assert.equal(h.service.warmed,worker);h.service.start(h.before);h.predict();assert.equal(h.optimizers.length,1);assert.equal(h.service.warmed,null);assert.equal(h.service.job.reusedWarmWorker,true);worker.onResult({results:[{id:2}],continuable:true});assert.equal(h.service.job.result.results[0].id,2);h.service.cancel();assert.equal(worker.disposed,true);});
+  test('disabled, hidden, moving and canonical play do not prewarm; disable/dispose release idle worker',()=>{for(const key of ['disabled','moving','canonical','hidden']){const h=harness();h.c.state.paused=true;if(key==='disabled')h.c.state.nextShotPrecompute=false;if(key==='moving')h.c.game.pending={};if(key==='canonical')h.c.canonicalPlayback={};if(key==='hidden')h.env.document={hidden:true};h.service.warm();assert.equal(h.optimizers.length,0);}for(const reason of ['disabled','disposed']){const h=harness();h.c.state.paused=true;h.service.warm();const worker=h.service.warmed;h.service.cancel(reason);assert.equal(worker.disposed,true);assert.equal(h.service.warmed,null);}});
++
++function pressureHarness(){const h=harness();let now=1000;h.env.performance={now:()=>now};h.service.start(h.before);h.predict();h.service.job.startedAt=0;h.c.state.paused=false;const opt=h.optimizers[0];opt.plan={};opt.recoveries=0;opt.retainedState={backgroundRecoverable:true};opt.resumeBackground=()=>{opt.recoveries++;opt.suspended=false;return true;};h.frame=(delta=25,elapsed=delta)=>{now+=elapsed;h.service.observeFrame(delta);};h.healthy=()=>{for(let i=0;i<31;i++)h.frame();};return h;}
++test('750 ms of continuous healthy playback recovers without promotion or replacement, then resuspends immediately',()=>{const h=pressureHarness(),job=h.service.job,opt=h.optimizers[0];h.frame(121);for(let i=0;i<30;i++)h.frame();assert.equal(opt.recoveries,0);h.frame();assert.equal(opt.recoveries,1);assert.equal(job.suspended,false);assert.equal(h.service.job,job);assert.equal(job.optimizer,opt);assert.equal(opt.promotedOptions,undefined);assert.equal(job.pressureSuspensions,1);assert.equal(job.pressureRecoveries,1);h.frame(121);assert.equal(job.suspended,true);h.healthy();assert.equal(opt.recoveries,2);assert.equal(job.pressureSuspensions,2);assert.equal(job.pressureRecoveries,2);assert.ok(job.lastRecoveryAt>job.lastPressureAt);});
++test('pressure, paused/hidden frames and missed observation reset healthy recovery interval',()=>{for(const interrupt of ['late','paused','hidden','gap']){const h=pressureHarness(),opt=h.optimizers[0];h.frame(121);for(let i=0;i<20;i++)h.frame();if(interrupt==='late')h.frame(41);if(interrupt==='gap')h.frame(25,1000);if(interrupt==='paused'){h.c.state.paused=true;h.frame();h.c.state.paused=false;}if(interrupt==='hidden'){h.env.document={hidden:true};h.frame();h.env.document.hidden=false;}for(let i=0;i<30;i++)h.frame();assert.equal(opt.recoveries,0,interrupt);h.frame();assert.equal(opt.recoveries,1,interrupt);}});
++test('cancel, dispose, completed result and promotion prevent automatic recovery',()=>{for(const action of ['cancel','dispose','result','promote']){const h=pressureHarness(),opt=h.optimizers[0];h.frame(121);if(action==='cancel')h.service.cancel();if(action==='dispose')h.service.dispose();if(action==='result')opt.onResult({results:[],continuable:true});if(action==='promote')h.rest();h.healthy();assert.equal(opt.recoveries,0,action);}});
++
++test('unsupported retained planners are not automatically resumed',()=>{const h=pressureHarness();h.frame(121);h.optimizers[0].retainedState={backgroundRecoverable:false};h.healthy();assert.equal(h.optimizers[0].recoveries,0);assert.equal(h.service.job.suspended,true);});
+--- a/tests/next-shot-optimizer.cjs
++++ b/tests/next-shot-optimizer.cjs
+@@ -27,3 +27,6 @@
+ test('failed foreground promotion or Resume emits error without a stale fallback result',async()=>{for(const type of ['promote','resume']){const c=coordinator();await c.send({type:'request',requestId:1,req:{options:{}}});const service=c.services[0];service[type==='promote'?'promoteToForeground':'resume']=()=>{service.latest=null;service.error('continuation refused');return false;};c.sent.length=0;await c.send({type,requestId:2,options:{continueUnresolved:true}});assert.deepEqual(c.sent.map(x=>x.type),['error']);assert.equal(c.sent[0].value,'continuation refused');}});
+ 
+ test('completion inside warm promotion is emitted once, while a prior cached completion is reissued',async()=>{for(const immediate of [true,false]){const c=coordinator();await c.send({type:'request',requestId:1,req:{options:{}}});const service=c.services[0],result={results:[{id:7}],continuable:true};if(!immediate){service.latest=null;service.result(result);}service.promoteToForeground=()=>{service.latest=null;if(immediate)service.result(result);return false;};c.sent.length=0;await c.send({type:'promote',requestId:2,options:{continueUnresolved:true}});assert.deepEqual(c.sent.map(x=>x.type),['result']);assert.equal(c.sent[0].requestId,2);assert.equal(c.sent[0].value.results[0].id,7);}});
++
++test('background recovery uses a new message generation but never a request or promotion',()=>{const h=harness(),s=h.service,w=h.workers[0],reply=(id,type,value)=>w.onmessage({data:{requestId:id,type,value}});s.request({});reply(s.version,'progress',{workerPlan:{}});assert.equal(s.resumeBackground(),false);s.suspend();const suspended=s.version;assert.equal(s.resumeBackground(),true);assert.equal(s.background,true);assert.equal(s.suspended,false);assert.equal(w.sent.at(-1).type,'recover-background');reply(suspended,'result',{results:[1]});reply(suspended,'retained',{stale:true});assert.equal(h.results.length,0);assert.equal(s.retainedState,undefined);reply(s.version,'retained',{backgroundRecoveries:1});assert.equal(s.retainedState.backgroundRecoveries,1);assert.equal(s.suspend(),true);s.cancel();assert.equal(s.resumeBackground(),false);s.dispose();assert.equal(s.resumeBackground(),false);});
++test('coordinator recovery invokes only retained wake and reissues a raced completion',async()=>{for(const finished of [false,true]){const c=coordinator();await c.send({type:'request',requestId:1,req:{}});const s=c.services[0];s.resumeBackground=()=>{if(!s.latest)return false;s.suspended=false;s.recoveries=(s.recoveries||0)+1;return true;};await c.send({type:'suspend',requestId:2});if(finished){s.latest=null;s.result({results:[{id:9}]});}c.sent.length=0;await c.send({type:'recover-background',requestId:3});assert.equal(s.promotion,undefined);assert.equal(c.services.length,1);assert.equal(c.sent.length,1);assert.equal(c.sent[0].requestId,3);assert.equal(c.sent[0].type,finished?'result':'retained');if(!finished)assert.equal(s.recoveries,1);}});
+--- a/tests/worker-pool.cjs
++++ b/tests/worker-pool.cjs
+@@ -58,7 +58,8 @@
+  let clock=0,begins=0,disposals=0,finishes=0,final;const timers=[];
+  const planner=fakePlanner(),plan=planner.planWave,commit=planner.commitWave;
+  planner.planWave=s=>{const jobs=plan(s).map(j=>({...j,kind:'inverse-constraint',req:s.req,topology:{},prefixMismatchWindow:true}));s.pending=jobs;return jobs;};
+- planner.commitWave=(s,out)=>{commit(s,out);s.pending=[];};planner.pause=s=>{s.paused=true;};planner.resume=s=>{s.paused=false;return true;};
++ planner.commitWave=(s,out)=>{commit(s,out);s.pending=[];};planner.pause=s=>{s.paused=true;if(s.core)s.core.paused=true;s.pausedAt=clock;};planner.resume=s=>{s.paused=false;return true;};
++ const create=planner.createStagedSearch;planner.createStagedSearch=(R,req)=>({...create(R,req),core:{paused:false,deadline:20000},pausedAt:null});
+  const evaluator={begin(){begins++;return {trial:{steps:0,lab:{dispose(){disposals++;}}}};},advance(e,n){e.trial.steps=Math.min(steps,e.trial.steps+n);return e.trial.steps===steps;},finish(e){assert.equal(e.trial.steps,steps);finishes++;e.trial.lab.dispose();return {...outcome(0),steps};},dispose(e){e.trial.lab.dispose();}};
+  const env=environment({performance:{now:()=>clock+=2},setTimeout:(fn,ms)=>{timers.push({fn,ms});return timers.length;},clearTimeout(){},navigator:{hardwareConcurrency:4},LabCPUEventWindowPlanner:planner,LabInversePlanner:planner,LabInverseEventsWindow:evaluator});
+  const service=new env.ctx.OptimizerService(()=>{},r=>final=r,assert.fail,{background:true,coordinator:true});const request={...req,options:{...req.options,budget:parallel?3:1,searchAlgorithm:parallel?'inverse-constraints':'cpu-event-window-inverse'}};
+@@ -97,3 +98,8 @@
+  const stats=h.stats();assert.equal(constructionAttempts,3,'One normal halving attempt, not a repeated pool handoff');assert.equal(stats.final.tested,3);assert.equal(stats.final.executionMode,'cooperative');assert.equal(stats.final.workerFallbackReason,'worker-startup-failure');assert.equal(new Set(s.search.trace).size,3);assert.equal(stats.begins,4);assert.equal(stats.finishes,3);assert.equal(stats.disposals,4,'Abandoned world and three completed worlds each dispose once');
+  assert.equal(s.latest,null);assert.equal(s.cooperativeState,null);assert.equal(s.cooperativeWake,null);assert.equal(s.handoffAfterEvaluation,false);assert.equal(s.workers.length,0);assert.equal(s.busy.size,0);assert.equal(s.watchdogs.size,0);assert.equal(h.timers.length,0);assert.equal(s.search.pending.length,0);
+ });
++
++test('background recovery keeps exact evaluator, planner, generation and pacing through repeated pressure',async()=>{const h=retainedHarness({steps:1024}),s=h.service;s.request(h.request);const state=s.cooperativeState,search=s.search,plan=s.plan,version=s.version;for(let i=0;i<3;i++){const steps=state.evaluation.trial.steps;assert.equal(s.suspend(),true);h.timers.shift().fn();await tick();assert.equal(state.evaluation.trial.steps,steps);assert.equal(s.resumeBackground(),true);await tick();assert.equal(s.cooperativeState,state);assert.equal(s.search,search);assert.equal(s.plan,plan);assert.equal(s.version,version);assert.equal(s.background,true);assert.equal(h.stats().begins,1);assert.equal(h.workers.length,0);assert.equal(h.timers.at(-1).ms,4);assert.ok(state.evaluation.trial.steps>steps);}assert.equal(s.retention.backgroundRecoveries,3);assert.equal(s.retention.suspensions,3);for(let i=0;i<100&&!h.stats().final;i++){h.timers.shift()?.fn();await tick();}assert.equal(h.stats().finishes,1);assert.equal(h.stats().disposals,1);assert.equal(h.stats().final.retryOverhead.physicsSteps,0);const control=retainedHarness({steps:1024});control.service.request(control.request);for(let i=0;i<100&&!control.stats().final;i++){control.timers.shift()?.fn();await tick();}for(const key of ['results','candidatePlan','physicsSteps','tested'])assert.deepEqual(JSON.parse(JSON.stringify(h.stats().final[key])),JSON.parse(JSON.stringify(control.stats().final[key])));});
++test('background recovery cannot revive canceled, disposed or promoted execution',async()=>{for(const action of ['cancel','dispose','promoteToForeground']){const h=retainedHarness({steps:1024}),s=h.service;s.request(h.request);s.suspend();h.timers.shift().fn();await tick();s[action]();assert.equal(s.resumeBackground(),false);s.cancel();await tick();assert.equal(h.stats().begins,1);assert.equal(h.stats().disposals,1);}});
++test('unsupported retained planner refuses automatic wake without altering retained work',async()=>{const h=retainedHarness({parallel:true}),s=h.service;s.request(h.request);s.suspend();const state=s.cooperativeState;s.api={...s.api};assert.equal(s.resumeBackground(),false);assert.equal(s.cooperativeState,state);assert.equal(s.suspended,true);s.cancel();h.timers.shift()?.fn();await tick();});
++test('pressure recovery preserves original absolute deadline and avoids generic planner resume',async()=>{const h=retainedHarness({steps:1024}),s=h.service;s.request(h.request);s.search.core.deadline=2000;s.suspend();h.timers.shift().fn();await tick();h.ctx.LabCPUEventWindowPlanner.resume=()=>assert.fail('must not grant a fresh budget or reopen branches');h.ctx.performance.now=()=>1800;assert.equal(s.resumeBackground(),true);assert.equal(s.search.core.deadline,2000);assert.equal(s.search.core.paused,false);assert.equal(s.search.pausedAt,null);s.cancel();await tick();});
