@@ -26,7 +26,7 @@ class LabController{
    // Renderer selection is independent of physics. A failed WebGL context uses
    // a fresh canvas because a canvas cannot switch 2D/WebGL context types.
    try{try{this.renderer=await G.WorkerRenderer.create(canvas);}catch{this.renderer=new G.LabRenderer(canvas);}}catch(error){const fresh=canvas.cloneNode(false);canvas.replaceWith(fresh);this.canvas=canvas=fresh;this.renderer=new G.SoftwareRenderer(canvas);this.renderer.fallbackReason=String(error.message||error);}
-   this.predictor=new G.PredictionService((result,meta)=>{if(!this.state.paused||!this.state.predict||this.windup)return;this.forecastReceipt={request:this.predictor.latestRequest,result};this.state.forecast=G.LabMath.forecastGeometry(result);this.state.predictionBusy=false;this.state.forecastStatus=`${result.seconds.toFixed(1)}초 · ${result.events.length}회 접촉${result.rested?' · 정지까지':''}`;this.forecastMeta=meta;this.nextShot?.warm();this.notify()},error=>{this.state.predictionBusy=false;this.state.forecastStatus='예측 실패: '+error;this.notify()});
+   this.predictor=new G.PredictionService((result,meta)=>{if(!this.state.paused||!this.state.predict||this.windup)return;this.forecastReceipt={request:this.predictor.latestRequest,result};this.state.forecast=G.LabMath.forecastGeometry(result);this.state.predictionBusy=false;this.state.forecastStatus=`${result.seconds.toFixed(1)}초 · ${result.events.length}회 접촉${result.rested?' · 정지까지':''}`;this.forecastMeta=meta;this.nextShot?.warm();this.nextShot?.prepareAim(this.forecastReceipt);this.notify()},error=>{this.state.predictionBusy=false;this.state.forecastStatus='예측 실패: '+error;this.notify()});
    this.optimizer=new G.OptimizerService(progress=>{this.state.routeProgress=progress;if(progress.partialResult)this.state.routeResult=progress.partialResult;this.notify(false)},result=>{this.state.routeStatus='done';this.state.routeResult=result;this.state.routeProgress=result;this.notify();this.queuePrediction()},error=>{this.state.routeStatus='error';this.state.routeError=error;this.notify();this.queuePrediction()});
    this.nextShot=new G.NextShotService(this);this.nextShot.warm();
    this.bindPointers();this.resizeViewport();this.resizeObserver=new ResizeObserver(()=>this.resizeViewport());this.resizeObserver.observe(canvas.parentElement);
@@ -36,7 +36,7 @@ class LabController{
   }catch(error){this.state.engineError=String(error.message||error);this.notify();console.error(error)}
  }
  pause(value=true){if(value)this.nextShot?.cancel('paused');if(!value)this.cancelSearch('실행으로 검색을 취소했습니다.',true);this.state.paused=value;this.accumulator=0;if(!value){clearTimeout(this.predictionTimer);this.predictor?.cancel();this.state.predictionBusy=false;}else this.queuePrediction();this.notify();}
- invalidate(){this.forecastReceipt=null;clearTimeout(this.predictionTimer);this.predictor?.cancel();this.requestKey=null;this.state.forecast=null;this.state.predictionBusy=false;}
+ invalidate(){if(this.nextShot?.job?.aiming||this.nextShot?.aimTimer)this.nextShot.cancel('aim-invalidated');this.forecastReceipt=null;clearTimeout(this.predictionTimer);this.predictor?.cancel();this.requestKey=null;this.state.forecast=null;this.state.predictionBusy=false;}
  queuePrediction(force=false){
   const s=this.state,l=this.lab;if(!l||!this.predictor)return;
   if(s.routeStatus==='searching')return;
@@ -75,9 +75,9 @@ class LabController{
   if(!s.paused||s.predictionBusy||key!==this.requestKey)s.forecast=null;
   if(this.game&&!this.game.cueIds.includes(s.selectedId)){this.announce('흰 수구 또는 노란 수구를 선택하세요.');return false;}
   const before=this.captureHistory(),forecastReceipt=this.forecastReceipt;const gameBefore=this.game?.snapshot();const result=this.lab.strike(s.selectedId,{...s.settings});if(!result.ok){this.announce(result.reason);return false;}
-  this.commitHistory(before,'shot');
+  const prepared=this.nextShot?.takePrepared(before,forecastReceipt);this.commitHistory(before,'shot');
   if(this.game){this.gameUndo=gameBefore;this.game.begin(s.selectedId,{threeCushion:!!s.routeOptions.fourBallThreeCushion});}
-  this.cooldownUntil=performance.now()+300;this.state.previewCueVisible=false;this.state.canAim=false;this.state.cuePull=0;this.pause(false);this.state.gesture='';this.nextShot?.start(before,forecastReceipt);this.notify();return true;
+  this.cooldownUntil=performance.now()+300;this.state.previewCueVisible=false;this.state.canAim=false;this.state.cuePull=0;this.pause(false);this.state.gesture='';this.nextShot?.start(before,forecastReceipt,prepared);this.notify();return true;
  }
  setGameMode(mode){if(!['free','four'].includes(mode)||mode===this.state.gameMode)return;this.state.gameMode=mode;this.reset();}
  setupGame(){

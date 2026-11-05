@@ -22,3 +22,14 @@ test('horizon exhaustion does not expose an unfinished future snapshot or game',
  const {lab,game}=scene();try{const forecast=LabForecast.predict(R,{snapshot:lab.snapshot({trails:false}),selectedId:1,settings:{angle:0,elevation:8,speed:4,tipX:0,tipY:0},horizon:.1,nextShotGame:{kind:'three',snapshot:game.snapshot(),shotRules:{}}});assert.equal(forecast.rested,false);assert.equal(forecast.nextShot,undefined);}finally{lab.dispose();}
 });
 test('target repair follows next cue and never mutates search settings',()=>{const options={targetId:2,secondId:3,searchAlgorithm:'cpu-event-window-inverse',mode:'direct',maxCushions:0};const original=structuredClone(options);assert.deepEqual(NextShotState.repairedOptions(options,{kind:'three',objectIds:[1,2,3]},2,{objects:[{id:1},{id:2},{id:3}]}),{...options,targetId:1});assert.deepEqual(options,original);});
+test('prestrike source forecast retains late opponent foul until full rest',()=>{
+ const {lab,game}=scene(true),settings={angle:0,elevation:8,speed:2,tipX:0,tipY:0};
+ try{
+  for(const p of require('./four-ball-goal-late-opponent-input.json').placements)assert.equal(lab.move(p.id,{x:p.x,y:lab.get(p.id).radius+.00005,z:p.z}),true);
+  for(let i=0;i<2000&&!lab.objects.every(o=>o.body.isSleeping());i++)lab.step();
+  const snapshot=lab.snapshot({trails:false}),initial=game.snapshot(),forecast=LabForecast.predict(R,{snapshot,selectedId:1,settings,horizon:30,nextShotGame:{kind:'four',snapshot:initial,shotRules:{threeCushion:false}}});
+  assert.equal(forecast.rested,true);assert.equal(forecast.nextShot.game.scores[1],-1);assert.equal(forecast.nextShot.selectedId,2);
+  game.begin(1,{threeCushion:false});assert.equal(lab.strike(1,settings).ok,true);for(let i=0;i<30000&&(lab.cue||lab.objects.some(o=>!o.body.isSleeping()));i++)lab.step();game.finish();
+  assert.deepEqual(game.snapshot(),forecast.nextShot.game);assert.equal(NextShotState.snapshotEqual(lab.snapshot({trails:false}),forecast.nextShot.snapshot),true);
+ }finally{lab.dispose();}
+});

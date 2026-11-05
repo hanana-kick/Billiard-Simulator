@@ -1,0 +1,78 @@
+name: Pre-strike next-search Chrome comparison (no deployment)
+on:
+  push:
+    branches: ['backup/prestrike-speculation-20261105']
+permissions:
+  contents: read
+jobs:
+  repeated:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    env:
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Verify source identity and Chrome security
+        run: |
+          test "$(id -u)" != 0
+          google-chrome --version | tee chrome-environment.log
+          node --version | tee -a chrome-environment.log
+          git rev-parse HEAD | tee -a chrome-environment.log
+          node verification/prestrike/verify-source.cjs
+      - name: Qualified pre-strike lifecycle and physical fallback
+        run: node --test tests/next-shot-lifecycle.cjs tests/prestrike-controller.cjs tests/next-shot-precompute.cjs
+      - name: Build both frozen-source arms
+        id: builds
+        run: |
+          set -euo pipefail
+          BASE="$RUNNER_TEMP/baseline"
+          mkdir "$BASE"
+          tar --exclude=.git --exclude=node_modules --exclude=dist --exclude=.compiled-build -cf - . | tar -xf - -C "$BASE"
+          ln -s "$GITHUB_WORKSPACE/node_modules" "$BASE/node_modules"
+          cp verification/prestrike/baseline/*.js "$BASE/src/"
+          npm run prepare:engine
+          node build.cjs --canonical-controller-assets
+          node verification/chrome/stamp-build.cjs "$GITHUB_WORKSPACE"
+          (cd "$BASE" && npm run prepare:engine && node build.cjs --canonical-controller-assets)
+          node verification/chrome/stamp-build.cjs "$BASE"
+      - name: Repeated pre-strike comparison, all 112 attempts
+        if: steps.builds.outcome == 'success'
+        run: |
+          set -euo pipefail
+          HOST=127.0.0.1 PORT=8793 node "$RUNNER_TEMP/baseline/server.cjs" > baseline-server.log 2>&1 &
+          BASE_PID=$!
+          HOST=127.0.0.1 PORT=8794 node server.cjs > candidate-server.log 2>&1 &
+          CAND_PID=$!
+          trap 'kill "$BASE_PID" "$CAND_PID" || true' EXIT
+          for p in 8793 8794; do
+            for attempt in $(seq 1 30); do
+              if curl -fsS "http://127.0.0.1:$p/" -o /dev/null; then break; fi
+              sleep 1
+            done
+          done
+          CPU_WINDOW_RELEASED=yes BOUNDED_CANDIDATE_PASSED=yes MODE=pacing BASELINE_LABEL="Verified pressure recovery 0434bb" EXPERIMENT=prestrike-speculation APP_ROOT="$GITHUB_WORKSPACE" BASELINE_ROOT="$RUNNER_TEMP/baseline" CANDIDATE_ROOT="$GITHUB_WORKSPACE" BASELINE_URL=http://127.0.0.1:8793/ CANDIDATE_URL=http://127.0.0.1:8794/ OUT_DIR="$GITHUB_WORKSPACE/chrome-prestrike-raw" node verification/prestrike/browser-prestrike-comparison.cjs | tee chrome-prestrike.log
+      - name: Preserve every attempt and provenance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chrome-prestrike-all-attempts
+          path: |
+            chrome-prestrike-raw/
+            chrome-prestrike.log
+            chrome-precompute-raw/
+            chrome-precompute.log
+            precompute-server.log
+            chrome-environment.log
+            baseline-server.log
+            candidate-server.log
+            precompute-integration-manifest.json
+            verification/chrome/
+            verification/prestrike/
+          retention-days: 30

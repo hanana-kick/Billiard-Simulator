@@ -1,0 +1,10 @@
+{
+  "controller.js": {
+    "baseline": "ab8f3872e3d5391424047c1c003c30d57470fad3373edb847ead408b77f14583",
+    "candidate": "4efd6193acda39c1de9be1723c7eb1c4e757a3aa22419d9ad874ada11a8be75a"
+  },
+  "next-shot-service.js": {
+    "baseline": "9d03d767dbb346edfe9eacbe315f768f343b3306c3e3dbbbbb46f073a2cbb147",
+    "candidate": "19a2d470fad4137bed3207427468360d229eff3029139b07439f67dde3d79515"
+  }
+}

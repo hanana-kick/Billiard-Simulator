@@ -60,3 +60,22 @@ test('pressure, paused/hidden frames and missed observation reset healthy recove
 test('cancel, dispose, completed result and promotion prevent automatic recovery',()=>{for(const action of ['cancel','dispose','result','promote']){const h=pressureHarness(),opt=h.optimizers[0];h.frame(121);if(action==='cancel')h.service.cancel();if(action==='dispose')h.service.dispose();if(action==='result')opt.onResult({results:[],continuable:true});if(action==='promote')h.rest();h.healthy();assert.equal(opt.recoveries,0,action);}});
 
 test('unsupported retained planners are not automatically resumed',()=>{const h=pressureHarness();h.frame(121);h.optimizers[0].retainedState={backgroundRecoverable:false};h.healthy();assert.equal(h.optimizers[0].recoveries,0);assert.equal(h.service.job.suspended,true);});
+
+function aimingHarness(){
+ const h=harness(),timers=new Map();let id=0;
+ h.env.setTimeout=(fn,ms)=>{timers.set(++id,{fn,ms});return id;};h.env.clearTimeout=i=>timers.delete(i);
+ Object.assign(h.c.state,{paused:true,predict:true});h.c.game.snapshot=()=>structuredClone(h.before.game);h.c.lab.snapshot=()=>structuredClone(h.before.world);
+ h.receipt={request:{snapshot:structuredClone(h.before.world),selectedId:1,settings:structuredClone(h.c.state.settings),nextShotGame:{snapshot:structuredClone(h.before.game),shotRules:{threeCushion:false}}},result:{rested:true,nextShot:{snapshot:structuredClone(h.snapshot),game:structuredClone(h.finalGame),selectedId:2}}};h.c.forecastReceipt=h.receipt;
+ h.runTimer=ms=>{const entry=[...timers].find(([,t])=>t.ms===ms);assert.ok(entry,`timer ${ms}`);timers.delete(entry[0]);entry[1].fn();};
+ h.begin=()=>{h.service.prepareAim(h.receipt);assert.equal(h.optimizers.length,0);h.runTimer(750);h.runTimer(0);};return h;
+}
+test('stable aiming starts only after 750ms, transfers same worker and waits for real rest',()=>{
+ const h=aimingHarness(),old=h.c.state.routeResult;h.begin();const job=h.service.job,opt=h.optimizers[0];opt.onResult({results:[{id:77}],continuable:true});assert.equal(h.c.state.routeResult,old);
+ const prepared=h.service.takePrepared(h.before,h.receipt);assert.equal(prepared,job);h.service.cancel('fire normal cancel');h.c.state.paused=false;h.service.start(h.before,h.receipt,prepared);assert.equal(h.service.job,job);assert.equal(h.optimizers.length,1);assert.equal(h.c.state.routeResult,old);
+ h.c.lab.snapshot=()=>structuredClone(h.snapshot);h.c.game.snapshot=()=>h.finalGame;assert.equal(h.rest(),true);assert.equal(h.c.state.routeResult.results[0].id,77);
+});
+test('changing aim cancels before debounce and late results do not publish',()=>{const h=aimingHarness();h.service.prepareAim(h.receipt);h.service.cancel('settings');assert.equal(h.service.aimTimer,null);assert.equal(h.optimizers.length,0);h.begin();const opt=h.optimizers[0],old=h.c.state.routeResult;h.service.cancel('settings');opt.onResult({results:[{id:2}]});assert.equal(h.c.state.routeResult,old);assert.equal(opt.disposed,true);});
+for(const type of ['settings','world','game','options','receipt'])test(`prestrike ${type} mismatch cannot adopt`,()=>{const h=aimingHarness();h.begin();if(type==='settings')h.c.state.settings.angle++;if(type==='world')h.before.world.world[0]++;if(type==='game')h.before.game.scores[1]++;if(type==='options')h.c.state.routeOptions.maxCushions=6;const receipt=type==='receipt'?structuredClone(h.receipt):h.receipt;assert.equal(h.service.takePrepared(h.before,receipt),null);h.service.cancel();});
+test('incomplete rest forecast never starts idle search',()=>{const h=aimingHarness();h.receipt.result.rested=false;h.service.prepareAim(h.receipt);assert.equal(h.service.job,null);assert.equal(h.service.aimTimer,undefined);});
+test('idle search is canceled on frame pressure without publishing',()=>{const h=aimingHarness();h.begin();h.service.job.optimizer.plan={};h.service.observeFrame(45);assert.equal(h.service.job,null);assert.equal(h.optimizers[0].disposed,true);});
+test('five-second idle budget suspends a retained frontier, without a new search deadline',()=>{const h=aimingHarness();h.begin();h.runTimer(5000);assert.equal(h.service.job.suspended,true);assert.equal(h.service.job.aimBudgetSuspended,true);assert.equal(h.optimizers.length,1);h.service.cancel();});

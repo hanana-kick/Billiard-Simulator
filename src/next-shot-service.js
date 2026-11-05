@@ -32,11 +32,39 @@ class NextShotService{
  current(job){return this.job===job&&job.generation===this.generation&&!this.controller.disposed;}
  cancel(reason='canceled'){
   this.generation++;const job=this.job;this.job=null;if(reason==='disabled'||reason==='disposed'){this.warmed?.dispose();this.warmed=null;}
-  clearTimeout(job?.timer);job?.predictor?.dispose();if(job&&!job.promoted)job.optimizer?.dispose();
+  clearTimeout(this.aimTimer);this.aimTimer=null;clearTimeout(job?.aimLimitTimer);clearTimeout(job?.timer);job?.predictor?.dispose();if(job&&!job.promoted)job.optimizer?.dispose();
   this.status('idle',{reason});
  }
- start(before,forecastReceipt=null){
+ prepareAim(receipt){
+  const c=this.controller;
+  if(!c.state.paused||!c.state.predict||!c.state.nextShotPrecompute||c.game?.pending||c.windup||c.lab?.cue||G.document?.hidden||c.state.routeStatus==='searching'||!receipt?.result?.rested||!receipt.result.nextShot)return;
+  this.cancel('aim-forecast');const generation=this.generation;
+  this.aimTimer=setTimeout(()=>{
+   this.aimTimer=null;
+   if(generation!==this.generation||!c.state.paused||c.windup||G.document?.hidden||c.forecastReceipt!==receipt)return;
+   const before={world:c.lab.snapshot({trails:false}),game:c.game.snapshot(),selectedId:c.state.selectedId};
+   if(!this.forecastMatches(before,receipt))return;
+   this.start(before,receipt);const job=this.job;if(!job)return;
+   job.aiming=true;job.aimSource=before;job.aimReceipt=receipt;job.aimStartedAt=performance.now();
+   // Bound speculative work while idle; retain a supported frontier, never restart it.
+   job.aimLimitTimer=setTimeout(()=>{if(!this.current(job)||!job.aiming||job.result)return;
+    if(job.optimizer?.suspend()){job.suspended=true;job.aimBudgetSuspended=true;}
+    else this.cancel('aim-budget');
+   },5000);
+  },750);
+ }
+ forecastMatches(before,receipt){
+  const r=receipt?.request,c=this.controller;
+  return !!(receipt?.result?.rested&&receipt.result.nextShot&&r?.selectedId===before.selectedId&&JSON.stringify(r.settings)===JSON.stringify(c.state.settings)&&JSON.stringify(r.nextShotGame?.snapshot)===JSON.stringify(before.game)&&r.nextShotGame?.shotRules?.threeCushion===!!c.state.routeOptions.fourBallThreeCushion&&snapshotEqual(r.snapshot,before.world));
+ }
+ takePrepared(before,receipt){
+  const job=this.job;
+  if(!job?.aiming||!this.current(job)||job.aimReceipt!==receipt||this.inputStamp()!==job.inputStamp||!this.forecastMatches(before,receipt)||!snapshotEqual(job.aimSource.world,before.world))return null;
+  clearTimeout(job.aimLimitTimer);this.job=null;return job;
+ }
+ start(before,forecastReceipt=null,prepared=null){
   this.cancel('new-shot');const c=this.controller;
+  if(prepared){prepared.generation=this.generation;prepared.aiming=false;prepared.adoptedAt=performance.now();this.job=prepared;if(prepared.suspended&&prepared.optimizer?.resumeBackground())prepared.suspended=false;this.status(prepared.result?'ready':'searching',{prestrikeReused:true});return;}
   if(!c.state.nextShotPrecompute||c.canonicalPlayback||!before?.game||typeof G.Worker!=='function'||Number(G.navigator?.hardwareConcurrency||2)<2){this.status('unavailable');return;}
   const job={generation:this.generation,inputStamp:this.inputStamp(),options:copy(c.state.routeOptions),settings:copy(c.state.settings),gameMode:c.state.gameMode,startedAt:performance.now(),rest:null,predicted:null,promoted:false,progress:null,result:null};this.job=job;
   this.status('predicting');
@@ -78,6 +106,7 @@ class NextShotService{
   const job=this.job,c=this.controller;
   if(!job||!this.current(job)||job.promoted||job.result||!job.optimizer?.plan)return;
   const now=performance.now();
+  if(job.aiming){if(deltaMs>40)this.cancel('aim-frame-pressure');return;}
   if(c.state.paused||G.document?.hidden){job.healthySince=null;job.lastObservedFrameAt=null;return;}
   if(now-job.startedAt<250)return;
   if(job.suspended){
