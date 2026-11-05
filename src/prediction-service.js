@@ -1,21 +1,22 @@
 (function(G){
 'use strict';
 class PredictionService{
- constructor(onResult,onError){
+ constructor(onResult,onError,{workerOnly=false,background=false}={}){
+  this.workerOnly=workerOnly;this.background=background;
   this.onResult=onResult;this.onError=onError;this.version=0;this.mode='worker';this.worker=null;this.latestRequest=null;
   try{
-   const code=['engine','math','physics','forecast','worker'].map(name=>document.getElementById('source-'+name)?.textContent||'').join('\n');
+   const code=['engine','math','physics','game-rules','forecast','worker'].map(name=>document.getElementById('source-'+name)?.textContent||'').join('\n');
    const url=URL.createObjectURL(new Blob([code],{type:'text/javascript'}));
    this.worker=new Worker(url);URL.revokeObjectURL(url);
    this.worker.onmessage=({data})=>{if(data.requestId!==this.version)return;if(data.error)this.onError(data.error);else this.onResult(data.result,{elapsedMs:data.elapsedMs,mode:this.mode});};
-   this.worker.onerror=event=>{event.preventDefault();this.worker?.terminate();this.worker=null;this.mode='cooperative';if(this.latestRequest)this.fallback(this.latestRequest,this.version);};
+   this.worker.onerror=event=>{event.preventDefault();this.worker?.terminate();this.worker=null;this.mode='cooperative';if(this.latestRequest){if(this.workerOnly)this.onError('Background prediction worker unavailable');else this.fallback(this.latestRequest,this.version);}};
   }catch{this.mode='cooperative';}
  }
  cancel(){this.version++;this.latestRequest=null;if(this.worker)this.worker.postMessage({type:'cancel',requestId:this.version});}
  request(request){
   const id=++this.version;this.latestRequest=request;
-  if(this.worker)this.worker.postMessage({...request,requestId:id,type:'predict'});
-  else this.fallback(request,id);
+  if(this.worker)this.worker.postMessage({...request,requestId:id,type:'predict',background:this.background});
+  else if(this.workerOnly)this.onError('Background prediction worker unavailable');else this.fallback(request,id);
   return id;
  }
  async fallback(request,id){

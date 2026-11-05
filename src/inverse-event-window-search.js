@@ -14,6 +14,9 @@ function create(R,req,options={}){
  if(!Number.isSafeInteger(lookahead)||lookahead<1||lookahead>256||!Number.isSafeInteger(frontier)||frontier<1||frontier>32)throw Error('Invalid event frontier');
  if(!Number.isFinite(maxTimeMs)||maxTimeMs<=0)throw Error('Positive finite event search budget required');
  if(options.frontierStepBudget!==undefined&&(!Number.isSafeInteger(options.frontierStepBudget)||options.frontierStepBudget<1))throw Error('Positive integer frontier work budget required');
+ if(options.carryBest!==undefined&&typeof options.carryBest!=='boolean')throw Error('Boolean carry best option required');
+ if(options.preserveFreshFrontier!==undefined&&typeof options.preserveFreshFrontier!=='boolean')throw Error('Boolean fresh frontier preservation option required');
+ if(options.maxConsecutiveRetentions!==undefined&&(!Number.isSafeInteger(options.maxConsecutiveRetentions)||options.maxConsecutiveRetentions<1))throw Error('Positive integer consecutive retention bound required');
  if(options.compensateElevationSpeed!==undefined&&typeof options.compensateElevationSpeed!=='boolean')throw Error('Boolean elevation compensation option required');
  return {R,req,domain,source:G.LabInverseGeometry.enumerate(req,domain),queue:[],roots:[],dormant:[],results:[],nextId:0,exhausted:false,finished:false,cancelled:false,evaluations:0,physicsSteps:0,geometryQueries:0,completedWaves:0,epoch:0,lookahead,frontier,started:performance.now(),deadline:performance.now()+maxTimeMs,paused:false,initializationMs:0,frontierStartedSteps:0,selected:null,pending:null,trace:[],admitted:0,unsupported:0,unresolved:0,options};
 }
@@ -34,9 +37,9 @@ function root(s,branch){
   }finally{lab.dispose();}
  }
  const state=G.LabInverseSolver.create({seed,topology:branch,bounds:{angle:[seed.angle-180,seed.angle+180],elevation:o.elevationMode==='fixed'?[s.req.settings.elevation,s.req.settings.elevation]:[o.minElevation??0,o.maxElevation??85],speed:[o.minSpeed??.5,o.maxSpeed??4.5],tipX:o.spin?[-.55,.55]:[0,0],tipY:o.spin?[-.45,.45]:[0,0]},tipRadius:.6},{maxIterations:40,residualTolerance:1e-4});
- return {branch,state,seed,order:s.admitted++,goalRadius:s.req.snapshot.objects.find(o=>o.id===s.req.selectedId).radius+s.req.snapshot.objects.find(o=>o.id===branch.secondId).radius,observed:false,jobs:[],outcomes:[],waves:0,epoch:s.epoch,last:null};
+ return {branch,state,seed,order:s.admitted++,goalRadius:s.req.snapshot.objects.find(o=>o.id===s.req.selectedId).radius+s.req.snapshot.objects.find(o=>o.id===branch.secondId).radius,observed:false,consecutiveRetentions:0,jobs:[],outcomes:[],waves:0,epoch:s.epoch,last:null};
 }
-function admit(s){refill(s);while(s.roots.length<s.frontier&&s.queue.length){const b=s.queue.shift();if(b.settings&&b.status==='supported')s.roots.push(root(s,b));else if(b.status==='unsupported')s.unsupported++;else s.unresolved++;}return s.roots.length;}
+function admit(s,capacity=s.frontier){refill(s);while(s.roots.length<capacity&&s.queue.length){const b=s.queue.shift();if(b.settings&&b.status==='supported')s.roots.push(root(s,b));else if(b.status==='unsupported')s.unsupported++;else s.unresolved++;}return s.roots.length;}
 function score(e){
  if(e.state.phase==='verify')return -Infinity;
  if(!e.observed)return -1e9;
@@ -50,7 +53,17 @@ function next(s){
  // Full dependency waves are deterministic work units. Periodically advance
  // another frontier while retaining all previous root states for later epochs.
  if(!s.selected&&s.roots.every(e=>e.observed)&&!s.roots.some(e=>e.state.phase==='verify')&&(s.queue.length||s.dormant.length)&&(s.options.frontierStepBudget!==undefined?s.physicsSteps-s.frontierStartedSteps>=s.options.frontierStepBudget:s.completedWaves>0&&s.completedWaves%16===0)){
-  s.dormant.push(...s.roots);s.roots=[];s.epoch++;s.frontierStartedSteps=s.physicsSteps;admit(s);s.completedWaves++;
+  // Optional scheduling-only bound: a root must become dormant after this
+  // many consecutive carries. Eligibility changes, never its numerical state,
+  // outstanding probe IDs, partial observations, or verification priority.
+  // Omitted bound preserves the original unbounded carryBest policy.
+  const limit=s.options.maxConsecutiveRetentions??Infinity;
+  const retained=s.options.carryBest===true?s.roots.filter(e=>e.consecutiveRetentions<limit).sort((a,b)=>score(a)-score(b)||a.branch.id.localeCompare(b.branch.id))[0]:null;
+  for(const e of s.roots)e.consecutiveRetentions=e===retained?e.consecutiveRetentions+1:0;
+  s.dormant.push(...s.roots.filter(e=>e!==retained));s.roots=retained?[retained]:[];s.epoch++;s.frontierStartedSteps=s.physicsSteps;
+  // Optional extra carry slot preserves the original fresh-admission width.
+  // Initial admission and dormant recovery still use the ordinary frontier.
+  admit(s,s.frontier+(retained&&s.options.preserveFreshFrontier===true?1:0));s.completedWaves++;
  }
  if(!s.roots.length){
   if(s.dormant.length){s.roots=s.dormant.splice(0,s.frontier);s.epoch++;for(const e of s.roots)if(e.state.status!=='running')e.state=G.LabInverseSolver.resume(e.state,{maxIterations:e.state.options.maxIterations+40});}
@@ -58,7 +71,7 @@ function next(s){
  }
  let e=s.selected;
  if(!e){e=s.roots.slice().sort((a,b)=>score(a)-score(b)||a.branch.id.localeCompare(b.branch.id))[0];s.selected=e;if(!e.jobs.length||e.outcomes.length>=e.jobs.length){e.jobs=G.LabInverseSolver.next(e.state);e.outcomes=[];}}
- if(!e.jobs.length){s.roots=s.roots.filter(x=>x!==e);if(['unconverged','time-limit'].includes(e.state.status))s.dormant.push(e);s.selected=null;return null;}
+ if(!e.jobs.length){s.roots=s.roots.filter(x=>x!==e);if(['unconverged','time-limit'].includes(e.state.status)){e.consecutiveRetentions=0;s.dormant.push(e);}s.selected=null;return null;}
  const p=e.jobs[e.outcomes.length];
  s.pending={id:s.nextId++,solverId:p.id,purpose:p.purpose,settings:{...p.settings,angle:((p.settings.angle+180)%360+360)%360-180},topology:e.branch,req:s.req};return structuredClone(s.pending);
 }
@@ -87,7 +100,7 @@ function accept(s,id,out){
   if(p.purpose!=='verify'||out.verified!==true||out.prefixOnly||!out.physicalResult?.success||out.freshReplay!==true||out.topologyMatched!==true)throw Error('Missing independent full physical verification');
   s.results.push({...out.physicalResult,method:e.branch.method,inverseBranch:e.branch.id,searchModel:{stage:'event-aware-inverse-solution',topologyId:e.branch.id}});
   s.roots=s.roots.filter(x=>x!==e);
- }else if(status!=='running'){s.roots=s.roots.filter(x=>x!==e);if(['unconverged','time-limit'].includes(status))s.dormant.push(e);}
+ }else if(status!=='running'){s.roots=s.roots.filter(x=>x!==e);if(['unconverged','time-limit'].includes(status)){e.consecutiveRetentions=0;s.dormant.push(e);}}
 }
 function result(s){return structuredClone({results:s.results.slice(),evaluations:s.evaluations,physicsSteps:s.physicsSteps,geometryQueries:s.geometryQueries,elapsedMs:performance.now()-s.started,exhaustive:false,globalOptimal:false,complete:s.finished,status:s.cancelled?'cancelled':s.results.length?'verified-feasible-shot':s.paused?'time-limit':s.finished?'domain-finished':'running',partial:!s.finished,continuable:!s.finished&&!s.cancelled,pendingRoots:s.roots.length+s.dormant.length,unseenRoots:s.queue.length,domainExhausted:s.exhausted,unsupportedBranches:s.unsupported,unresolvedBranches:s.unresolved,trace:s.trace.slice()});}
 function cancel(s){s.cancelled=true;s.pending=null;s.selected=null;}

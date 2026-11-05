@@ -42,9 +42,11 @@ function LegacyRoutePlanner({state:s,controller:c}:{state:any;controller:any}){
   <CardHeader><CardTitle>{s.gameMode==='four'?'4구':'3구'} 경로 찾기</CardTitle><CardDescription>{o.mode==='three'?'3쿠션':o.fourBallThreeCushion?'두 적구 + 3쿠션':'두 공 맞히기'} · {(o.allowKiss??o.allowMovingTargets)!==false?'키스 허용':'키스 제외'} · {o.mode!=='three'||o.methods.includes('any')?'모든 경로':`${ids.length}가지 방법`}</CardDescription></CardHeader>
   <CardContent className="route-content">
 
+   <SwitchField id="nextShotPrecompute" label="타격 중 다음 경로 미리 계산" checked={s.nextShotPrecompute!==false} onChange={(value:boolean)=>c.option('nextShotPrecompute',value)}/>
+   {['predicting','searching','suspended','ready','used','discarded'].includes(s.nextShotPreparation?.phase)?<p id="nextShotStatus" role="status" className="helper">{({predicting:'타격의 최종 정지 상태를 계산하고 있습니다.',searching:s.nextShotPreparation?.matched?'미리 시작한 다음 경로 계산을 이어갑니다.':'공이 움직이는 동안 다음 경로를 계산하고 있습니다.',suspended:'재생이 느려져 다음 경로 계산을 잠시 보류합니다. 정지 후 이어갑니다.',ready:'다음 경로 준비됨 · 실제 정지 상태를 확인한 뒤 표시합니다.',used:'실제 정지 상태를 확인한 다음 경로 계산 결과입니다.',discarded:'예측과 실제 정지 상태가 달라 미리 계산한 경로를 버렸습니다.'} as Record<string,string>)[s.nextShotPreparation.phase]}</p>:null}
    <div className="route-actions">
     {busy?<Button id="cancelRoute" variant="outline" onClick={()=>c.stopSearch()}>중단 · 찾은 경로 유지</Button>:<Button id="findRoute" disabled={!canSearch} onClick={()=>c.startSearch()}><Icon name="crosshair" data-icon="inline-start"/>{result?'다시 계산':'경로 계산'}</Button>}
-    <span className="helper">{invalidRange?'최소값은 최대값보다 클 수 없습니다.':invalid?'서로 다른 목적구와 방법을 선택하세요.':!s.canAim&&!busy?'공이 멈춘 뒤 계산합니다.':o.mode==='direct'?'쿠션 없이 두 공 맞히기':o.mode==='carom'?(o.fourBallThreeCushion?'두 적구와 3쿠션 조건으로 탐색':'설정한 경로 영역에서 두 적구 맞히기'):o.methods.length===1&&o.methods[0]==='any'?'접촉 순서의 제약식을 풀어 3쿠션 경로 계산':`${ids.length}가지 방법 탐색`}</span>
+    <span className="helper">{invalidRange?'최소값은 최대값보다 클 수 없습니다.':invalid?'서로 다른 목적구와 방법을 선택하세요.':!s.canAim&&!busy?'공이 멈추면 경로를 선택할 수 있습니다.':o.mode==='direct'?'쿠션 없이 두 공 맞히기':o.mode==='carom'?(o.fourBallThreeCushion?'두 적구와 3쿠션 조건으로 탐색':'설정한 경로 영역에서 두 적구 맞히기'):o.methods.length===1&&o.methods[0]==='any'?'접촉 순서의 제약식을 풀어 3쿠션 경로 계산':`${ids.length}가지 방법 탐색`}</span>
    </div>
    <Accordion value={detailsOpen?["details"]:[]} onValueChange={value=>setDetailsOpen(value.includes("details"))}><AccordionItem value="details">
     <AccordionTrigger id="routeDetails" ref={detailsTrigger}>상세보기</AccordionTrigger>

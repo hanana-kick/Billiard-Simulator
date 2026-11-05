@@ -31,3 +31,68 @@ test('a new request during wave progress cannot receive jobs from the obsolete r
 test('cooperative completion is visible before the next candidate and cancellation preserves it',()=>{const {ctx}=environment({Worker:class{constructor(){throw Error('unavailable');}}});let service,progress;service=new ctx.OptimizerService(p=>{progress=p;if(p.results.length)service.cancel();},assert.fail,assert.fail);service.request(req);assert.equal(progress.results.length,1);assert.equal(progress.evaluatedInWave,1);assert.equal(progress.tested,0);assert.equal(progress.partialResult.results.length,1);});
 
 test('inverse worker maximum is bounded by simultaneously independent Jacobian jobs',()=>{const {ctx}=environment();assert.equal(ctx.OptimizerPool.workerPlan({options:{searchAlgorithm:'inverse-constraints'}},{navigator:{hardwareConcurrency:128}}).requestedWorkers,40);});
+
+test('background preparation caps workers and marks scheduling without changing request options',()=>{
+ const {ctx,workers}=environment({navigator:{hardwareConcurrency:32}});const service=new ctx.OptimizerService(()=>{},()=>{},assert.fail,{background:true});service.request(req);assert.equal(workers.length,1);assert.equal(service.plan.requestedWorkers,1);assert.equal(workers[0].sent.background,true);assert.equal(service.search.req,req);assert.equal(req.options.workers,1);service.cancel();
+});
+test('background worker failure does not run physics on the playback main thread',()=>{
+ const {ctx}=environment({Worker:class{constructor(){throw Error('unavailable');}}});let error,result;ctx.ShotSearchCore.beginCandidate=()=>assert.fail('must not fallback');const service=new ctx.OptimizerService(()=>{},r=>result=r,e=>error=e,{background:true});service.request(req);assert.match(error,/Background search stopped/);assert.equal(result,undefined);assert.equal(service.workers.length,0);
+});
+test('foreground promotion expands the worker pool and preserves completed outcomes',()=>{
+ const planner=fakePlanner(),plan=planner.planWave,commit=planner.commitWave;planner.planWave=s=>(s.pending=plan(s));planner.commitWave=(s,outputs)=>{commit(s,outputs);s.pending=[];};planner.pause=s=>{s.paused=true;};planner.resume=s=>{s.paused=false;return true;};
+ const {ctx,workers}=environment({navigator:{hardwareConcurrency:8},LabInversePlanner:planner});let result;const service=new ctx.OptimizerService(()=>{},r=>result=r,assert.fail,{background:true});service.request({...req,options:{...req.options,searchAlgorithm:'inverse-constraints'}});reply(workers[0]);const old=workers[0],done=service.outcomes.size;assert.equal(done,1);service.promoteToForeground();assert.equal(old.terminated,true);assert.equal(service.background,false);assert.equal(service.plan.requestedWorkers,8);assert.equal(service.workers.length,8);assert.equal(service.outcomes.size,done);assert.equal(service.workers[0].sent.background,false);drain(workers,true);assert.equal(result.tested,48);assert.equal(new Set(service.search.trace).size,48);
+});
+
+test('completed background search restores the normal plan for a later manual Resume',()=>{
+ const planner=fakePlanner(),plan=planner.planWave,commit=planner.commitWave;planner.planWave=s=>(s.pending=plan(s));planner.commitWave=(s,outputs)=>{commit(s,outputs);s.pending=[];};planner.pause=()=>{};planner.resume=s=>{s.finished=false;s.index=0;s.trace=[];s.results=[];return true;};
+ const {ctx,workers}=environment({navigator:{hardwareConcurrency:8},LabInversePlanner:planner});const service=new ctx.OptimizerService(()=>{},()=>{},assert.fail,{background:true});service.request({...req,options:{...req.options,searchAlgorithm:'inverse-constraints'}});drain(workers);assert.equal(service.latest,null);service.promoteToForeground();assert.equal(service.plan.requestedWorkers,8);assert.equal(service.background,false);assert.equal(service.resume(),true);assert.equal(service.workers.length,8);service.cancel();
+});
+
+test('background progress is rate limited before result cloning but final and foreground reports are immediate',()=>{
+ let now=0,calls=0;const planner=fakePlanner(),result=planner.stagedResult;planner.stagedResult=s=>{calls++;return result(s);};
+ const {ctx}=environment({performance:{now:()=>now},LabOptimizer:planner});const progress=[],results=[],service=new ctx.OptimizerService(p=>progress.push(p),r=>results.push(r),assert.fail,{background:true});service.request(req);
+ service.report(false);assert.equal(calls,1);now=100;service.report(false);assert.equal(calls,1);now=301;service.report(false);assert.equal(calls,2);service.report(true);assert.equal(calls,3);assert.equal(results.length,1);service.background=false;service.report(false);service.report(false);assert.equal(calls,5);service.cancel();
+});
+
+function retainedHarness({parallel=false,steps=96}={}){
+ let clock=0,begins=0,disposals=0,finishes=0,final;const timers=[];
+ const planner=fakePlanner(),plan=planner.planWave,commit=planner.commitWave;
+ planner.planWave=s=>{const jobs=plan(s).map(j=>({...j,kind:'inverse-constraint',req:s.req,topology:{},prefixMismatchWindow:true}));s.pending=jobs;return jobs;};
+ planner.commitWave=(s,out)=>{commit(s,out);s.pending=[];};planner.pause=s=>{s.paused=true;};planner.resume=s=>{s.paused=false;return true;};
+ const evaluator={begin(){begins++;return {trial:{steps:0,lab:{dispose(){disposals++;}}}};},advance(e,n){e.trial.steps=Math.min(steps,e.trial.steps+n);return e.trial.steps===steps;},finish(e){assert.equal(e.trial.steps,steps);finishes++;e.trial.lab.dispose();return {...outcome(0),steps};},dispose(e){e.trial.lab.dispose();}};
+ const env=environment({performance:{now:()=>clock+=2},setTimeout:(fn,ms)=>{timers.push({fn,ms});return timers.length;},clearTimeout(){},navigator:{hardwareConcurrency:4},LabCPUEventWindowPlanner:planner,LabInversePlanner:planner,LabInverseEventsWindow:evaluator});
+ const service=new env.ctx.OptimizerService(()=>{},r=>final=r,assert.fail,{background:true,coordinator:true});const request={...req,options:{...req.options,budget:parallel?3:1,searchAlgorithm:parallel?'inverse-constraints':'cpu-event-window-inverse'}};
+ return {...env,service,request,timers,stats:()=>({begins,disposals,finishes,final})};
+}
+const tick=async()=>{for(let i=0;i<5;i++)await Promise.resolve();};
+test('pressure suspension retains the identical in-flight world and promotes without a new worker or repeated probe',async()=>{
+ const h=retainedHarness(),s=h.service;s.request(h.request);const state=s.cooperativeState,id=s.version;assert.equal(state.evaluation.trial.steps,16);assert.equal(h.stats().begins,1);assert.equal(s.suspend(),true);h.timers.shift().fn();await tick();assert.equal(state.evaluation.trial.steps,16);assert.equal(h.stats().disposals,0);assert.equal(h.stats().final,undefined);assert.equal(s.version,id);
+ assert.equal(s.promoteToForeground(),true);await tick();assert.equal(h.workers.length,0);assert.equal(h.stats().begins,1);assert.equal(h.stats().finishes,1);assert.equal(h.stats().disposals,1);assert.equal(h.stats().final.cooperativeRetention.promotionSteps,16);assert.equal(h.stats().final.cooperativeRetention.continuedInPlace,true);assert.equal(h.stats().final.workerCount,1);assert.equal(h.stats().final.retryOverhead.physicsSteps,0);assert.equal(s.cooperativeState,null);
+});
+test('cancel while gated disposes once and counts discarded partial work; old cleanup cannot clear the replacement',async()=>{
+ const h=retainedHarness(),s=h.service;s.request(h.request);s.suspend();h.timers.shift().fn();await tick();s.cancel();assert.equal(s.retryOverhead.tested,1);assert.equal(s.retryOverhead.physicsSteps,16);s.request(h.request);const replacement=s.cooperativeState;await tick();assert.equal(h.stats().disposals,1);assert.equal(s.cooperativeState,replacement);assert.equal(h.stats().final,undefined);s.promoteToForeground();h.timers.shift().fn();await tick();assert.equal(h.stats().begins,2);assert.equal(h.stats().disposals,2);assert.equal(h.stats().finishes,1);
+});
+test('parallel inverse promotion finishes the retained trial before dispatching only the rest of its wave',async()=>{
+ const h=retainedHarness({parallel:true}),s=h.service;s.request(h.request);const current=s.cooperativeState.job.id;s.suspend();h.timers.shift().fn();await tick();s.promoteToForeground();await tick();assert.equal(h.stats().begins,1);assert.equal(h.stats().finishes,1);assert.equal(h.workers.length,4);assert.ok(s.outcomes.has(current));const dispatched=h.workers.flatMap(w=>w.history||[]);assert.equal(dispatched.length,2);assert.ok(dispatched.every(x=>x.candidateId!==current));drain(h.workers);assert.equal(h.stats().final.tested,3);assert.equal(new Set(s.search.trace).size,3);assert.equal(s.cooperativeState,null);
+});
+
+test('completed coordinator search and later manual Resume keep the one-job executor warm',async()=>{
+ const h=retainedHarness(),s=h.service,planner=h.ctx.LabCPUEventWindowPlanner;planner.resume=search=>{search.paused=false;if(search.finished){search.index=0;search.trace=[];search.results=[];search.finished=false;}return true;};s.request(h.request);
+ for(let i=0;i<20&&!h.stats().final;i++){h.timers.shift()?.fn();await tick();}assert.ok(h.stats().final);assert.equal(s.latest,null);assert.equal(h.workers.length,0);
+ assert.equal(s.promoteToForeground({continueUnresolved:true}),true);await tick();assert.equal(h.stats().begins,2);assert.equal(h.workers.length,0);assert.equal(h.stats().finishes,2);assert.equal(s.resume(),true);await tick();assert.equal(h.stats().begins,3);assert.equal(h.stats().finishes,3);assert.equal(h.workers.length,0);
+});
+
+test('a throwing retained planner resume cancels and wakes the gated evaluator before reporting error',async()=>{
+ const h=retainedHarness(),s=h.service,errors=[];s.onError=e=>errors.push(e);s.request(h.request);s.suspend();h.timers.shift().fn();await tick();h.ctx.LabCPUEventWindowPlanner.resume=()=>{throw Error('invalid continuation');};assert.equal(s.promoteToForeground(),false);await tick();assert.equal(errors[0],'invalid continuation');assert.equal(s.latest,null);assert.equal(s.suspended,false);assert.equal(s.cooperativeWake,null);assert.equal(s.cooperativeState,null);assert.equal(h.stats().disposals,1);assert.equal(h.stats().final,undefined);
+});
+
+test('Stop then Resume clears a deferred parallel handoff before worker failure fallback',async()=>{
+ const h=retainedHarness({parallel:true,steps:8192}),s=h.service;let constructionAttempts=0;
+ s.request(h.request);s.suspend();h.timers.shift().fn();await tick();assert.equal(s.promoteToForeground(),true);await tick();
+ assert.equal(s.handoffAfterEvaluation,true);const abandoned=s.cooperativeState,abandonedSteps=abandoned.evaluation.trial.steps;assert.ok(abandonedSteps>16&&abandonedSteps<8192);
+ s.cancel();assert.equal(s.handoffAfterEvaluation,false);assert.equal(s.latest,null);assert.equal(s.retryOverhead.physicsSteps,abandonedSteps);
+ h.ctx.Worker=class{constructor(){constructionAttempts++;throw Error('Worker unavailable');}};
+ assert.equal(s.resume(),true);await tick();let drains=0;while(h.timers.length&&drains++<1000){h.timers.shift().fn();await tick();}
+ const stats=h.stats();assert.equal(constructionAttempts,3,'One normal halving attempt, not a repeated pool handoff');assert.equal(stats.final.tested,3);assert.equal(stats.final.executionMode,'cooperative');assert.equal(stats.final.workerFallbackReason,'worker-startup-failure');assert.equal(new Set(s.search.trace).size,3);assert.equal(stats.begins,4);assert.equal(stats.finishes,3);assert.equal(stats.disposals,4,'Abandoned world and three completed worlds each dispose once');
+ assert.equal(s.latest,null);assert.equal(s.cooperativeState,null);assert.equal(s.cooperativeWake,null);assert.equal(s.handoffAfterEvaluation,false);assert.equal(s.workers.length,0);assert.equal(s.busy.size,0);assert.equal(s.watchdogs.size,0);assert.equal(h.timers.length,0);assert.equal(s.search.pending.length,0);
+});

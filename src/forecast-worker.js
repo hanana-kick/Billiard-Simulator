@@ -10,9 +10,9 @@ self.onmessage=async({data})=>{
   await initialized;if(id!==latest)return;
   job=LabForecast.begin(RAPIER,data);
   const started=performance.now();
-  while(!LabForecast.advance(job,240)){
+  while(!LabForecast.advance(job,data.background?32:240)){
    // Yield to accept cancellation when a slider or ball position changes.
-   await new Promise(resolve=>setTimeout(resolve,0));
+   await new Promise(resolve=>setTimeout(resolve,data.background?16:0));
    if(id!==latest){job.lab.dispose();return;}
   }
   if(id!==latest){job.lab.dispose();return;}

@@ -1,0 +1,14 @@
+{
+  "purpose": "Private, tested CPU background-pacing candidate. No deployment or application to user repository occurred.",
+  "baseline": "The verified private bounded-search plus precompute integration, not a claimed deployed-main baseline.",
+  "originalOptimizerServiceSHA256": "bb5077c421629bda7e8871b41e6213d1753967cd92aaad3bb1f9bcbfd719edf9",
+  "candidateOptimizerServiceSHA256": "e0258591997e15531f7dfe310fa81557904cc9f9f2589abc082b0321d8850ae2",
+  "runtimeChange": "Only background compute target 1ms to 8ms and the two existing 12ms waits to 4ms. Search logic, physics, block size, foreground settings and budgets unchanged.",
+  "testScope": "12 previously exposed layouts \u00d72 arms\u00d74 repetitions=96 private Node controller/native-worker attempts. Both arms 48/48 passed, all 48 pairs eligible. Full metrics and limitations in Korean report.",
+  "browserUXValidated": false,
+  "userComputerAccessed": false,
+  "deployed": false,
+  "rawResultsLibraryFileId": "libfile_e1aa6f13c9008191899208f5addf6a72",
+  "rawResultsVersion": 3,
+  "rawArchiveSHA256": "2ec70ef1c963a63f6ef80f2778d3967eff415fdcb155a386ab1c1040dc7752fc"
+}

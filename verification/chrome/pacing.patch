@@ -1,0 +1,22 @@
+--- original/src/optimizer-service.js
++++ experimental/src/optimizer-service.js
+@@ -119,16 +119,16 @@
+      let done=job.kind==='inverse-constraint'?false:!evaluation.trial;
+      while(!done){
+       if(this.suspended)await this.cooperativeGate(id);if(id!==this.version){dispose();return;}
+-      const until=performance.now()+(this.background?1:this.coordinator?32:8),block=this.coordinator&&!this.background?64:16;
++      const until=performance.now()+(this.background?8:this.coordinator?32:8),block=this.coordinator&&!this.background?64:16;
+       do{done=job.kind==='inverse-constraint'?evaluator.advance(evaluation,block):G.ShotSearchCore.stepTrial(evaluation.search,evaluation.trial,block);}while(!done&&performance.now()<until);
+       if(performance.now()-lastReport>160){this.report(false);lastReport=performance.now();}
+-      if(!done)await new Promise(r=>setTimeout(r,this.background?12:0));
++      if(!done)await new Promise(r=>setTimeout(r,this.background?4:0));
+       if(id!==this.version){dispose();return;}
+      }
+      this.outcomes.set(job.id,job.kind==='inverse-constraint'?evaluator.finish(evaluation):G.ShotSearchCore.finishCandidate(evaluation));evaluation=null;if(this.cooperativeState===state)this.cooperativeState=null;this.report(false);if(id!==this.version)return;
+      if(this.handoffAfterEvaluation&&!this.background){this.handoffAfterEvaluation=false;if(this.outcomes.size===this.jobs.length&&this.completeWave())return;if(id!==this.version)return;this.queue=this.jobs.filter(j=>!this.outcomes.has(j.id));this.startPool(req,id,this.plan.requestedWorkers);return;}
+     }
+-    if(this.suspended)await this.cooperativeGate(id);if(id!==this.version)return;if(this.completeWave())return;if(['inverse-constraints','cpu-event-inverse','cpu-event-window-inverse'].includes(req.options.searchAlgorithm))await new Promise(r=>setTimeout(r,this.background?12:0));
++    if(this.suspended)await this.cooperativeGate(id);if(id!==this.version)return;if(this.completeWave())return;if(['inverse-constraints','cpu-event-inverse','cpu-event-window-inverse'].includes(req.options.searchAlgorithm))await new Promise(r=>setTimeout(r,this.background?4:0));
+    }
+   }catch(e){try{dispose();}catch{}this.fail(e,id);}
+  }

@@ -1,0 +1,48 @@
+{
+  "base": "1efe0dbcc7e6db743b5ea83fc394e6bad97495b4",
+  "patchSHA256": "95ad3393e25cb4e0888e3bdfc3188d1871e9059796fe418798b9ce65880630b2",
+  "changedFiles": {
+    "build.cjs": "49e414a0f06ceb1ad792d1d3880cf306e3f6995fd64b7467bdb934097ecfc38a",
+    "docs/cpu-frontier-retention.md": "59e37815a7e8616f7374d6771aa8873644f30fbef214ea6bc4a0f263cf517ef1",
+    "docs/next-shot-precompute.md": "549e212a5293bafcaac5725bd7d1968d93b4453ad90e4f67f559ab83b05bed9b",
+    "package.json": "cc32bc904693d1ad775552a20b7a29a443fe3b922575338a54e77c2fd65b39b2",
+    "scripts/check-next-shot-cache-route.cjs": "1dc309fc2afbfc9a8140ee17bd332e24aebcbb078936c8813c05cfa9516441cd",
+    "scripts/measure-next-shot-playback.cjs": "6523ab9b0e85d4c931232b1380e37444e8222bd197cf75d9c795b3c209bfb6e4",
+    "scripts/measure-next-shot-wait.cjs": "8ea7fa5e2520cc647e234b754213082f27c0d85d8ea4e7c8b0f74d77218453a5",
+    "scripts/verify-next-shot-cache-route.cjs": "19459977f56d73fc67773c4e0a0e6e4cf5b9145be0edcc21f40dc4d3b1e60113",
+    "src/components/route-planner.tsx": "192124809a1c7c4e3fd5a489c2fc439df314b64e55c6306bdd71980a77218ac6",
+    "src/controller.js": "ab8f3872e3d5391424047c1c003c30d57470fad3373edb847ead408b77f14583",
+    "src/forecast-worker.js": "565c0c695eaea18dfc9a7b1beb856422d6dcae36d7dbe729ad1f1ee16e590033",
+    "src/forecast.js": "94f00f7d31ee336cfbf184fe15e95251d4ed623a7972275800f6c0a01381c2e9",
+    "src/inverse-event-window-adaptive-search.js": "11a59cd6df8c22483f800703fdb8b99aa0222109c5be6e84704cdf6e5e32558b",
+    "src/inverse-event-window-search.js": "ce8b5d6d61e1a17ffb004aec36853c20f5fbfc00b059142f1f0f0387d24324be",
+    "src/next-shot-optimizer.js": "4fa9900f6bf05824dbfd6aba4eaef748a3641a4b3b0b4ff8c7c9aa6701fed405",
+    "src/next-shot-service.js": "1cf0c1a5cd130d1bbf47006f8c1d249b32ba059d8b83680245d99140f03f9de1",
+    "src/optimizer-service.js": "bb5077c421629bda7e8871b41e6213d1753967cd92aaad3bb1f9bcbfd719edf9",
+    "src/optimizer-worker.js": "28ac8e1dae89145d8a1da5febd2bd6e94d85901bdc003a1db0f4c142b0f94942",
+    "src/prediction-service.js": "521ed02eddec1666a9bac6e1a7b9cb4b644c443475a12f27731c812013412485",
+    "tests/cpu-event-frontier-retention.cjs": "247507357aa58183c4c721be3147c33efc9b60b0c5f7d13729024b50318ae668",
+    "tests/cpu-event-window-integration.cjs": "a21653ecfe26e34778e9b7fb28911a8efaf037bb326cfd2ea88f1ad1210147c7",
+    "tests/e2e/next-shot-precompute.spec.cjs": "16cf98665ae651e7a09e3d05ac899f31bf65f82e1173d1ec9f814b59ba4b661c",
+    "tests/next-shot-lifecycle.cjs": "37221634de9da21336905b5118e72767cdcda44acfb932099bbdae99ef28391d",
+    "tests/next-shot-optimizer.cjs": "bcc4b9c441b45fda6a1e62ecabf3240cc8f42a3ef16f0e15ed28544f66565603",
+    "tests/next-shot-precompute.cjs": "81c8a812b999ff9cf26f2158e8c4406a2c64331cf1d2d63cbbb5da6df7619296",
+    "tests/three-ball-turns.cjs": "b2632779ecac5ca78f18194bddaba0028a4f8d315b2b434858ed6b11b4e5da1f",
+    "tests/worker-pool.cjs": "641a07277fdbd1d5b2f1b16aeb1bc0fd67a826ccb98e28c6a2f127e55aae6b79"
+  },
+  "boundedFiles": {
+    "src/inverse-event-window-search.js": "ce8b5d6d61e1a17ffb004aec36853c20f5fbfc00b059142f1f0f0387d24324be",
+    "src/inverse-event-window-adaptive-search.js": "11a59cd6df8c22483f800703fdb8b99aa0222109c5be6e84704cdf6e5e32558b",
+    "tests/cpu-event-frontier-retention.cjs": "247507357aa58183c4c721be3147c33efc9b60b0c5f7d13729024b50318ae668"
+  },
+  "createdAt": "2026-11-04T18:39:22.631Z",
+  "built": true,
+  "compiledIndexSHA256": "12d350265559b2ee93be0c5919f784ed02c83bf12dd6a4c27ede9bfbf80b6b52",
+  "testOverlayRecordedAt": "2026-11-04T18:40:38.571Z",
+  "rapier": {
+    "sha256": "fca22b2f33d4e88d2992215f42df6312093476db7fea4197816fb8e4ce17cba4",
+    "version": "0.21.0",
+    "generatedBy": "Full release compiled asset pipeline: tools/compiled-release/prepare-reproduction-configs.mjs schedules original pinned dependency vendor preparation via tools/prepare-engine.cjs",
+    "receipt": "dist/canonical-controller-assets/build-receipt.json"
+  }
+}

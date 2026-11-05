@@ -3,12 +3,16 @@
 (function(G){
 'use strict';
 const {len,sub}=G.LabMath;
-function begin(R,{snapshot,selectedId,settings,horizon=8}){
+function begin(R,{snapshot,selectedId,settings,horizon=8,nextShotGame=null}){
  if(!Number.isFinite(horizon)||horizon<=0||horizon>30)throw new RangeError('Prediction horizon must be 0–30 seconds.');
  const lab=G.PhysicsLab.fromSnapshot(R,snapshot),start=lab.time;
  const job={lab,start,horizon,iterations:0,maxSteps:Math.round(horizon/lab.dt),sampleStride:Math.max(1,Math.round(1/60/lab.dt)),tracks:lab.objects.map(o=>({id:o.id,label:o.label,color:o.color,radius:o.radius,shape:o.shape,half:o.half,points:[{...o.body.translation(),t:0}]})),events:[],done:false,rested:false};
- lab.onEvent=e=>{if(e.kind==='contact')job.events.push({...e,time:e.time-start});};
- try{const result=lab.strike(selectedId,{...settings},{saveSnapshot:false});if(!result.ok)throw new Error(result.reason);}catch(e){lab.dispose();throw e;}
+ try{if(nextShotGame){
+  const game=nextShotGame.kind==='three'?new G.ThreeBallGame():new G.FourBallGame();
+  game.restore(nextShotGame.snapshot);if(!game.begin(selectedId,nextShotGame.shotRules))throw Error('Ready next-shot game required');job.game=game;
+ }
+ lab.onEvent=e=>{job.game?.contact(e);if(e.kind==='contact')job.events.push({...e,time:e.time-start});};
+ const result=lab.strike(selectedId,{...settings},{saveSnapshot:false});if(!result.ok)throw new Error(result.reason);}catch(e){lab.dispose();throw e;}
  return job;
 }
 function sample(job,force=false){
@@ -32,6 +36,7 @@ function advance(job,budget=240){
 function finish(job){
  const result={tracks:job.tracks,events:job.events,seconds:job.lab.time-job.start,iterations:job.iterations,hz:Math.round(1/job.lab.dt),rested:job.rested,
   final:job.lab.objects.map(o=>({id:o.id,position:{...o.body.translation()},rotation:{...o.body.rotation()},velocity:{...o.body.linvel()},angularVelocity:{...o.body.angvel()}}))};
+ if(job.game&&job.rested){const settled=job.game.finish();result.nextShot={snapshot:job.lab.snapshot({trails:false}),game:job.game.snapshot(),selectedId:settled.nextCue};}
  job.lab.dispose();return result;
 }
 function predict(R,request){const job=begin(R,request);try{while(!advance(job,480));return finish(job);}catch(e){job.lab.dispose();throw e;}}
