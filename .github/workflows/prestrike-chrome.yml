@@ -26,6 +26,8 @@ jobs:
           node --version | tee -a chrome-environment.log
           git rev-parse HEAD | tee -a chrome-environment.log
           node verification/prestrike/verify-source.cjs
+      - name: Prepare pinned engine before native prerequisites
+        run: npm run prepare:engine
       - name: Qualified pre-strike lifecycle and physical fallback
         run: node --test tests/next-shot-lifecycle.cjs tests/prestrike-controller.cjs tests/next-shot-precompute.cjs
       - name: Build both frozen-source arms
