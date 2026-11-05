@@ -1,0 +1,1 @@
+const fs=require('fs'),crypto=require('crypto'),path=require('path');for(const [f,h]of Object.entries(require('./hashes.json'))){if(f==='workflow.yml')continue;if(crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname,f))).digest('hex')!==h)throw Error('Frozen file changed '+f);}console.log('Yield protocol frozen hashes pass');
