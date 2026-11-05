@@ -1,7 +1,7 @@
 name: Foreground task-yield Chrome comparison (no deployment)
 on:
   push:
-    branches: ['backup/foreground-message-channel-20261105']
+    branches: ['backup/foreground-message-channel-extension-20261105']
 permissions:
   contents: read
 jobs:
@@ -44,7 +44,7 @@ jobs:
           node verification/chrome/stamp-build.cjs "$GITHUB_WORKSPACE"
           (cd "$BASE" && npm run prepare:engine && node build.cjs --canonical-controller-assets)
           node verification/chrome/stamp-build.cjs "$BASE"
-      - name: Repeated foreground task-yield comparison, all 32 attempts
+      - name: Repeated foreground task-yield comparison, 8 predeclared replication attempts
         if: steps.builds.outcome == 'success'
         run: |
           set -euo pipefail
@@ -59,15 +59,15 @@ jobs:
               sleep 1
             done
           done
-          CPU_WINDOW_RELEASED=yes BOUNDED_CANDIDATE_PASSED=yes MODE=pacing BASELINE_LABEL="Prestrike9354478 foreground timers" EXPERIMENT=foreground-message-channel APP_ROOT="$GITHUB_WORKSPACE" BASELINE_ROOT="$RUNNER_TEMP/baseline" CANDIDATE_ROOT="$GITHUB_WORKSPACE" BASELINE_URL=http://127.0.0.1:8793/ CANDIDATE_URL=http://127.0.0.1:8794/ OUT_DIR="$GITHUB_WORKSPACE/chrome-foreground-yield-raw" node verification/foreground-yield/browser-foreground-yield.cjs | tee chrome-foreground-yield.log
+          CPU_WINDOW_RELEASED=yes BOUNDED_CANDIDATE_PASSED=yes MODE=pacing BASELINE_LABEL="Prestrike9354478 foreground timers" EXPERIMENT=foreground-message-channel APP_ROOT="$GITHUB_WORKSPACE" BASELINE_ROOT="$RUNNER_TEMP/baseline" CANDIDATE_ROOT="$GITHUB_WORKSPACE" BASELINE_URL=http://127.0.0.1:8793/ CANDIDATE_URL=http://127.0.0.1:8794/ OUT_DIR="$GITHUB_WORKSPACE/chrome-foreground-yield-extension-raw" node verification/foreground-yield/browser-foreground-yield.cjs | tee chrome-foreground-yield-extension.log
       - name: Preserve every attempt and provenance
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: chrome-foreground-yield-all-attempts
+          name: chrome-foreground-yield-extension-all-attempts
           path: |
-            chrome-foreground-yield-raw/
-            chrome-foreground-yield.log
+            chrome-foreground-yield-extension-raw/
+            chrome-foreground-yield-extension.log
             chrome-precompute-raw/
             chrome-precompute.log
             precompute-server.log

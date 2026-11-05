@@ -11,9 +11,8 @@ const recipes=[
  {name:'new-post-four-swapped',mode:'four',swap:true,settings:{angle:90,elevation:8,speed:.8,tipX:0,tipY:0}},
  {name:'new-post-four-offset',mode:'four',moves:[[1,-.60,.16],[2,.24,-.05],[3,.82,-.28],[4,.61,.34]],settings:{angle:90,elevation:8,speed:.8,tipX:0,tipY:0}}
 ];
-const selectedRecipes=[recipes[0],recipes[2]];
-const cells=[...selectedRecipes.flatMap(recipe=>[0,6000,26000].map(dwellMs=>({recipe,rate:1,dwellMs,changingAim:false}))),...selectedRecipes.map(recipe=>({recipe,rate:1,dwellMs:2000,changingAim:true}))];
-function makeOrder(){const order=[];for(let repeat=0;repeat<2;repeat++)for(let offset=0;offset<cells.length;offset++){const ci=(offset+repeat)%cells.length;for(const arm of repeat%2?['candidate','baseline']:['baseline','candidate'])order.push({...cells[ci],repeat:repeat+1,arm,enabled:true,pair:`${ci}-${repeat+1}`});}return order;}
+const cells=[{recipe:recipes[0],rate:1,dwellMs:6000,changingAim:false}];
+function makeOrder(){const order=[];for(let repeat=0;repeat<4;repeat++)for(const arm of repeat%2?['candidate','baseline']:['baseline','candidate'])order.push({...cells[0],repeat:repeat+3,arm,enabled:true,pair:`extension-${repeat+3}`});return order;}
 const mode='pacing',order=makeOrder();
 const metricKeys=['setupToFireMs','aimingMs','predictionMs','requestedDwellMs','actualFinalDwellMs','configurationToRouteMs','fireToRestMs','restToRouteMs','fireToRouteMs','replayToRestMs'];
 function localURL(value){const url=new URL(value);if(!['127.0.0.1','localhost','[::1]'].includes(url.hostname)||!['http:','https:'].includes(url.protocol))throw Error('Only local test application allowed');return String(url);}

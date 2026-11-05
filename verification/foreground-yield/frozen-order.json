@@ -12,32 +12,12 @@
       }
     },
     "rate": 1,
-    "dwellMs": 0,
+    "dwellMs": 6000,
     "changingAim": false,
-    "repeat": 1,
+    "repeat": 3,
     "arm": "baseline",
     "enabled": true,
-    "pair": "0-1"
-  },
-  {
-    "recipe": {
-      "name": "new-post-three-default",
-      "mode": "free",
-      "settings": {
-        "angle": 0,
-        "elevation": 8,
-        "speed": 2,
-        "tipX": 0,
-        "tipY": 0
-      }
-    },
-    "rate": 1,
-    "dwellMs": 0,
-    "changingAim": false,
-    "repeat": 1,
-    "arm": "candidate",
-    "enabled": true,
-    "pair": "0-1"
+    "pair": "extension-3"
   },
   {
     "recipe": {
@@ -54,10 +34,10 @@
     "rate": 1,
     "dwellMs": 6000,
     "changingAim": false,
-    "repeat": 1,
-    "arm": "baseline",
+    "repeat": 3,
+    "arm": "candidate",
     "enabled": true,
-    "pair": "1-1"
+    "pair": "extension-3"
   },
   {
     "recipe": {
@@ -74,258 +54,10 @@
     "rate": 1,
     "dwellMs": 6000,
     "changingAim": false,
-    "repeat": 1,
+    "repeat": 4,
     "arm": "candidate",
     "enabled": true,
-    "pair": "1-1"
-  },
-  {
-    "recipe": {
-      "name": "new-post-three-default",
-      "mode": "free",
-      "settings": {
-        "angle": 0,
-        "elevation": 8,
-        "speed": 2,
-        "tipX": 0,
-        "tipY": 0
-      }
-    },
-    "rate": 1,
-    "dwellMs": 26000,
-    "changingAim": false,
-    "repeat": 1,
-    "arm": "baseline",
-    "enabled": true,
-    "pair": "2-1"
-  },
-  {
-    "recipe": {
-      "name": "new-post-three-default",
-      "mode": "free",
-      "settings": {
-        "angle": 0,
-        "elevation": 8,
-        "speed": 2,
-        "tipX": 0,
-        "tipY": 0
-      }
-    },
-    "rate": 1,
-    "dwellMs": 26000,
-    "changingAim": false,
-    "repeat": 1,
-    "arm": "candidate",
-    "enabled": true,
-    "pair": "2-1"
-  },
-  {
-    "recipe": {
-      "name": "new-post-four-swapped",
-      "mode": "four",
-      "swap": true,
-      "settings": {
-        "angle": 90,
-        "elevation": 8,
-        "speed": 0.8,
-        "tipX": 0,
-        "tipY": 0
-      }
-    },
-    "rate": 1,
-    "dwellMs": 0,
-    "changingAim": false,
-    "repeat": 1,
-    "arm": "baseline",
-    "enabled": true,
-    "pair": "3-1"
-  },
-  {
-    "recipe": {
-      "name": "new-post-four-swapped",
-      "mode": "four",
-      "swap": true,
-      "settings": {
-        "angle": 90,
-        "elevation": 8,
-        "speed": 0.8,
-        "tipX": 0,
-        "tipY": 0
-      }
-    },
-    "rate": 1,
-    "dwellMs": 0,
-    "changingAim": false,
-    "repeat": 1,
-    "arm": "candidate",
-    "enabled": true,
-    "pair": "3-1"
-  },
-  {
-    "recipe": {
-      "name": "new-post-four-swapped",
-      "mode": "four",
-      "swap": true,
-      "settings": {
-        "angle": 90,
-        "elevation": 8,
-        "speed": 0.8,
-        "tipX": 0,
-        "tipY": 0
-      }
-    },
-    "rate": 1,
-    "dwellMs": 6000,
-    "changingAim": false,
-    "repeat": 1,
-    "arm": "baseline",
-    "enabled": true,
-    "pair": "4-1"
-  },
-  {
-    "recipe": {
-      "name": "new-post-four-swapped",
-      "mode": "four",
-      "swap": true,
-      "settings": {
-        "angle": 90,
-        "elevation": 8,
-        "speed": 0.8,
-        "tipX": 0,
-        "tipY": 0
-      }
-    },
-    "rate": 1,
-    "dwellMs": 6000,
-    "changingAim": false,
-    "repeat": 1,
-    "arm": "candidate",
-    "enabled": true,
-    "pair": "4-1"
-  },
-  {
-    "recipe": {
-      "name": "new-post-four-swapped",
-      "mode": "four",
-      "swap": true,
-      "settings": {
-        "angle": 90,
-        "elevation": 8,
-        "speed": 0.8,
-        "tipX": 0,
-        "tipY": 0
-      }
-    },
-    "rate": 1,
-    "dwellMs": 26000,
-    "changingAim": false,
-    "repeat": 1,
-    "arm": "baseline",
-    "enabled": true,
-    "pair": "5-1"
-  },
-  {
-    "recipe": {
-      "name": "new-post-four-swapped",
-      "mode": "four",
-      "swap": true,
-      "settings": {
-        "angle": 90,
-        "elevation": 8,
-        "speed": 0.8,
-        "tipX": 0,
-        "tipY": 0
-      }
-    },
-    "rate": 1,
-    "dwellMs": 26000,
-    "changingAim": false,
-    "repeat": 1,
-    "arm": "candidate",
-    "enabled": true,
-    "pair": "5-1"
-  },
-  {
-    "recipe": {
-      "name": "new-post-three-default",
-      "mode": "free",
-      "settings": {
-        "angle": 0,
-        "elevation": 8,
-        "speed": 2,
-        "tipX": 0,
-        "tipY": 0
-      }
-    },
-    "rate": 1,
-    "dwellMs": 2000,
-    "changingAim": true,
-    "repeat": 1,
-    "arm": "baseline",
-    "enabled": true,
-    "pair": "6-1"
-  },
-  {
-    "recipe": {
-      "name": "new-post-three-default",
-      "mode": "free",
-      "settings": {
-        "angle": 0,
-        "elevation": 8,
-        "speed": 2,
-        "tipX": 0,
-        "tipY": 0
-      }
-    },
-    "rate": 1,
-    "dwellMs": 2000,
-    "changingAim": true,
-    "repeat": 1,
-    "arm": "candidate",
-    "enabled": true,
-    "pair": "6-1"
-  },
-  {
-    "recipe": {
-      "name": "new-post-four-swapped",
-      "mode": "four",
-      "swap": true,
-      "settings": {
-        "angle": 90,
-        "elevation": 8,
-        "speed": 0.8,
-        "tipX": 0,
-        "tipY": 0
-      }
-    },
-    "rate": 1,
-    "dwellMs": 2000,
-    "changingAim": true,
-    "repeat": 1,
-    "arm": "baseline",
-    "enabled": true,
-    "pair": "7-1"
-  },
-  {
-    "recipe": {
-      "name": "new-post-four-swapped",
-      "mode": "four",
-      "swap": true,
-      "settings": {
-        "angle": 90,
-        "elevation": 8,
-        "speed": 0.8,
-        "tipX": 0,
-        "tipY": 0
-      }
-    },
-    "rate": 1,
-    "dwellMs": 2000,
-    "changingAim": true,
-    "repeat": 1,
-    "arm": "candidate",
-    "enabled": true,
-    "pair": "7-1"
+    "pair": "extension-4"
   },
   {
     "recipe": {
@@ -342,10 +74,10 @@
     "rate": 1,
     "dwellMs": 6000,
     "changingAim": false,
-    "repeat": 2,
-    "arm": "candidate",
+    "repeat": 4,
+    "arm": "baseline",
     "enabled": true,
-    "pair": "1-2"
+    "pair": "extension-4"
   },
   {
     "recipe": {
@@ -362,10 +94,10 @@
     "rate": 1,
     "dwellMs": 6000,
     "changingAim": false,
-    "repeat": 2,
+    "repeat": 5,
     "arm": "baseline",
     "enabled": true,
-    "pair": "1-2"
+    "pair": "extension-5"
   },
   {
     "recipe": {
@@ -375,89 +107,6 @@
         "angle": 0,
         "elevation": 8,
         "speed": 2,
-        "tipX": 0,
-        "tipY": 0
-      }
-    },
-    "rate": 1,
-    "dwellMs": 26000,
-    "changingAim": false,
-    "repeat": 2,
-    "arm": "candidate",
-    "enabled": true,
-    "pair": "2-2"
-  },
-  {
-    "recipe": {
-      "name": "new-post-three-default",
-      "mode": "free",
-      "settings": {
-        "angle": 0,
-        "elevation": 8,
-        "speed": 2,
-        "tipX": 0,
-        "tipY": 0
-      }
-    },
-    "rate": 1,
-    "dwellMs": 26000,
-    "changingAim": false,
-    "repeat": 2,
-    "arm": "baseline",
-    "enabled": true,
-    "pair": "2-2"
-  },
-  {
-    "recipe": {
-      "name": "new-post-four-swapped",
-      "mode": "four",
-      "swap": true,
-      "settings": {
-        "angle": 90,
-        "elevation": 8,
-        "speed": 0.8,
-        "tipX": 0,
-        "tipY": 0
-      }
-    },
-    "rate": 1,
-    "dwellMs": 0,
-    "changingAim": false,
-    "repeat": 2,
-    "arm": "candidate",
-    "enabled": true,
-    "pair": "3-2"
-  },
-  {
-    "recipe": {
-      "name": "new-post-four-swapped",
-      "mode": "four",
-      "swap": true,
-      "settings": {
-        "angle": 90,
-        "elevation": 8,
-        "speed": 0.8,
-        "tipX": 0,
-        "tipY": 0
-      }
-    },
-    "rate": 1,
-    "dwellMs": 0,
-    "changingAim": false,
-    "repeat": 2,
-    "arm": "baseline",
-    "enabled": true,
-    "pair": "3-2"
-  },
-  {
-    "recipe": {
-      "name": "new-post-four-swapped",
-      "mode": "four",
-      "swap": true,
-      "settings": {
-        "angle": 90,
-        "elevation": 8,
-        "speed": 0.8,
         "tipX": 0,
         "tipY": 0
       }
@@ -465,20 +114,19 @@
     "rate": 1,
     "dwellMs": 6000,
     "changingAim": false,
-    "repeat": 2,
+    "repeat": 5,
     "arm": "candidate",
     "enabled": true,
-    "pair": "4-2"
+    "pair": "extension-5"
   },
   {
     "recipe": {
-      "name": "new-post-four-swapped",
-      "mode": "four",
-      "swap": true,
+      "name": "new-post-three-default",
+      "mode": "free",
       "settings": {
-        "angle": 90,
+        "angle": 0,
         "elevation": 8,
-        "speed": 0.8,
+        "speed": 2,
         "tipX": 0,
         "tipY": 0
       }
@@ -486,52 +134,10 @@
     "rate": 1,
     "dwellMs": 6000,
     "changingAim": false,
-    "repeat": 2,
-    "arm": "baseline",
-    "enabled": true,
-    "pair": "4-2"
-  },
-  {
-    "recipe": {
-      "name": "new-post-four-swapped",
-      "mode": "four",
-      "swap": true,
-      "settings": {
-        "angle": 90,
-        "elevation": 8,
-        "speed": 0.8,
-        "tipX": 0,
-        "tipY": 0
-      }
-    },
-    "rate": 1,
-    "dwellMs": 26000,
-    "changingAim": false,
-    "repeat": 2,
+    "repeat": 6,
     "arm": "candidate",
     "enabled": true,
-    "pair": "5-2"
-  },
-  {
-    "recipe": {
-      "name": "new-post-four-swapped",
-      "mode": "four",
-      "swap": true,
-      "settings": {
-        "angle": 90,
-        "elevation": 8,
-        "speed": 0.8,
-        "tipX": 0,
-        "tipY": 0
-      }
-    },
-    "rate": 1,
-    "dwellMs": 26000,
-    "changingAim": false,
-    "repeat": 2,
-    "arm": "baseline",
-    "enabled": true,
-    "pair": "5-2"
+    "pair": "extension-6"
   },
   {
     "recipe": {
@@ -546,113 +152,11 @@
       }
     },
     "rate": 1,
-    "dwellMs": 2000,
-    "changingAim": true,
-    "repeat": 2,
-    "arm": "candidate",
-    "enabled": true,
-    "pair": "6-2"
-  },
-  {
-    "recipe": {
-      "name": "new-post-three-default",
-      "mode": "free",
-      "settings": {
-        "angle": 0,
-        "elevation": 8,
-        "speed": 2,
-        "tipX": 0,
-        "tipY": 0
-      }
-    },
-    "rate": 1,
-    "dwellMs": 2000,
-    "changingAim": true,
-    "repeat": 2,
-    "arm": "baseline",
-    "enabled": true,
-    "pair": "6-2"
-  },
-  {
-    "recipe": {
-      "name": "new-post-four-swapped",
-      "mode": "four",
-      "swap": true,
-      "settings": {
-        "angle": 90,
-        "elevation": 8,
-        "speed": 0.8,
-        "tipX": 0,
-        "tipY": 0
-      }
-    },
-    "rate": 1,
-    "dwellMs": 2000,
-    "changingAim": true,
-    "repeat": 2,
-    "arm": "candidate",
-    "enabled": true,
-    "pair": "7-2"
-  },
-  {
-    "recipe": {
-      "name": "new-post-four-swapped",
-      "mode": "four",
-      "swap": true,
-      "settings": {
-        "angle": 90,
-        "elevation": 8,
-        "speed": 0.8,
-        "tipX": 0,
-        "tipY": 0
-      }
-    },
-    "rate": 1,
-    "dwellMs": 2000,
-    "changingAim": true,
-    "repeat": 2,
-    "arm": "baseline",
-    "enabled": true,
-    "pair": "7-2"
-  },
-  {
-    "recipe": {
-      "name": "new-post-three-default",
-      "mode": "free",
-      "settings": {
-        "angle": 0,
-        "elevation": 8,
-        "speed": 2,
-        "tipX": 0,
-        "tipY": 0
-      }
-    },
-    "rate": 1,
-    "dwellMs": 0,
+    "dwellMs": 6000,
     "changingAim": false,
-    "repeat": 2,
-    "arm": "candidate",
-    "enabled": true,
-    "pair": "0-2"
-  },
-  {
-    "recipe": {
-      "name": "new-post-three-default",
-      "mode": "free",
-      "settings": {
-        "angle": 0,
-        "elevation": 8,
-        "speed": 2,
-        "tipX": 0,
-        "tipY": 0
-      }
-    },
-    "rate": 1,
-    "dwellMs": 0,
-    "changingAim": false,
-    "repeat": 2,
+    "repeat": 6,
     "arm": "baseline",
     "enabled": true,
-    "pair": "0-2"
+    "pair": "extension-6"
   }
 ]
