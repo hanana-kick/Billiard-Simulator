@@ -1,0 +1,41 @@
+name: Undo reset stale callback regression (no deployment)
+on:
+  push:
+    branches: ['backup/undo-reset-gate-20261105']
+permissions:
+  contents: read
+jobs:
+  repeated:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run prepare:engine
+      - run: node build.cjs --canonical-controller-assets
+      - name: Verify supported Chrome without security changes
+        run: |
+          test "$(id -u)" != 0
+          google-chrome --version
+          git rev-parse HEAD
+          node - <<'NODE'
+          const assert=require('node:assert/strict'),{use}=require('./playwright.config.cjs');
+          assert.equal(use.channel,'chrome');assert.equal(use.launchOptions.chromiumSandbox,true);
+          assert.deepEqual(use.launchOptions.args||[],[]);assert.equal(use.ignoreHTTPSErrors,undefined);
+          NODE
+      - name: Repeat actual narrow screen undo/reset stale callback checks twelve times
+        run: npx playwright test tests/e2e/next-shot-precompute.spec.cjs --grep 'rejects stale callbacks' --repeat-each=6
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: undo-reset-lifecycle-repeats
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 30

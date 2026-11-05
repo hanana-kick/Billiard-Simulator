@@ -36,14 +36,49 @@ test('next-shot exact-state mismatch discards cached results without changing sc
  await page.evaluate(()=>{cueLab.nextShot.job.predicted.snapshot.world[0]^=1;cueLab.option('rate',4);});
  await page.waitForFunction(()=>!cueLab.game.pending,null,{timeout:30000});expect(await page.evaluate(()=>cueLab.state.nextShotPreparation.phase)).toBe('discarded');expect(await page.evaluate(()=>cueLab.state.routeResult)).toBeNull();expect(await page.evaluate(()=>cueLab.state.gameMode)).toBe('four');expect(errors).toEqual([]);
 });
-for(const action of ['undo','reset','conditions','blur','disable'])test(`next-shot ${action} cancels old generations on narrow screens`,async({page})=>{
+for(const action of ['conditions','blur','disable'])test(`next-shot ${action} cancels old generations on narrow screens`,async({page})=>{
  await page.setViewportSize({width:390,height:844});const errors=await boot(page);await page.locator('#strike').click();await page.waitForFunction(()=>cueLab.nextShot.job?.optimizer,null,{timeout:15000});
- if(action==='undo'||action==='reset'){await sidebar(page);await page.locator('#'+action).click();}
- else if(action==='conditions')await page.evaluate(()=>cueLab.routeOption('maxCushions',4));
+ if(action==='conditions')await page.evaluate(()=>cueLab.routeOption('maxCushions',4));
  else if(action==='blur')await page.evaluate(()=>window.dispatchEvent(new Event('blur')));
  else {await sidebar(page);await page.getByRole('checkbox',{name:'타격 중 다음 경로 미리 계산',exact:true}).click();}
  const guard=await page.evaluate(()=>({generation:cueLab.nextShot.generation,phase:cueLab.state.nextShotPreparation.phase,result:cueLab.state.routeResult,settings:cueLab.state.settings,mode:cueLab.state.gameMode}));expect(await page.evaluate(()=>cueLab.nextShot.job)).toBeNull();await page.waitForTimeout(500);
  expect(await page.evaluate(()=>({generation:cueLab.nextShot.generation,phase:cueLab.state.nextShotPreparation.phase,result:cueLab.state.routeResult,settings:cueLab.state.settings,mode:cueLab.state.gameMode}))).toEqual(guard);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);expect(errors).toEqual([]);
+});
+
+// Undo/reset deliberately return to an idle, forecastable world. A fresh forecast
+// may advance the generation and begin a NEW aiming job. Test old-job isolation,
+// not a timing-dependent assumption that the global generation stays constant.
+for(const action of ['undo','reset'])test(`next-shot ${action} rejects stale callbacks and allows fresh idle preparation on narrow screens`,async({page},testInfo)=>{
+ await page.setViewportSize({width:390,height:844});const errors=await boot(page);
+ await page.evaluate(()=>{globalThis.__cancelAudit={before:cueLab.captureHistory(),events:[]};});
+ await page.locator('#strike').click();await page.waitForFunction(()=>cueLab.nextShot.job?.optimizer,null,{timeout:15000});
+ await page.evaluate(()=>{
+  const a=__cancelAudit,c=cueLab,s=c.nextShot;a.oldJob=s.job;a.oldOptimizer=s.job.optimizer;a.oldGeneration=s.generation;
+  a.callbacks={progress:a.oldOptimizer.onProgress,result:a.oldOptimizer.onResult,error:a.oldOptimizer.onError,worker:a.oldOptimizer.worker.onmessage};a.oldRequestId=a.oldOptimizer.version;
+  const prepare=s.prepareAim,start=s.start;
+  s.prepareAim=function(receipt){const before=this.generation,returned=prepare.call(this,receipt);a.events.push({type:'prepareAim',before,after:this.generation,reason:c.state.nextShotPreparation.reason,receiptMatches:this.forecastMatches(c.captureHistory(),receipt)});return returned;};
+  s.start=function(...args){const returned=start.apply(this,args);if(this.job&&this.job!==a.oldJob)a.freshJob=this.job;a.events.push({type:'start',generation:this.generation,newJob:!!a.freshJob});return returned;};
+  a.probeStale=()=>{
+   const snapshot=()=>JSON.stringify({generation:s.generation,preparation:c.state.nextShotPreparation,result:c.state.routeResult,progress:c.state.routeProgress,error:c.state.routeError,status:c.state.routeStatus,settings:c.state.settings,game:c.game.snapshot(),world:Array.from(c.lab.snapshot({trails:false}).world)});
+   const before=snapshot(),job=s.job,marker={results:[{id:'STALE-MUST-NEVER-PUBLISH'}],continuable:false};
+   // Deliver at both boundaries: the disposed Worker wrapper and the captured
+   // service callbacks. These sentinels must never become accepted physics.
+   for(const type of ['progress','result','error'])a.callbacks.worker({data:{type,requestId:a.oldRequestId,value:type==='error'?'STALE-ERROR':marker}});
+   a.callbacks.progress({partialResult:marker});a.callbacks.result(marker);a.callbacks.error('STALE-ERROR');
+   return {unchanged:before===snapshot(),sameJob:s.job===job,oldDisposed:a.oldOptimizer.disposed,oldWorkerGone:a.oldOptimizer.worker===null,oldNotCurrent:s.job!==a.oldJob};
+  };
+ });
+ await sidebar(page);await page.locator('#'+action).click();
+ const immediate=await page.evaluate(()=>{const a=__cancelAudit,c=cueLab;return{probe:a.probeStale(),generation:c.nextShot.generation,oldGeneration:a.oldGeneration,worldRestored:NextShotState.snapshotEqual(c.lab.snapshot({trails:false}),a.before.world),game:c.game.snapshot(),beforeGame:a.before.game,settings:c.state.settings,beforeSettings:a.before.settings,pending:c.game.pending,result:c.state.routeResult,undo:c.undoStack.length,redo:c.redoStack.length};});
+ expect(immediate.probe).toEqual({unchanged:true,sameJob:true,oldDisposed:true,oldWorkerGone:true,oldNotCurrent:true});expect(immediate.generation).toBeGreaterThan(immediate.oldGeneration);expect(immediate.worldRestored).toBe(true);expect(immediate.game).toEqual(immediate.beforeGame);expect(immediate.settings).toEqual(immediate.beforeSettings);expect(immediate.pending).toBeNull();expect(immediate.result).toBeNull();expect(immediate.undo).toBe(0);expect(immediate.redo).toBe(action==='undo'?1:0);
+ // The receipt and new job are observed, never synthesized. A pressure cancel
+ // after creation is legitimate; keep the creation evidence rather than racing
+ // an assertion against the job's transient lifetime.
+ await page.waitForFunction(()=>__cancelAudit.freshJob?.aimSource&&__cancelAudit.freshJob?.optimizer,null,{timeout:30000});
+ const fresh=await page.evaluate(()=>{const a=__cancelAudit,c=cueLab,j=a.freshJob;return{probe:a.probeStale(),events:a.events,newGeneration:j.generation,oldGeneration:a.oldGeneration,newOptimizer:j.optimizer!==a.oldOptimizer,sourceMatches:NextShotState.snapshotEqual(j.aimSource.world,c.lab.snapshot({trails:false})),sourceGameMatches:JSON.stringify(j.aimSource.game)===JSON.stringify(c.game.snapshot()),worldUnchanged:NextShotState.snapshotEqual(c.lab.snapshot({trails:false}),a.before.world),game:c.game.snapshot(),beforeGame:a.before.game,settings:c.state.settings,beforeSettings:a.before.settings,result:c.state.routeResult,pending:c.game.pending};});
+ expect(fresh.probe).toEqual({unchanged:true,sameJob:true,oldDisposed:true,oldWorkerGone:true,oldNotCurrent:true});expect(fresh.newGeneration).toBeGreaterThan(fresh.oldGeneration);expect(fresh.newOptimizer).toBe(true);expect(fresh.sourceMatches).toBe(true);expect(fresh.sourceGameMatches).toBe(true);expect(fresh.worldUnchanged).toBe(true);expect(fresh.game).toEqual(fresh.beforeGame);expect(fresh.settings).toEqual(fresh.beforeSettings);expect(fresh.result).toBeNull();expect(fresh.pending).toBeNull();expect(fresh.events.some(e=>e.type==='prepareAim'&&e.after>e.before&&e.reason==='aim-forecast'&&e.receiptMatches)).toBe(true);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);expect(errors).toEqual([]);
+ const file=testInfo.outputPath('undo-reset-lifecycle.json');fs.writeFileSync(file,JSON.stringify({action,immediate,fresh},null,2));await testInfo.attach('undo-reset-lifecycle',{path:file,contentType:'application/json'});
 });
 
 test('real playback pressure suspends retained background work and resumes only at exact rest',async({page})=>{
