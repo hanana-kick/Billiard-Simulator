@@ -1,0 +1,14 @@
+{
+  "optimizer-service.js": {
+    "baseline": "ef8eea55de7886b57103d834fe103b39e422109c30c6ec357cbb588c2c68ba5f",
+    "candidate": "7bd8c5395840fd895acf7d474ba24482fa251389a616bf63feba79fc5dae1265"
+  },
+  "next-shot-optimizer.js": {
+    "baseline": "18a6a61c2c01852ed084285fed0314691e84879a2c1849362572ab9eb36a62f8",
+    "candidate": "5c9d4914203f200a9045d1fe2e5fffddd6d2b84d6fb9d2491c6680b9b0b8da9d"
+  },
+  "controller.js": {
+    "baseline": "4efd6193acda39c1de9be1723c7eb1c4e757a3aa22419d9ad874ada11a8be75a",
+    "candidate": "0591eb129d08e71f5292a5d35f43c2db479514c0a235d6bc289013d282d3c06a"
+  }
+}

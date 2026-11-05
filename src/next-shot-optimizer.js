@@ -10,6 +10,7 @@ function coordinatorBootstrap(){
  const ensure=()=>service||(service=new OptimizerService(p=>reply('progress',p),r=>{lastResult=r;resultRevision++;reply('result',r);},e=>{errorRevision++;reply('error',String(e));},{background:true,coordinator:true}));
  self.onmessage=async({data})=>{
   if(data.type==='sources'){const sources=data.sources;globalThis.document={getElementById:id=>({textContent:sources[id.slice(7)]||''})};return;}
+  if(data.type==='foreground-frame'){if(data.requestId===requestId)service?.observeForegroundFrame(data.frame);return;}
   requestId=data.requestId;const token=requestId;
   if(data.type==='cancel'){service?.cancel();return;}
   if(data.type==='suspend'){suspended=service?.suspend()===true;reply('retained',service?.retainedState());return;}
@@ -49,9 +50,23 @@ class NextShotOptimizer{
  request(req){this.version++;this.latest=req;this.result=null;this.workers=this.worker?[this.worker]:[];return this.send('request',{req});}
  suspend(){if(!this.background||!this.latest||this.suspended||!this.plan)return false;this.suspended=true;this.version++;this.workers=[];return this.send('suspend');}
  resumeBackground(){if(this.disposed||!this.worker||!this.background||!this.latest||!this.suspended)return false;this.version++;this.suspended=false;this.workers=[this.worker];return this.send('recover-background');}
- promoteToForeground(options={}){this.suspended=false;this.version++;this.background=false;if(this.latest||options.continueUnresolved)this.workers=this.worker?[this.worker]:[];return this.send('promote',{options});}
- resume(){if(this.disposed||!this.worker||this.result?.continuable===false)return false;this.version++;this.workers=[this.worker];return this.send('resume');}
- cancel(){this.version++;this.latest=null;this.workers=[];if(this.worker&&!this.disposed)this.send('cancel');}
+ // Reuse the existing 750ms/40ms healthy-frame policy. Send no traffic
+ // while waiting for health except a single revocation of a prior grant.
+ observeFrame(deltaMs){
+  if(this.background||this.disposed||!this.worker||(!this.latest&&!this.workers.length))return;
+  const now=performance.now(),gap=this.foregroundLastFrameAt==null?deltaMs:now-this.foregroundLastFrameAt;
+  this.foregroundLastFrameAt=now;
+  const healthy=!G.document?.hidden&&Number.isFinite(deltaMs)&&deltaMs>0&&deltaMs<=40&&Number.isFinite(gap)&&gap>0&&gap<=40;
+  if(!healthy)this.foregroundHealthySince=null;
+  else if(this.foregroundHealthySince==null)this.foregroundHealthySince=now;
+  const allowed=healthy&&now-this.foregroundHealthySince>=750;
+  if(allowed||this.foregroundFrameAllowed)this.send('foreground-frame',{frame:{allowed,at:performance.timeOrigin+now}});
+  this.foregroundFrameAllowed=allowed;
+ }
+ resetForegroundFrames(){this.foregroundHealthySince=null;this.foregroundLastFrameAt=null;this.foregroundFrameAllowed=false;}
+ promoteToForeground(options={}){this.resetForegroundFrames();this.suspended=false;this.version++;this.background=false;if(this.latest||options.continueUnresolved)this.workers=this.worker?[this.worker]:[];return this.send('promote',{options});}
+ resume(){this.resetForegroundFrames();if(this.disposed||!this.worker||this.result?.continuable===false)return false;this.version++;this.workers=[this.worker];return this.send('resume');}
+ cancel(){this.resetForegroundFrames();this.version++;this.latest=null;this.workers=[];if(this.worker&&!this.disposed)this.send('cancel');}
  dispose(){if(this.disposed)return;this.cancel();this.disposed=true;this.worker?.terminate();this.worker=null;this.workers=[];}
 }
 G.NextShotOptimizer=NextShotOptimizer;

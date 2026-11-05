@@ -277,7 +277,7 @@ class LabController{
  renderedFrames(){return this.renderer?.fallback?(this.renderer.metrics.frames||0)+(this.renderer.fallback.completedFrames||0):this.renderer?.workerMode?this.renderer.metrics.frames:(this.renderer?.completedFrames||0);}
  scheduleFrame(){if(this.disposed||this.raf!==null||document.hidden)return;this.raf=requestAnimationFrame(t=>{this.raf=null;this.frame(t);});}
  frame(t){
-  if(!this.lab||this.disposed||document.hidden)return;const rafEnteredAt=performance.now(),elapsed=this.last?Math.min(.06,(t-this.last)/1000):0;if(this.last)this.nextShot?.observeFrame(t-this.last);this.last=t;
+  if(!this.lab||this.disposed||document.hidden)return;const rafEnteredAt=performance.now(),elapsed=this.last?Math.min(.06,(t-this.last)/1000):0;if(this.last){this.nextShot?.observeFrame(t-this.last);if(this.state.routeStatus==='searching')this.optimizer?.observeFrame?.(t-this.last);}this.last=t;
   if(this.canonicalPlayback)this.canonicalPlayback.advance(elapsed);
   else if(!this.state.paused&&!this.drag){this.accumulator+=elapsed*this.state.rate;let n=0;while(this.accumulator>=this.lab.dt&&n<384){this.lab.step();this.accumulator-=this.lab.dt;n++;if(!this.lab.cue&&this.lab.objects.every(o=>o.body.isSleeping())){this.accumulator=0;break;}}if(n===384)this.accumulator=0;this.dirty=true;if(!this.lab.cue&&this.lab.objects.every(o=>o.body.isSleeping())){this.state.paused=true;this.queuePrediction(true);}}
   if(this.inputPending){this.inputPending=false;this.notify();}
