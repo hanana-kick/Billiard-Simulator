@@ -1,0 +1,8 @@
+'use strict';
+const {test}=require('node:test'),assert=require('node:assert/strict');
+require('../src/math.js');require('../src/physics.js');require('../src/route-rules.js');require('../src/render-cadence.js');require('../src/controller.js');
+function harness(){const c=new LabController();c.routeStamp='same';c.worldStamp=()=> 'same';c.notify=()=>{};c.announce=()=>{};c.changeSettings=settings=>{c.state.settings=settings;};c.stopSearch=()=>{c.state.routeStatus='done';};c.state.routeStatus='searching';const row=(id,angle)=>({id,firstId:2,secondId:3,settings:{angle,elevation:0,speed:2,tipX:0,tipY:0},contacts:[]});return{c,row};}
+test('application follows displayed identity when new publication renumbers rows',()=>{const{c,row}=harness(),visible=row(1,10),other=row(1,20),retained={...visible,id:2};c.state.routeResult={results:[other,retained]};c.applyRoute(1,visible);assert.equal(c.state.settings.angle,10);assert.equal(c.state.routeApplied,2);assert.equal(c.state.routeStatus,'done');});
+test('removed displayed identity cannot select a new row with its old numeric id',()=>{const{c,row}=harness();c.state.routeResult={results:[row(1,20)]};const before=c.state.settings;c.applyRoute(1,row(1,10));assert.equal(c.state.settings,before);assert.equal(c.state.routeStatus,'searching');});
+test('stale world still rejects identity-bound application',()=>{const{c,row}=harness(),r=row(1,10);c.worldStamp=()=> 'changed';c.state.routeResult={results:[r]};const before=c.state.settings;c.applyRoute(1,r);assert.equal(c.state.settings,before);});
+test('existing numeric callers retain current result lookup',()=>{const{c,row}=harness(),r=row(1,10);c.state.routeResult={results:[r]};c.applyRoute(1);assert.equal(c.state.settings.angle,10);});

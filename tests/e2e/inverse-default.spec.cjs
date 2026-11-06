@@ -53,12 +53,14 @@ test('public default inverse search resumes preserved solutions and scores a liv
  await expect.poll(()=>page.evaluate(()=>cueLab.state.routeStatus)).toBe('done');
  const preserved=await page.evaluate(()=>{
   const r=cueLab.state.routeResult,shot=r.results[0];globalThis.__inversePreservedIdentity=LabRouteRules.successIdentity(shot);
-  return {shot,result:{inputStrategy:r.inputStrategy,searchModel:r.searchModel,globalOptimal:r.globalOptimal,exhaustive:r.exhaustive,branches:r.branches,continuable:r.continuable},sourceUnchanged:cueLab.lab===__inverseSourceWorld&&JSON.stringify(Array.from(cueLab.lab.world.takeSnapshot()))===JSON.stringify(__inverseSourceBytes),settingsUnchanged:JSON.stringify(cueLab.state.settings)===JSON.stringify(__inverseInitialSettings),shots:cueLab.lab.shots};
+  const search=cueLab.optimizer.search,pending=search.pending.find(j=>j.branchId===shot.inverseBranch&&j.purpose==='verify'),outcome=pending&&cueLab.optimizer.outcomes.get(pending.id);const pendingVerified=!!(shot.publicationStatus==='verified-pending-wave'&&pending&&outcome?.verified&&outcome?.freshReplay&&outcome?.physicalResult?.success&&outcome.id===pending.topology.id&&JSON.stringify(outcome.settings)===JSON.stringify(pending.settings)&&search.active.some(e=>e.branch.id===pending.branchId&&e.state.phase==='verify')&&LabInversePlanner.stagedVerifiedResult(search,cueLab.optimizer.outcomes).results.some(x=>LabRouteRules.successIdentity(x)===__inversePreservedIdentity));
+  return {shot,pendingVerified,result:{inputStrategy:r.inputStrategy,searchModel:r.searchModel,globalOptimal:r.globalOptimal,exhaustive:r.exhaustive,branches:r.branches,continuable:r.continuable},sourceUnchanged:cueLab.lab===__inverseSourceWorld&&JSON.stringify(Array.from(cueLab.lab.world.takeSnapshot()))===JSON.stringify(__inverseSourceBytes),settingsUnchanged:JSON.stringify(cueLab.state.settings)===JSON.stringify(__inverseInitialSettings),shots:cueLab.lab.shots};
  });
  expect(preserved.sourceUnchanged).toBe(true);expect(preserved.settingsUnchanged).toBe(true);expect(preserved.shots).toBe(0);
  expect(preserved.result).toMatchObject({inputStrategy:'inverse-constraints',searchModel:'topology-constrained-inverse-root-solve',globalOptimal:false,exhaustive:false,continuable:true});
  expect(preserved.shot.success).toBe(true);expect(preserved.shot.searchModel.stage).toBe('inverse-constraint-solution');
- expect(preserved.result.branches.some(b=>b.id===preserved.shot.inverseBranch&&b.status==='verified')).toBe(true);
+ // An early row is independently verified while its numerical wave is still pending.
+ expect(preserved.pendingVerified||preserved.result.branches.some(b=>b.id===preserved.shot.inverseBranch&&b.status==='verified')).toBe(true);
 
  // Exercise public pause/resume after success, requiring the same certified
  // route to survive. Numeric row IDs may change when the result list re-sorts.

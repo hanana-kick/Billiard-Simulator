@@ -1,0 +1,38 @@
+name: Verify completion publication baseline (no deployment)
+on:
+  push:
+    branches: ['validation/verify-publication-20261106']
+permissions:
+  contents: read
+jobs:
+  measure:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run prepare:engine && npm run build
+      - name: Measure unchanged default inverse in supported sandboxed Chrome
+        run: |
+          set -euo pipefail
+          google-chrome --version | tee chrome-version.log
+          HOST=127.0.0.1 PORT=8794 node server.cjs > measure-server.log 2>&1 &
+          PID=$!
+          trap 'kill "$PID" || true' EXIT
+          sleep 2
+          node verification/verify-publication/measure.cjs | tee measure.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: verify-publication-baseline
+          path: |
+            verify-publication-evidence/
+            measure.log
+            chrome-version.log
+            measure-server.log

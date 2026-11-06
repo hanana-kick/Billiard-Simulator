@@ -361,9 +361,10 @@ class LabController{
    this.state.routeResult={...this.state.routeResult,partial:true};this.state.routeError='';
   }this.queuePrediction();this.notify();
  }
- applyRoute(id){
+ routeIdentity(row){return G.LabRouteRules.successIdentity(row);}
+ applyRoute(id,expectedRow){
   if(!['done','searching'].includes(this.state.routeStatus)||this.worldStamp()!==this.routeStamp||(this.routeFinalizationStamp&&this.routeFinalizationStamp!==this.sourceFinalizationStamp()))return this.announce('배치나 물리 상태가 바뀌었습니다. 다시 검색하세요.');
-  const result=this.state.routeResult?.results.find(r=>r.id===id);if(!result)return;if(this.state.routeStatus==='searching')this.stopSearch();
+  const expected=expectedRow?this.routeIdentity(expectedRow):null;const result=this.state.routeResult?.results.find(r=>expected?this.routeIdentity(r)===expected:r.id===id);if(!result)return;id=result.id;if(this.state.routeStatus==='searching')this.stopSearch();
   this.state.predict=true;this.state.horizon=this.state.routeOptions.horizon;this.state.paused=true;this.changeSettings(result.settings);this.state.routeApplied=id;this.notify();this.announce('후보 '+id+'의 경로와 타격 설정을 적용했습니다. 타격은 직접 실행하세요.');
  }
  render(){this.notify();this.queuePrediction();this.dirty=true;this.scheduleFrame();}

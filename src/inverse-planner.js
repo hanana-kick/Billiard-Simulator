@@ -21,15 +21,41 @@ function createStagedSearch(R,req,options={}){
 }
 function checkFinalization(s){if(s.finalization)G.LabSourceFinalizationRequest.policyFor(s.finalization.admission,s.req,null,'verify');}
 function gameplay(s){return s.finalization?.policy.policy==='source-gameplay-finalization-v1';}
+// Publication and commit share the same replay admission. This reads only the
+// current pending wave; it neither accepts a solver probe nor advances a world.
+const issuedVerificationJobs=new WeakMap();
+const normalizedAngle=a=>((a+180)%360+360)%360-180;
+function exactData(a,b){
+ if(Object.is(a,b))return true;
+ if(!a||!b||typeof a!=='object'||typeof b!=='object'||Array.isArray(a)!==Array.isArray(b))return false;
+ const keys=Object.keys(a);return keys.length===Object.keys(b).length&&keys.every(k=>Object.hasOwn(b,k)&&exactData(a[k],b[k]));
+}
+function admittedVerifiedRow(s,job,outcome){
+ const issued=job&&issuedVerificationJobs.get(job);
+ if(!issued||issued.req!==s.req||!exactData(issued.binding,{id:job.id,wave:job.wave,branchId:job.branchId,solverId:job.solverId,settings:job.settings,topology:job.topology}))return null;
+ if(!job||!s.pending.includes(job)||job.req!==s.req||job.kind!=='inverse-constraint'||job.purpose!=='verify'||job.wave!==s.wave-1)return null;
+ const entry=s.active.find(e=>e.branch.id===job.branchId);
+ if(!entry||job.topology!==entry.branch||job.branchId!==job.topology.id||entry.state.status!=='running'||entry.state.phase!=='verify')return null;
+ const probe=entry.state.pending?.find(p=>p.id===job.solverId);
+ if(!probe||probe.purpose!=='verify'||Object.hasOwn(entry.state.received||{},probe.id))return null;
+ // Solver.next returns a JSON copy; its angle is normalized when jobs are made.
+ const settings=JSON.parse(JSON.stringify(probe.settings));settings.angle=normalizedAngle(settings.angle);
+ if(!exactData(settings,JSON.parse(JSON.stringify(job.settings))))return null;
+ const shot=outcome?.physicalResult;
+ if(!outcome||outcome.purpose!=='verify'||outcome.id!==job.branchId||outcome.verified!==true||outcome.goalVerified!==true||outcome.freshReplay!==true||outcome.topologyMatched!==true||outcome.prefixOnly===true||outcome.completePhysicalReplay===false||outcome.incomplete===true||outcome.unsupported===true||outcome.mismatch||shot?.success!==true)return null;
+ if(!exactData(outcome.settings,job.settings)||!exactData(shot.settings,job.settings)||!Array.isArray(outcome.inequalities)||!outcome.inequalities.every(v=>Number.isFinite(v)&&v<=0)||outcome.eventPrefix!==job.topology.events?.length)return null;
+ if(shot.firstId!==(job.topology.firstId??s.req.options.targetId)||shot.secondId!==(job.topology.secondId??s.req.options.secondId))return null;
+ if(gameplay(s)&&(!G.LabSourceFinalizationRequest.matchesGameplayOutcome(s.req,job,outcome)||!G.LabSourceFinalizationRequest.verifiedGameplay(s.req,job,outcome)))return null;
+ return G.structuredClone({...shot,...(gameplay(s)?{finalization:outcome.finalization}:{}),method:entry.branch.method,methodLabel:G.LabRouteRules.byId.get(entry.branch.method)?.label,searchModel:{stage:'inverse-constraint-solution',topologyId:entry.branch.id},inverseBranch:entry.branch.id});
+}
+const compareRows=s=>s.req.options.objective==='gentle'?(a,b)=>a.settings.speed-b.settings.speed||a.distance-b.distance:(a,b)=>a.distance-b.distance||a.settings.speed-b.settings.speed;
 function finishBranch(s,entry){
  const r=G.LabInverseSolver.result(entry.state);if(!terminal(r.status))return false;
  if(r.status==='unconverged'||r.status==='time-limit')s.dormant.push(entry);
  s.iterations+=Math.max(0,(r.iterations||0)-(entry.accountedIterations||0));entry.accountedIterations=r.iterations||0;
  const record={id:entry.branch.id,status:r.status,reason:r.reason||null,iterations:r.iterations||0,residualNorm:r.residualNorm??null},index=s.branches.findIndex(b=>b.id===entry.branch.id);if(index<0)s.branches.push(record);else s.branches[index]=record;
- const admitted=!gameplay(s)||entry.verifiedOutcome&&G.LabSourceFinalizationRequest.verifiedGameplay(s.req,entry.verifiedJob,entry.verifiedOutcome);
- const shot=gameplay(s)?entry.verifiedOutcome?.physicalResult:r.physicalResult||r.verification?.physicalResult||entry.verifiedShot;
- if(admitted&&r.status==='verified'&&shot?.success){
-  const row={...shot,...(gameplay(s)?{finalization:G.structuredClone(entry.verifiedOutcome.finalization)}:{}),method:entry.branch.method,methodLabel:G.LabRouteRules.byId.get(entry.branch.method)?.label,searchModel:{stage:'inverse-constraint-solution',topologyId:entry.branch.id},inverseBranch:entry.branch.id};
+ const row=entry.verifiedRow;
+ if(r.status==='verified'&&row){
   const key=G.LabRouteRules.successIdentity(row);if(!s.identities.has(key)){s.identities.add(key);s.archive.push(row);}
   if(!s.firstSuccessCost)s.firstSuccessCost={elapsedMs:activeElapsed(s),physicsSteps:s.physicsSteps,rootIterations:s.iterations+[...s.active,...s.waiting].reduce((n,e)=>n+Math.max(0,(G.LabInverseSolver.result(e.state).iterations||0)-(e.accountedIterations||0)),0),scope:'inverse-constraints'};
  }
@@ -63,22 +89,24 @@ function planWave(s){
  if(s.exhausted)while(s.active.length<4&&s.waiting.length)s.active.push(s.waiting.shift());
  const jobs=[];for(const entry of s.active){
   const next=G.LabInverseSolver.next(entry.state)||[];
-  for(const probe of next)jobs.push({kind:'inverse-constraint',id:s.nextId++,solverId:probe.id,branchId:entry.branch.id,purpose:probe.purpose,settings:{...probe.settings,angle:((probe.settings.angle+180)%360+360)%360-180},topology:entry.branch,req:s.req,wave:s.wave});
+  for(const probe of next)jobs.push({kind:'inverse-constraint',id:s.nextId++,solverId:probe.id,branchId:entry.branch.id,purpose:probe.purpose,settings:{...probe.settings,angle:normalizedAngle(probe.settings.angle)},topology:entry.branch,req:s.req,wave:s.wave});
  }
+ for(const job of jobs)if(job.purpose==='verify')issuedVerificationJobs.set(job,{req:s.req,binding:G.structuredClone({id:job.id,wave:job.wave,branchId:job.branchId,solverId:job.solverId,settings:job.settings,topology:job.topology})});
  s.pending=jobs;s.wave++;if(!jobs.length&&s.exhausted&&!s.active.length&&!s.waiting.length){s.finished=true;pause(s);}
  const elapsed=performance.now()-start;s.planningMs+=elapsed;s.maxPlanningMs=Math.max(s.maxPlanningMs,elapsed);return jobs;
 }
 function commitWave(s,outcomes){
  checkFinalization(s);
- const byId=new Map(outcomes.map(x=>[x.id,x.outcome]));if(byId.size!==s.pending.length||s.pending.some(j=>!byId.has(j.id)))throw Error('Incomplete inverse evaluation wave');
+ const byId=new Map(outcomes.map(x=>[x.id,x.outcome]));if(outcomes.length!==byId.size||byId.size!==s.pending.length||s.pending.some(j=>!byId.has(j.id)))throw Error('Incomplete inverse evaluation wave');
  // Validate the complete explicit verify wave before changing counters, roots,
  // or archive state. Missing/swapped transport proof is not a physical miss.
  if(gameplay(s))for(const job of s.pending.filter(j=>j.purpose==='verify')){
   const valid=G.LabSourceFinalizationRequest.matchesGameplayOutcome(s.req,job,byId.get(job.id));
   if(!valid){const error=new Error('Source finalization receipt mismatch for candidate '+job.id);error.code='SOURCE_FINALIZATION_RECEIPT_MISMATCH';throw error;}
  }
+ const admitted=new Map(s.pending.map(job=>[job.id,admittedVerifiedRow(s,job,byId.get(job.id))]));
  for(const entry of s.active){const rows=[];for(const job of s.pending.filter(j=>j.branchId===entry.branch.id)){
-   let outcome=byId.get(job.id);s.evaluations++;s.physicsSteps+=outcome.steps||0;
+   let outcome=byId.get(job.id);if(job.purpose==='verify'){const row=admitted.get(job.id);if(row)entry.verifiedRow=row;else delete entry.verifiedRow;}s.evaluations++;s.physicsSteps+=outcome.steps||0;
    if(gameplay(s)&&job.purpose==='verify'){
     if(G.LabSourceFinalizationRequest.verifiedGameplay(s.req,job,outcome)){entry.verifiedOutcome=G.structuredClone(outcome);entry.verifiedJob=G.structuredClone({purpose:job.purpose,settings:job.settings,topology:job.topology});entry.verifiedShot=outcome.physicalResult;}
     else{delete entry.verifiedOutcome;delete entry.verifiedJob;delete entry.verifiedShot;/* Matching non-positive source result stays valueless and keeps its exact reason. */}
@@ -90,9 +118,22 @@ function commitWave(s,outcomes){
  if(s.exhausted&&!s.active.length&&!s.waiting.length){s.finished=true;pause(s);}
 }
 function stagedResult(s){
- const elapsedMs=activeElapsed(s),results=s.archive.slice().sort((a,b)=>s.req.options.objective==='gentle'?a.settings.speed-b.settings.speed||a.distance-b.distance:a.distance-b.distance||a.settings.speed-b.settings.speed).map((r,i)=>({...r,id:i+1}));
+ const elapsedMs=activeElapsed(s),results=s.archive.slice().sort(compareRows(s)).map((r,i)=>({...r,id:i+1}));
  const terminationReason=s.paused?'time-limit':s.finished?'topology-domain-finished':'running';
  return{results,resultCount:results.length,resultLimit:null,found:results.length,tested:s.evaluations,evaluated:s.evaluations,total:null,physicsSteps:s.physicsSteps,elapsedMs,options:{...s.req.options},inputStrategy:'inverse-constraints',searchModel:'topology-constrained-inverse-root-solve',terminationReason,continuable:s.paused||!s.finished||s.dormant.length>0,partial:!s.finished||s.paused,domain:s.domain,domainExhausted:s.exhausted,statusCounts:s.branches.reduce((a,b)=>(a[b.status]=(a[b.status]||0)+1,a),{verified:0,unconverged:0,unsupported:0,infeasible:0}),branches:s.branches.slice(),rootIterations:s.iterations+[...s.active,...s.waiting].reduce((n,e)=>n+Math.max(0,(G.LabInverseSolver.result(e.state).iterations||0)-(e.accountedIterations||0)),0),topologiesResolved:s.branches.length,activeTopologies:s.active.length,suspendedTopologies:s.waiting.length,resumableBranches:s.dormant.length,firstSuccessCost:s.firstSuccessCost,globalOptimal:false,exhaustive:false,feasibilityStatus:results.length?'verified-feasible-shot':s.paused?'unconverged-time-limit':'unconverged-or-unsupported',candidatePlan:{version:'inverse-constraints-1',workerIndependent:true,planningMs:s.planningMs,maxPlanningMs:s.maxPlanningMs},hz:Math.round(1/s.req.snapshot.dt)};
+}
+function stagedVerifiedResult(s,outcomes){
+ checkFinalization(s);
+ const result=stagedResult(s),rows=s.archive.slice(),seen=new Set(rows.map(r=>G.LabRouteRules.successIdentity(r)));
+ for(const job of s.pending){
+  if(!outcomes.has(job.id))continue;
+  const row=admittedVerifiedRow(s,job,outcomes.get(job.id));if(!row)continue;
+  const key=G.LabRouteRules.successIdentity(row);if(!seen.has(key)){seen.add(key);rows.push({...row,publicationStatus:'verified-pending-wave'});}
+ }
+ result.results=G.structuredClone(rows.sort(compareRows(s))).map((r,i)=>({...r,id:i+1}));
+ result.resultCount=result.found=result.results.length;
+ if(result.results.length)result.feasibilityStatus='verified-feasible-shot';
+ return result;
 }
 function resume(s){
  checkFinalization(s);
@@ -113,5 +154,5 @@ function resume(s){
 }
 function pause(s){if(s.pausedAt===null)s.pausedAt=performance.now();}
 function disposeSearch(s){s.active=[];s.waiting=[];s.dormant=[];s.pending=[];s.finished=true;}
-G.LabInversePlanner={validate,createStagedSearch,planWave,commitWave,stagedResult,resume,pause,disposeSearch};
+G.LabInversePlanner={validate,createStagedSearch,planWave,commitWave,stagedResult,stagedVerifiedResult,resume,pause,disposeSearch};
 })(globalThis);
