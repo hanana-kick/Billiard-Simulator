@@ -1,0 +1,48 @@
+name: Renderer search contention diagnostic (no deployment)
+on:
+  push:
+    branches: ['backup/render-contention-20261106']
+permissions:
+  contents: read
+jobs:
+  diagnostic:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run prepare:engine
+      - run: node --test verification/render-contention/test.cjs
+      - run: node build.cjs --canonical-controller-assets
+      - name: Calibration then 18 frozen diagnostics
+        run: |
+          set -euo pipefail
+          test "$(id -u)" != 0
+          google-chrome --version | tee chrome-environment.log
+          git rev-parse HEAD | tee -a chrome-environment.log
+          HOST=127.0.0.1 PORT=8794 node server.cjs > server.log 2>&1 &
+          PID=$!
+          trap 'kill "$PID" || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8794/ -o /dev/null; then break; fi
+            sleep 1
+          done
+          node verification/render-contention/run.cjs | tee input-diagnostic.log
+      - name: Preserve all attempts and traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: render-contention-all-evidence
+          path: |
+            render-contention-raw/
+            input-diagnostic.log
+            chrome-environment.log
+            server.log
+            verification/render-contention/
+          retention-days: 30
