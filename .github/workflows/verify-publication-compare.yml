@@ -1,0 +1,50 @@
+name: Verify publication overlay comparison (no deployment)
+on:
+  push:
+    branches: ['backup/verify-publication-20261106']
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run prepare:engine
+      - name: Focused admission, transport, selection and lifecycle contracts
+        run: node --test tests/source-finalization-plumbing.mjs tests/inverse-planner.cjs tests/inverse-publication.cjs tests/verified-publication-selection.cjs tests/worker-pool.cjs tests/next-shot-optimizer.cjs tests/next-shot-lifecycle.cjs tests/next-shot-precompute.cjs
+      - name: Build frozen production and candidate
+        run: |
+          git fetch origin cf7521de07fb03612650835114d2b5023600ff8c
+          git worktree add --detach "$RUNNER_TEMP/baseline" cf7521de07fb03612650835114d2b5023600ff8c
+          ln -s "$GITHUB_WORKSPACE/node_modules" "$RUNNER_TEMP/baseline/node_modules"
+          npm run build
+          (cd "$RUNNER_TEMP/baseline" && npm run prepare:engine && npm run build)
+      - name: Alternate repeated real Chrome arms; replay every returned route
+        run: |
+          set -euo pipefail
+          google-chrome --version | tee chrome-version.log
+          HOST=127.0.0.1 PORT=8793 node "$RUNNER_TEMP/baseline/server.cjs" > baseline-server.log 2>&1 &
+          BASE_PID=$!
+          HOST=127.0.0.1 PORT=8794 node server.cjs > candidate-server.log 2>&1 &
+          CAND_PID=$!
+          trap 'kill "$BASE_PID" "$CAND_PID" || true' EXIT
+          sleep 2
+          node verification/verify-publication/compare.cjs | tee comparison.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: verify-publication-comparison
+          path: |
+            verify-publication-comparison/
+            comparison.log
+            chrome-version.log
+            baseline-server.log
+            candidate-server.log

@@ -48,12 +48,14 @@ class OptimizerService{
     this.worker=this.workers[0];this.actualWorkers=count;this.mode=count>1?'worker-pool':'worker';
     for(const worker of this.workers){
      worker.onmessage=({data})=>{
-      const task=this.busy.get(worker);if(id!==this.version||!task||data.requestId!==id||data.candidateId!==task.job.id)return;
+      const task=this.busy.get(worker);if(id!==this.version||this.latest!==req||!task||data.requestId!==id||data.candidateId!==task.job.id)return;
+      try{
       if(this.coordinator&&this.retention.firstNestedWorkerMessageMs===undefined)this.retention.firstNestedWorkerMessageMs=performance.now()-poolStarted;
       if(data.error){task.steps=Math.max(task.steps,Number(data.failedStep)||0);this.recover(req,id,'worker-error');return;}
       this.clearWatchdog(worker);
       if(data.outcome){this.outcomes.set(task.job.id,data.outcome);this.busy.delete(worker);this.pump(req,id);if(id===this.version&&this.latest)this.report(false);}
       else{task.steps=Math.max(task.steps,Number(data.steps)||0);this.armWatchdog(worker,req,id,false);this.report(false);}
+      }catch(error){this.fail(error,id);}
      };
      worker.onerror=e=>{e.preventDefault?.();if(id===this.version&&this.workers.includes(worker))this.recover(req,id,'worker-error');};
     }
@@ -77,7 +79,7 @@ class OptimizerService{
   // During playback the coordinator keeps its full state locally. Avoid cloning
   // growing traces/results on every candidate; final reports are never delayed.
   if(this.background&&!final){const now=performance.now();if(this.backgroundReportedAt!==undefined&&now-this.backgroundReportedAt<300)return;this.backgroundReportedAt=now;}
-  const result=this.api.stagedResult(this.search),elapsedMs=[G.LabInversePlanner,G.LabCPUEventPlanner,G.LabCPUEventWindowPlanner].includes(this.api)?result.elapsedMs:performance.now()-this.started;
+  const result=!final&&this.api===G.LabInversePlanner&&this.api.stagedVerifiedResult?this.api.stagedVerifiedResult(this.search,this.outcomes):this.api.stagedResult(this.search),elapsedMs=[G.LabInversePlanner,G.LabCPUEventPlanner,G.LabCPUEventWindowPlanner].includes(this.api)?result.elapsedMs:performance.now()-this.started;
   // Expose already verified in-flight-wave successes without committing adaptive state.
   if(!final&&this.outcomes.size&&!['inverse-constraints','cpu-event-inverse','cpu-event-window-inverse'].includes(this.latest?.options.searchAlgorithm)){
    const rows=[...result.results];for(const job of this.jobs){const r=this.outcomes.get(job.id)?.result;if(r?.success)rows.push({...r,methodLabel:G.LabRouteRules?.byId.get(r.method)?.label});}

@@ -1,0 +1,193 @@
+{
+  "groups": [
+    {
+      "fixture": "default3",
+      "arm": "baseline",
+      "n": 3,
+      "passed": 3,
+      "attempts": [
+        {
+          "index": 0,
+          "status": "passed",
+          "firstPublishedMs": 26228.4,
+          "firstDOMMs": null,
+          "firstVerifyWaitMs": 96,
+          "firstVerifyQueueMs": 0.7000000000043656,
+          "cpuSecondsLowerBound": 148.20000000000002,
+          "elapsedMs": 42616.7,
+          "recall": 1,
+          "allReplayPassed": true,
+          "failure": null
+        },
+        {
+          "index": 4,
+          "status": "passed",
+          "firstPublishedMs": 20004.5,
+          "firstDOMMs": null,
+          "firstVerifyWaitMs": 921.7999999999884,
+          "firstVerifyQueueMs": 0.3000000000174623,
+          "cpuSecondsLowerBound": 77.16000000000001,
+          "elapsedMs": 21321.800000000017,
+          "recall": 2,
+          "allReplayPassed": true,
+          "failure": null
+        },
+        {
+          "index": 8,
+          "status": "passed",
+          "firstPublishedMs": 19034.199999999953,
+          "firstDOMMs": null,
+          "firstVerifyWaitMs": 789.5,
+          "firstVerifyQueueMs": 0.29999999998835847,
+          "cpuSecondsLowerBound": 73.27,
+          "elapsedMs": 20246.899999999965,
+          "recall": 2,
+          "allReplayPassed": true,
+          "failure": null
+        }
+      ]
+    },
+    {
+      "fixture": "default4",
+      "arm": "baseline",
+      "n": 3,
+      "passed": 3,
+      "attempts": [
+        {
+          "index": 1,
+          "status": "passed",
+          "firstPublishedMs": 24236.800000000003,
+          "firstDOMMs": null,
+          "firstVerifyWaitMs": 37.19999999999709,
+          "firstVerifyQueueMs": 0.6000000000058208,
+          "cpuSecondsLowerBound": 148.58000000000004,
+          "elapsedMs": 41039.5,
+          "recall": 2,
+          "allReplayPassed": true,
+          "failure": null
+        },
+        {
+          "index": 5,
+          "status": "passed",
+          "firstPublishedMs": 25393.70000000001,
+          "firstDOMMs": null,
+          "firstVerifyWaitMs": 24.20000000001164,
+          "firstVerifyQueueMs": 0.6000000000058208,
+          "cpuSecondsLowerBound": 149.14000000000004,
+          "elapsedMs": 41467,
+          "recall": 2,
+          "allReplayPassed": true,
+          "failure": null
+        },
+        {
+          "index": 9,
+          "status": "passed",
+          "firstPublishedMs": 25155.100000000035,
+          "firstDOMMs": null,
+          "firstVerifyWaitMs": 1.2000000000116415,
+          "firstVerifyQueueMs": 0.5999999999767169,
+          "cpuSecondsLowerBound": 148.22000000000006,
+          "elapsedMs": 41062.70000000001,
+          "recall": 2,
+          "allReplayPassed": true,
+          "failure": null
+        }
+      ]
+    },
+    {
+      "fixture": "moved3",
+      "arm": "baseline",
+      "n": 3,
+      "passed": 3,
+      "attempts": [
+        {
+          "index": 2,
+          "status": "passed",
+          "firstPublishedMs": 26399.999999999985,
+          "firstDOMMs": null,
+          "firstVerifyWaitMs": 1057.6999999999825,
+          "firstVerifyQueueMs": 664.1000000000058,
+          "cpuSecondsLowerBound": 150.85000000000008,
+          "elapsedMs": 41485.499999999985,
+          "recall": 2,
+          "allReplayPassed": true,
+          "failure": null
+        },
+        {
+          "index": 6,
+          "status": "passed",
+          "firstPublishedMs": 26052.70000000001,
+          "firstDOMMs": null,
+          "firstVerifyWaitMs": 1034.4000000000233,
+          "firstVerifyQueueMs": 694.2999999999884,
+          "cpuSecondsLowerBound": 149.08,
+          "elapsedMs": 40996.29999999999,
+          "recall": 2,
+          "allReplayPassed": true,
+          "failure": null
+        },
+        {
+          "index": 10,
+          "status": "passed",
+          "firstPublishedMs": 26814.600000000035,
+          "firstDOMMs": null,
+          "firstVerifyWaitMs": 1003.3000000000466,
+          "firstVerifyQueueMs": 660.2999999999884,
+          "cpuSecondsLowerBound": 151.40000000000006,
+          "elapsedMs": 41495.100000000035,
+          "recall": 2,
+          "allReplayPassed": true,
+          "failure": null
+        }
+      ]
+    },
+    {
+      "fixture": "moved4",
+      "arm": "baseline",
+      "n": 3,
+      "passed": 3,
+      "attempts": [
+        {
+          "index": 3,
+          "status": "passed",
+          "firstPublishedMs": 24133.400000000023,
+          "firstDOMMs": null,
+          "firstVerifyWaitMs": 632.9000000000233,
+          "firstVerifyQueueMs": 1773.3999999999942,
+          "cpuSecondsLowerBound": 151.12000000000012,
+          "elapsedMs": 41032,
+          "recall": 1,
+          "allReplayPassed": true,
+          "failure": null
+        },
+        {
+          "index": 7,
+          "status": "passed",
+          "firstPublishedMs": 23822.0,
+          "firstDOMMs": null,
+          "firstVerifyWaitMs": 652.7000000000116,
+          "firstVerifyQueueMs": 1824.5,
+          "cpuSecondsLowerBound": 149.05000000000007,
+          "elapsedMs": 40456.40000000002,
+          "recall": 1,
+          "allReplayPassed": true,
+          "failure": null
+        },
+        {
+          "index": 11,
+          "status": "passed",
+          "firstPublishedMs": 23887.70000000001,
+          "firstDOMMs": null,
+          "firstVerifyWaitMs": 693.8000000000466,
+          "firstVerifyQueueMs": 1725.7999999999884,
+          "cpuSecondsLowerBound": 151.70000000000007,
+          "elapsedMs": 41115.09999999998,
+          "recall": 1,
+          "allReplayPassed": true,
+          "failure": null
+        }
+      ]
+    }
+  ],
+  "totalReplays": 20
+}
