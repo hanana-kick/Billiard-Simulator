@@ -48,7 +48,7 @@ class NextShotService{
    job.aiming=true;job.aimSource=before;job.aimReceipt=receipt;job.aimStartedAt=performance.now();
    // Bound speculative work while idle; retain a supported frontier, never restart it.
    job.aimLimitTimer=setTimeout(()=>{if(!this.current(job)||!job.aiming||job.result)return;
-    if(job.optimizer?.suspend()){job.suspended=true;job.aimBudgetSuspended=true;}
+    if(job.suspended||job.optimizer?.suspend()){job.suspended=true;job.aimBudgetSuspended=true;this.status('suspended',{aiming:true,reason:'aim-budget'});c.notify(false);}
     else this.cancel('aim-budget');
    },5000);
   },750);
@@ -64,7 +64,7 @@ class NextShotService{
  }
  start(before,forecastReceipt=null,prepared=null){
   this.cancel('new-shot');const c=this.controller;
-  if(prepared){prepared.generation=this.generation;prepared.aiming=false;prepared.adoptedAt=performance.now();this.job=prepared;if(prepared.suspended&&prepared.optimizer?.resumeBackground())prepared.suspended=false;this.status(prepared.result?'ready':'searching',{prestrikeReused:true});return;}
+  if(prepared){prepared.generation=this.generation;prepared.aiming=false;prepared.adoptedAt=performance.now();this.job=prepared;if(prepared.suspended&&prepared.optimizer?.resumeBackground())prepared.suspended=false;this.status(prepared.result?'ready':prepared.suspended?'suspended':'searching',{prestrikeReused:true});return;}
   if(!c.state.nextShotPrecompute||c.canonicalPlayback||!before?.game||typeof G.Worker!=='function'||Number(G.navigator?.hardwareConcurrency||2)<2){this.status('unavailable');return;}
   const job={generation:this.generation,inputStamp:this.inputStamp(),options:copy(c.state.routeOptions),settings:copy(c.state.settings),gameMode:c.state.gameMode,startedAt:performance.now(),rest:null,predicted:null,promoted:false,progress:null,result:null};this.job=job;
   this.status('predicting');
@@ -83,7 +83,7 @@ class NextShotService{
     if(job.promoted){c.state.routeProgress=progress;if(progress.partialResult)c.state.routeResult=progress.partialResult;c.notify(false);}
    },onResult=result=>{
     if(!this.current(job))return;job.result=result;
-    this.status(job.promoted?'used':'ready',{elapsedMs:performance.now()-job.startedAt});
+    this.status(job.promoted?'used':'ready',{aiming:!!job.aiming,elapsedMs:performance.now()-job.startedAt});
     if(job.promoted){c.state.routeStatus='done';c.state.routeResult=result;c.state.routeProgress=result;c.queuePrediction();}c.notify(false);
    },onError=error=>{
     if(!this.current(job))return;
@@ -92,7 +92,7 @@ class NextShotService{
    };
    job.reusedWarmWorker=!!this.warmed;job.optimizer=this.warmed||new G.NextShotOptimizer(onProgress,onResult,onError,{background:true});this.warmed=null;
    Object.assign(job.optimizer,{onProgress,onResult,onError});
-   job.searchStartedAt=performance.now();this.status('searching');job.optimizer.request(req);
+   job.searchStartedAt=performance.now();this.status('searching',{aiming:!!job.aiming});job.optimizer.request(req);
    if(this.current(job)&&job.rest)this.reconcile(job);c.notify(false);
   };
   const previous=forecastReceipt?.request;
@@ -106,7 +106,15 @@ class NextShotService{
   const job=this.job,c=this.controller;
   if(!job||!this.current(job)||job.promoted||job.result||!job.optimizer?.plan)return;
   const now=performance.now();
-  if(job.aiming){if(deltaMs>40)this.cancel('aim-frame-pressure');return;}
+  if(job.aiming){
+   // Keep verified speculative work across a slow idle frame. Suspending drops
+   // CPU pressure without destroying the frontier or weakening strike matching.
+   if(deltaMs>40&&!job.suspended){
+    if(job.optimizer.suspend()){job.suspended=true;job.aimPressureSuspended=true;this.status('suspended',{aiming:true,reason:'aim-frame-pressure'});c.notify(false);}
+    else {this.cancel('aim-frame-pressure');c.notify(false);}
+   }
+   return;
+  }
   if(c.state.paused||G.document?.hidden){job.healthySince=null;job.lastObservedFrameAt=null;return;}
   if(now-job.startedAt<250)return;
   if(job.suspended){
