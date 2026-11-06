@@ -9,12 +9,15 @@ class LabRenderer{
   this.canvas=canvas;this.gl=canvas.getContext('webgl2',{antialias:true,alpha:false,preserveDrawingBuffer:true});
   if(!this.gl)throw new Error('WebGL 2를 지원하는 브라우저가 필요합니다. 하드웨어 가속 설정을 확인하세요.');
   this.camera={yaw:.12,pitch:.86,zoom:1,size:1.20,projection:"perspective",target:V(-.12,-.035,0)};this.staticCache=new WeakMap();
+  const invalidate=()=>this.invalidateShadow();
+  canvas.addEventListener?.("webglcontextlost",invalidate);canvas.addEventListener?.("webglcontextrestored",invalidate);
   this.init();
  }
  program(v,f){const gl=this.gl;function shader(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s));return s;}
   const p=gl.createProgram();gl.attachShader(p,shader(gl.VERTEX_SHADER,v));gl.attachShader(p,shader(gl.FRAGMENT_SHADER,f));gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(p));return p;
  }
  init(){
+  this.invalidateShadow();
   const gl=this.gl;
   this.main=this.program(`#version 300 es
    precision highp float;
@@ -47,7 +50,7 @@ class LabRenderer{
   this.fbo=gl.createFramebuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,this.fbo);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.TEXTURE_2D,this.shadow,0);gl.drawBuffers([gl.NONE]);gl.readBuffer(gl.NONE);if(gl.checkFramebufferStatus(gl.FRAMEBUFFER)!==gl.FRAMEBUFFER_COMPLETE)throw new Error('그림자 버퍼 초기화 실패');gl.bindFramebuffer(gl.FRAMEBUFFER,null);
   this.light=multiply(ortho(-3.5,3.5,-3.5,3.5,.1,15),lookAt(V(3,6,4),V()));gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);
  }
- mesh(vertices){const gl=this.gl,vao=gl.createVertexArray(),buffer=gl.createBuffer();gl.bindVertexArray(vao);gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(vertices),gl.STATIC_DRAW);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,3,gl.FLOAT,false,24,0);gl.enableVertexAttribArray(1);gl.vertexAttribPointer(1,3,gl.FLOAT,false,24,12);return{vao,buffer,count:vertices.length/6};}
+ mesh(vertices){this.invalidateShadow();const gl=this.gl,vao=gl.createVertexArray(),buffer=gl.createBuffer();gl.bindVertexArray(vao);gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(vertices),gl.STATIC_DRAW);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,3,gl.FLOAT,false,24,0);gl.enableVertexAttribArray(1);gl.vertexAttribPointer(1,3,gl.FLOAT,false,24,12);return{vao,buffer,count:vertices.length/6};}
  triangle(out,a,b,c,n=null){n=n||norm(cross(sub(b,a),sub(c,a)));for(const p of [a,b,c])out.push(p.x,p.y,p.z,n.x,n.y,n.z);}
  makeBox(){const v=[],p=[V(-1,-1,-1),V(1,-1,-1),V(1,1,-1),V(-1,1,-1),V(-1,-1,1),V(1,-1,1),V(1,1,1),V(-1,1,1)];for(const f of [[0,3,2,1],[4,5,6,7],[0,4,7,3],[1,2,6,5],[3,7,6,2],[0,1,5,4]]){this.triangle(v,p[f[0]],p[f[1]],p[f[2]]);this.triangle(v,p[f[0]],p[f[2]],p[f[3]]);}return this.mesh(v);}
  makeSphere(slices,stacks){const out=[],p=(i,j)=>V(Math.sin(Math.PI*j/stacks)*Math.cos(2*Math.PI*i/slices),Math.cos(Math.PI*j/stacks),Math.sin(Math.PI*j/stacks)*Math.sin(2*Math.PI*i/slices));for(let i=0;i<slices;i++)for(let j=0;j<stacks;j++){const a=p(i,j),b=p(i+1,j),c=p(i+1,j+1),d=p(i,j+1);for(const q of [a,c,b,a,d,c])out.push(q.x,q.y,q.z,q.x,q.y,q.z);}return this.mesh(out);}
@@ -61,7 +64,7 @@ class LabRenderer{
  cushionMesh(o){if(this.staticCache.has(o))return this.staticCache.get(o);const p=[];for(let i=0;i<8;i++)p.push(V(...o.vertices.slice(i*3,i*3+3)));const out=[];for(const f of [[0,3,2,1],[4,5,6,7],[0,1,5,4],[1,2,6,5],[2,3,7,6],[3,0,4,7]]){this.triangle(out,p[f[0]],p[f[1]],p[f[2]]);this.triangle(out,p[f[0]],p[f[2]],p[f[3]]);}const mesh=this.mesh(out);this.staticCache.set(o,mesh);return mesh;}
  size(){
   const r=this.viewportSize||this.canvas.getBoundingClientRect(),dpr=Math.min(this.viewportSize?.dpr||globalThis.devicePixelRatio||1,2);if(r.width<1||r.height<1)return;
-  const w=Math.round(r.width*dpr),h=Math.round(r.height*dpr);if(this.canvas.width!==w||this.canvas.height!==h){this.canvas.width=w;this.canvas.height=h;}
+  const w=Math.round(r.width*dpr),h=Math.round(r.height*dpr);if(this.canvas.width!==w||this.canvas.height!==h){this.canvas.width=w;this.canvas.height=h;this.shadowCache=null;}
   this.width=r.width;this.height=r.height;this.aspect=r.width/r.height;
   const c=this.camera,sp=Math.sin(c.pitch),cp=Math.cos(c.pitch);this.tanHalf=Math.tan(38*Math.PI/360);
   this.distance=c.projection==='orthographic'?6:Math.max(3.9,2.00/(this.tanHalf*this.aspect))*(c.zoom||1);
@@ -92,6 +95,15 @@ class LabRenderer{
   out.push(this.command(this.cylinder,headAt(D.tipRadius+.012),headRot,V(.0059,.022,.0059),'#e5e3d9'));
   out.push(this.command(this.sphere,headTip,qident(),V(D.tipRadius,D.tipRadius,D.tipRadius),'#5f9faf'));return out;
  }
+ invalidateShadow(){this.shadowCache=null;}
+ shadowSignature(cmds){
+  if(this.gl.isContextLost?.())return null;
+  const values=[this.canvas.width,this.canvas.height,...this.light],meshes=[];
+  for(const c of cmds){meshes.push(c.mesh.vao,c.mesh.buffer);values.push(c.mesh.count,...c.model);}
+  if(!values.every(Number.isFinite))return null;
+  return{depth:this.depth,fbo:this.fbo,texture:this.shadow,meshes,values};
+ }
+ sameShadow(a,b){return !!a&&!!b&&a.depth===b.depth&&a.fbo===b.fbo&&a.texture===b.texture&&a.meshes.length===b.meshes.length&&a.values.length===b.values.length&&a.meshes.every((v,i)=>v===b.meshes[i])&&a.values.every((v,i)=>Object.is(v,b.values[i]));}
  drawCommands(cmds,program,vp){const gl=this.gl,u=this.locations.get(program);gl.useProgram(program);gl.uniformMatrix4fv(u.uVP,false,vp);if(program===this.main){gl.uniformMatrix4fv(u.uLight,false,this.light);gl.uniform3f(u.uEye,this.eye.x,this.eye.y,this.eye.z);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,this.shadow);gl.uniform1i(u.uShadow,0);}
   for(const c of cmds){gl.uniformMatrix4fv(u.uModel,false,c.model);if(program===this.main){gl.uniform3f(u.uScale,c.scale.x,c.scale.y,c.scale.z);gl.uniform3fv(u.uColor,c.color);gl.uniform1f(u.uMaterial,c.material);gl.uniform1f(u.uSelected,c.selected);}gl.bindVertexArray(c.mesh.vao);gl.drawArrays(gl.TRIANGLES,0,c.mesh.count);}
  }
@@ -106,7 +118,11 @@ class LabRenderer{
   const selected=lab.get(state.selectedId);let preview=null;
   if(lab.cue&&state.showCue){cmds.push(...this.cueCommands(lab.cue.body.translation(),lab.cue.body.rotation(),'#bb9969',lab.cue.head.translation(),lab.cue.head.rotation()));}
   else if(selected&&selected.shape==='sphere'&&state.previewCueVisible){preview=lab.pose(selected,state.settings,.012+(state.cuePull||0));cmds.push(...this.cueCommands(preview.tip,preview.rotation,state.obstruction?'#b96353':'#c3a170'));cmds.push(this.command(this.sphere,preview.contact,qident(),V(.0024,.0024,.0024),'#c9f69d'));}
-  gl.bindFramebuffer(gl.FRAMEBUFFER,this.fbo);gl.viewport(0,0,1024,1024);gl.clear(gl.DEPTH_BUFFER_BIT);gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(2,3);this.drawCommands(cmds,this.depth,this.light);gl.disable(gl.POLYGON_OFFSET_FILL);
+  const signature=this.shadowSignature(cmds);
+  if(!this.sameShadow(this.shadowCache,signature)){
+   gl.bindFramebuffer(gl.FRAMEBUFFER,this.fbo);gl.viewport(0,0,1024,1024);gl.clear(gl.DEPTH_BUFFER_BIT);gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(2,3);this.drawCommands(cmds,this.depth,this.light);gl.disable(gl.POLYGON_OFFSET_FILL);
+   this.shadowCache=this.gl.isContextLost?.()?null:signature;
+  }
   gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,this.canvas.width,this.canvas.height);gl.clearColor(.032,.049,.077,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);this.drawCommands(cmds,this.main,this.vp);
   gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);
   if(state.predict&&state.forecast)for(const track of state.forecast.tracks){this.lines(track.segments,track.color,false,.90);this.lines(track.endRing,track.color,true,.70);}
