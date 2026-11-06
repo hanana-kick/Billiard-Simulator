@@ -1,4 +1,4 @@
-name: Stop-first retained-wave resume check (no deployment)
+name: Fair-first prediction and default idle CPU check (no deployment)
 on:
   push:
     branches: ['validation/stop-first-resume-check-20261106']
@@ -38,7 +38,6 @@ jobs:
           done
       - name: Repeated sandboxed Chrome comparison and full-rest replays
         env:
-          RETENTION_ONLY: '1'
           FIXTURE: ${{ matrix.fixture }}
         run: |
           set -euo pipefail
@@ -52,13 +51,13 @@ jobs:
           FAIR_PID=$!
           trap 'kill "$BASE_PID" "$CAND_PID" "$FAIR_PID" || true' EXIT
           sleep 2
-          node verification/stop-first/compare.cjs | tee comparison.log
+          node verification/stop-first/prediction-idle.cjs | tee comparison.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: stop-first-chrome-${{ matrix.fixture }}
+          name: prediction-idle-${{ matrix.fixture }}
           path: |
-            stop-first-chrome-results/
+            prediction-idle-results/
             comparison.log
             chrome-version.log
             host-cpu.log
