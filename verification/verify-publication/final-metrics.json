@@ -1,0 +1,301 @@
+{
+  "attempts": 24,
+  "passed": 24,
+  "fullRestReplays": 29,
+  "allReplayPassed": true,
+  "chrome": "156.0.8078.79",
+  "groups": [
+    {
+      "fixture": "default3",
+      "baseline": {
+        "attemptIds": [
+          0,
+          9,
+          16
+        ],
+        "values": {
+          "firstDOMMs": [
+            60336.3,
+            58085.59999999998,
+            57785.60000000009
+          ],
+          "completedToVisibleDOMMs": [
+            167.5,
+            175.69999999995343,
+            84.70000000006985
+          ],
+          "wholeSearchCPUSecondsLowerBound": [
+            214.63999999999976,
+            223.6799999999997,
+            222.13999999999976
+          ],
+          "returnedRoutes": [
+            1,
+            2,
+            2
+          ]
+        },
+        "median": {
+          "firstDOMMs": 58085.59999999998,
+          "completedToVisibleDOMMs": 167.5,
+          "wholeSearchCPUSecondsLowerBound": 222.13999999999976,
+          "returnedRoutes": 2
+        }
+      },
+      "candidate": {
+        "attemptIds": [
+          1,
+          8,
+          17
+        ],
+        "values": {
+          "firstDOMMs": [
+            57963.20000000001,
+            57410.50000000006,
+            57992.80000000005
+          ],
+          "completedToVisibleDOMMs": [
+            9.200000000011642,
+            11.600000000093132,
+            6.800000000046566
+          ],
+          "wholeSearchCPUSecondsLowerBound": [
+            223.5599999999997,
+            221.42999999999978,
+            223.92999999999972
+          ],
+          "returnedRoutes": [
+            2,
+            2,
+            2
+          ]
+        },
+        "median": {
+          "firstDOMMs": 57963.20000000001,
+          "completedToVisibleDOMMs": 9.200000000011642,
+          "wholeSearchCPUSecondsLowerBound": 223.5599999999997,
+          "returnedRoutes": 2
+        }
+      }
+    },
+    {
+      "fixture": "default4",
+      "baseline": {
+        "attemptIds": [
+          2,
+          11,
+          18
+        ],
+        "values": {
+          "firstDOMMs": [
+            28557.699999999983,
+            28329.599999999977,
+            28540.5
+          ],
+          "completedToVisibleDOMMs": [
+            13.799999999988358,
+            52.09999999997672,
+            31.699999999953434
+          ],
+          "wholeSearchCPUSecondsLowerBound": [
+            149.13000000000008,
+            147.13000000000005,
+            148.04000000000008
+          ],
+          "returnedRoutes": [
+            1,
+            1,
+            1
+          ]
+        },
+        "median": {
+          "firstDOMMs": 28540.5,
+          "completedToVisibleDOMMs": 31.699999999953434,
+          "wholeSearchCPUSecondsLowerBound": 148.04000000000008,
+          "returnedRoutes": 1
+        }
+      },
+      "candidate": {
+        "attemptIds": [
+          3,
+          10,
+          19
+        ],
+        "values": {
+          "firstDOMMs": [
+            28786.79999999999,
+            28259.599999999977,
+            28733.199999999953
+          ],
+          "completedToVisibleDOMMs": [
+            8.899999999965075,
+            9.5,
+            35.199999999953434
+          ],
+          "wholeSearchCPUSecondsLowerBound": [
+            149.68000000000004,
+            146.2200000000001,
+            148.86000000000007
+          ],
+          "returnedRoutes": [
+            1,
+            1,
+            1
+          ]
+        },
+        "median": {
+          "firstDOMMs": 28733.199999999953,
+          "completedToVisibleDOMMs": 9.5,
+          "wholeSearchCPUSecondsLowerBound": 148.86000000000007,
+          "returnedRoutes": 1
+        }
+      }
+    },
+    {
+      "fixture": "moved3",
+      "baseline": {
+        "attemptIds": [
+          4,
+          13,
+          20
+        ],
+        "values": {
+          "firstDOMMs": [
+            34488.20000000001,
+            33749,
+            33803.80000000005
+          ],
+          "completedToVisibleDOMMs": [
+            2310.9000000000233,
+            2322.0,
+            2285.100000000093
+          ],
+          "wholeSearchCPUSecondsLowerBound": [
+            158.42999999999998,
+            157.42000000000002,
+            156.79000000000013
+          ],
+          "returnedRoutes": [
+            1,
+            1,
+            1
+          ]
+        },
+        "median": {
+          "firstDOMMs": 33803.80000000005,
+          "completedToVisibleDOMMs": 2310.9000000000233,
+          "wholeSearchCPUSecondsLowerBound": 157.42000000000002,
+          "returnedRoutes": 1
+        }
+      },
+      "candidate": {
+        "attemptIds": [
+          5,
+          12,
+          21
+        ],
+        "values": {
+          "firstDOMMs": [
+            31594.79999999999,
+            31600.599999999977,
+            31970.300000000047
+          ],
+          "completedToVisibleDOMMs": [
+            33.29999999998836,
+            16.400000000023283,
+            32.4000000001397
+          ],
+          "wholeSearchCPUSecondsLowerBound": [
+            157.12000000000003,
+            157.67999999999995,
+            159.23999999999998
+          ],
+          "returnedRoutes": [
+            1,
+            1,
+            1
+          ]
+        },
+        "median": {
+          "firstDOMMs": 31600.599999999977,
+          "completedToVisibleDOMMs": 32.4000000001397,
+          "wholeSearchCPUSecondsLowerBound": 157.67999999999995,
+          "returnedRoutes": 1
+        }
+      }
+    },
+    {
+      "fixture": "moved4",
+      "baseline": {
+        "attemptIds": [
+          6,
+          15,
+          22
+        ],
+        "values": {
+          "firstDOMMs": [
+            27950.20000000001,
+            28206.300000000047,
+            27795.300000000047
+          ],
+          "completedToVisibleDOMMs": [
+            1185.9000000000233,
+            1171.7000000000698,
+            1138.6999999999534
+          ],
+          "wholeSearchCPUSecondsLowerBound": [
+            148.67000000000007,
+            148.59,
+            147.4000000000001
+          ],
+          "returnedRoutes": [
+            1,
+            1,
+            1
+          ]
+        },
+        "median": {
+          "firstDOMMs": 27950.20000000001,
+          "completedToVisibleDOMMs": 1171.7000000000698,
+          "wholeSearchCPUSecondsLowerBound": 148.59,
+          "returnedRoutes": 1
+        }
+      },
+      "candidate": {
+        "attemptIds": [
+          7,
+          14,
+          23
+        ],
+        "values": {
+          "firstDOMMs": [
+            26935.400000000023,
+            26994.399999999907,
+            26675.600000000093
+          ],
+          "completedToVisibleDOMMs": [
+            27.70000000001164,
+            21.599999999976717,
+            18.699999999953434
+          ],
+          "wholeSearchCPUSecondsLowerBound": [
+            149.67000000000007,
+            149.52999999999997,
+            147.77000000000004
+          ],
+          "returnedRoutes": [
+            1,
+            1,
+            1
+          ]
+        },
+        "median": {
+          "firstDOMMs": 26935.400000000023,
+          "completedToVisibleDOMMs": 21.599999999976717,
+          "wholeSearchCPUSecondsLowerBound": 149.52999999999997,
+          "returnedRoutes": 1
+        }
+      }
+    }
+  ]
+}

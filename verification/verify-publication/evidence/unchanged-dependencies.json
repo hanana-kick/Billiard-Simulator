@@ -1,0 +1,66 @@
+{
+  "baseline": "cf7521de",
+  "status": "passed",
+  "records": [
+    {
+      "file": "src/math.js",
+      "baselineSHA256": "ea76455919c3fb22557680c5422902cf631753215492e799b32791993a939046",
+      "candidateSHA256": "ea76455919c3fb22557680c5422902cf631753215492e799b32791993a939046",
+      "identical": true
+    },
+    {
+      "file": "src/physics.js",
+      "baselineSHA256": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d",
+      "candidateSHA256": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d",
+      "identical": true
+    },
+    {
+      "file": "src/game-rules.js",
+      "baselineSHA256": "33857334242fd280193595cda56b9d433de579c0f017efa7a21c35c470191160",
+      "candidateSHA256": "33857334242fd280193595cda56b9d433de579c0f017efa7a21c35c470191160",
+      "identical": true
+    },
+    {
+      "file": "src/route-rules.js",
+      "baselineSHA256": "94c29aa2108e1946fb16ba66f29f3923811035df7e900408c07c9df24ea06b76",
+      "candidateSHA256": "94c29aa2108e1946fb16ba66f29f3923811035df7e900408c07c9df24ea06b76",
+      "identical": true
+    },
+    {
+      "file": "src/route-sampler.js",
+      "baselineSHA256": "4cbdb16280814af7da0c3428cbfdacb5964963e26256f71dcff3d8c7a12ec7d0",
+      "candidateSHA256": "4cbdb16280814af7da0c3428cbfdacb5964963e26256f71dcff3d8c7a12ec7d0",
+      "identical": true
+    },
+    {
+      "file": "src/optimizer-core.js",
+      "baselineSHA256": "c69770a36008eeb1e006c1bce8de4ae1722f12522f886690d1cb956fd291a40a",
+      "candidateSHA256": "c69770a36008eeb1e006c1bce8de4ae1722f12522f886690d1cb956fd291a40a",
+      "identical": true
+    },
+    {
+      "file": "src/optimizer.js",
+      "baselineSHA256": "7c5a7104d84f37578544f2b8e751bc50a5837d22e227eb9a1ba23b3333bfcfb3",
+      "candidateSHA256": "7c5a7104d84f37578544f2b8e751bc50a5837d22e227eb9a1ba23b3333bfcfb3",
+      "identical": true
+    },
+    {
+      "file": "src/inverse-geometry.js",
+      "baselineSHA256": "b2354534fafab01322b72852fa184669f8847fa97a093f4480bc5c8f9777044f",
+      "candidateSHA256": "b2354534fafab01322b72852fa184669f8847fa97a093f4480bc5c8f9777044f",
+      "identical": true
+    },
+    {
+      "file": "src/inverse-solver.js",
+      "baselineSHA256": "86195c73110b269bce942bf472a150c7b507c3dcd52e63723f792434bb5cee49",
+      "candidateSHA256": "86195c73110b269bce942bf472a150c7b507c3dcd52e63723f792434bb5cee49",
+      "identical": true
+    },
+    {
+      "file": "src/inverse-events.js",
+      "baselineSHA256": "c413d1d348df3696bb6813bec76b3f7c3d3f3203e8818853266e63765881e0fa",
+      "candidateSHA256": "c413d1d348df3696bb6813bec76b3f7c3d3f3203e8818853266e63765881e0fa",
+      "identical": true
+    }
+  ]
+}

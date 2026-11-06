@@ -1,0 +1,182 @@
+{
+  "manifest": {
+    "baselineRevision": "cf7521de07fb03612650835114d2b5023600ff8c",
+    "candidateRevision": "e4e4289827fdead5ac5013e21307d125002732b0",
+    "baselinePlannerSHA256": "5e07803dd3e593fb015428366038446caa9aa46c5b449c99b0155408a0357100",
+    "candidatePlannerSHA256": "f6c4b6158b8624e641b1550ac375054e4546438906d46571ec99e42da7afef1a",
+    "node": "v24.22.1",
+    "limits": {
+      "maxWaves": 180,
+      "maxEvaluations": 4000,
+      "maxPhysicsSteps": 20000000,
+      "maxWallMsPerFixture": 300000,
+      "postSuccessWaves": 0
+    },
+    "qualificationLimits": [
+      "Deterministic fixed-clock serial coordinator differential, not browser latency or worker scheduling proof.",
+      "Same actual physical outcomes are fed to both planners; this tests coordinator/overlay equivalence, not independent physics-engine equivalence.",
+      "Bounded default3/default4 domains only, through first successful archive; not exhaustive and no general convergence claim.",
+      "Source-gameplay explicit finalization is not used in this default-route-query differential; separate receipt tests cover it.",
+      "Opaque enumeration iterators and Rapier module objects excluded from structural comparison; exact next jobs test enumeration behavior. Candidate-only verifiedRow carrier excluded from cross-version state comparison but included in overlay purity checks."
+    ]
+  },
+  "results": [
+    {
+      "fixture": "default3",
+      "status": "passed",
+      "limits": {
+        "maxWaves": 180,
+        "maxEvaluations": 4000,
+        "maxPhysicsSteps": 20000000,
+        "maxWallMsPerFixture": 300000,
+        "postSuccessWaves": 0
+      },
+      "clock": "Only planner performance.now is fixed at 0; physical timestep, solver and evaluator are unchanged.",
+      "evaluations": 321,
+      "physicsSteps": 1624990,
+      "waves": 26,
+      "overlayChecks": 321,
+      "earlyRows": 13,
+      "firstSuccessWave": 25,
+      "request": {
+        "settings": {
+          "angle": 0,
+          "elevation": 8,
+          "tipX": 0,
+          "tipY": 0,
+          "speed": 2
+        },
+        "options": {
+          "searchAlgorithm": "inverse-constraints",
+          "maxCushions": 3,
+          "maxKisses": 1,
+          "solveTimeMs": 20000,
+          "inputStrategy": "hybrid",
+          "mode": "three",
+          "targetId": 2,
+          "secondId": 3,
+          "horizon": 16,
+          "spin": true,
+          "objective": "shortest",
+          "order": "either",
+          "methods": [
+            "any"
+          ],
+          "allowKiss": true,
+          "elevationMode": "search",
+          "minElevation": 0,
+          "maxElevation": 85,
+          "fourBallThreeCushion": false,
+          "minSpeed": 0.5,
+          "maxSpeed": 4.5,
+          "workers": 0,
+          "gameMode": "free",
+          "opponentId": null
+        },
+        "snapshotSHA256": "54648a39104a7c437788dc172573e18401a83936b3d737f2b8addc3b81013695"
+      },
+      "stopReason": "first-committed-success",
+      "rootIterations": 49,
+      "stateSHA256": "ecf2afbdd3084800665182def0be7658aa3cedefc0ad7cc5b6174efb06529ffa",
+      "firstSuccessCost": {
+        "elapsedMs": 0,
+        "physicsSteps": 1624990,
+        "rootIterations": 49,
+        "scope": "inverse-constraints"
+      },
+      "succeeded": true,
+      "proofs": {
+        "samePlannedJobs": true,
+        "exactSolverStatesEveryWaveAndOutcome": true,
+        "exactCountersAndCommittedArchive": true,
+        "exactCommittedOrdering": true,
+        "overlayStateAndOutcomePurity": true,
+        "detachedConsumerRows": true,
+        "sourceWorldAndRequestUnchanged": true,
+        "actualPhysicsOutcomes": true,
+        "legacySamplingForbidden": true
+      },
+      "wallMs": 65176.075434,
+      "resultCount": 1
+    },
+    {
+      "fixture": "default4",
+      "status": "passed",
+      "limits": {
+        "maxWaves": 180,
+        "maxEvaluations": 4000,
+        "maxPhysicsSteps": 20000000,
+        "maxWallMsPerFixture": 300000,
+        "postSuccessWaves": 0
+      },
+      "clock": "Only planner performance.now is fixed at 0; physical timestep, solver and evaluator are unchanged.",
+      "evaluations": 1318,
+      "physicsSteps": 7291941,
+      "waves": 79,
+      "overlayChecks": 1318,
+      "earlyRows": 11,
+      "firstSuccessWave": 78,
+      "request": {
+        "settings": {
+          "angle": 0,
+          "elevation": 8,
+          "tipX": 0,
+          "tipY": 0,
+          "speed": 2
+        },
+        "options": {
+          "searchAlgorithm": "inverse-constraints",
+          "maxCushions": 3,
+          "maxKisses": 1,
+          "solveTimeMs": 20000,
+          "inputStrategy": "hybrid",
+          "mode": "carom",
+          "targetId": 3,
+          "secondId": 4,
+          "horizon": 16,
+          "spin": true,
+          "objective": "shortest",
+          "order": "either",
+          "methods": [
+            "any"
+          ],
+          "allowKiss": true,
+          "elevationMode": "search",
+          "minElevation": 0,
+          "maxElevation": 85,
+          "fourBallThreeCushion": false,
+          "minSpeed": 0.5,
+          "maxSpeed": 4.5,
+          "workers": 0,
+          "gameMode": "four",
+          "opponentId": 2
+        },
+        "snapshotSHA256": "fe59cdbbfb1e5c60d7133be9fdbb2bed2467200dd7d7413b2f16dd42bcdd9cf6"
+      },
+      "stopReason": "first-committed-success",
+      "rootIterations": 169,
+      "stateSHA256": "4358ba48f24edc7f6a465cae9152b287efbbe1c0475215a063f4aa87ed2f6248",
+      "firstSuccessCost": {
+        "elapsedMs": 0,
+        "physicsSteps": 7291941,
+        "rootIterations": 169,
+        "scope": "inverse-constraints"
+      },
+      "succeeded": true,
+      "proofs": {
+        "samePlannedJobs": true,
+        "exactSolverStatesEveryWaveAndOutcome": true,
+        "exactCountersAndCommittedArchive": true,
+        "exactCommittedOrdering": true,
+        "overlayStateAndOutcomePurity": true,
+        "detachedConsumerRows": true,
+        "sourceWorldAndRequestUnchanged": true,
+        "actualPhysicsOutcomes": true,
+        "legacySamplingForbidden": true
+      },
+      "wallMs": 286724.884418,
+      "resultCount": 1
+    }
+  ],
+  "status": "passed"
+}

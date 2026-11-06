@@ -1,0 +1,50 @@
+{
+  "purpose": "One parent-requested clean provenance rerun, not a qualification retry.",
+  "executionSession": 75691,
+  "exitCode": 0,
+  "priorSession5750CompletedWithExitCode": 0,
+  "preflightExactProcessCheck": "No matching node differential process found.",
+  "freshOutputPathCheckedAbsent": true,
+  "freshLogPathCheckedAbsent": true,
+  "logOpenedNoClobber": true,
+  "scriptUnchanged": true,
+  "scriptSHA256": "23a1c25e13a81957137ef5683ea36826f509aee26e633c312a9837d9cb0bcaed",
+  "limitsUnchanged": true,
+  "runCount": 1,
+  "records": [
+    {
+      "fixture": "default3",
+      "status": "passed",
+      "waves": 26,
+      "evaluations": 321,
+      "physicsSteps": 1624990,
+      "overlayChecks": 321,
+      "earlyRowObservations": 13,
+      "firstSuccessWave": 25,
+      "resultCount": 1,
+      "wallMs": 65176.075434,
+      "traceRecords": 373,
+      "traceSHA256": "015353d24b210106af10ecfcf9f59fb86ebae5b5911df70b6b7353e9dd235771",
+      "traceByteIdenticalToEarlierFinal": true,
+      "stateSHA256": "ecf2afbdd3084800665182def0be7658aa3cedefc0ad7cc5b6174efb06529ffa"
+    },
+    {
+      "fixture": "default4",
+      "status": "passed",
+      "waves": 79,
+      "evaluations": 1318,
+      "physicsSteps": 7291941,
+      "overlayChecks": 1318,
+      "earlyRowObservations": 11,
+      "firstSuccessWave": 78,
+      "resultCount": 1,
+      "wallMs": 286724.884418,
+      "traceRecords": 1476,
+      "traceSHA256": "9a416dc9a31d809f8022bb4ecd0126253b1c8a71bb896d5cadb9df25b90c863f",
+      "traceByteIdenticalToEarlierFinal": true,
+      "stateSHA256": "4358ba48f24edc7f6a465cae9152b287efbbe1c0475215a063f4aa87ed2f6248"
+    }
+  ],
+  "olderEvidenceLimitation": "Earlier reused-output writer overlap and missing failed/interrupted raw artifacts remain documented in ../planner-differential/retained-attempts.md. This isolated run does not reconstruct those artifacts or erase that limitation.",
+  "qualification": "Fixed-clock serial coordinator equivalence through first committed success only; not browser latency, exhaustive recall, independent physics-engine equivalence, or explicit gameplay-finalization proof."
+}
