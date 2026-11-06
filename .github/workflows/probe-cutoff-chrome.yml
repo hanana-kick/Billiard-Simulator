@@ -1,0 +1,61 @@
+name: Consumer-bound cutoff Chrome comparison (no deployment)
+on:
+  push:
+    branches: ['validation/probe-cutoff-chrome-20261106']
+permissions:
+  contents: read
+jobs:
+  compare:
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        fixture: [default3, default4, moved3, moved4]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Build frozen baseline and isolated v1 cutoff
+        run: |
+          set -euo pipefail
+          git fetch origin cf7521de07fb03612650835114d2b5023600ff8c
+          for arm in baseline candidate; do
+            git worktree add --detach "$RUNNER_TEMP/$arm" cf7521de07fb03612650835114d2b5023600ff8c
+            ln -s "$GITHUB_WORKSPACE/node_modules" "$RUNNER_TEMP/$arm/node_modules"
+          done
+          (cd "$RUNNER_TEMP/candidate" && git apply "$GITHUB_WORKSPACE/verification/probe-cutoff/candidate.patch")
+          for arm in baseline candidate; do
+            (cd "$RUNNER_TEMP/$arm" && npm run prepare:engine && npm run build)
+          done
+      - name: Repeated sandboxed Chrome comparison and full-rest replays
+        env:
+          FIXTURE: ${{ matrix.fixture }}
+        run: |
+          set -euo pipefail
+          google-chrome --version | tee chrome-version.log
+          lscpu > host-cpu.log
+          HOST=127.0.0.1 PORT=8793 node "$RUNNER_TEMP/baseline/server.cjs" > baseline-server.log 2>&1 &
+          BASE_PID=$!
+          HOST=127.0.0.1 PORT=8794 node "$RUNNER_TEMP/candidate/server.cjs" > candidate-server.log 2>&1 &
+          CAND_PID=$!
+          trap 'kill "$BASE_PID" "$CAND_PID" || true' EXIT
+          sleep 2
+          node verification/probe-cutoff/compare.cjs | tee comparison.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: probe-cutoff-chrome-${{ matrix.fixture }}
+          path: |
+            probe-cutoff-chrome-results/
+            comparison.log
+            chrome-version.log
+            host-cpu.log
+            baseline-server.log
+            candidate-server.log

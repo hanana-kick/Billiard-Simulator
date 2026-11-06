@@ -1,0 +1,137 @@
+--- a/src/inverse-events.js
++++ b/src/inverse-events.js
+@@ -201,9 +201,11 @@
+    if(finalizationPolicy?.effective!=='final-gameplay-verify'||!G.LabSourceGameplayFinalizationOwner||!G.ThreeBallGame||!G.FourBallGame||!G.ShotSearchCore.stepTrialOuter)throw new Error('Admitted original gameplay continuation modules are required');
+   }
+  }
++ const bound=options.incompatibleProbeBound;
++ if(bound&&(bound.kind!=='inverse-jacobian-consumer-bound-v1'||options.purpose!=='jacobian'||req.finalization!==undefined||options.eventPrefixOnly===true||bound.branchId!==(topology.id||topology.topologyId)||!Number.isInteger(bound.base?.prefix)||bound.base.prefix<=0||bound.base.stage==='clearance'||!['angle','elevation','speed','tipX','tipY'].every(k=>k==='angle'?((bound.settings[k]+180)%360+360)%360-180===settings[k]:bound.settings[k]===settings[k])))throw Error('Invalid consumer-bound evaluator request');
+  const expected=expectedEvents(topology),strictReq={...req,testBudget:true,settings:{...req.settings,elevation:settings.elevation},options:{...req.options,budget:1,elevationMode:'fixed',inputStrategy:'hybrid',targetId:topology.firstId??req.options.targetId,secondId:topology.secondId??req.options.secondId,methodId:topology.method??req.options.methodId,methods:undefined}};
+  G.ShotSearchCore.validate(strictReq);
+- const e={...createObservation(topology),req,settings:{...settings},expected,topologyId:topology.id||topology.topologyId||JSON.stringify(expected),purpose:options.purpose||'evaluate',eventPrefixOnly:options.eventPrefixOnly===true,done:false,disposed:false,inequalities:inputInequalities(req,settings)};
++ const e={...createObservation(topology),req,settings:{...settings},expected,topologyId:topology.id||topology.topologyId||JSON.stringify(expected),incompatibleProbeBound:bound?structuredClone(bound):null,purpose:options.purpose||'evaluate',eventPrefixOnly:options.eventPrefixOnly===true,done:false,disposed:false,inequalities:inputInequalities(req,settings)};
+  if(finalizationPolicy?.effective==='final-gameplay-verify'){e.finalizationPolicy=finalizationPolicy;e.finalizationIdentity=G.LabSourceFinalizationRequest.evaluationBindingFor(options.finalizationAdmission,req,topology,settings,'verify');}
+  // A feasibility query observes geometry only. It never launches a candidate
+  // or certifies a shot; an independent normal stroke/replay remains required.
+@@ -256,6 +258,7 @@
+   for(let i=0;i<stepBatch&&!e.done;i++){
+    e.done=e.finalizationOwner?G.LabSourceGameplayFinalizationOwner.advance(e.finalizationOwner,complete=>finalizationRoute(e,complete)):G.ShotSearchCore.stepTrial(e.search,e.trial,1);
+    if(e.finalizationOwner&&e.unavailable){e.finalizationReceipt=G.LabSourceGameplayFinalizationOwner.interrupt(e.finalizationOwner,'unsupported',e.unavailable);e.done=true;}
++   if(e.incompatibleProbeBound&&!e.done&&!e.unavailable&&e.mismatch&&e.eventPrefix<e.incompatibleProbeBound.base.prefix){e.incompatibleProbe=true;e.done=true;}
+    // The observer freezes the active residual at the first wrong event. Later
+    // motion cannot repair an ordered-prefix mismatch. Root probes need only
+    // this exact prefix, not a speculative complete gameplay outcome. Require
+@@ -276,6 +279,10 @@
+  if(!e.done)throw new Error('Inverse event evaluation is still running');
+  if(e.disposed)throw new Error('Inverse event evaluation was disposed without completion');
+  let physicalResult=null;
++ if(e.incompatibleProbe){
++  restoreObserver(e);e.trial.lab.dispose();e.disposed=true;
++  return e.result={kind:'inverse-incompatible-probe-proof-v1',status:'consumer-bound-incompatible',purpose:'jacobian',incompatibleProbeBound:structuredClone(e.incompatibleProbeBound),frozenPrefix:e.eventPrefix,mismatchReason:e.mismatch.reason,steps:e.trial.steps};
++ }
+  if(e.trial){
+   restoreObserver(e);
+   if(e.prefixOnly){
+--- a/src/inverse-planner.js
++++ b/src/inverse-planner.js
+@@ -63,7 +63,7 @@
+  if(s.exhausted)while(s.active.length<4&&s.waiting.length)s.active.push(s.waiting.shift());
+  const jobs=[];for(const entry of s.active){
+   const next=G.LabInverseSolver.next(entry.state)||[];
+-  for(const probe of next)jobs.push({kind:'inverse-constraint',id:s.nextId++,solverId:probe.id,branchId:entry.branch.id,purpose:probe.purpose,settings:{...probe.settings,angle:((probe.settings.angle+180)%360+360)%360-180},topology:entry.branch,req:s.req,wave:s.wave});
++  for(const probe of next)jobs.push({kind:'inverse-constraint',id:s.nextId++,solverId:probe.id,branchId:entry.branch.id,purpose:probe.purpose,settings:{...probe.settings,angle:((probe.settings.angle+180)%360+360)%360-180},topology:entry.branch,req:s.req,wave:s.wave,...(probe.incompatibleProbeBound&&!Object.hasOwn(s.req,'finalization')?{incompatibleProbeBound:probe.incompatibleProbeBound}:{})});
+  }
+  s.pending=jobs;s.wave++;if(!jobs.length&&s.exhausted&&!s.active.length&&!s.waiting.length){s.finished=true;pause(s);}
+  const elapsed=performance.now()-start;s.planningMs+=elapsed;s.maxPlanningMs=Math.max(s.maxPlanningMs,elapsed);return jobs;
+@@ -71,6 +71,7 @@
+ function commitWave(s,outcomes){
+  checkFinalization(s);
+  const byId=new Map(outcomes.map(x=>[x.id,x.outcome]));if(byId.size!==s.pending.length||s.pending.some(j=>!byId.has(j.id)))throw Error('Incomplete inverse evaluation wave');
++ for(const entry of s.active)for(const job of s.pending.filter(j=>j.branchId===entry.branch.id))G.LabInverseSolver.validateProbeOutcome(entry.state,job.solverId,byId.get(job.id));
+  // Validate the complete explicit verify wave before changing counters, roots,
+  // or archive state. Missing/swapped transport proof is not a physical miss.
+  if(gameplay(s))for(const job of s.pending.filter(j=>j.purpose==='verify')){
+--- a/src/inverse-solver.js
++++ b/src/inverse-solver.js
+@@ -8,6 +8,7 @@
+  */
+ (function(G){
+ 'use strict';
++let consumerGeneration=0;
+ const KEYS=['angle','elevation','speed','tipX','tipY'];
+ const copy=x=>JSON.parse(JSON.stringify(x));
+ const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+@@ -34,13 +35,34 @@
+  }
+  return y;
+ }
+-function issue(s,points){s.pending=points.map(p=>({...p,id:s.branchId+':'+s.sequence++,settings:settings(s,p.x)}));s.received={};return s.pending.map(copy);}
++function issue(s,points){
++ s.pending=points.map(p=>({...p,id:s.branchId+':'+s.sequence++,settings:settings(s,p.x)}));s.received={};
++ const wave=++s.consumerWave;
++ for(const p of s.pending)if(p.purpose==='jacobian'&&s.phase==='jacobian'&&Number.isInteger(s.base?.prefix)&&s.base.prefix>0&&s.base.stage!=='clearance'){
++  p.incompatibleProbeBound={kind:'inverse-jacobian-consumer-bound-v1',generation:s.consumerGeneration,wave,branchId:s.branchId,probeId:p.id,base:copy(s.base),settings:copy(p.settings)};
++ }
++ return s.pending.map(copy);
++}
++function validateProbeOutcome(s,id,out){
++ if(out?.kind!=='inverse-incompatible-probe-proof-v1'){
++  if(out?.incompatibleProbeBound||out?.status==='consumer-bound-incompatible')throw Error('Malformed incompatible probe proof');
++  return;
++ }
++ const p=s.pending.find(p=>p.id===id),b=p?.incompatibleProbeBound;
++ if(s.status!=='running'||s.phase!=='jacobian'||!p||p.purpose!=='jacobian'||!b||
++  b.generation!==s.consumerGeneration||b.wave!==s.consumerWave||JSON.stringify(b.base)!==JSON.stringify(s.base)||
++  JSON.stringify(out.incompatibleProbeBound)!==JSON.stringify(b)||out.purpose!=='jacobian'||out.status!=='consumer-bound-incompatible'||
++  !Number.isInteger(out.frozenPrefix)||out.frozenPrefix<0||out.frozenPrefix>=b.base.prefix||
++  !['unexpected-event','ambiguous-simultaneous-events'].includes(out.mismatchReason)||!Number.isInteger(out.steps)||out.steps<0||
++  ['residual','residuals','inequalities','physicalResult','goalVerified','verified','unsupported','contactCell'].some(k=>Object.hasOwn(out,k)))throw Error('Stale, malformed, or incorrectly bound incompatible probe proof');
++}
++
+ function create(problem,options={}){
+  const seed=problem.seed||problem.settings||{}, defaults={angle:[(seed.angle||0)-180,(seed.angle||0)+180],elevation:[0,85],speed:[.5,4.5],tipX:[-.85,.85],tipY:[-.85,.85]};
+  const bounds=KEYS.map(k=>copy((problem.bounds||{})[k]||defaults[k]));
+  const s={version:1,branchId:String(problem.id||problem.topology?.id||'branch'),topology:copy(problem.topology||{}),template:copy(seed),bounds,scales:bounds.map(b=>b[1]-b[0]||1),tipRadius:problem.tipRadius??.85,
+   options:{maxIterations:options.maxIterations??60,residualTolerance:options.residualTolerance??1e-5,inequalityTolerance:options.inequalityTolerance??1e-7,finiteDifference:options.finiteDifference??1e-4,stepTolerance:options.stepTolerance??1e-9,minTrust:options.minTrust??1e-8,derivativeConsistency:options.derivativeConsistency??.35,maxDerivativeScale:options.maxDerivativeScale??16,secantReuse:options.secantReuse??3,clearanceAngleTolerance:options.clearanceAngleTolerance??.001,maxClearanceIterations:options.maxClearanceIterations??40},
+-  status:'running',phase:'base',reason:null,iterations:0,evaluations:0,sequence:0,pending:[],received:{},lambda:options.damping??1e-3,trust:options.trustRadius??.2,deadline:options.deadline??null};
++  consumerGeneration:++consumerGeneration,consumerWave:0,status:'running',phase:'base',reason:null,iterations:0,evaluations:0,sequence:0,pending:[],received:{},lambda:options.damping??1e-3,trust:options.trustRadius??.2,deadline:options.deadline??null};
+  if(bounds.some(b=>b.length!==2||!b.every(Number.isFinite)||b[0]>b[1])||!KEYS.every(k=>Number.isFinite(seed[k]))||!Number.isFinite(s.tipRadius)||s.tipRadius<0||s.tipRadius>=1)return finish(s,'unsupported','Invalid seed or bounds');
+  if(bounds[1][0]<0||bounds[1][1]>85||bounds[2][0]<=0||bounds[2][1]>10)return finish(s,'unsupported','Physical input bounds are invalid');
+  if(!Object.values(s.options).every(Number.isFinite)||s.options.maxIterations<0||s.options.finiteDifference<=0||s.options.residualTolerance<0||s.options.inequalityTolerance<0||s.options.stepTolerance<=0||s.options.minTrust<=0||!Number.isFinite(s.lambda)||s.lambda<=0||!Number.isFinite(s.trust)||s.trust<=0)return finish(s,'unsupported','Invalid numerical controls');
+@@ -169,6 +191,7 @@
+ }
+ function accept(s,outcomes){
+  if(s.status!=='running')return s;
++ for(const out of outcomes)validateProbeOutcome(s,out.id,out);
+  for(const out of outcomes){
+   const p=s.pending.find(p=>p.id===out.id);if(!p)throw new Error('Unknown or stale evaluation id: '+out.id);
+   if(Object.hasOwn(s.received,out.id))throw new Error('Duplicate evaluation id: '+out.id);
+@@ -311,5 +334,5 @@
+  s.phase='base';s.derivativeCache=[];s.retryDerivativeAxes=null;s.axisDirections={};s.derivativeSides={};return s;
+ }
+ 
+-G.LabInverseSolver={create,next,accept,result,cancel,resume};
++G.LabInverseSolver={create,next,accept,result,cancel,resume,validateProbeOutcome};
+ })(typeof globalThis!=='undefined'?globalThis:window);
+--- a/src/optimizer-service.js
++++ b/src/optimizer-service.js
+@@ -126,7 +126,7 @@
+    while(id===this.version){
+     for(const job of this.queue){
+      if(this.suspended)await this.cooperativeGate(id);if(id!==this.version){dispose();return;}
+-     const beginOptions={purpose:job.purpose,eventPrefixOnly:job.eventPrefixOnly===true,...(job.prefixMismatchWindow===true?{prefixMismatchWindow:true}:{})};
++     const beginOptions={purpose:job.purpose,...(job.incompatibleProbeBound?{incompatibleProbeBound:job.incompatibleProbeBound}:{}),eventPrefixOnly:job.eventPrefixOnly===true,...(job.prefixMismatchWindow===true?{prefixMismatchWindow:true}:{})};
+      evaluator=job.kind==='inverse-constraint'?(job.prefixMismatchWindow===true?G.LabInverseEventsWindow:G.LabInverseEvents):null;
+      if(job.kind==='inverse-constraint'&&!evaluator)throw Error('Requested inverse evaluator unavailable');
+      if(job.kind==='inverse-constraint'&&Object.hasOwn(job.req,'finalization')){if(!G.LabSourceFinalizationRequest)throw Error('Explicit source finalization modules unavailable');if(G.LabSourceFinalizationRequest.needsAdmission(job.req,job.purpose)){beginOptions.finalizationAdmission=await G.LabSourceFinalizationRequest.admit(job.req);if(this.suspended)await this.cooperativeGate(id);if(id!==this.version)return;}}
+--- a/src/optimizer-worker.js
++++ b/src/optimizer-worker.js
+@@ -6,7 +6,7 @@
+  const reply=payload=>self.postMessage({requestId:data.requestId,candidateId:data.candidateId,...payload});let evaluation,evaluator;
+  try{
+   await ready;if(token!==activeToken)return;
+-  const inverse=data.job.kind==='inverse-constraint',beginOptions={purpose:data.job.purpose,eventPrefixOnly:data.job.eventPrefixOnly===true,...(data.job.prefixMismatchWindow===true?{prefixMismatchWindow:true}:{})};
++  const inverse=data.job.kind==='inverse-constraint',beginOptions={purpose:data.job.purpose,...(data.job.incompatibleProbeBound?{incompatibleProbeBound:data.job.incompatibleProbeBound}:{}),eventPrefixOnly:data.job.eventPrefixOnly===true,...(data.job.prefixMismatchWindow===true?{prefixMismatchWindow:true}:{})};
+   evaluator=inverse?(data.job.prefixMismatchWindow===true?globalThis.LabInverseEventsWindow:globalThis.LabInverseEvents):null;
+   if(inverse&&!evaluator)throw Error('Requested inverse evaluator unavailable');
+   if(inverse&&Object.hasOwn(data.job.req,'finalization')){if(!globalThis.LabSourceFinalizationRequest)throw Error('Explicit source finalization modules unavailable');if(LabSourceFinalizationRequest.needsAdmission(data.job.req,data.job.purpose)){beginOptions.finalizationAdmission=await LabSourceFinalizationRequest.admit(data.job.req);if(token!==activeToken)return;}}
