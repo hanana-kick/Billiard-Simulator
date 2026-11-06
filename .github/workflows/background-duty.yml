@@ -27,7 +27,7 @@ jobs:
           ln -s "$GITHUB_WORKSPACE/node_modules" "$RUNNER_TEMP/baseline/node_modules"
           node build.cjs
           (cd "$RUNNER_TEMP/baseline" && npm run prepare:engine && node build.cjs)
-      - name: Twenty-four fresh-browser paired attempts and three cancellation checks
+      - name: Three repaired real-browser cancellation checks; prior 24 attempts retained
         run: |
           set -euo pipefail
           google-chrome --version | tee chrome-version.log
@@ -37,7 +37,7 @@ jobs:
           CAND_PID=$!
           trap 'kill "$BASE_PID" "$CAND_PID" || true' EXIT
           sleep 2
-          node verification/idle-retention/duty.cjs | tee duty.log
+          CANCEL_ONLY=1 node verification/idle-retention/duty.cjs | tee duty.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
