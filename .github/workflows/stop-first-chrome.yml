@@ -1,7 +1,7 @@
-name: Stop-on-first-verified Chrome comparison (no deployment)
+name: Stop-first retained-wave resume check (no deployment)
 on:
   push:
-    branches: ['validation/stop-first-chrome-20261106']
+    branches: ['validation/stop-first-resume-check-20261106']
 permissions:
   contents: read
 jobs:
@@ -38,6 +38,7 @@ jobs:
           done
       - name: Repeated sandboxed Chrome comparison and full-rest replays
         env:
+          RETENTION_ONLY: '1'
           FIXTURE: ${{ matrix.fixture }}
         run: |
           set -euo pipefail
