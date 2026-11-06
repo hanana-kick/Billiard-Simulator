@@ -89,3 +89,13 @@ test('suspended idle work is invalidated by changed input and stale completion c
 });
 test('unsupported idle suspension still releases work safely',()=>{const h=aimingHarness();h.begin();h.service.job.optimizer.plan={};h.optimizers[0].suspend=()=>false;h.service.observeFrame(45);assert.equal(h.service.job,null);assert.equal(h.optimizers[0].disposed,true);});
 test('five-second idle budget suspends a retained frontier, without a new search deadline',()=>{const h=aimingHarness();h.begin();h.runTimer(5000);assert.equal(h.service.job.suspended,true);assert.equal(h.service.job.aimBudgetSuspended,true);assert.equal(h.optimizers.length,1);h.service.cancel();});
+
+for(const kind of ['disabled','settings','world','receipt'])test(`toggle-on pending aim rejects ${kind} before worker creation`,()=>{
+ const h=aimingHarness();h.service.prepareAim(h.receipt);
+ if(kind==='disabled')h.service.cancel('disabled');
+ else if(kind==='settings')h.c.state.settings.angle++;
+ else if(kind==='world')h.before.world.world[0]++;
+ else h.c.forecastReceipt=structuredClone(h.receipt);
+ if(kind!=='disabled')h.runTimer(750);
+ assert.equal(h.optimizers.length,0);assert.equal(h.service.job,null);h.service.cancel();
+});

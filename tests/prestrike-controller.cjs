@@ -16,3 +16,12 @@ for(const four of [false,true])test(`actual controller adopts idle frontier and 
   assert.equal(job.promoted,true);assert.equal(c.optimizer,opt);assert.equal(c.state.routeResult.results[0].id,'cache');assert.equal(NextShotState.snapshotEqual(c.lab.snapshot({trails:false}),result.nextShot.snapshot),true);
  }finally{c.nextShot.dispose();c.lab.dispose();clearTimeout(c.noticeTimer);clearTimeout(c.predictionTimer);}
 });
+
+test('toggle-on requests existing forecast once; repeated on does not replace work; off cancels',()=>{
+ const c=new LabController(),calls=[];c.notify=()=>{};c.forecastReceipt={id:'current'};c.state.nextShotPrecompute=false;
+ c.nextShot={warm(){calls.push('warm')},prepareAim(r){calls.push(r)},cancel(reason){calls.push(reason)}};
+ c.option('nextShotPrecompute',true);assert.deepEqual(calls,['warm',c.forecastReceipt]);
+ c.option('nextShotPrecompute',true);assert.equal(calls.length,2);
+ c.option('nextShotPrecompute',false);assert.equal(calls[2],'disabled');
+ c.forecastReceipt=null;c.option('nextShotPrecompute',true);assert.equal(calls.at(-1),null);
+});

@@ -59,8 +59,9 @@ class LabController{
  option(key,value){
   if(key==='mode'&&!['cue','place','orbit'].includes(value))return;if(key==='horizon'&&![4,8,16,30].includes(value))return;if(key==='rate'&&![.25,.5,1,2,4].includes(value))return;
   if(key==='activePanel'&&!['shot','routes','settings'].includes(value))return;
+  const enableNextShot=key==='nextShotPrecompute'&&value===true&&this.state.nextShotPrecompute===false;
   if(key==='nextShotPrecompute'&&!value)this.nextShot?.cancel('disabled');
-  this.state[key]=value;if(key==='nextShotPrecompute'&&value)this.nextShot?.warm();if(key==='mode')this.cancelGesture();if(key==='predict'||key==='horizon'){this.invalidate();this.queuePrediction();}this.notify();
+  this.state[key]=value;if(enableNextShot){this.nextShot?.warm();this.nextShot?.prepareAim(this.forecastReceipt);}if(key==='mode')this.cancelGesture();if(key==='predict'||key==='horizon'){this.invalidate();this.queuePrediction();}this.notify();
  }
  select(id){if(id!==this.state.selectedId)this.cancelSearch('선택 물체가 바뀌었습니다.',true);if(!this.lab?.get(id)||this.windup)return;this.cancelGesture();this.state.selectedId=id;this.repairRouteTargets();this.queuePrediction();this.notify();}
  view(name){if(!this.renderer)return;this.cancelGesture();this.renderer.setView(name);this.state.view=name;this.notify();}

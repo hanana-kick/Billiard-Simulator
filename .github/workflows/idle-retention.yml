@@ -26,6 +26,7 @@ jobs:
           tar --exclude=.git --exclude=node_modules --exclude=dist -cf - . | tar -xf - -C "$RUNNER_TEMP/baseline"
           ln -s "$GITHUB_WORKSPACE/node_modules" "$RUNNER_TEMP/baseline/node_modules"
           cp verification/idle-retention/baseline-next-shot-service.js "$RUNNER_TEMP/baseline/src/next-shot-service.js"
+          cp verification/idle-retention/baseline-controller.js "$RUNNER_TEMP/baseline/src/controller.js"
           node build.cjs
           (cd "$RUNNER_TEMP/baseline" && npm run prepare:engine && node build.cjs)
       - name: Three real Chrome repetitions per arm
@@ -40,6 +41,7 @@ jobs:
           trap 'kill "$BASE_PID" "$CAND_PID" || true' EXIT
           sleep 2
           node verification/idle-retention/run.cjs | tee idle-retention.log
+          node verification/idle-retention/toggle.cjs | tee idle-toggle.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -47,5 +49,7 @@ jobs:
           path: |
             idle-retention-evidence/
             idle-retention.log
+            idle-toggle-evidence/
+            idle-toggle.log
             baseline-server.log
             candidate-server.log
