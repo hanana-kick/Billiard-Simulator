@@ -1,4 +1,4 @@
-name: Strict complete-wave retention checks (no deployment)
+name: Old and fixed fair Resume comparison (no deployment)
 on:
   push:
     branches: ['validation/stop-first-resume-check-20261106']
@@ -10,7 +10,7 @@ jobs:
       fail-fast: false
       max-parallel: 4
       matrix:
-        fixture: [default3]
+        fixture: [default3, default4, moved3, moved4]
     runs-on: ubuntu-24.04
     timeout-minutes: 55
     steps:
@@ -26,14 +26,15 @@ jobs:
         run: |
           set -euo pipefail
           node --test tests/worker-pool.cjs
-          for arm in baseline candidate fair-first; do
+          for arm in old-fair fixed-fair; do
             mkdir -p "$RUNNER_TEMP/$arm"
             tar --exclude=.git --exclude=node_modules -cf - . | tar -xf - -C "$RUNNER_TEMP/$arm"
             ln -s "$GITHUB_WORKSPACE/node_modules" "$RUNNER_TEMP/$arm/node_modules"
           done
-          cp verification/stop-first/baseline-optimizer-service.js "$RUNNER_TEMP/baseline/src/optimizer-service.js"
-          cp verification/stop-first/fair-first-planner.js "$RUNNER_TEMP/fair-first/src/inverse-planner.js"
-          for arm in baseline candidate fair-first; do
+          cp verification/stop-first/fair-first-planner.js "$RUNNER_TEMP/old-fair/src/inverse-planner.js"
+          cp verification/fixed-fair/fixed-planner.js "$RUNNER_TEMP/fixed-fair/src/inverse-planner.js"
+          sha256sum "$RUNNER_TEMP/old-fair/src/optimizer-service.js" "$RUNNER_TEMP/old-fair/src/inverse-planner.js" "$RUNNER_TEMP/fixed-fair/src/inverse-planner.js" | tee source-hashes.log
+          for arm in old-fair fixed-fair; do
             (cd "$RUNNER_TEMP/$arm" && npm run prepare:engine && npm run build)
           done
       - name: Repeated sandboxed Chrome comparison and full-rest replays
@@ -43,24 +44,22 @@ jobs:
           set -euo pipefail
           google-chrome --version | tee chrome-version.log
           lscpu > host-cpu.log
-          HOST=127.0.0.1 PORT=8793 node "$RUNNER_TEMP/baseline/server.cjs" > baseline-server.log 2>&1 &
-          BASE_PID=$!
-          HOST=127.0.0.1 PORT=8794 node "$RUNNER_TEMP/candidate/server.cjs" > candidate-server.log 2>&1 &
-          CAND_PID=$!
-          HOST=127.0.0.1 PORT=8795 node "$RUNNER_TEMP/fair-first/server.cjs" > fair-first-server.log 2>&1 &
-          FAIR_PID=$!
-          trap 'kill "$BASE_PID" "$CAND_PID" "$FAIR_PID" || true' EXIT
+          HOST=127.0.0.1 PORT=8793 node "$RUNNER_TEMP/old-fair/server.cjs" > old-server.log 2>&1 &
+          OLD_PID=$!
+          HOST=127.0.0.1 PORT=8794 node "$RUNNER_TEMP/fixed-fair/server.cjs" > fixed-server.log 2>&1 &
+          FIXED_PID=$!
+          trap 'kill "$OLD_PID" "$FIXED_PID" || true' EXIT
           sleep 2
-          node verification/stop-first/full-wave.cjs | tee comparison.log
+          node verification/fixed-fair/compare.cjs | tee comparison.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: full-wave-${{ matrix.fixture }}
+          name: fixed-fair-${{ matrix.fixture }}
           path: |
-            full-wave-results/
+            fixed-fair-results/
             comparison.log
             chrome-version.log
             host-cpu.log
-            baseline-server.log
-            candidate-server.log
-            fair-first-server.log
+            old-server.log
+            fixed-server.log
+            source-hashes.log
