@@ -1,0 +1,46 @@
+name: Lower duty exact-rest continuation (no deployment)
+on:
+  push:
+    branches: ['backup/exact-rest-duty-gate-20261106']
+permissions:
+  contents: read
+jobs:
+  repeated:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run prepare:engine
+      - name: Cached result, mismatch, cancellation and pressure contracts
+        run: node --test tests/next-shot-lifecycle.cjs tests/next-shot-precompute.cjs tests/prestrike-controller.cjs
+      - run: node build.cjs --canonical-controller-assets
+      - name: Verify sandboxed supported Chrome
+        run: |
+          test "$(id -u)" != 0
+          google-chrome --version
+          git rev-parse HEAD
+          node - <<'NODE'
+          const assert=require('node:assert/strict'),{use}=require('./playwright.config.cjs');
+          assert.equal(use.channel,'chrome');assert.equal(use.launchOptions.chromiumSandbox,true);
+          assert.deepEqual(use.launchOptions.args||[],[]);assert.equal(use.ignoreHTTPSErrors,undefined);
+          NODE
+      - name: Repeat natural three and four-ball rest plus terminal continuation eight times
+        run: npx playwright test tests/e2e/next-shot-precompute.spec.cjs --grep 'search runs during the first shot' --repeat-each=4
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exact-rest-duty-evidence
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 30
+      - name: Preserve prior failure boundary
+        if: always()
+        run: echo 'Original run42180558284 remains72/73 failed at optional ready/suspended wait. This test-only run verifies native full-rest adoption, old epoch rejection and terminal outcome; it does not erase that failure.' >> "$GITHUB_STEP_SUMMARY"

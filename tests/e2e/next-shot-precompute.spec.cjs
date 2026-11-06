@@ -15,21 +15,57 @@ async function boot(page,four=false){
 }
 for(const four of [false,true])test(`next-shot ${four?'four':'three'}-ball search runs during the first shot and adopts only exact live rest`,async({page},testInfo)=>{
  const errors=await boot(page,four),before=await page.evaluate(()=>({settings:{...cueLab.state.settings},options:{...cueLab.state.routeOptions},game:cueLab.game.snapshot()}));
- await page.evaluate(()=>{globalThis.__nextFrames=[];let previous=performance.now();const tick=t=>{__nextFrames.push(t-previous);previous=t;if(cueLab.game.pending||cueLab.lab.shots===0)requestAnimationFrame(tick);};requestAnimationFrame(tick);});
+ await page.evaluate(()=>{
+  const c=cueLab,a=globalThis.__restAudit={premature:[],phases:[],startedAt:performance.now()};
+  const capture=()=>({selectedId:c.state.selectedId,game:structuredClone(c.game.snapshot()),settings:{...c.state.settings},options:{...c.state.routeOptions},result:structuredClone(c.state.routeResult),routeStatus:c.state.routeStatus,routeError:c.state.routeError,preparation:{...c.state.nextShotPreparation},exact:!!a.job&&NextShotState.snapshotEqual(c.lab.snapshot({trails:false}),a.job.predicted.snapshot),sameJob:c.nextShot.job===a.job,sameOptimizer:c.optimizer===a.optimizer,foreground:!c.optimizer.background,pending:!!c.game.pending,allSleeping:!c.lab.cue&&c.lab.objects.every(o=>o.body.isSleeping())});
+  a.unsubscribe=c.subscribe(()=>{
+   const phase=c.state.nextShotPreparation.phase;if(a.phases.at(-1)!==phase)a.phases.push(phase);
+   if(c.game.pending&&c.state.routeResult!==null)a.premature.push({at:performance.now(),phase,status:c.state.routeStatus});
+   if(a.job?.promoted&&['done','error'].includes(c.state.routeStatus)&&!a.terminal)a.terminal={...capture(),at:performance.now()};
+  });
+  const reconcile=c.nextShot.reconcile;
+  c.nextShot.reconcile=function(job){
+   const cached=structuredClone(job.result),returned=reconcile.call(this,job);
+   if(returned&&!a.adopted){
+    a.adopted={...capture(),cached,continuedAtRest:!!job.continuedAtRest,at:job.rest.at};
+    // Promotion advances the Worker request epoch. Late messages from the old
+    // background epoch must not mutate the adopted job or publish any sentinel.
+    const state=()=>JSON.stringify({version:a.optimizer.version,progress:c.state.routeProgress,result:c.state.routeResult,error:c.state.routeError,status:c.state.routeStatus,preparation:c.state.nextShotPreparation});
+    const previous=state(),marker={results:[{id:'STALE-BACKGROUND-MUST-NOT-PUBLISH'}]};
+    for(const type of ['progress','result','error'])a.workerMessage({data:{type,requestId:a.backgroundRequestId,value:type==='error'?'STALE-BACKGROUND-ERROR':marker}});
+    a.staleRejected=previous===state();a.epochAdvanced=a.optimizer.version>a.backgroundRequestId;
+   }
+   return returned;
+  };
+ });
  await page.locator('#strike').click();
- await page.waitForFunction(()=>cueLab.nextShot.job?.optimizer?.workers.length===1||['ready','suspended'].includes(cueLab.state.nextShotPreparation.phase),null,{timeout:15000});
- const inFlight=await page.evaluate(()=>({pending:!!cueLab.game.pending,shots:cueLab.lab.shots,settings:cueLab.state.settings,options:cueLab.state.routeOptions,routeResult:cueLab.state.routeResult,workers:cueLab.nextShot.job.optimizer.workers.length,background:cueLab.nextShot.job.optimizer.background,reusedForecast:cueLab.nextShot.job.reusedForecast,reusedWarmWorker:cueLab.nextShot.job.reusedWarmWorker}));
+ await page.waitForFunction(()=>cueLab.game.pending&&cueLab.nextShot.job?.optimizer&&cueLab.nextShot.job?.predicted,null,{timeout:15000});
+ const inFlight=await page.evaluate(()=>{
+  const c=cueLab,a=__restAudit;a.job=c.nextShot.job;a.optimizer=a.job.optimizer;a.backgroundRequestId=a.optimizer.version;a.workerMessage=a.optimizer.worker.onmessage;
+  a.predicted={selectedId:a.job.predicted.selectedId,game:structuredClone(a.job.predicted.game)};
+  return{pending:!!c.game.pending,shots:c.lab.shots,settings:c.state.settings,options:c.state.routeOptions,routeResult:c.state.routeResult,workers:a.optimizer.workers.length,background:a.optimizer.background,reusedForecast:a.job.reusedForecast,reusedWarmWorker:a.job.reusedWarmWorker};
+ });
  expect(inFlight).toMatchObject({pending:true,shots:1,settings:before.settings,options:before.options,routeResult:null,background:true,reusedForecast:true,reusedWarmWorker:true});expect(inFlight.workers).toBeLessThanOrEqual(1);
- await page.waitForFunction(()=>['ready','suspended'].includes(cueLab.state.nextShotPreparation.phase),null,{timeout:30000});
- expect(await page.evaluate(()=>cueLab.game.pending!==null&&cueLab.state.routeResult===null)).toBe(true);
- const saved=await page.evaluate(()=>({selectedId:cueLab.nextShot.job.predicted.selectedId,game:cueLab.nextShot.job.predicted.game,result:cueLab.nextShot.job.result}));
- await page.evaluate(()=>cueLab.option('rate',4));
- await page.waitForFunction(()=>!cueLab.game.pending&&cueLab.nextShot.job?.promoted===true,null,{timeout:30000});
- const settled=await page.evaluate(()=>({selectedId:cueLab.state.selectedId,game:cueLab.game.snapshot(),result:cueLab.state.routeResult,settings:cueLab.state.settings,options:cueLab.state.routeOptions,exact:NextShotState.snapshotEqual(cueLab.lab.snapshot({trails:false}),cueLab.nextShot.job.predicted.snapshot),frames:__nextFrames,preparation:cueLab.state.nextShotPreparation,continuedAtRest:cueLab.nextShot.job.continuedAtRest,routeStatus:cueLab.state.routeStatus,foreground:!cueLab.optimizer.background}));
- expect(settled).toMatchObject({selectedId:saved.selectedId,game:saved.game,settings:before.settings,exact:true,foreground:true});if(saved.result?.results.length)expect(settled.result).toEqual(saved.result);else if(saved.result?.continuable){expect(settled.continuedAtRest).toBe(true);expect(['searching','done']).toContain(settled.routeStatus);}
- expect(settled.options.searchAlgorithm).toBe(before.options.searchAlgorithm);expect(settled.options.mode).toBe(before.options.mode);expect(errors).toEqual([]);
- if(settled.continuedAtRest){await sidebar(page);if(await page.locator('#cancelRoute').count())await page.locator('#cancelRoute').click();await page.locator('#findRoute').click();await page.waitForFunction(()=>cueLab.state.routeStatus==='searching'&&cueLab.nextShot.job===null);await page.locator('#cancelRoute').click();const version=await page.evaluate(()=>cueLab.optimizer.version);await page.waitForTimeout(200);expect(await page.evaluate(()=>cueLab.optimizer.version)).toBe(version);expect(await page.evaluate(()=>cueLab.state.routeStatus)).toBe('done');}
- const evidence=testInfo.outputPath('next-shot-playback.json');fs.writeFileSync(evidence,JSON.stringify({before,inFlight,settled},null,2));await testInfo.attach('next-shot-playback',{path:evidence,contentType:'application/json'});
+ // Ready/suspended are optional intermediate states. At low background duty,
+ // healthy work can stay searching until natural rest, then continue foreground.
+ // Keep the original quarter-speed playback; never force pressure or a result.
+ await page.waitForFunction(()=>!!__restAudit.adopted,null,{timeout:45000});
+ const adopted=await page.evaluate(()=>({state:__restAudit.adopted,predicted:__restAudit.predicted,staleRejected:__restAudit.staleRejected,epochAdvanced:__restAudit.epochAdvanced,premature:__restAudit.premature}));
+ expect(adopted.state).toMatchObject({selectedId:adopted.predicted.selectedId,game:adopted.predicted.game,settings:before.settings,exact:true,sameJob:true,sameOptimizer:true,foreground:true,pending:false,allSleeping:true,routeError:''});expect(adopted.staleRejected).toBe(true);expect(adopted.epochAdvanced).toBe(true);expect(adopted.premature).toEqual([]);
+ expect(adopted.state.options.searchAlgorithm).toBe(before.options.searchAlgorithm);expect(adopted.state.options.mode).toBe(before.options.mode);
+ if(adopted.state.cached?.results.length)expect(adopted.state.result).toEqual(adopted.state.cached);
+ else if(adopted.state.cached?.continuable){expect(adopted.state.continuedAtRest).toBe(true);expect(['searching','done']).toContain(adopted.state.routeStatus);}
+ await page.waitForFunction(()=>!!__restAudit.terminal,null,{timeout:60000});
+ const terminal=await page.evaluate(()=>__restAudit.terminal);
+ expect(terminal).toMatchObject({routeStatus:'done',routeError:'',exact:true,sameJob:true,sameOptimizer:true,foreground:true,pending:false,allSleeping:true,settings:before.settings,game:adopted.predicted.game});expect(Array.isArray(terminal.result?.results)).toBe(true);
+ // A finite unresolved search is an honest terminal result, not success or proof
+ // of infeasibility. Preserve its actual outcome in the attached evidence.
+ if(terminal.result.results.length===0)expect(terminal.result.continuable===true||terminal.result.domainExhausted===true).toBe(true);
+ const evidence=await page.evaluate(()=>({adopted:__restAudit.adopted,terminal:__restAudit.terminal,phases:__restAudit.phases,premature:__restAudit.premature,staleRejected:__restAudit.staleRejected,epochAdvanced:__restAudit.epochAdvanced,restToTerminalMs:__restAudit.terminal.at-__restAudit.adopted.at}));expect(evidence.premature).toEqual([]);expect(errors).toEqual([]);
+ await page.evaluate(()=>__restAudit.unsubscribe());
+ // Retain cancellation/restart coverage after an actual terminal outcome.
+ await sidebar(page);await page.locator('#findRoute').click();await page.waitForFunction(()=>cueLab.state.routeStatus==='searching'&&cueLab.nextShot.job===null);await page.locator('#cancelRoute').click();const version=await page.evaluate(()=>cueLab.optimizer.version);await page.waitForTimeout(200);expect(await page.evaluate(()=>cueLab.optimizer.version)).toBe(version);expect(await page.evaluate(()=>cueLab.state.routeStatus)).toBe('done');expect(errors).toEqual([]);
+ const file=testInfo.outputPath('next-shot-playback.json');fs.writeFileSync(file,JSON.stringify({before,inFlight,...evidence},null,2));await testInfo.attach('next-shot-playback',{path:file,contentType:'application/json'});
 });
 test('next-shot exact-state mismatch discards cached results without changing score or user mode',async({page})=>{
  const errors=await boot(page,true);await page.locator('#strike').click();await page.waitForFunction(()=>cueLab.nextShot.job?.predicted,null,{timeout:15000});
@@ -92,3 +128,4 @@ test('real playback pressure suspends retained background work and resumes only 
  expect(await page.evaluate(()=>({background:cueLab.optimizer.background,exact:NextShotState.snapshotEqual(cueLab.lab.snapshot({trails:false}),cueLab.nextShot.job.predicted.snapshot),nestedWorkers:cueLab.state.routeProgress.cooperativeRetention.nestedWorkersCreated,retained:cueLab.state.routeProgress.cooperativeRetention.promotionSteps}))).toMatchObject({background:false,exact:true,nestedWorkers:0});
  await page.evaluate(()=>cueLab.stopSearch());const guard=await page.evaluate(()=>({version:cueLab.optimizer.version,status:cueLab.state.routeStatus}));await page.waitForTimeout(200);expect(await page.evaluate(()=>({version:cueLab.optimizer.version,status:cueLab.state.routeStatus}))).toEqual(guard);expect(errors).toEqual([]);
 });
+
