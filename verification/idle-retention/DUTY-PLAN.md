@@ -1,0 +1,7 @@
+# Lower-duty background policy, frozen before results
+
+Baseline b1bdb777 includes the working toggle/idle retention fix. Candidate changes only background cooperative scheduling from 8 ms work / 4 ms yield to 4 ms work / 36 ms yield, including between inverse waves. Physics block size, foreground execution, solver deadline, candidate order, and acceptance unchanged. These are cooperative targets, not a strict CPU cap.
+
+24 fresh-browser attempts: default three-ball, moved three-ball, default four-ball, moved four-ball; three repetitions each per arm, alternating AB / BA / AB. Each enables speculation from the same fully rested forecast, samples all browser-process CPU every 250 ms for 4 seconds, strikes, checks exact prepared-job reuse and full-rest matching, then waits up to 30 seconds for promoted foreground search. Replay every returned solution through full physical rest. No solution remains a search failure and cannot demonstrate recall preservation. Separately test explicit foreground cancellation of an active speculative worker in each repetition. Retain failed attempts and raw CPU samples. Report arithmetic means with counts, success counts, first-result latency, rest-to-result latency, and cancellation; do not average missing successes as zero.
+
+Build and focused regressions required. This is diagnostic only, never deployment. Software-rendered CI measurements are not user's device benchmarks. Frame samples measure main-thread rAF intervals, not compositor presentation.

@@ -1,0 +1,51 @@
+name: Lower-duty background comparison (no deployment)
+on:
+  push:
+    branches: ['backup/background-duty-20261106']
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run prepare:engine
+      - run: npm run test:next-shot && node --test tests/worker-pool.cjs tests/prestrike-controller.cjs
+      - run: npm run typecheck
+      - name: Build frozen bugfixed baseline and duty candidate
+        run: |
+          git fetch origin b1bdb77790289770980a5f615c73aeeedb1dfb2b
+          git worktree add --detach "$RUNNER_TEMP/baseline" b1bdb77790289770980a5f615c73aeeedb1dfb2b
+          ln -s "$GITHUB_WORKSPACE/node_modules" "$RUNNER_TEMP/baseline/node_modules"
+          node build.cjs
+          (cd "$RUNNER_TEMP/baseline" && npm run prepare:engine && node build.cjs)
+      - name: Twenty-four fresh-browser paired attempts and three cancellation checks
+        run: |
+          set -euo pipefail
+          google-chrome --version | tee chrome-version.log
+          HOST=127.0.0.1 PORT=8793 node "$RUNNER_TEMP/baseline/server.cjs" > baseline-server.log 2>&1 &
+          BASE_PID=$!
+          HOST=127.0.0.1 PORT=8794 node server.cjs > duty-server.log 2>&1 &
+          CAND_PID=$!
+          trap 'kill "$BASE_PID" "$CAND_PID" || true' EXIT
+          sleep 2
+          node verification/idle-retention/duty.cjs | tee duty.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: background-duty-evidence
+          path: |
+            duty-evidence/
+            duty.log
+            chrome-version.log
+            baseline-server.log
+            duty-server.log
+            verification/idle-retention/DUTY-PLAN.md
