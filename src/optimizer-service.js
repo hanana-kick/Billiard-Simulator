@@ -6,7 +6,8 @@ function workerPlan(req={},env=G){
  const n=env.navigator||{},raw=Number(n.hardwareConcurrency),cores=Number.isFinite(raw)&&raw>0?Math.floor(raw):2;
  const memory=Number(n.deviceMemory),memoryCap=Number.isFinite(memory)&&memory>0?Math.max(1,Math.floor(memory*1024/2/128)):64;
  const o=req.options||{},jobs=['cpu-event-inverse','cpu-event-window-inverse'].includes(o.searchAlgorithm)?1:o.searchAlgorithm==='inverse-constraints'?40:Math.max(1,Math.floor(Number(o.budget)||48))*(o.mode==='three'?Math.max(1,o.methods?.length||1):1);
- const count=Math.max(1,Math.min(cores,memoryCap,64,jobs));
+ const rawCap=Number(o.evaluatorWorkerCap),explicitCap=Number.isInteger(rawCap)&&rawCap>0?rawCap:64;
+ const count=Math.max(1,Math.min(cores,memoryCap,64,jobs,explicitCap));
  return{hardwareConcurrency:cores,requestedWorkers:count,resourceMaximum:64,memoryWorkerEstimateMiB:128,memoryBudgetFraction:.5,memoryCap,workItems:jobs};
 }
 function workerLimit(_requested=0,env=G){return workerPlan({},env).requestedWorkers;}

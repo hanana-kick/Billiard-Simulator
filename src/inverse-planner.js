@@ -87,15 +87,17 @@ function commitWave(s,outcomes){
   }if(rows.length)G.LabInverseSolver.accept(entry.state,rows);
  }
  s.pending=[];s.active=s.active.filter(e=>!finishBranch(s,e));
+ if(s.req.options.stopOnFirstVerified===true&&!s.firstFeasibleResumed&&s.archive.length){s.finished=true;s.paused=true;s.firstFeasibleStop=true;pause(s);return;}
  if(s.exhausted&&!s.active.length&&!s.waiting.length){s.finished=true;pause(s);}
 }
 function stagedResult(s){
  const elapsedMs=activeElapsed(s),results=s.archive.slice().sort((a,b)=>s.req.options.objective==='gentle'?a.settings.speed-b.settings.speed||a.distance-b.distance:a.distance-b.distance||a.settings.speed-b.settings.speed).map((r,i)=>({...r,id:i+1}));
- const terminationReason=s.paused?'time-limit':s.finished?'topology-domain-finished':'running';
+ const terminationReason=s.firstFeasibleStop?'first-feasible-shot':s.paused?'time-limit':s.finished?'topology-domain-finished':'running';
  return{results,resultCount:results.length,resultLimit:null,found:results.length,tested:s.evaluations,evaluated:s.evaluations,total:null,physicsSteps:s.physicsSteps,elapsedMs,options:{...s.req.options},inputStrategy:'inverse-constraints',searchModel:'topology-constrained-inverse-root-solve',terminationReason,continuable:s.paused||!s.finished||s.dormant.length>0,partial:!s.finished||s.paused,domain:s.domain,domainExhausted:s.exhausted,statusCounts:s.branches.reduce((a,b)=>(a[b.status]=(a[b.status]||0)+1,a),{verified:0,unconverged:0,unsupported:0,infeasible:0}),branches:s.branches.slice(),rootIterations:s.iterations+[...s.active,...s.waiting].reduce((n,e)=>n+Math.max(0,(G.LabInverseSolver.result(e.state).iterations||0)-(e.accountedIterations||0)),0),topologiesResolved:s.branches.length,activeTopologies:s.active.length,suspendedTopologies:s.waiting.length,resumableBranches:s.dormant.length,firstSuccessCost:s.firstSuccessCost,globalOptimal:false,exhaustive:false,feasibilityStatus:results.length?'verified-feasible-shot':s.paused?'unconverged-time-limit':'unconverged-or-unsupported',candidatePlan:{version:'inverse-constraints-1',workerIndependent:true,planningMs:s.planningMs,maxPlanningMs:s.maxPlanningMs},hz:Math.round(1/s.req.snapshot.dt)};
 }
 function resume(s){
  checkFinalization(s);
+ if(s.firstFeasibleStop){s.firstFeasibleStop=false;s.firstFeasibleResumed=true;}
  if(s.exhausted&&!s.active.length&&!s.waiting.length&&!s.dormant.length)return false;
  // A time slice must not give the same four difficult roots exclusive ownership
  // forever. Alternate new topology admission with FIFO continuation of retained

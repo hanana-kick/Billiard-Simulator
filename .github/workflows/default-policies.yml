@@ -1,0 +1,57 @@
+name: Default inverse isolated CPU policies (no deployment)
+on:
+  push:
+    branches: ['backup/default-inverse-policies-20261106']
+permissions:
+  contents: read
+jobs:
+  diagnostic:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run prepare:engine
+      - run: node --test verification/default-inverse/policy.test.cjs tests/worker-pool.cjs tests/inverse-planner.cjs
+      - run: node build.cjs --canonical-controller-assets
+      - name: Build exact deployed baseline independently
+        run: |
+          git fetch origin d21e9ec2260f7c23e220a2e17baed81a5cf39380
+          git worktree add --detach /tmp/inverse-baseline d21e9ec2260f7c23e220a2e17baed81a5cf39380
+          ln -s "$GITHUB_WORKSPACE/node_modules" /tmp/inverse-baseline/node_modules
+          mkdir -p /tmp/inverse-baseline/vendor
+          cp vendor/rapier.cjs /tmp/inverse-baseline/vendor/rapier.cjs
+          cd /tmp/inverse-baseline
+          node build.cjs --canonical-controller-assets
+      - name: 24 default inverse policy comparisons
+        run: |
+          set -euo pipefail
+          test "$(id -u)" != 0
+          google-chrome --version | tee chrome-environment.log
+          git rev-parse HEAD | tee -a chrome-environment.log
+          HOST=127.0.0.1 PORT=8794 node server.cjs > server.log 2>&1 &
+          PID=$!
+          trap 'kill "$PID" || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8794/ -o /dev/null; then break; fi
+            sleep 1
+          done
+          node verification/default-inverse/policy-run.cjs | tee default-policy.log
+      - name: Preserve all attempts and traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: default-policy-all-evidence
+          path: |
+            default-policy-raw/
+            default-policy.log
+            chrome-environment.log
+            server.log
+            verification/default-inverse/
+          retention-days: 30
