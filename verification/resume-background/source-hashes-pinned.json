@@ -1,0 +1,68 @@
+{
+  "baseline": {
+    "controller": {
+      "raw": "2f50f02cbc0f20aff40dbef9b3ce413765395cd6a817e8eb119038760e14b258",
+      "embedded": "3804e55c436cf3a0c61f1eb52f73bb93bbf92d90d8db3d37d19e537113c13864",
+      "wrapper": "Exactly one build-added leading and trailing LF around unchanged raw source"
+    },
+    "next-shot-service": {
+      "raw": "618c398c6c06a68af266c4cd14f55072c8a82fc1ba78dcc33b15563029957ced",
+      "embedded": "aedac1dbd93b19a76b8f7f73ba962b16037a550ab69782bf46cb4f1fa663b3da",
+      "wrapper": "Exactly one build-added leading and trailing LF around unchanged raw source"
+    },
+    "inverse-planner": {
+      "raw": "10068db004d310044be79927534698567c25faf7a35b8d9bf77c615411432160",
+      "embedded": "498966066eb31bb90ed8300f4b19ccb4fb515e4f838e761952f14bc65e21e37d",
+      "wrapper": "Exactly one build-added leading and trailing LF around unchanged raw source"
+    },
+    "optimizer-service": {
+      "raw": "ed09902e8cc9aa0e05e934b4f181d340c24be56ca9cee9ab8e53913a3ef8e275",
+      "embedded": "6cda9c4eaa325391526a9c17f9610cf4318a6dc152228de8195dca70e33291dc",
+      "wrapper": "Exactly one build-added leading and trailing LF around unchanged raw source"
+    },
+    "forecast": {
+      "raw": "94f00f7d31ee336cfbf184fe15e95251d4ed623a7972275800f6c0a01381c2e9",
+      "embedded": "9b48ffcf08481c2f8b023a51c7b45145817e830718fbb2112781d0e5f06e64d5",
+      "wrapper": "Exactly one build-added leading and trailing LF around unchanged raw source"
+    },
+    "physics": {
+      "raw": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d",
+      "embedded": "07e19c233b226a3b686a229649a7da9b73f45d9fb16f3ade518fb134541faab8",
+      "wrapper": "Exactly one build-added leading and trailing LF around unchanged raw source",
+      "provenance": "fd6146fb src/physics.js; supplied pinned remote copy, not older local mock modules"
+    }
+  },
+  "fixed": {
+    "controller": {
+      "raw": "6895c07a27c2e8de6d5b24a975e0771e8666a4109ea1d53799069ff6c4b24885",
+      "embedded": "0cbdd39b9a6ab98b3bcd9bd255b1d4ddfe3ac97b731a0f6d267602e7434176b8",
+      "wrapper": "Exactly one build-added leading and trailing LF around unchanged raw source"
+    },
+    "next-shot-service": {
+      "raw": "6298a28cd5f98928c5951c86bb1b43645a1c7c2da277cf26134a214fd61a77a6",
+      "embedded": "8fe0c9b87d9f1892512bb621def485cbebdcb9388cd6d9dba64263e8d8aa9f87",
+      "wrapper": "Exactly one build-added leading and trailing LF around unchanged raw source"
+    },
+    "inverse-planner": {
+      "raw": "10068db004d310044be79927534698567c25faf7a35b8d9bf77c615411432160",
+      "embedded": "498966066eb31bb90ed8300f4b19ccb4fb515e4f838e761952f14bc65e21e37d",
+      "wrapper": "Exactly one build-added leading and trailing LF around unchanged raw source"
+    },
+    "optimizer-service": {
+      "raw": "ed09902e8cc9aa0e05e934b4f181d340c24be56ca9cee9ab8e53913a3ef8e275",
+      "embedded": "6cda9c4eaa325391526a9c17f9610cf4318a6dc152228de8195dca70e33291dc",
+      "wrapper": "Exactly one build-added leading and trailing LF around unchanged raw source"
+    },
+    "forecast": {
+      "raw": "94f00f7d31ee336cfbf184fe15e95251d4ed623a7972275800f6c0a01381c2e9",
+      "embedded": "9b48ffcf08481c2f8b023a51c7b45145817e830718fbb2112781d0e5f06e64d5",
+      "wrapper": "Exactly one build-added leading and trailing LF around unchanged raw source"
+    },
+    "physics": {
+      "raw": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d",
+      "embedded": "07e19c233b226a3b686a229649a7da9b73f45d9fb16f3ade518fb134541faab8",
+      "wrapper": "Exactly one build-added leading and trailing LF around unchanged raw source",
+      "provenance": "fd6146fb src/physics.js; supplied pinned remote copy, not older local mock modules"
+    }
+  }
+}

@@ -1,4 +1,4 @@
-name: Resume background lifecycle Chrome qualification (no deployment)
+name: Resume background lifecycle Chrome diagnostic correction (no deployment)
 on:
   push:
     branches: ['validation/stop-first-resume-check-20261106']
@@ -65,7 +65,7 @@ jobs:
             done
             test "$ready" = 1
           done
-          node verification/resume-background/chrome.cjs | tee resume-background.log
+          node verification/resume-background/chrome-diagnostic.cjs | tee resume-background.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
