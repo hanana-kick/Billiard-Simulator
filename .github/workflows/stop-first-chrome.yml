@@ -2,7 +2,7 @@ name: Promotion stop paired Chrome qualification
 on:
   push:
     branches: ['validation/stop-first-resume-check-20261106']
-    paths: ['.github/workflows/stop-first-chrome.yml', 'verification/promotion-stop/**']
+    paths: ['.github/workflows/stop-first-chrome.yml', 'verification/promotion-stop-corrected/**']
   workflow_dispatch:
 permissions:
   contents: read
@@ -31,9 +31,9 @@ jobs:
             tar --exclude=.git --exclude=node_modules -cf - . | tar -xf - -C /tmp/promotion-$arm
             ln -s "$PWD/node_modules" /tmp/promotion-$arm/node_modules
           done
-          cp verification/promotion-stop/baseline-optimizer-service.js /tmp/promotion-baseline/src/optimizer-service.js
-          cp verification/promotion-stop/candidate-optimizer-service.js /tmp/promotion-candidate/src/optimizer-service.js
-          node verification/promotion-stop/check-inputs.cjs /tmp/promotion-baseline /tmp/promotion-candidate
+          cp verification/promotion-stop-corrected/baseline-optimizer-service.js /tmp/promotion-baseline/src/optimizer-service.js
+          cp verification/promotion-stop-corrected/candidate-optimizer-service.js /tmp/promotion-candidate/src/optimizer-service.js
+          node verification/promotion-stop-corrected/check-inputs.cjs /tmp/promotion-baseline /tmp/promotion-candidate
           (cd /tmp/promotion-baseline && npm run prepare:engine && node build.cjs --canonical-controller-assets)
           (cd /tmp/promotion-candidate && npm run prepare:engine && node build.cjs --canonical-controller-assets)
           (cd /tmp/promotion-baseline && PORT=8793 node server.cjs > "$GITHUB_WORKSPACE/baseline-server.log" 2>&1 &)
@@ -48,7 +48,7 @@ jobs:
           OUT_DIR: promotion-stop-results
         run: |
           set -o pipefail
-          node verification/promotion-stop/chrome.cjs 2>&1 | tee promotion-stop.log
+          node verification/promotion-stop-corrected/chrome.cjs 2>&1 | tee promotion-stop.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
