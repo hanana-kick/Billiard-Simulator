@@ -317,7 +317,7 @@ class LabController{
   if(!this.lab||this.lab.cue||this.windup||this.game?.pending||this.lab.anyMotion())return this.announce('모든 물체가 멈춘 뒤 경로를 검색하세요.');
   if(this.game&&!this.game.cueIds.includes(this.state.selectedId)){this.state.routeStatus='error';this.state.routeError='흰 수구 또는 노란 수구를 선택하세요.';this.notify();return;}
   const gameRules=this.state.gameMode==='four'&&this.game?{gameMode:'four',opponentId:this.game.cueIds.find(id=>id!==this.state.selectedId)}:{gameMode:'free',opponentId:null};
-  const req={snapshot:this.lab.snapshot({trails:false}),selectedId:this.state.selectedId,settings:{...this.state.settings},options:{...this.state.routeOptions,...gameRules}};
+  const req={snapshot:this.lab.snapshot({trails:false}),selectedId:this.state.selectedId,settings:{...this.state.settings},options:{...this.state.routeOptions,...gameRules,searchGoal:this.state.routeOptions.searchGoal??'first-verified'}};
   return this.startSearchRequest(req);
  }
  sourceFinalizationStamp(){return G.LabSourceFinalizationRequest.fingerprint({gameMode:this.state.gameMode,game:this.game?.snapshot()??null,worldObjectIds:this.lab.objects.map(o=>o.id)});}
@@ -332,7 +332,7 @@ class LabController{
    const api=G.LabSourceFinalizationRequest;if(!api)throw Error('Explicit source finalization modules unavailable');
    this.state.paused=true;const stamp=this.worldStamp(),inputStamp=api.fingerprint([this.state.routeOptions,this.state.settings]),gameStamp=gameplay?this.sourceFinalizationStamp():null;
    const gameRules=this.state.gameMode==='four'&&this.game?{gameMode:'four',opponentId:this.game.cueIds.find(id=>id!==this.state.selectedId)}:{gameMode:'free',opponentId:null};
-   const req={snapshot:this.lab.snapshot({trails:false}),selectedId:this.state.selectedId,settings:{...this.state.settings},options:{...this.state.routeOptions,...gameRules}};
+   const req={snapshot:this.lab.snapshot({trails:false}),selectedId:this.state.selectedId,settings:{...this.state.settings},options:{...this.state.routeOptions,...gameRules,searchGoal:this.state.routeOptions.searchGoal??'first-verified'}};
    this.state.routeStatus='searching';this.state.routeError='';this.state.routeResult=null;this.state.routeApplied=null;this.state.routeProgress={tested:0,evaluated:0,found:0,total:null,phase:'source-binding'};this.notify();let bound;
    if(gameplay){const gameKind=this.game instanceof G.ThreeBallGame?'three':this.game instanceof G.FourBallGame?'four':null;if(!gameKind)throw Error('Actual ready source game required');bound=await api.bind(req,{gameKind,snapshot:this.game.snapshot(),worldObjectIds:this.lab.objects.map(o=>o.id),shotRules:{threeCushion:gameKind==='three'?true:!!this.state.routeOptions.fourBallThreeCushion}});}
    else bound=api.route(req);
@@ -342,6 +342,9 @@ class LabController{
   }catch(error){if(generation!==this.finalizationGeneration||this.disposed)return false;this.state.routeStatus='error';this.state.routeError=error.message||String(error);this.notify();return false;}
  }
  startSearchRequest(req,finalizationPolicy=null){
+  // Foreground UI searches stop at the first verified route; Resume seeks the next one.
+  // Keep saved route options and background optimizer requests unchanged.
+  if(!finalizationPolicy)req={...req,options:{...req.options,searchGoal:req.options?.searchGoal??'first-verified'}};
   this.nextShot?.cancel('explicit-search');
   try{G.LabInversePlanner.validate(req)}catch(e){this.state.routeError=e.message;this.state.routeStatus='error';this.notify();return;}
   this.routeFinalizationStamp=finalizationPolicy==='source-gameplay-finalization-v1'?this.sourceFinalizationStamp():null;

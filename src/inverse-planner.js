@@ -67,10 +67,22 @@ function planWave(s){
  const start=performance.now();if(s.finished)return[];
  s.active=s.active.filter(e=>!finishBranch(s,e));
  if(performance.now()>=s.deadline){s.finished=true;s.paused=true;s.pausedAt=performance.now();return[];}
+ // Bounded service quantum; move only at completed dependency boundaries.
+ const retain=[];
+ for(const e of s.active){
+  if((e.serviceSteps||0)>=8192&&e.state.phase!=='verify'){
+   e.serviceSteps=0;s.waiting.push(e);s.quantumScheduling=true;
+  }else retain.push(e);
+ }
+ s.active=retain;
  // Four independent branch problems are a scheduling frontier, not a search cap.
  // All remaining topology branches stay in the resumable iterator.
  let yielded=0;
- while(s.active.length<4&&!s.exhausted){
+ while(s.active.length<4&&(!s.exhausted||s.waiting.length)){
+  // Alternate fresh admission and FIFO continuation; neither can starve.
+  if(s.waiting.length&&(s.exhausted||s.quantumScheduling&&s.scheduleResumeNext)){
+   s.active.push(s.waiting.shift());s.scheduleResumeNext=false;continue;
+  }
   const next=s.iterator.next();if(next.done){s.exhausted=true;break;}const branch=next.value;
   // A classification checkpoint is not a topology result. Return control even
   // when no inverse initializer was found in this bounded geometry chunk.
@@ -80,7 +92,7 @@ function planWave(s){
   }else{
    const o=s.req.options,seed=branch.settings;
    const state=G.LabInverseSolver.create({seed,topology:branch,bounds:{angle:[seed.angle-180,seed.angle+180],elevation:o.elevationMode==='fixed'?[s.req.settings.elevation,s.req.settings.elevation]:[o.minElevation??0,o.maxElevation??85],speed:[o.minSpeed??.5,o.maxSpeed??4.5],tipX:o.spin?[-.55,.55]:[0,0],tipY:o.spin?[-.45,.45]:[0,0]},tipRadius:.6},{maxIterations:40,residualTolerance:1e-4});
-   s.active.push({branch,state});
+   s.active.push({branch,state,serviceSteps:0});s.scheduleResumeNext=true;
   }
   // Yield the main thread while classifying a large unresolved geometry domain.
   if(++yielded>=32&&performance.now()-start>6)break;
@@ -106,7 +118,7 @@ function commitWave(s,outcomes){
  }
  const admitted=new Map(s.pending.map(job=>[job.id,admittedVerifiedRow(s,job,byId.get(job.id))]));
  for(const entry of s.active){const rows=[];for(const job of s.pending.filter(j=>j.branchId===entry.branch.id)){
-   let outcome=byId.get(job.id);if(job.purpose==='verify'){const row=admitted.get(job.id);if(row)entry.verifiedRow=row;else delete entry.verifiedRow;}s.evaluations++;s.physicsSteps+=outcome.steps||0;
+   let outcome=byId.get(job.id);if(job.purpose==='verify'){const row=admitted.get(job.id);if(row)entry.verifiedRow=row;else delete entry.verifiedRow;}s.evaluations++;s.physicsSteps+=outcome.steps||0;entry.serviceSteps=(entry.serviceSteps||0)+(outcome.steps||0);
    if(gameplay(s)&&job.purpose==='verify'){
     if(G.LabSourceFinalizationRequest.verifiedGameplay(s.req,job,outcome)){entry.verifiedOutcome=G.structuredClone(outcome);entry.verifiedJob=G.structuredClone({purpose:job.purpose,settings:job.settings,topology:job.topology});entry.verifiedShot=outcome.physicalResult;}
     else{delete entry.verifiedOutcome;delete entry.verifiedJob;delete entry.verifiedShot;/* Matching non-positive source result stays valueless and keeps its exact reason. */}
@@ -138,14 +150,10 @@ function stagedVerifiedResult(s,outcomes){
 function resume(s){
  checkFinalization(s);
  if(s.exhausted&&!s.active.length&&!s.waiting.length&&!s.dormant.length)return false;
- // A time slice must not give the same four difficult roots exclusive ownership
- // forever. Alternate new topology admission with FIFO continuation of retained
- // running roots. Nothing is restarted, rejected, or removed from the domain.
- if(s.active.length&&!s.pending.length){
-  s.waiting.push(...s.active);s.active=[];
-  if(!s.freshOnResume||s.exhausted)s.active=s.waiting.splice(0,4);
-  s.freshOnResume=!s.freshOnResume;
- }
+ // A wall-clock pause is transport/lifecycle state, never a scheduling event.
+ // Keep active roots, FIFO order, quantum counters and admission turn intact,
+ // including pauses before the first service quantum. Only planWave's completed
+ // physics-step quantum scheduler may rotate running roots.
  // Reopen numerically unfinished branches without resetting their solved state.
  // More iterations are not new cue-input samples or discarded random restarts.
  if(s.exhausted&&!s.active.length&&!s.waiting.length){const reopen=s.dormant.splice(0,4);for(const e of reopen){e.state=G.LabInverseSolver.resume(e.state,{maxIterations:(e.state.options?.maxIterations||40)+40});s.active.push(e);}}
