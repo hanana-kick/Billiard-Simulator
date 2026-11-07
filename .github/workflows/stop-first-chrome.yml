@@ -1,17 +1,14 @@
-name: Queued Resume boundary and second-route Chrome qualification (no deployment)
+name: Production candidate full gates (no deployment)
 on:
   push:
     branches: ['validation/stop-first-resume-check-20261106']
+    paths: ['.github/workflows/stop-first-chrome.yml', 'tests/inverse-planner.cjs', 'tests/cpu-event-window-integration.cjs']
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  resume-background:
-    strategy:
-      fail-fast: false
-      max-parallel: 4
-      matrix:
-        condition: [queued]
-    runs-on: ubuntu-24.04
+  preflight:
+    runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
@@ -22,59 +19,23 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --no-audit --no-fund
-      - name: Build paired quantum8192 arms with only controller and next-shot delta
-        shell: bash
-        run: |
-          set -euo pipefail
-          for arm in baseline fixed; do
-            mkdir -p "$RUNNER_TEMP/resume-$arm"
-            tar --exclude=.git --exclude=node_modules -cf - . | tar -xf - -C "$RUNNER_TEMP/resume-$arm"
-            ln -s "$GITHUB_WORKSPACE/node_modules" "$RUNNER_TEMP/resume-$arm/node_modules"
-          done
-          cp verification/resume-background/baseline-controller.js "$RUNNER_TEMP/resume-baseline/src/controller.js"
-          cp verification/resume-background/baseline-next-shot-service.js "$RUNNER_TEMP/resume-baseline/src/next-shot-service.js"
-          for arm in baseline fixed; do
-            cp verification/default-quantum/candidate-planner.js "$RUNNER_TEMP/resume-$arm/src/inverse-planner.js"
-            echo "10068db004d310044be79927534698567c25faf7a35b8d9bf77c615411432160  $RUNNER_TEMP/resume-$arm/src/inverse-planner.js" | sha256sum --check
-          done
-          # Fixed arm uses the reviewed src/controller.js and src/next-shot-service.js.
-          cmp "$RUNNER_TEMP/resume-baseline/src/inverse-planner.js" "$RUNNER_TEMP/resume-fixed/src/inverse-planner.js"
-          cmp "$RUNNER_TEMP/resume-baseline/src/physics.js" "$RUNNER_TEMP/resume-fixed/src/physics.js"
-          for arm in baseline fixed; do
-            sha256sum "$RUNNER_TEMP/resume-$arm/src/"{controller,next-shot-service,inverse-planner,physics,forecast,optimizer-service}.js
-            (cd "$RUNNER_TEMP/resume-$arm" && npm run prepare:engine && npm run build)
-          done | tee build-source-hashes.log
-      - name: Fixed eight-case Chrome matrix with actual condition qualification
-        shell: bash
-        env:
-          CONDITION: ${{ matrix.condition }}
-        run: |
-          set -euo pipefail
-          google-chrome --version | tee chrome-version.log
-          lscpu > host-cpu.log
-          HOST=127.0.0.1 PORT=8793 node "$RUNNER_TEMP/resume-baseline/server.cjs" > baseline-server.log 2>&1 &
-          A=$!
-          HOST=127.0.0.1 PORT=8794 node "$RUNNER_TEMP/resume-fixed/server.cjs" > fixed-server.log 2>&1 &
-          B=$!
-          trap 'kill "$A" "$B" || true' EXIT
-          for port in 8793 8794; do
-            ready=0
-            for n in $(seq 1 30); do
-              if curl -fsS "http://127.0.0.1:$port/" -o /dev/null; then ready=1; break; fi
-              sleep 1
-            done
-            test "$ready" = 1
-          done
-          node verification/resume-background/chrome-queued.cjs | tee resume-background.log
-      - uses: actions/upload-artifact@v4
+      - run: npm run prepare:engine
+      - run: npm run typecheck
+      - run: node build.cjs --canonical-controller-assets
+      - name: Full physics search and feature regressions
+        run: npm test
+      - run: npm run test:resident:host
+      - run: npm run test:provenance
+      - run: google-chrome --version
+      - name: Full real application desktop and mobile
+        run: CANONICAL_ASSETS_REQUIRED=1 npm run test:e2e
+      - name: Preserve all results
         if: always()
+        uses: actions/upload-artifact@v4
         with:
-          name: queued-boundary-${{ matrix.condition }}
+          name: production-candidate-preflight
           path: |
-            queued-boundary-results/
-            resume-background.log
-            build-source-hashes.log
-            chrome-version.log
-            host-cpu.log
-            baseline-server.log
-            fixed-server.log
+            playwright-report/
+            test-results/
+            docs/ui-bundle-audit.json
+          retention-days: 14
