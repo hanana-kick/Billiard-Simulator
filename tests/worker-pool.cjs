@@ -103,3 +103,41 @@ test('background recovery keeps exact evaluator, planner, generation and pacing 
 test('background recovery cannot revive canceled, disposed or promoted execution',async()=>{for(const action of ['cancel','dispose','promoteToForeground']){const h=retainedHarness({steps:1024}),s=h.service;s.request(h.request);s.suspend();h.timers.shift().fn();await tick();s[action]();assert.equal(s.resumeBackground(),false);s.cancel();await tick();assert.equal(h.stats().begins,1);assert.equal(h.stats().disposals,1);}});
 test('unsupported retained planner refuses automatic wake without altering retained work',async()=>{const h=retainedHarness({parallel:true}),s=h.service;s.request(h.request);s.suspend();const state=s.cooperativeState;s.api={...s.api};assert.equal(s.resumeBackground(),false);assert.equal(s.cooperativeState,state);assert.equal(s.suspended,true);s.cancel();h.timers.shift()?.fn();await tick();});
 test('pressure recovery preserves original absolute deadline and avoids generic planner resume',async()=>{const h=retainedHarness({steps:1024}),s=h.service;s.request(h.request);s.search.core.deadline=2000;s.suspend();h.timers.shift().fn();await tick();h.ctx.LabCPUEventWindowPlanner.resume=()=>assert.fail('must not grant a fresh budget or reopen branches');h.ctx.performance.now=()=>1800;assert.equal(s.resumeBackground(),true);assert.equal(s.search.core.deadline,2000);assert.equal(s.search.core.paused,false);assert.equal(s.search.pausedAt,null);s.cancel();await tick();});
+
+test('inverse progress uses detached publication projection without committing its partial wave',()=>{
+ const planner=fakePlanner(),plan=planner.planWave,commit=planner.commitWave;let projections=0;
+ planner.planWave=s=>(s.pending=plan(s));planner.commitWave=(s,out)=>{commit(s,out);s.pending=[];};
+ planner.stagedVerifiedResult=(s,outcomes)=>{projections++;const r=planner.stagedResult(s);return{...r,results:[...r.results,...[...outcomes.values()].map(x=>({...x.result}))]};};
+ planner.pause=()=>{};planner.resume=()=>true;
+ const progress=[],{ctx,workers}=environment({LabInversePlanner:planner}),service=new ctx.OptimizerService(p=>progress.push(p),()=>{},assert.fail);
+ const request={...req,options:{...req.options,budget:3,searchAlgorithm:'inverse-constraints'}};service.request(request);const old=workers[0],oldMessage=old.sent;reply(old);
+ assert.ok(projections>0);assert.equal(progress.at(-1).results.length,1);assert.equal(service.search.trace.length,0);assert.equal(service.search.pending.length,3);
+ const outcomes=service.outcomes;service.cancel();service.report(false);assert.equal(progress.at(-1).results.length,1);assert.equal(service.outcomes,outcomes);
+ assert.equal(service.resume(),true);service.report(false);assert.equal(progress.at(-1).results.length,1);
+ old.onmessage({data:{requestId:oldMessage.requestId,candidateId:oldMessage.candidateId,outcome:outcome(999)}});assert.equal(service.outcomes.size,1);assert.equal(service.outcomes.get(0).result.settings.angle,0);service.cancel();
+});
+test('inverse overlay is not consulted for final publication or another planner',()=>{
+ const planner=fakePlanner();let projections=0;planner.stagedVerifiedResult=()=>{projections++;throw Error('unrequested overlay');};
+ const {ctx}=environment({LabInversePlanner:planner}),s=new ctx.OptimizerService(()=>{},()=>{},assert.fail);s.request(req);s.report(false);assert.equal(projections,0);s.cancel();s.api=planner;s.search=planner.createStagedSearch({},req);s.outcomes=new Map();s.report(true);assert.equal(projections,0);
+});
+for(const completed of [false,true])test(`inverse publication admission error on ${completed?'outcome':'progress'} stops workers and rejects late messages`,()=>{
+ const planner=fakePlanner();planner.stagedVerifiedResult=()=>{throw Error('changed source admission');};const errors=[],progress=[],results=[],{ctx,workers}=environment({LabInversePlanner:planner}),s=new ctx.OptimizerService(p=>progress.push(p),r=>results.push(r),e=>errors.push(e));s.request({...req,options:{...req.options,budget:3,searchAlgorithm:'inverse-constraints'}});const worker=workers[0],message=worker.sent,late=workers[1].sent;
+ assert.doesNotThrow(()=>worker.onmessage({data:{requestId:message.requestId,candidateId:message.candidateId,...(completed?{outcome:outcome(message.candidateId)}:{steps:1})}}));assert.deepEqual(errors,['changed source admission']);assert.equal(s.latest,null);assert.ok(workers.every(w=>w.terminated));assert.equal(s.search.trace.length,0);
+ const count=s.outcomes.size;workers[1].onmessage({data:{requestId:late.requestId,candidateId:late.candidateId,outcome:outcome(late.candidateId)}});assert.equal(s.outcomes.size,count);assert.equal(progress.length,0);assert.equal(results.length,0);
+});
+
+test('opt-in first verified pause stops all workers, retains pending outcomes and resumes only missing jobs',()=>{
+ const planner=fakePlanner(),plan=planner.planWave,commit=planner.commitWave;
+ planner.planWave=s=>(s.pending=plan(s));planner.commitWave=(s,outs)=>{commit(s,outs);s.pending=[];};planner.pause=()=>{};planner.resume=()=>true;
+ planner.stagedVerifiedResult=(s,outs)=>{const r=planner.stagedResult(s);return{...r,results:[...r.results,...[...outs.values()].filter(x=>x.verified).map(x=>({...x.result}))]};};
+ const finals=[],{ctx,workers}=environment({LabInversePlanner:planner}),s=new ctx.OptimizerService(()=>{},r=>finals.push(r),assert.fail);
+ const request={...req,options:{...req.options,budget:3,searchAlgorithm:'inverse-constraints',searchGoal:'first-verified'}};s.request(request);
+ const old=workers.slice(),m=old[0].sent,m2=old[1].sent;old[1].onmessage({data:{requestId:m2.requestId,candidateId:m2.candidateId,steps:17}});
+ old[0].onmessage({data:{requestId:m.requestId,candidateId:m.candidateId,outcome:{...outcome(m.candidateId),verified:true}}});
+ assert.equal(finals.length,1);assert.equal(finals[0].results.length,1);assert.equal(finals[0].terminationReason,'first-verified-paused');assert.equal(finals[0].continuable,true);assert.equal(finals[0].workAttemptTotal.tested,2);assert.equal(finals[0].workAttemptTotal.physicsSteps,27);assert.equal(s.latest,null);assert.equal(s.search.trace.length,0);assert.equal(s.search.pending.length,3);assert.equal(s.outcomes.size,1);assert.ok(old.every(w=>w.terminated));assert.equal(s.watchdogs.size,0);
+ old[1].onmessage({data:{requestId:m2.requestId,candidateId:m2.candidateId,outcome:{...outcome(99),verified:true}}});assert.equal(s.outcomes.size,1);
+ assert.equal(s.resume(),true);assert.equal(s.firstVerifiedPause,null);assert.equal(s.outcomes.size,1);assert.ok(s.workers.every(w=>w.sent.candidateId!==m.candidateId));assert.equal(s.pauseOnFirstVerified(request,s.version),false,'Resume must not pause again on the previously published row');s.cancel();
+});
+test('first verified policy never pauses on an unverified projection or background search',()=>{
+ for(const background of [false,true]){const planner=fakePlanner();planner.pause=()=>{};planner.stagedVerifiedResult=(s,outs)=>({...planner.stagedResult(s),results:background?[row(1)]:[]});const {ctx,workers}=environment({LabInversePlanner:planner}),s=new ctx.OptimizerService(()=>{},assert.fail,assert.fail,{background});s.request({...req,options:{...req.options,budget:3,searchAlgorithm:'inverse-constraints',searchGoal:'first-verified'}});reply(workers[0]);assert.equal(s.firstVerifiedPause,null);assert.ok(s.latest);s.cancel();}
+});

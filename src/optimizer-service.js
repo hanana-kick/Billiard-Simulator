@@ -30,7 +30,7 @@ function mergeResults(parts,req,elapsedMs,workerCount,mode){
 class OptimizerService{
  constructor(onProgress,onResult,onError,{background=false,coordinator=false}={}){this.background=background;this.coordinator=coordinator;this.version=0;this.onProgress=onProgress;this.onResult=onResult;this.onError=onError;this.workers=[];this.watchdogs=new Map();this.busy=new Map();this.worker=null;this.latest=null;}
  request(req){
-  this.cancel();const id=this.version;this.latest=req;this.started=performance.now();this.mode='worker';
+  this.cancel();this.firstVerifiedPause=null;this.firstVerifiedTarget=0;const id=this.version;this.latest=req;this.started=performance.now();this.mode='worker';
   this.plan={...workerPlan(req),...(this.background?{requestedWorkers:1,background:true}:{}),startupTimeoutMs:45000,progressTimeoutMs:30000};this.retryOverhead={tested:0,physicsSteps:0};this.workerFallbackReason=null;this.backgroundReportedAt=undefined;this.retention={suspensions:0,preservedSteps:0,promotionSteps:0,continuedInPlace:false,nestedWorkersCreated:0};this.suspended=false;this.handoffAfterEvaluation=false;
   const start=finalizationAdmission=>{if(id!==this.version||this.latest!==req)return;try{this.api=req.options.searchAlgorithm==='cpu-event-window-inverse'?G.LabCPUEventWindowPlanner:req.options.searchAlgorithm==='cpu-event-inverse'?G.LabCPUEventPlanner:req.options.searchAlgorithm==='inverse-constraints'?G.LabInversePlanner:G.LabOptimizer;this.search=this.api.createStagedSearch(G.RAPIER,req,...(Object.hasOwn(req,'finalization')?[{finalizationAdmission}]:[]));this.loadWave();this.startExecution(req,id);if(id===this.version&&this.latest===req&&[G.LabCPUEventPlanner,G.LabCPUEventWindowPlanner].includes(this.api))this.report(false);}catch(e){this.fail(e,id);}};
   if(Object.hasOwn(req,'finalization')){if((req.finalization?.policy==='source-gameplay-finalization-v1'&&req.options.searchAlgorithm!=='inverse-constraints')||!G.LabSourceFinalizationRequest){this.fail(Error('Explicit source finalization requires the inverse source modules'),id);return;}return G.LabSourceFinalizationRequest.admit(req).then(start,e=>this.fail(e,id));}
@@ -48,12 +48,14 @@ class OptimizerService{
     this.worker=this.workers[0];this.actualWorkers=count;this.mode=count>1?'worker-pool':'worker';
     for(const worker of this.workers){
      worker.onmessage=({data})=>{
-      const task=this.busy.get(worker);if(id!==this.version||!task||data.requestId!==id||data.candidateId!==task.job.id)return;
+      const task=this.busy.get(worker);if(id!==this.version||this.latest!==req||!task||data.requestId!==id||data.candidateId!==task.job.id)return;
+      try{
       if(this.coordinator&&this.retention.firstNestedWorkerMessageMs===undefined)this.retention.firstNestedWorkerMessageMs=performance.now()-poolStarted;
       if(data.error){task.steps=Math.max(task.steps,Number(data.failedStep)||0);this.recover(req,id,'worker-error');return;}
       this.clearWatchdog(worker);
-      if(data.outcome){this.outcomes.set(task.job.id,data.outcome);this.busy.delete(worker);this.pump(req,id);if(id===this.version&&this.latest)this.report(false);}
+      if(data.outcome){this.outcomes.set(task.job.id,data.outcome);this.busy.delete(worker);if(this.pauseOnFirstVerified(req,id))return;this.pump(req,id);if(id===this.version&&this.latest)this.report(false);}
       else{task.steps=Math.max(task.steps,Number(data.steps)||0);this.armWatchdog(worker,req,id,false);this.report(false);}
+      }catch(error){this.fail(error,id);}
      };
      worker.onerror=e=>{e.preventDefault?.();if(id===this.version&&this.workers.includes(worker))this.recover(req,id,'worker-error');};
     }
@@ -68,6 +70,16 @@ class OptimizerService{
   if(!this.jobs.length){setTimeout(()=>this.pump(req,id),0);return;}
   for(const worker of this.workers){if(this.busy.has(worker)||!this.queue.length)continue;const job=this.queue.shift();this.busy.set(worker,{job,steps:0});this.armWatchdog(worker,req,id,true);worker.postMessage({type:'evaluate',requestId:id,candidateId:job.id,job,background:this.background});}
  }
+ pauseOnFirstVerified(req,id){
+  if(id!==this.version||this.latest!==req||this.background||req.options.searchGoal!=='first-verified'||this.api!==G.LabInversePlanner||!this.api.stagedVerifiedResult)return false;
+  const projected=this.api.stagedVerifiedResult(this.search,this.outcomes);if(projected.results.length<=(this.firstVerifiedTarget||0))return false;
+  this.firstVerifiedTarget=projected.results.length;
+  // Retain completed outcomes and all solver state. Only unfinished physical
+  // jobs are interrupted; explicit resume retries those same pending jobs.
+  const abandoned=[...this.busy.values()];for(const task of abandoned){this.retryOverhead.tested++;this.retryOverhead.physicsSteps+=task.steps;}
+  this.firstVerifiedPause={at:performance.now(),abandonedJobs:abandoned.length,reportedInterruptedSteps:abandoned.reduce((n,t)=>n+t.steps,0)};
+  this.cancel();this.report(true);return true;
+ }
  completeWave(){
   this.api.commitWave(this.search,this.jobs.map(job=>({id:job.id,outcome:this.outcomes.get(job.id)})));
   if(this.search.finished){this.stopWorkers();this.latest=null;this.report(true);return true;}
@@ -77,14 +89,15 @@ class OptimizerService{
   // During playback the coordinator keeps its full state locally. Avoid cloning
   // growing traces/results on every candidate; final reports are never delayed.
   if(this.background&&!final){const now=performance.now();if(this.backgroundReportedAt!==undefined&&now-this.backgroundReportedAt<300)return;this.backgroundReportedAt=now;}
-  const result=this.api.stagedResult(this.search),elapsedMs=[G.LabInversePlanner,G.LabCPUEventPlanner,G.LabCPUEventWindowPlanner].includes(this.api)?result.elapsedMs:performance.now()-this.started;
+  const result=(!final||this.firstVerifiedPause)&&this.api===G.LabInversePlanner&&this.api.stagedVerifiedResult?this.api.stagedVerifiedResult(this.search,this.outcomes):this.api.stagedResult(this.search),elapsedMs=[G.LabInversePlanner,G.LabCPUEventPlanner,G.LabCPUEventWindowPlanner].includes(this.api)?result.elapsedMs:performance.now()-this.started;
   // Expose already verified in-flight-wave successes without committing adaptive state.
   if(!final&&this.outcomes.size&&!['inverse-constraints','cpu-event-inverse','cpu-event-window-inverse'].includes(this.latest?.options.searchAlgorithm)){
    const rows=[...result.results];for(const job of this.jobs){const r=this.outcomes.get(job.id)?.result;if(r?.success)rows.push({...r,methodLabel:G.LabRouteRules?.byId.get(r.method)?.label});}
    const identity=G.LabRouteRules?.successIdentity||(r=>JSON.stringify([r.firstId,r.secondId,r.settings,r.contacts]));const seen=new Set();result.results=rows.sort(resultCompare(this.latest?.options.objective)).filter(r=>{const key=identity(r);if(seen.has(key))return false;seen.add(key);return true;}).map((r,i)=>({...r,id:i+1}));result.resultCount=result.results.length;if(result.results.length){result.feasibilityStatus='verified-feasible-shot';result.nearest=null;}result.found+=Array.from(this.outcomes.values()).filter(x=>x.result?.success).length;
   }
-  result.evaluatedInWave=final?0:this.outcomes.size;
-  const decorated={...result,elapsedMs,...(this.coordinator?{cooperativeRetention:this.retainedState()}:{}),workerCount:this.coordinator?(this.mode==='cooperative'?1:this.actualWorkers+1):this.mode==='cooperative'?0:this.actualWorkers,executionMode:this.coordinator&&this.background?'background-worker':this.mode,...(this.coordinator?{coordinatorThread:true}:{}),workerPlan:this.plan,retryOverhead:{...this.retryOverhead,reportedLowerBound:true},workerFallbackReason:this.workerFallbackReason,workAttemptTotal:{reportedLowerBound:true,tested:result.tested+this.retryOverhead.tested,physicsSteps:result.physicsSteps+this.retryOverhead.physicsSteps}};
+  if(this.firstVerifiedPause){result.terminationReason='first-verified-paused';result.continuable=true;result.partial=true;result.firstVerifiedPause={...this.firstVerifiedPause};}
+  result.evaluatedInWave=final&&!this.firstVerifiedPause?0:this.outcomes.size;
+  const decorated={...result,elapsedMs,...(this.coordinator?{cooperativeRetention:this.retainedState()}:{}),workerCount:this.coordinator?(this.mode==='cooperative'?1:this.actualWorkers+1):this.mode==='cooperative'?0:this.actualWorkers,executionMode:this.coordinator&&this.background?'background-worker':this.mode,...(this.coordinator?{coordinatorThread:true}:{}),workerPlan:this.plan,retryOverhead:{...this.retryOverhead,reportedLowerBound:true},workerFallbackReason:this.workerFallbackReason,workAttemptTotal:{reportedLowerBound:true,tested:result.tested+this.retryOverhead.tested+(this.firstVerifiedPause?this.outcomes.size:0),physicsSteps:result.physicsSteps+this.retryOverhead.physicsSteps+(this.firstVerifiedPause?[...this.outcomes.values()].reduce((n,o)=>n+(o.steps||0),0):0)}};
   if(final)this.onResult(decorated);else this.onProgress({...decorated,partialResult:{...decorated,partial:true}});
  }
  clearWatchdog(worker){const timer=this.watchdogs.get(worker);if(timer!==undefined)clearTimeout(timer);this.watchdogs.delete(worker);}
@@ -141,7 +154,7 @@ class OptimizerService{
       if(!done)await new Promise(r=>setTimeout(r,this.background?36:0));
       if(id!==this.version){dispose();return;}
      }
-     this.outcomes.set(job.id,job.kind==='inverse-constraint'?evaluator.finish(evaluation):G.ShotSearchCore.finishCandidate(evaluation));evaluation=null;if(this.cooperativeState===state)this.cooperativeState=null;this.report(false);if(id!==this.version)return;
+     this.outcomes.set(job.id,job.kind==='inverse-constraint'?evaluator.finish(evaluation):G.ShotSearchCore.finishCandidate(evaluation));evaluation=null;if(this.cooperativeState===state)this.cooperativeState=null;if(this.pauseOnFirstVerified(req,id))return;this.report(false);if(id!==this.version)return;
      if(this.handoffAfterEvaluation&&!this.background){this.handoffAfterEvaluation=false;if(this.outcomes.size===this.jobs.length&&this.completeWave())return;if(id!==this.version)return;this.queue=this.jobs.filter(j=>!this.outcomes.has(j.id));this.startPool(req,id,this.plan.requestedWorkers);return;}
     }
     if(this.suspended)await this.cooperativeGate(id);if(id!==this.version)return;if(this.completeWave())return;if(['inverse-constraints','cpu-event-inverse','cpu-event-window-inverse'].includes(req.options.searchAlgorithm))await new Promise(r=>setTimeout(r,this.background?36:0));
@@ -167,7 +180,7 @@ class OptimizerService{
  }
  resume(){
   if(![G.LabInversePlanner,G.LabCPUEventPlanner,G.LabCPUEventWindowPlanner].includes(this.api)||!this.search)return false;
-  this.cancel();try{if(!this.api.resume(this.search))return false;}catch(error){this.onError(error.message||String(error));return false;}const id=this.version,req=this.search.req;this.latest=req;this.started=performance.now();this.recovering=null;
+  this.cancel();this.firstVerifiedPause=null;try{if(!this.api.resume(this.search))return false;}catch(error){this.onError(error.message||String(error));return false;}const id=this.version,req=this.search.req;this.latest=req;this.started=performance.now();this.recovering=null;
   if(this.search.pending.length){this.queue=this.jobs.filter(j=>!this.outcomes.has(j.id));}else this.loadWave();
   this.startExecution(req,id);return true;
  }
