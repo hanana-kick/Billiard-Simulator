@@ -6,18 +6,48 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
 const app=process.env.APP_DIR||process.cwd();
 const {chromium}=require(require.resolve('playwright',{paths:[app]}));
 const out=process.env.OUT_DIR||path.resolve('ui-results');fs.mkdirSync(out,{recursive:true});
-const report={startedAt:new Date().toISOString(),searchSliceBudgetMs:20000,totalSearchBudgetMs:65000,maxSearchSlices:3,caseRetries:0,cases:[],failures:[]};
+const EXPECTED_HASHES={"controller": "17f84814544c658a21da6e71d01ba2925edffaa69dfb0c6d6d432ceb44d89906", "optimizer-service": "0f3b7e94bc30ca1b30011aefd97b7f17f469f0f189acd0427f1513e6b5574312", "baseline65536": "ef07c9761ef1e098aa5519e2f193517e729826b9b06b4b206da2ff7a9feaa938", "candidate8192": "a5ef61e10de6ed0364736dbc8ff90e362b5ff5882ee452237ae6bd34bd7d8f12"};
+const report={instrumentation:'Read-only interval samples, not exact event tracing; CPU instrumentation overhead makes timings non-comparable to earlier 96 runs.',startedAt:new Date().toISOString(),searchSliceBudgetMs:20000,totalSearchBudgetMs:120000,initialDiagnosticLimitMs:65000,additionalResumeLimitMs:45000,maxSearchSlices:3,caseRetries:0,cases:[],failures:[]};
+const hashValue=value=>require('node:crypto').createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const snapshot=page=>page.evaluate(()=>{const c=globalThis.cueLab,s=c.lastSnapshot,r=s.routeResult;return {
  stable:{settings:s.settings,routeOptions:s.routeOptions,selectedId:s.selectedId,shots:c.lab.shots,positions:c.lab.objects.map(o=>({id:o.id,pos:{...o.body.translation()}})),gameMode:s.gameMode},
  status:s.routeStatus,error:s.routeError,applied:s.routeApplied,activeStroke:s.activeStroke,requestGoal:c.optimizer?.latest?.options?.searchGoal,
- result:r?{count:r.results?.length||0,ids:(r.results||[]).map(x=>x.id),partial:r.partial,continuable:r.continuable,terminationReason:r.terminationReason,found:r.found}:null,
- optimizer:{version:c.optimizer?.version,active:!!c.optimizer?.latest,workers:c.optimizer?.workers?.length,busy:c.optimizer?.busy?.size},notice:s.notice,activePanel:s.activePanel,rate:s.rate,paths:s.paths,fineAim:s.fineAim};});
+ result:r?{count:r.results?.length||0,ids:(r.results||[]).map(x=>x.id),identities:(r.results||[]).map(x=>globalThis.LabRouteRules.successIdentity(x)),partial:r.partial,continuable:r.continuable,terminationReason:r.terminationReason,found:r.found}:null,
+ optimizer:{version:c.optimizer?.version,active:!!c.optimizer?.latest,workers:c.optimizer?.workers?.length,busy:c.optimizer?.busy?.size},notice:s.notice,predict:s.predict,nextShotPrecompute:s.nextShotPrecompute,activePanel:s.activePanel,rate:s.rate,paths:s.paths,fineAim:s.fineAim};});
 (async()=>{let browser;try{
  browser=await chromium.launch({channel:'chrome',headless:true,chromiumSandbox:true});report.browserVersion=browser.version();
- for(const arm of [{name:'baseline65536',port:8793},{name:'candidate8192',port:8794}])for(const viewport of [{width:1280,height:850},{width:390,height:844}]){
-  const id=`${arm.name}-${viewport.width}`,r={id,arm:arm.name,viewport,steps:[],failures:[],screenshots:[],pageErrors:[],consoleErrors:[]};report.cases.push(r);
+ const cases=[];for(let repeat=0;repeat<4;repeat++){
+  const baseline={name:'baseline65536',port:8793,width:390,height:844},narrow={name:'candidate8192',port:8794,width:390,height:844},desktop={name:'candidate8192',port:8794,width:1280,height:850};
+  for(const arm of (repeat===0||repeat===3?[baseline,narrow,desktop]:[desktop,narrow,baseline]))cases.push({arm,repeat});
+ }
+ const browserCDP=await browser.newBrowserCDPSession();
+ for(const {arm,repeat} of cases){const viewport={width:arm.width,height:arm.height};
+  const id=`${arm.name}-${viewport.width}-r${repeat}`,r={id,repeat,arm:arm.name,viewport,steps:[],failures:[],screenshots:[],pageErrors:[],consoleErrors:[],telemetry:[],checkpoints:[],waveTransitions:[]};report.cases.push(r);
   const context=await browser.newContext({viewport,deviceScaleFactor:1});const page=await context.newPage();page.setDefaultTimeout(5000);page.setDefaultNavigationTimeout(30000);
   page.on('pageerror',e=>r.pageErrors.push(String(e)));page.on('console',m=>{if(m.type()==='error')r.consoleErrors.push(m.text());});
+  const cdp=await context.newCDPSession(page);await cdp.send('Performance.enable');let telemetryOn=false,telemetryTask=null,phase='initial',lastSample=null;
+  const sample=async()=>{
+   const requestedAt=Date.now();
+   const state=await page.evaluate(()=>{
+    const c=globalThis.cueLab;if(!c)return null;const o=c.optimizer,s=o?.search;
+    const job=j=>({id:j.id,wave:j.wave,branchId:j.branchId,purpose:j.purpose});
+    return {now:performance.now(),status:c.state.routeStatus,version:o?.version,optimizerActive:!!o?.latest,firstVerifiedTarget:o?.firstVerifiedTarget,workers:o?.workers?.length,busy:[...(o?.busy?.values()||[])].map(t=>({...job(t.job),steps:t.steps})),outcomes:[...(o?.outcomes?.keys()||[])],queue:(o?.queue||[]).map(job),jobs:(o?.jobs||[]).map(job),wave:s?.wave,deadline:s?.deadline,deadlineOverrunMs:s?Math.max(0,performance.now()-s.deadline):0,pending:(s?.pending||[]).map(job),active:(s?.active||[]).map(e=>({branchId:e.branch?.id,phase:e.state?.phase,status:e.state?.status,serviceSteps:e.serviceSteps})),finished:s?.finished,paused:s?.paused,evaluations:s?.evaluations,physicsSteps:s?.physicsSteps,interrupted:o?.firstVerifiedPause,retryOverhead:o?.retryOverhead,resultCount:c.state.routeResult?.results?.length||0,background:{predictionBusy:c.state.predictionBusy,predictionWorkerPresent:!!c.predictor?.worker,aimTimerScheduled:!!c.nextShot?.aimTimer,nextShot:c.state.nextShotPreparation,generation:c.nextShot?.generation,jobPresent:!!c.nextShot?.job,optimizerVersion:c.nextShot?.job?.optimizer?.version,optimizerActive:!!c.nextShot?.job?.optimizer?.latest,optimizerWorkerPresent:!!c.nextShot?.job?.optimizer?.worker,optimizerSuspended:c.nextShot?.job?.suspended,warmed:!!c.nextShot?.warmed},predict:c.state.predict,nextShotPrecompute:c.state.nextShotPrecompute};
+   });
+   const readCompletedAt=Date.now();const cpu={};
+   try{cpu.pageMetrics=Object.fromEntries((await cdp.send('Performance.getMetrics')).metrics.map(x=>[x.name,x.value]));}catch(e){cpu.pageError=String(e);}
+   try{cpu.processes=(await browserCDP.send('SystemInfo.getProcessInfo')).processInfo.map(x=>({id:x.id,type:x.type,cpuTime:x.cpuTime}));}catch(e){cpu.processError=String(e);}
+   const row={phase,requestedAt,readCompletedAt,completedAt:Date.now(),heartbeatRoundTripMs:readCompletedAt-requestedAt,heartbeatIntervalMs:lastSample?readCompletedAt-lastSample.readCompletedAt:null,state,cpu};r.telemetry.push(row);
+   if(state&&lastSample?.state){const prev=lastSample.state,interval=[prev.now,state.now];
+    if(prev.version!==state.version)r.waveTransitions.push({type:'version-change-or-cancel',interval,from:prev.version,to:state.version,phase});
+    if(prev.wave!==state.wave)r.waveTransitions.push({type:'observed-wave-change',interval,from:prev.wave,to:state.wave,version:state.version,phase});
+    const prior=new Set(prev.busy.map(x=>x.id)),done=new Set(prev.outcomes);
+    for(const job of state.busy)if(!prior.has(job.id)||prev.version!==state.version)r.waveTransitions.push({type:'observed-job-dispatch',interval,version:state.version,job,phase});
+    for(const id of state.outcomes)if(!done.has(id)&&prev.version===state.version)r.waveTransitions.push({type:'observed-job-completion',interval,version:state.version,id,phase});
+   }lastSample=row;return row;
+  };
+  const startTelemetry=()=>{telemetryOn=true;telemetryTask=(async()=>{while(telemetryOn){const at=Date.now();try{await sample();}catch(e){r.telemetry.push({phase,error:String(e),at:Date.now()});}if(telemetryOn)await new Promise(resolve=>setTimeout(resolve,Math.max(0,100-(Date.now()-at))));}})();};
+  const stopTelemetry=async()=>{telemetryOn=false;if(telemetryTask)await telemetryTask;};
+  const observeNatural=async(limitMs,label)=>{const start=Date.now();let last;while(Date.now()-start<limitMs){last=await snapshot(page);if(last.status!=='searching')return {natural:true,elapsedMs:Date.now()-start,last};await page.waitForTimeout(Math.min(100,Math.max(1,limitMs-(Date.now()-start))));}last=await snapshot(page);return {natural:last.status!=='searching',elapsedMs:Date.now()-start,last,label};};
   const step=async(name,fn)=>{const start=Date.now();try{const details=await fn();r.steps.push({name,ok:true,ms:Date.now()-start,details});return true;}catch(e){const failure={name,error:String(e)};r.failures.push(failure);r.steps.push({...failure,ok:false,ms:Date.now()-start});return false;}};
   const shot=async(name)=>{const file=`${id}-${name}.png`;await page.screenshot({path:path.join(out,file),fullPage:true});r.screenshots.push(file);};
   const tab=async(name)=>{await page.locator('#tab-'+name).click();assert.equal(await page.locator('#tab-'+name).getAttribute('aria-selected'),'true');};
@@ -69,35 +99,64 @@ const snapshot=page=>page.evaluate(()=>{const c=globalThis.cueLab,s=c.lastSnapsh
    // Font failure remains recorded; proceed with functional evidence where possible.
    await step('open persistent inspector',async()=>{if(await page.locator('#sidebarTrigger').getAttribute('aria-expanded')!=='true')await page.locator('#sidebarTrigger').click();await tab('routes');});
    await step('initial layout',async()=>{const l=await layout();await shot('initial-routes');return l;});
-   let before,first;
-   await step('untouched default first verified search, at most three UI slices / 65 seconds',async()=>{
-    before=await snapshot(page);r.initial=before;assert.equal(before.status,'idle');assert(!before.stable.routeOptions.searchGoal,'Default must not be set by test');
-    const start=Date.now();r.searchSlices=[];await page.locator('#findRoute').click();
+   let before,first,sourceValid=false;
+   await step('verify embedded runtime hashes and untouched default flags',async()=>{
+    const sources=await page.evaluate(()=>Object.fromEntries(['controller','optimizer-service','inverse-planner'].map(k=>[k,document.getElementById('source-'+k)?.textContent])));
+    r.sourceHashes={};for(const [key,value] of Object.entries(sources)){assert.equal(typeof value,'string','Missing embedded source '+key);const actual=require('node:crypto').createHash('sha256').update(value.replace(/^\n+|\n+$/g,'')).digest('hex');const expected=EXPECTED_HASHES[key==='inverse-planner'?arm.name:key];r.sourceHashes[key]={actual,expected};assert.equal(actual,expected,'Runtime hash mismatch '+key);}
+    before=await snapshot(page);assert.equal(before.predict,true);assert.equal(before.nextShotPrecompute,true);assert.equal(before.status,'idle');assert(!before.stable.routeOptions.searchGoal);r.initial=before;
+    r.initialInput=await page.evaluate(()=>{const c=cueLab,snapshot=c.lab.snapshot({trails:false});return {snapshot:{...snapshot,world:Array.from(snapshot.world)},settings:{...c.state.settings},options:{...c.state.routeOptions},selectedId:c.state.selectedId};});r.initialInput.snapshotSHA256=hashValue(r.initialInput.snapshot);r.initialInput.settingsOptionsSHA256=hashValue([r.initialInput.settings,r.initialInput.options]);sourceValid=true;
+   });
+   if(!sourceValid)throw Error('Refusing searches against unverified runtime/defaults');
+   startTelemetry();
+   await step('default search with original 22-second checkpoint and separate diagnostic observation',async()=>{
+    phase='first-search';const start=Date.now();r.searchSlices=[];await page.locator('#findRoute').click();
+    r.submittedInput=await page.evaluate(()=>{const c=cueLab,req=c.optimizer.search?.req||c.optimizer.latest;if(!req)throw Error('Actual submitted foreground request not available');return {snapshot:{...req.snapshot,world:Array.from(req.snapshot.world)},settings:req.settings,options:req.options,selectedId:req.selectedId,savedGoalPresent:Object.hasOwn(c.state.routeOptions,'searchGoal'),savedGoal:c.state.routeOptions.searchGoal};});
+    r.submittedInput.snapshotSHA256=hashValue(r.submittedInput.snapshot);r.submittedInput.settingsOptionsSHA256=hashValue([r.submittedInput.settings,r.submittedInput.options]);r.initialSubmittedSnapshotEqual=r.initialInput.snapshotSHA256===r.submittedInput.snapshotSHA256;
+    assert.equal(r.submittedInput.options.searchGoal,'first-verified');assert.equal(r.submittedInput.savedGoalPresent,false);
     for(let slice=0;slice<3;slice++){
-     // The app owns its 20 s slice budget. Permit result delivery overhead, within 65 s total.
-     const remaining=65000-(Date.now()-start);assert(remaining>0,'Total search budget exhausted');
-     await page.waitForFunction(()=>globalThis.cueLab.state.routeStatus!=='searching',{},{timeout:Math.min(22000,remaining)});
-     first=await snapshot(page);r.searchSlices.push({slice:slice+1,elapsedMs:Date.now()-start,...first});
+     const sliceStart=Date.now(),remaining=120000-(sliceStart-start);assert(remaining>0,'Total 120 s search observation budget exhausted');
+     const initial=await observeNatural(Math.min(22000,remaining),'original-22s');
+     const checkpoint={slice:slice+1,limitMs:22000,naturalWithinCheckpoint:initial.natural&&initial.elapsedMs<=22000,elapsedMs:Date.now()-sliceStart,state:initial.last};r.checkpoints.push(checkpoint);
+     if(!checkpoint.naturalWithinCheckpoint)r.failures.push({name:'original 22-second natural-slice checkpoint',slice:slice+1,error:'No natural slice termination within original 22-second checkpoint; diagnostic continuation is not a pass.'});
+     let diagnostic=initial;
+     if(!initial.natural){phase='first-search-overrun-diagnostic';const allowance=Math.min(65000-(Date.now()-sliceStart),120000-(Date.now()-start));if(allowance>0)diagnostic=await observeNatural(allowance,'separate-65s-natural-slice-diagnostic');}
+     first=await snapshot(page);if(first.result?.count&&!r.firstVerifiedObservedAt)r.firstVerifiedObservedAt=Date.now();r.searchSlices.push({slice:slice+1,elapsedMs:Date.now()-sliceStart,totalElapsedMs:Date.now()-start,natural:diagnostic.natural,state:first});
+     if(!diagnostic.natural){await page.locator('#cancelRoute').click();throw Error('Natural slice did not terminate within diagnostic observation bound; stopped through UI');}
      if(first.result?.count||first.status!=='done'||!first.result?.continuable||slice===2)break;
-     await page.locator('#resumeSearch').click({timeout:Math.max(1,Math.min(3000,65000-(Date.now()-start)))});
+     assert(120000-(Date.now()-start)>0,'No time remaining for no-result Resume');phase='first-search-no-result-resume';await page.locator('#resumeSearch').click();
     }
-    r.first={...first,elapsedMs:Date.now()-start};
-    assert.equal(first.status,'done');assert(first.result?.count>0,'No verified default candidate returned within bounded run');assert.equal(first.result.terminationReason,'first-verified-paused');assert.equal(first.result.continuable,true);assert.deepEqual(first.stable,before.stable,'Search changed world/settings');
-    await page.locator('#resumeSearch').waitFor();await page.getByText('첫 경로를 검증했습니다. 나머지 계산은 이어서 할 수 있습니다.',{exact:true}).waitFor();assert(await page.locator('[id^="applyRoute"]').first().isEnabled());await shot('first-verified');
+    r.first={...first,elapsedMs:Date.now()-start};r.firstRecall=!!first?.result?.count;r.firstResultIdentities=first?.result?.identities||[];
+    assert.equal(first.status,'done');assert(first.result?.count>0,'No first verified route within fixed diagnostic budget');assert.equal(first.result.terminationReason,'first-verified-paused');assert.equal(first.result.continuable,true);assert.deepEqual(first.stable,before.stable);
+    await page.locator('#resumeSearch').waitFor();await page.getByText('첫 경로를 검증했습니다. 나머지 계산은 이어서 할 수 있습니다.',{exact:true}).waitFor();if(repeat!==0)await shot('first-verified');
    });
-   // Stop a timed-out search through its actual button. This is not a second search.
-   await step('stop or resume then stop through UI',async()=>{
-    const current=await snapshot(page);r.beforeStop=current;
-    if(current.status==='searching'){r.stopMode='bounded-initial-search';await page.locator('#cancelRoute').click();}
-    else if(current.result?.count&&current.result.continuable){r.stopMode='resume';await page.locator('#resumeSearch').click();await page.locator('#cancelRoute').waitFor({timeout:3000});await page.locator('#cancelRoute').click();}
-    else throw Error('Resume/Stop not exercised: no active search or resumable verified candidate');
-    await page.waitForFunction(()=>globalThis.cueLab.state.routeStatus!=='searching',{},{timeout:3000});r.afterStop=await snapshot(page);assert.equal(r.afterStop.status,'done');assert.equal(r.afterStop.result.partial,true);if(current.result?.count){for(const id of current.result.ids)assert(r.afterStop.result.ids.includes(id),'Stop lost verified candidate '+id);}await shot('stopped');
+   await step('one explicit Resume seeks additional identity, then actual Stop if needed',async()=>{
+    const current=await snapshot(page);r.beforeAdditionalResume=current;assert(current.result?.count>0&&current.result.continuable,'No resumable verified first candidate');const oldIdentities=current.result.identities;phase='pre-resume-timing';
+    const targetBefore=await page.evaluate(()=>cueLab.optimizer.firstVerifiedTarget);assert.equal(targetBefore,current.result.count,'Resume success-count target must start at existing verified count');
+    const timingStart=Date.now(),timingBudget=repeat===0?0:repeat===1?3000:5000;
+    r.resumeTiming={condition:['immediate','forecast-started','forecast-completed-and-aim-timer-scheduled','aim-or-precompute-active'][repeat],budgetMs:timingBudget,matched:false,observations:[]};
+    do{
+     const condition=await page.evaluate(repeat=>{const c=cueLab,job=c.nextShot?.job;const flags={predictionBusy:c.state.predictionBusy,aimTimerScheduled:!!c.nextShot?.aimTimer,jobPresent:!!job,jobAiming:!!job?.aiming,suspended:!!job?.suspended,phase:c.state.nextShotPreparation?.phase,optimizerWorkerPresent:!!job?.optimizer?.worker};return {at:performance.now(),flags,matched:repeat===0||repeat===1&&flags.predictionBusy||repeat===2&&!flags.predictionBusy&&flags.aimTimerScheduled||repeat===3&&flags.jobPresent&&!flags.suspended&&['predicting','searching'].includes(flags.phase)};},repeat);
+     r.resumeTiming.observations.push(condition);if(condition.matched){r.resumeTiming.matched=true;break;}if(Date.now()-timingStart>=timingBudget)break;await page.waitForTimeout(Math.min(50,timingBudget-(Date.now()-timingStart)));
+    }while(Date.now()-timingStart<timingBudget);
+    r.resumeTiming.waitElapsedMs=Date.now()-timingStart;r.resumeTiming.clickRequestedAt=Date.now();r.resumeTiming.firstVerifiedObservedToClickMs=r.firstVerifiedObservedAt?Date.now()-r.firstVerifiedObservedAt:null;r.resumeTiming.immediateWithin140ms=repeat===0?r.resumeTiming.firstVerifiedObservedToClickMs<140:null;
+    // Unmet timing predicates are recorded, never manufactured by changing settings or timers.
+    await page.locator('#resumeSearch').click();r.resumeTiming.clickCompletedAt=Date.now();phase='additional-resume';const outcome=await observeNatural(45000,'one-additional-resume-slice');r.additionalResume=outcome;
+    const observed=await snapshot(page);r.additionalIdentities=observed.result.identities.filter(x=>!oldIdentities.includes(x));r.additionalIdentityCount=r.additionalIdentities.length;r.additionalIdentityRecall=r.additionalIdentityCount>0;r.additionalResumeOutcome=r.additionalIdentityRecall?'new-identity':outcome.natural?'natural-budget-or-domain-stop':'still-searching-at-45s';
+    for(const identity of oldIdentities)assert(observed.result.identities.includes(identity),'Resume lost existing identity');
+    const targetAfter=await page.evaluate(()=>cueLab.optimizer.firstVerifiedTarget);r.targetCounts={before:targetBefore,after:targetAfter};assert.equal(targetAfter,r.additionalIdentityRecall?observed.result.count:targetBefore,'First-verified count target mismatch');
+    if(observed.status==='searching'){await page.locator('#cancelRoute').click();r.usedStop=true;}else r.usedStop=false;
+    phase='post-stop-or-natural-pause';r.afterStop=await snapshot(page);assert.equal(r.afterStop.status,'done');for(const identity of oldIdentities)assert(r.afterStop.result.identities.includes(identity));
+    // Fixed observation window, not a retry or search extension, captures idle/background CPU.
+    await page.waitForTimeout(2000);await shot('after-additional-resume');
    });
+   // A failed first-result step must not leave background foreground work running.
+   if((await snapshot(page)).status==='searching'){await page.locator('#cancelRoute').click();r.cleanupStoppedSearch=true;}
+   phase='ui-controls';
    await step('apply verified route through actual button without striking',async()=>{
     const previous=await snapshot(page);assert(previous.result?.count>0,'No verified candidate available to apply');
     const expected=await page.evaluate(()=>{const row=globalThis.cueLab.state.routeResult.results[0];return {id:row.id,settings:row.settings};});r.applyExpected=expected;
     await page.locator('[id^="applyRoute"]').first().click();const applied=await snapshot(page);r.afterApply=applied;
-    assert.equal(applied.applied,expected.id);assert.equal(applied.stable.settings.angle,expected.settings.angle);assert.notEqual(applied.stable.settings.angle,previous.stable.settings.angle,'Default verified route should change aim angle');
+    assert.equal(applied.applied,expected.id);for(const [key,value] of Object.entries(expected.settings))assert.equal(applied.stable.settings[key],value,'Applied setting mismatch '+key);assert.equal(applied.stable.settings.angle,expected.settings.angle);assert.notEqual(applied.stable.settings.angle,previous.stable.settings.angle,'Default verified route should change aim angle');
     assert.equal(applied.stable.shots,previous.stable.shots,'Apply must not strike');assert.equal(applied.activeStroke,false);assert.deepEqual(applied.stable.positions,previous.stable.positions,'Apply moved balls');assert.deepEqual(applied.stable.routeOptions,previous.stable.routeOptions,'Apply changed search options');
     await shot('applied');
    });
@@ -126,7 +185,10 @@ const snapshot=page=>page.evaluate(()=>{const c=globalThis.cueLab,s=c.lastSnapsh
     await layout();await shot('settings');await page.locator('button[aria-label="설정 패널 닫기"]:not(#sidebarTrigger)').click();await page.locator('#sidebarTrigger').click();await page.locator('#settingsPanel').waitFor();await settleLayout();assert.equal(await page.getByRole('checkbox',{name:'실제 이동 궤적',exact:true}).getAttribute('aria-checked'),changed);assert.equal((await snapshot(page)).rate,.5);assert.deepEqual((await snapshot(page)).stable,stable,'Drawer reopen reset world or settings');await tab('shot');assert.equal(await page.getByRole('checkbox',{name:'미세 조준',exact:true}).getAttribute('aria-checked'),fine);await tab('routes');await layout();await shot('final-routes');
    });
   }catch(e){r.failures.push({name:'case setup or cleanup',error:String(e)});}
-  finally{await step('final diagnostics',async()=>{r.final=await snapshot(page);await shot('final');assert.equal(r.pageErrors.length,0,JSON.stringify(r.pageErrors));});await context.close();r.ok=r.failures.length===0;fs.writeFileSync(path.join(out,id+'.json'),JSON.stringify(r,null,2));report.failures.push(...r.failures.map(f=>({case:id,...f})));fs.writeFileSync(path.join(out,'summary.json'),JSON.stringify(report,null,2));}
+  finally{await stopTelemetry();await step('final diagnostics',async()=>{await shot('final');r.final=await snapshot(page);assert.equal(r.pageErrors.length,0,JSON.stringify(r.pageErrors));});r.cpuByPhase={};for(const phaseName of [...new Set(r.telemetry.map(x=>x.phase))]){const rows=r.telemetry.filter(x=>x.phase===phaseName&&x.state&&x.cpu?.pageMetrics);if(!rows.length)continue;const a=rows[0],b=rows.at(-1),duration=(b.completedAt-a.completedAt)/1000;r.cpuByPhase[phaseName]={samples:rows.length,wallSeconds:duration,pageTaskSeconds:b.cpu.pageMetrics.TaskDuration-a.cpu.pageMetrics.TaskDuration,pageScriptSeconds:b.cpu.pageMetrics.ScriptDuration-a.cpu.pageMetrics.ScriptDuration,maxHeartbeatRoundTripMs:Math.max(...rows.map(x=>x.heartbeatRoundTripMs)),maxHeartbeatIntervalMs:Math.max(...rows.map(x=>x.heartbeatIntervalMs||0)),foregroundActiveSamples:rows.filter(x=>x.state.optimizerActive).length,predictionBusySamples:rows.filter(x=>x.state.background.predictionBusy).length,nextShotPresentSamples:rows.filter(x=>x.state.background.jobPresent).length,processCPUSeconds:(b.cpu.processes||[]).map(x=>({id:x.id,type:x.type,delta:x.cpuTime-(a.cpu.processes||[]).find(y=>y.id===x.id)?.cpuTime})),attribution:'Page TaskDuration excludes worker CPU; process deltas are shared-browser totals, not attributed to foreground/background services.'};}
+   r.backgroundForegroundOverlap=r.telemetry.filter(x=>x.state?.optimizerActive&&(x.state.background.predictionBusy||x.state.background.jobPresent&&!x.state.background.optimizerSuspended&&['predicting','searching'].includes(x.state.background.nextShot?.phase))).map(x=>({requestedAt:x.requestedAt,now:x.state.now,phase:x.phase,foregroundVersion:x.state.version,foregroundBusy:x.state.busy,background:x.state.background}));r.overlapScope='Observed overlap only. Absence in interval samples does not prove no overlap; worker presence alone does not prove CPU activity.';
+   r.waveObservations=[];const waves=new Map();for(const row of r.telemetry){const t=row.state;if(!t?.pending?.length)continue;const key=JSON.stringify([t.version,t.wave,t.pending.map(j=>j.id)]);let w=waves.get(key);if(!w){w={version:t.version,wave:t.wave,pending:t.pending,firstObservedNow:t.now,lastObservedNow:t.now,maxDeadlineOverrunMs:0,maxReportedBusySteps:0};waves.set(key,w);}w.lastObservedNow=t.now;w.maxDeadlineOverrunMs=Math.max(w.maxDeadlineOverrunMs,t.deadlineOverrunMs);w.maxReportedBusySteps=Math.max(w.maxReportedBusySteps,...t.busy.map(j=>j.steps||0));}for(const w of waves.values())r.waveObservations.push({...w,observedDurationLowerBoundMs:w.lastObservedNow-w.firstObservedNow,timestampScope:'Interval-sampled bounds; may miss complete short waves.'});
+   await context.close();r.ok=r.failures.length===0;fs.writeFileSync(path.join(out,id+'.json'),JSON.stringify(r,null,2));report.failures.push(...r.failures.map(f=>({case:id,...f})));fs.writeFileSync(path.join(out,'summary.json'),JSON.stringify(report,null,2));}
  }
-}catch(e){report.failures.push({name:'fatal',error:String(e)});}finally{if(browser)await browser.close();report.finishedAt=new Date().toISOString();report.ok=report.cases.length===4&&report.failures.length===0;fs.writeFileSync(path.join(out,'summary.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));if(!report.ok)process.exitCode=1;}
+}catch(e){report.failures.push({name:'fatal',error:String(e)});}finally{if(browser)await browser.close();report.finishedAt=new Date().toISOString();report.ok=report.cases.length===12&&report.failures.length===0;fs.writeFileSync(path.join(out,'summary.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));if(!report.ok)process.exitCode=1;}
 })();

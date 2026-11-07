@@ -1,4 +1,4 @@
-name: Default first-route UI correction (no deployment)
+name: Repeated default-route UI diagnostics (no deployment)
 on:
   push:
     branches: ['validation/stop-first-resume-check-20261106']
@@ -12,7 +12,7 @@ jobs:
       matrix:
         fixture: [default3]
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
         with:
@@ -54,7 +54,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: corrected-ui-${{ matrix.fixture }}
+          name: repeated-ui-${{ matrix.fixture }}
           path: |
             default-quantum-results/
             ui-results/
