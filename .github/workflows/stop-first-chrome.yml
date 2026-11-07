@@ -1,18 +1,18 @@
-name: Repeated default-route UI diagnostics (no deployment)
+name: Resume background lifecycle Chrome qualification (no deployment)
 on:
   push:
     branches: ['validation/stop-first-resume-check-20261106']
 permissions:
   contents: read
 jobs:
-  compare:
+  resume-background:
     strategy:
       fail-fast: false
-      max-parallel: 6
+      max-parallel: 4
       matrix:
-        fixture: [default3]
+        condition: [queued, inflight, aim-timer, aim-active]
     runs-on: ubuntu-24.04
-    timeout-minutes: 50
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
@@ -22,46 +22,59 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --no-audit --no-fund
-      - name: Build frozen baseline and isolated stop policy
+      - name: Build paired quantum8192 arms with only controller and next-shot delta
+        shell: bash
         run: |
           set -euo pipefail
-          node --test tests/worker-pool.cjs
-          for arm in fixed65536 quantum8192; do
-            mkdir -p "$RUNNER_TEMP/$arm"
-            tar --exclude=.git --exclude=node_modules -cf - . | tar -xf - -C "$RUNNER_TEMP/$arm"
-            ln -s "$GITHUB_WORKSPACE/node_modules" "$RUNNER_TEMP/$arm/node_modules"
+          for arm in baseline fixed; do
+            mkdir -p "$RUNNER_TEMP/resume-$arm"
+            tar --exclude=.git --exclude=node_modules -cf - . | tar -xf - -C "$RUNNER_TEMP/resume-$arm"
+            ln -s "$GITHUB_WORKSPACE/node_modules" "$RUNNER_TEMP/resume-$arm/node_modules"
           done
-          cp verification/default-quantum/baseline-planner.js "$RUNNER_TEMP/fixed65536/src/inverse-planner.js"
-          cp verification/default-quantum/candidate-planner.js "$RUNNER_TEMP/quantum8192/src/inverse-planner.js"
-          sha256sum "$RUNNER_TEMP/fixed65536/src/optimizer-service.js" "$RUNNER_TEMP/fixed65536/src/inverse-planner.js" "$RUNNER_TEMP/quantum8192/src/inverse-planner.js" | tee source-hashes.log
-          for arm in fixed65536 quantum8192; do
-            (cd "$RUNNER_TEMP/$arm" && npm run prepare:engine && npm run build)
+          cp verification/resume-background/baseline-controller.js "$RUNNER_TEMP/resume-baseline/src/controller.js"
+          cp verification/resume-background/baseline-next-shot-service.js "$RUNNER_TEMP/resume-baseline/src/next-shot-service.js"
+          for arm in baseline fixed; do
+            cp verification/default-quantum/candidate-planner.js "$RUNNER_TEMP/resume-$arm/src/inverse-planner.js"
+            echo "10068db004d310044be79927534698567c25faf7a35b8d9bf77c615411432160  $RUNNER_TEMP/resume-$arm/src/inverse-planner.js" | sha256sum --check
           done
-      - name: Actual desktop and narrow UI smoke
+          # Fixed arm uses the reviewed src/controller.js and src/next-shot-service.js.
+          cmp "$RUNNER_TEMP/resume-baseline/src/inverse-planner.js" "$RUNNER_TEMP/resume-fixed/src/inverse-planner.js"
+          cmp "$RUNNER_TEMP/resume-baseline/src/physics.js" "$RUNNER_TEMP/resume-fixed/src/physics.js"
+          for arm in baseline fixed; do
+            sha256sum "$RUNNER_TEMP/resume-$arm/src/"{controller,next-shot-service,inverse-planner,physics,forecast,optimizer-service}.js
+            (cd "$RUNNER_TEMP/resume-$arm" && npm run prepare:engine && npm run build)
+          done | tee build-source-hashes.log
+      - name: Fixed eight-case Chrome matrix with actual condition qualification
         shell: bash
+        env:
+          CONDITION: ${{ matrix.condition }}
         run: |
           set -euo pipefail
           google-chrome --version | tee chrome-version.log
           lscpu > host-cpu.log
-          HOST=127.0.0.1 PORT=8793 node "$RUNNER_TEMP/fixed65536/server.cjs" > ui-old-server.log 2>&1 &
+          HOST=127.0.0.1 PORT=8793 node "$RUNNER_TEMP/resume-baseline/server.cjs" > baseline-server.log 2>&1 &
           A=$!
-          HOST=127.0.0.1 PORT=8794 node "$RUNNER_TEMP/quantum8192/server.cjs" > ui-new-server.log 2>&1 &
+          HOST=127.0.0.1 PORT=8794 node "$RUNNER_TEMP/resume-fixed/server.cjs" > fixed-server.log 2>&1 &
           B=$!
           trap 'kill "$A" "$B" || true' EXIT
-          sleep 2
-          node verification/default-quantum/ui.cjs | tee ui.log
-          node -e "if(!require('./ui-results/summary.json').ok)process.exit(1)"
+          for port in 8793 8794; do
+            ready=0
+            for n in $(seq 1 30); do
+              if curl -fsS "http://127.0.0.1:$port/" -o /dev/null; then ready=1; break; fi
+              sleep 1
+            done
+            test "$ready" = 1
+          done
+          node verification/resume-background/chrome.cjs | tee resume-background.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: repeated-ui-${{ matrix.fixture }}
+          name: resume-background-${{ matrix.condition }}
           path: |
-            default-quantum-results/
-            ui-results/
-            ui.log
-            comparison.log
+            resume-background-results/
+            resume-background.log
+            build-source-hashes.log
             chrome-version.log
             host-cpu.log
-            old-server.log
+            baseline-server.log
             fixed-server.log
-            source-hashes.log

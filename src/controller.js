@@ -26,7 +26,7 @@ class LabController{
    // Renderer selection is independent of physics. A failed WebGL context uses
    // a fresh canvas because a canvas cannot switch 2D/WebGL context types.
    try{try{this.renderer=await G.WorkerRenderer.create(canvas);}catch{this.renderer=new G.LabRenderer(canvas);}}catch(error){const fresh=canvas.cloneNode(false);canvas.replaceWith(fresh);this.canvas=canvas=fresh;this.renderer=new G.SoftwareRenderer(canvas);this.renderer.fallbackReason=String(error.message||error);}
-   this.predictor=new G.PredictionService((result,meta)=>{if(!this.state.paused||!this.state.predict||this.windup)return;this.forecastReceipt={request:this.predictor.latestRequest,result};this.state.forecast=G.LabMath.forecastGeometry(result);this.state.predictionBusy=false;this.state.forecastStatus=`${result.seconds.toFixed(1)}초 · ${result.events.length}회 접촉${result.rested?' · 정지까지':''}`;this.forecastMeta=meta;this.nextShot?.warm();this.nextShot?.prepareAim(this.forecastReceipt);this.notify()},error=>{this.state.predictionBusy=false;this.state.forecastStatus='예측 실패: '+error;this.notify()});
+   this.predictor=new G.PredictionService((result,meta)=>{if(this.state.routeStatus==='searching'||!this.state.paused||!this.state.predict||this.windup)return;this.forecastReceipt={request:this.predictor.latestRequest,result};this.state.forecast=G.LabMath.forecastGeometry(result);this.state.predictionBusy=false;this.state.forecastStatus=`${result.seconds.toFixed(1)}초 · ${result.events.length}회 접촉${result.rested?' · 정지까지':''}`;this.forecastMeta=meta;this.nextShot?.warm();this.nextShot?.prepareAim(this.forecastReceipt);this.notify()},error=>{this.state.predictionBusy=false;this.state.forecastStatus='예측 실패: '+error;this.notify()});
    this.optimizer=new G.OptimizerService(progress=>{this.state.routeProgress=progress;if(progress.partialResult)this.state.routeResult=progress.partialResult;this.notify(false)},result=>{this.state.routeStatus='done';this.state.routeResult=result;this.state.routeProgress=result;this.notify();this.queuePrediction()},error=>{this.state.routeStatus='error';this.state.routeError=error;this.notify();this.queuePrediction()});
    this.nextShot=new G.NextShotService(this);this.nextShot.warm();
    this.bindPointers();this.resizeViewport();this.resizeObserver=new ResizeObserver(()=>this.resizeViewport());this.resizeObserver.observe(canvas.parentElement);
@@ -46,7 +46,7 @@ class LabController{
   if(!o||o.shape!=='sphere'||s.obstruction){this.invalidate();s.forecastStatus=s.obstruction?'큐 겹침을 해소하면 예측합니다':'타격할 공을 선택하세요';return;}
   const key=JSON.stringify([l.steps,l.revision,s.selectedId,s.settings,s.horizon,l.params]);if(!force&&this.requestKey===key)return;
   this.invalidate();this.requestKey=key;s.predictionBusy=true;s.forecastStatus='예상 궤적 계산 중';
-  this.predictionTimer=setTimeout(()=>{if(!s.paused||this.windup||l.cue||!s.predict)return;this.predictor.request({snapshot:l.snapshot({trails:false}),selectedId:s.selectedId,settings:{...s.settings},horizon:s.horizon,...(this.game?{nextShotGame:{kind:this.game instanceof G.ThreeBallGame?'three':'four',snapshot:this.game.snapshot(),shotRules:{threeCushion:!!s.routeOptions.fourBallThreeCushion}}}:{})})},140);
+  const predictionVersion=this.predictor.version;this.predictionTimer=setTimeout(()=>{if(predictionVersion!==this.predictor.version||s.routeStatus==='searching'||!s.paused||this.windup||l.cue||!s.predict)return;this.predictor.request({snapshot:l.snapshot({trails:false}),selectedId:s.selectedId,settings:{...s.settings},horizon:s.horizon,...(this.game?{nextShotGame:{kind:this.game instanceof G.ThreeBallGame?'three':'four',snapshot:this.game.snapshot(),shotRules:{threeCushion:!!s.routeOptions.fourBallThreeCushion}}}:{})})},140);
  }
  adjustAngle(key,delta){if(key!=='angle'&&key!=='elevation')return;this.changeSettings({[key]:Math.round((this.state.settings[key]+delta)*100)/100});}
  changeSettings(patch,{interactive=false}={}){this.cancelSearch('타격 설정 변경으로 검색을 취소했습니다.');
@@ -354,7 +354,10 @@ class LabController{
  }
  resumeSearch(){
   if(!['done','canceled'].includes(this.state.routeStatus)||this.worldStamp()!==this.routeStamp||this.routeRequestStamp!==JSON.stringify([this.state.routeOptions,this.state.settings])||(this.routeFinalizationStamp&&this.routeFinalizationStamp!==this.sourceFinalizationStamp())||(this.routeFinalizationOptionsStamp&&this.routeFinalizationOptionsStamp!==G.LabSourceFinalizationRequest.fingerprint([this.state.routeOptions,this.state.settings])))return this.announce('배치나 조건이 바뀌었습니다. 새로 계산하세요.');
-  if(this.optimizer?.resume()){this.state.routeStatus='searching';this.state.routeError='';this.notify();}
+  // Foreground continuation owns compute; retain only completed forecast cache.
+  this.nextShot?.cancel('explicit-resume');clearTimeout(this.predictionTimer);this.predictionTimer=null;
+  if(this.state.predictionBusy){this.predictor?.cancel();this.requestKey=null;this.state.predictionBusy=false;}
+  if(this.optimizer?.resume()){this.state.routeStatus='searching';this.state.routeError='';this.notify();}else this.queuePrediction();
  }
  stopSearch(){
   this.nextShot?.cancel('stopped');

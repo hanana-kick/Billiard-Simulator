@@ -21,7 +21,7 @@ function repairedOptions(options,game,selectedId,snapshot){
 class NextShotService{
  constructor(controller){this.controller=controller;this.generation=0;this.job=null;this.warmed=null;}
  warm(){
-  const c=this.controller;if(this.warmed||c.disposed||c.canonicalPlayback||G.document?.hidden||!c.state.nextShotPrecompute||!c.state.paused||c.game?.pending||typeof G.Worker!=='function'||Number(G.navigator?.hardwareConcurrency||2)<2)return;
+  const c=this.controller;if(c.state.routeStatus==='searching'||this.warmed||c.disposed||c.canonicalPlayback||G.document?.hidden||!c.state.nextShotPrecompute||!c.state.paused||c.game?.pending||typeof G.Worker!=='function'||Number(G.navigator?.hardwareConcurrency||2)<2)return;
   // Parse the bundled planner and initialize WASM while the player is aiming,
   // never spend that startup work on the strike/playback path when avoidable.
   const worker=new G.NextShotOptimizer(()=>{},()=>{},()=>{if(this.warmed===worker)this.warmed=null;worker.dispose();});
@@ -41,7 +41,7 @@ class NextShotService{
   this.cancel('aim-forecast');const generation=this.generation;
   this.aimTimer=setTimeout(()=>{
    this.aimTimer=null;
-   if(generation!==this.generation||!c.state.paused||c.windup||G.document?.hidden||c.forecastReceipt!==receipt)return;
+   if(generation!==this.generation||c.state.routeStatus==='searching'||!c.state.paused||c.windup||G.document?.hidden||c.forecastReceipt!==receipt)return;
    const before={world:c.lab.snapshot({trails:false}),game:c.game.snapshot(),selectedId:c.state.selectedId};
    if(!this.forecastMatches(before,receipt))return;
    this.start(before,receipt);const job=this.job;if(!job)return;
