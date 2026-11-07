@@ -11,7 +11,7 @@ const snapshot=page=>page.evaluate(()=>{const c=globalThis.cueLab,s=c.lastSnapsh
  stable:{settings:s.settings,routeOptions:s.routeOptions,selectedId:s.selectedId,shots:c.lab.shots,positions:c.lab.objects.map(o=>({id:o.id,pos:{...o.body.translation()}})),gameMode:s.gameMode},
  status:s.routeStatus,error:s.routeError,applied:s.routeApplied,activeStroke:s.activeStroke,requestGoal:c.optimizer?.latest?.options?.searchGoal,
  result:r?{count:r.results?.length||0,ids:(r.results||[]).map(x=>x.id),partial:r.partial,continuable:r.continuable,terminationReason:r.terminationReason,found:r.found}:null,
- activePanel:s.activePanel,rate:s.rate,paths:s.paths,fineAim:s.fineAim};});
+ optimizer:{version:c.optimizer?.version,active:!!c.optimizer?.latest,workers:c.optimizer?.workers?.length,busy:c.optimizer?.busy?.size},notice:s.notice,activePanel:s.activePanel,rate:s.rate,paths:s.paths,fineAim:s.fineAim};});
 (async()=>{let browser;try{
  browser=await chromium.launch({channel:'chrome',headless:true,chromiumSandbox:true});report.browserVersion=browser.version();
  for(const arm of [{name:'baseline65536',port:8793},{name:'candidate8192',port:8794}])for(const viewport of [{width:1280,height:850},{width:390,height:844}]){
@@ -21,7 +21,27 @@ const snapshot=page=>page.evaluate(()=>{const c=globalThis.cueLab,s=c.lastSnapsh
   const step=async(name,fn)=>{const start=Date.now();try{const details=await fn();r.steps.push({name,ok:true,ms:Date.now()-start,details});return true;}catch(e){const failure={name,error:String(e)};r.failures.push(failure);r.steps.push({...failure,ok:false,ms:Date.now()-start});return false;}};
   const shot=async(name)=>{const file=`${id}-${name}.png`;await page.screenshot({path:path.join(out,file),fullPage:true});r.screenshots.push(file);};
   const tab=async(name)=>{await page.locator('#tab-'+name).click();assert.equal(await page.locator('#tab-'+name).getAttribute('aria-selected'),'true');};
-  const layout=async()=>{const data=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,canvas:(()=>{const x=document.querySelector('#scene'),b=x.getBoundingClientRect();return {width:b.width,height:b.height,pixels:[x.width,x.height]};})(),tabs:[...document.querySelectorAll('[role=tab]')].map(x=>{const b=x.getBoundingClientRect();return {id:x.id,left:b.left,right:b.right,width:b.width};})}));assert(data.scrollWidth<=data.width+2,JSON.stringify(data));assert(data.canvas.width>100&&data.canvas.height>100,JSON.stringify(data));for(const b of data.tabs){assert(b.width>20&&b.left>=-2&&b.right<=data.width+2,JSON.stringify(b));}return data;};
+  const settleLayout=async()=>{
+   const evidence=await page.evaluate(async()=>{
+    const start=performance.now(),samples=[];let last=null,stable=0;
+    const bounds=()=>[...document.querySelectorAll('[role=tab]')].map(x=>{const b=x.getBoundingClientRect();return {id:x.id,left:b.left,right:b.right,top:b.top,width:b.width,height:b.height};});
+    const animations=()=>{const sheet=document.querySelector('[data-slot="sheet-content"]');return sheet?sheet.getAnimations({subtree:true}):[];};
+    const describe=a=>({type:a.constructor.name,playState:a.playState,currentTime:a.currentTime,property:a.transitionProperty||null,target:a.effect?.target?.getAttribute?.('data-slot')||a.effect?.target?.tagName});
+    let timedOut=false;const initial=animations(),initialAnimations=initial.map(describe);
+    await Promise.race([Promise.all(initial.map(a=>a.finished.catch(()=>null))),new Promise(resolve=>setTimeout(()=>{timedOut=true;resolve();},2500))]);
+    while(performance.now()-start<3000){
+     const active=animations().filter(a=>a.playState==='running'||a.playState==='pending'),current=bounds();
+     const unchanged=last&&last.length===current.length&&current.every((b,i)=>b.id===last[i].id&&['left','right','top','width','height'].every(k=>Math.abs(b[k]-last[i][k])<.01));
+     stable=unchanged&&!active.length?stable+1:0;
+     samples.push({elapsedMs:performance.now()-start,bounds:current,animations:active.map(describe)});last=current;
+     if(stable>=3)return {ok:true,timedOut,initialAnimations,samples};
+     await new Promise(resolve=>setTimeout(resolve,32));
+    }
+    return {ok:false,timedOut,initialAnimations,samples};
+   });
+   (r.layoutSettlements??=[]).push(evidence);assert(evidence.ok,'Drawer animation/bounds did not settle within 3 seconds: '+JSON.stringify(evidence));
+  };
+  const layout=async()=>{await settleLayout();const data=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,canvas:(()=>{const x=document.querySelector('#scene'),b=x.getBoundingClientRect();return {width:b.width,height:b.height,pixels:[x.width,x.height]};})(),tabs:[...document.querySelectorAll('[role=tab]')].map(x=>{const b=x.getBoundingClientRect();return {id:x.id,left:b.left,right:b.right,width:b.width};})}));assert(data.scrollWidth<=data.width+2,JSON.stringify(data));assert(data.canvas.width>100&&data.canvas.height>100,JSON.stringify(data));for(const b of data.tabs){assert(b.width>20&&b.left>=-2&&b.right<=data.width+2,JSON.stringify(b));}return data;};
   try{
    const ready=await step('load actual app and Korean font',async()=>{await page.goto(`http://127.0.0.1:${arm.port}/`,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>globalThis.cueLab?.state.ready===true,{},{timeout:30000});await page.getByRole('heading',{name:'당구 연습',exact:true}).waitFor();const font=await page.evaluate(async()=>{await document.fonts.load('16px "Pretendard Variable"','당구 연습');await document.fonts.ready;return {loaded:[...document.fonts].some(f=>f.family.includes('Pretendard')&&f.status==='loaded'),check:document.fonts.check('16px "Pretendard Variable"','당구 연습'),body:getComputedStyle(document.body).fontFamily};});r.font=font;assert(font.loaded&&font.check,'Pretendard Variable not actually loaded');});
    // Font failure remains recorded; proceed with functional evidence where possible.
@@ -59,17 +79,29 @@ const snapshot=page=>page.evaluate(()=>{const c=globalThis.cueLab,s=c.lastSnapsh
     assert.equal(applied.stable.shots,previous.stable.shots,'Apply must not strike');assert.equal(applied.activeStroke,false);assert.deepEqual(applied.stable.positions,previous.stable.positions,'Apply moved balls');assert.deepEqual(applied.stable.routeOptions,previous.stable.routeOptions,'Apply changed search options');
     await shot('applied');
    });
-   await step('manual angle edit invalidates retained candidate controls',async()=>{
-    const previous=await snapshot(page);assert(previous.result?.count>0,'No retained route to invalidate');await tab('shot');
+   await step('manual angle edit and actual Resume stamp refusal without computation',async()=>{
+    const previous=await snapshot(page);assert(previous.result?.count>0,'No retained route available');await tab('shot');
     const angle=page.locator('#angle'),target=previous.stable.settings.angle>=179?0:Number((previous.stable.settings.angle+1).toFixed(2));await angle.fill(String(target));await angle.press('Enter');
-    const stale=await snapshot(page);r.afterManualEdit=stale;assert.equal(stale.stable.settings.angle,target);assert.equal(stale.status,'stale');assert.equal(stale.result.continuable,false);assert.equal(stale.applied,null);assert.equal(stale.stable.shots,previous.stable.shots);assert.deepEqual(stale.stable.positions,previous.stable.positions);
-    await tab('routes');assert.equal(await page.locator('#resumeSearch').count(),0);const buttons=page.locator('[id^="applyRoute"]');assert(await buttons.count()>0);for(let i=0;i<await buttons.count();i++)assert(await buttons.nth(i).isDisabled(),'Stale candidate Apply must be disabled');await shot('stale-after-edit');
+    const edited=await snapshot(page);r.afterManualEdit=edited;assert.equal(edited.stable.settings.angle,target);assert.equal(edited.stable.shots,previous.stable.shots);assert.equal(edited.activeStroke,false);assert.deepEqual(edited.stable.positions,previous.stable.positions);
+    await tab('routes');const beforeResume=await snapshot(page);assert.equal(beforeResume.status,'done');assert.equal(beforeResume.optimizer.active,false);assert.equal(beforeResume.optimizer.workers,0);assert.equal(beforeResume.optimizer.busy,0);
+    await page.locator('#resumeSearch').click();await page.getByText('배치나 조건이 바뀌었습니다. 새로 계산하세요.',{exact:true}).waitFor();
+    r.refusedResumeSamples=[];
+    for(let i=0;i<4;i++){
+     const refused=await snapshot(page);r.refusedResumeSamples.push(refused);assert.equal(refused.status,'done');assert.deepEqual(refused.optimizer,beforeResume.optimizer,'Resume must not increment optimizer version or start work');assert.deepEqual(refused.stable,beforeResume.stable);assert.equal(refused.activeStroke,false);assert.equal(await page.locator('#cancelRoute').count(),0);if(i<3)await page.waitForTimeout(100);
+    }
+    await shot('resume-refused-after-edit');
+   });
+   await step('actual route option invalidates retained candidate controls',async()=>{
+    await tab('routes');const previous=await snapshot(page);assert.equal(previous.stable.routeOptions.order,'either');assert(previous.result?.count>0);
+    await page.locator('#routeDetails').click();await page.getByRole('combobox',{name:'목적구 순서',exact:true}).click();await page.getByRole('option',{name:'A → B 고정',exact:true}).click();
+    const stale=await snapshot(page);r.afterRouteOptionEdit=stale;assert.equal(stale.stable.routeOptions.order,'fixed');assert.equal(stale.status,'stale');assert.equal(stale.result.continuable,false);assert.equal(stale.applied,null);assert.equal(stale.stable.shots,previous.stable.shots);assert.equal(stale.activeStroke,false);assert.deepEqual(stale.stable.positions,previous.stable.positions);assert.deepEqual(stale.stable.settings,previous.stable.settings);
+    assert.equal(await page.locator('#resumeSearch').count(),0);const buttons=page.locator('[id^="applyRoute"]');assert(await buttons.count()>0);for(let i=0;i<await buttons.count();i++)assert(await buttons.nth(i).isDisabled(),'Stale candidate Apply must be disabled');await shot('stale-after-route-option');
    });
    await step('real settings persist across all tabs and drawer',async()=>{
-    const stable=(await snapshot(page)).stable;await tab('settings');const paths=page.locator('#paths'),old=await paths.getAttribute('aria-checked');await paths.click();const changed=await paths.getAttribute('aria-checked');assert.notEqual(changed,old);
-    await page.locator('#speed').click();await page.getByRole('option',{name:'0.5×',exact:true}).click();assert.equal((await snapshot(page)).rate,.5);
-    await tab('shot');await page.locator('#fineAim').click();const fine=await page.locator('#fineAim').getAttribute('aria-checked');await tab('routes');await tab('shot');assert.equal(await page.locator('#fineAim').getAttribute('aria-checked'),fine);await tab('settings');assert.equal(await page.locator('#paths').getAttribute('aria-checked'),changed);assert.equal((await snapshot(page)).rate,.5);assert.deepEqual((await snapshot(page)).stable,stable,'Tab/settings reset world or shot settings');
-    await layout();await shot('settings');await page.locator('button[aria-label="설정 패널 닫기"]:not(#sidebarTrigger)').click();await page.locator('#sidebarTrigger').click();await page.locator('#settingsPanel').waitFor();assert.equal(await page.locator('#paths').getAttribute('aria-checked'),changed);await tab('routes');await layout();await shot('final-routes');
+    const stable=(await snapshot(page)).stable;await tab('settings');const paths=page.getByRole('checkbox',{name:'실제 이동 궤적',exact:true}),old=await paths.getAttribute('aria-checked');await paths.click();const changed=await paths.getAttribute('aria-checked');assert.notEqual(changed,old);
+    await page.getByRole('combobox',{name:'재생 속도',exact:true}).click();await page.getByRole('option',{name:'0.5×',exact:true}).click();assert.equal((await snapshot(page)).rate,.5);
+    await tab('shot');await page.getByRole('checkbox',{name:'미세 조준',exact:true}).click();const fine=await page.getByRole('checkbox',{name:'미세 조준',exact:true}).getAttribute('aria-checked');await tab('routes');await tab('shot');assert.equal(await page.getByRole('checkbox',{name:'미세 조준',exact:true}).getAttribute('aria-checked'),fine);await tab('settings');assert.equal(await page.getByRole('checkbox',{name:'실제 이동 궤적',exact:true}).getAttribute('aria-checked'),changed);assert.equal((await snapshot(page)).rate,.5);assert.deepEqual((await snapshot(page)).stable,stable,'Tab/settings reset world or shot settings');
+    await layout();await shot('settings');await page.locator('button[aria-label="설정 패널 닫기"]:not(#sidebarTrigger)').click();await page.locator('#sidebarTrigger').click();await page.locator('#settingsPanel').waitFor();await settleLayout();assert.equal(await page.getByRole('checkbox',{name:'실제 이동 궤적',exact:true}).getAttribute('aria-checked'),changed);assert.equal((await snapshot(page)).rate,.5);assert.deepEqual((await snapshot(page)).stable,stable,'Drawer reopen reset world or settings');await tab('shot');assert.equal(await page.getByRole('checkbox',{name:'미세 조준',exact:true}).getAttribute('aria-checked'),fine);await tab('routes');await layout();await shot('final-routes');
    });
   }catch(e){r.failures.push({name:'case setup or cleanup',error:String(e)});}
   finally{await step('final diagnostics',async()=>{r.final=await snapshot(page);await shot('final');assert.equal(r.pageErrors.length,0,JSON.stringify(r.pageErrors));});await context.close();r.ok=r.failures.length===0;fs.writeFileSync(path.join(out,id+'.json'),JSON.stringify(r,null,2));report.failures.push(...r.failures.map(f=>({case:id,...f})));fs.writeFileSync(path.join(out,'summary.json'),JSON.stringify(report,null,2));}

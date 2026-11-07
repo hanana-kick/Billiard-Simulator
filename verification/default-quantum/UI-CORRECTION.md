@@ -1,0 +1,3 @@
+UI-only follow-up; original run42326293026 and all96 comparison measurements are immutable.
+No runtime changes. Four actual Chrome cases,65536/8192 ×1280/390width.
+Correct hidden native input selector to accessible role+name. Verify manual settings edit changed value/no strike, actual Resume refusal through unchanged request-stamp guard; separately change route option to test true invalidated stale controls. Wait boundedly for actual drawer animations to finish and stable bounds acrossframes before retaining original clipping thresholds; log animation/geometry evidence. Strict shell pipefail and summary.ok check prevent tee masking exit1. No benchmark rerun. First UI failures remain evidence, not retroactively passed.

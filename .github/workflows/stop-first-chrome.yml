@@ -1,4 +1,4 @@
-name: Default first-route quantum comparison (no deployment)
+name: Default first-route UI correction (no deployment)
 on:
   push:
     branches: ['validation/stop-first-resume-check-20261106']
@@ -10,9 +10,9 @@ jobs:
       fail-fast: false
       max-parallel: 6
       matrix:
-        fixture: [default3, default4, moved3, moved4, heldout3, heldout4]
+        fixture: [default3]
     runs-on: ubuntu-24.04
-    timeout-minutes: 65
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -37,23 +37,12 @@ jobs:
           for arm in fixed65536 quantum8192; do
             (cd "$RUNNER_TEMP/$arm" && npm run prepare:engine && npm run build)
           done
-      - name: Repeated sandboxed Chrome comparison and full-rest replays
-        env:
-          FIXTURE: ${{ matrix.fixture }}
+      - name: Actual desktop and narrow UI smoke
+        shell: bash
         run: |
           set -euo pipefail
           google-chrome --version | tee chrome-version.log
           lscpu > host-cpu.log
-          HOST=127.0.0.1 PORT=8793 node "$RUNNER_TEMP/fixed65536/server.cjs" > old-server.log 2>&1 &
-          OLD_PID=$!
-          HOST=127.0.0.1 PORT=8794 node "$RUNNER_TEMP/quantum8192/server.cjs" > fixed-server.log 2>&1 &
-          FIXED_PID=$!
-          trap 'kill "$OLD_PID" "$FIXED_PID" || true' EXIT
-          sleep 2
-          node verification/default-quantum/compare.cjs | tee comparison.log
-      - name: Actual desktop and narrow UI smoke
-        if: always() && matrix.fixture == 'default3'
-        run: |
           HOST=127.0.0.1 PORT=8793 node "$RUNNER_TEMP/fixed65536/server.cjs" > ui-old-server.log 2>&1 &
           A=$!
           HOST=127.0.0.1 PORT=8794 node "$RUNNER_TEMP/quantum8192/server.cjs" > ui-new-server.log 2>&1 &
@@ -61,10 +50,11 @@ jobs:
           trap 'kill "$A" "$B" || true' EXIT
           sleep 2
           node verification/default-quantum/ui.cjs | tee ui.log
+          node -e "if(!require('./ui-results/summary.json').ok)process.exit(1)"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: quantum8192-${{ matrix.fixture }}
+          name: corrected-ui-${{ matrix.fixture }}
           path: |
             default-quantum-results/
             ui-results/
