@@ -23,21 +23,43 @@ const snapshot=page=>page.evaluate(()=>{const c=globalThis.cueLab,s=c.lastSnapsh
   const tab=async(name)=>{await page.locator('#tab-'+name).click();assert.equal(await page.locator('#tab-'+name).getAttribute('aria-selected'),'true');};
   const settleLayout=async()=>{
    const evidence=await page.evaluate(async()=>{
-    const start=performance.now(),samples=[];let last=null,stable=0;
-    const bounds=()=>[...document.querySelectorAll('[role=tab]')].map(x=>{const b=x.getBoundingClientRect();return {id:x.id,left:b.left,right:b.right,top:b.top,width:b.width,height:b.height};});
-    const animations=()=>{const sheet=document.querySelector('[data-slot="sheet-content"]');return sheet?sheet.getAnimations({subtree:true}):[];};
-    const describe=a=>({type:a.constructor.name,playState:a.playState,currentTime:a.currentTime,property:a.transitionProperty||null,target:a.effect?.target?.getAttribute?.('data-slot')||a.effect?.target?.tagName});
-    let timedOut=false;const initial=animations(),initialAnimations=initial.map(describe);
-    await Promise.race([Promise.all(initial.map(a=>a.finished.catch(()=>null))),new Promise(resolve=>setTimeout(()=>{timedOut=true;resolve();},2500))]);
-    while(performance.now()-start<3000){
-     const active=animations().filter(a=>a.playState==='running'||a.playState==='pending'),current=bounds();
-     const unchanged=last&&last.length===current.length&&current.every((b,i)=>b.id===last[i].id&&['left','right','top','width','height'].every(k=>Math.abs(b[k]-last[i][k])<.01));
-     stable=unchanged&&!active.length?stable+1:0;
-     samples.push({elapsedMs:performance.now()-start,bounds:current,animations:active.map(describe)});last=current;
-     if(stable>=3)return {ok:true,timedOut,initialAnimations,samples};
-     await new Promise(resolve=>setTimeout(resolve,32));
+    const start=performance.now(),budget=3000,samples=[],animationWaits=[],mobile=matchMedia('(max-width: 767px)').matches;
+    let last=null,stable=0;
+    const result=(ok,reason)=>({ok,reason,mobile,budgetMs:budget,elapsedMs:performance.now()-start,samples,animationWaits});
+    const bounded=promise=>new Promise(resolve=>{const remaining=budget-(performance.now()-start);if(remaining<=0)return resolve(false);const timer=setTimeout(()=>resolve(false),remaining);promise.then(()=>{clearTimeout(timer);resolve(true);},()=>{clearTimeout(timer);resolve(true);});});
+    const frame=()=>bounded(new Promise(resolve=>requestAnimationFrame(resolve)));
+    const identity=el=>el?{tag:el.tagName,id:el.id,attributes:Object.fromEntries([...el.attributes].map(a=>[a.name,a.value]))}:null;
+    const describe=a=>({type:a.constructor.name,playState:a.playState,pending:a.pending,currentTime:a.currentTime,property:a.transitionProperty||null,target:identity(a.effect?.target)});
+    const zeroTranslate=value=>value==='none'||value.trim().split(/\s+/).every(x=>/^[-+]?0(?:\.0+)?(?:px|%)?$/.test(x));
+    const zeroTransform=value=>{try{return value==='none'||new DOMMatrixReadOnly(value).isIdentity;}catch{return false;}};
+    while(performance.now()-start<budget){
+     // Require the wrapper's actual DOM slot. A missing mobile popup is not zero animations.
+     const matches=[...document.querySelectorAll('[data-sidebar="sidebar"][data-mobile="true"]')];
+     const tabs=[...document.querySelectorAll('[role=tab]')],popup=mobile?matches[0]:null;
+     if(mobile&&matches.length!==1){samples.push({elapsedMs:performance.now()-start,matchCount:matches.length,matches:matches.map(identity)});return result(false,'Expected exactly one actual mobile sidebar popup');}
+     if(tabs.length!==3){samples.push({elapsedMs:performance.now()-start,tabCount:tabs.length});return result(false,'Expected three inspector tabs');}
+     const style=popup?getComputedStyle(popup):null;
+     const computed=style?{translate:style.translate,transform:style.transform,opacity:style.opacity,visibility:style.visibility,display:style.display,transitionProperty:style.transitionProperty,transitionDuration:style.transitionDuration,transitionDelay:style.transitionDelay}:null;
+     const openState={triggerExpanded:document.querySelector('#sidebarTrigger')?.getAttribute('aria-expanded'),dataOpen:popup?.hasAttribute('data-open')??null,dataClosed:popup?.hasAttribute('data-closed')??null,starting:popup?.hasAttribute('data-starting-style')??null,ending:popup?.hasAttribute('data-ending-style')??null,dataState:popup?.getAttribute('data-state')??null};
+     // Include animations on the popup AND any ancestor affecting tab geometry.
+     const relevant=document.getAnimations().filter(a=>{const target=a.effect?.target;return target instanceof Element&&(tabs.some(t=>target===t||target.contains(t))||(popup&&(target===popup||popup.contains(target))));});
+     const active=relevant.filter(a=>a.pending||a.playState==='running');
+     const bounds=tabs.map(x=>{const b=x.getBoundingClientRect();return {id:x.id,left:b.left,right:b.right,top:b.top,width:b.width,height:b.height};});
+     const openingComplete=openState.triggerExpanded==='true'&&(!mobile||(!openState.starting&&!openState.ending&&!openState.dataClosed&&openState.dataState!=='closed'&&zeroTranslate(computed.translate)&&zeroTransform(computed.transform)&&Number(computed.opacity)===1&&computed.visibility==='visible'&&computed.display!=='none'));
+     const unchanged=last&&last.length===bounds.length&&bounds.every((b,i)=>b.id===last[i].id&&['left','right','top','width','height'].every(k=>Math.abs(b[k]-last[i][k])<.01));
+     stable=openingComplete&&!active.length&&unchanged?stable+1:0;
+     samples.push({elapsedMs:performance.now()-start,matchCount:matches.length,popup:identity(popup),openState,computed,bounds,animations:relevant.map(describe),openingComplete,stableFrames:stable});
+     last=openingComplete&&!active.length?bounds:null;
+     if(stable>=3)return result(true,'Opening complete and bounds stable across four rendered frames');
+     if(active.length){
+      const record={atMs:performance.now()-start,animations:active.map(describe),finished:false,cancellations:0};animationWaits.push(record);
+      const completed=await bounded(Promise.all(active.map(a=>a.finished.catch(()=>{record.cancellations++;}))));record.finished=completed;record.completedAtMs=performance.now()-start;
+      if(!completed)return result(false,'Timed out awaiting actual animation finished promises');
+      last=null;stable=0;
+     }
+     if(!await frame())return result(false,'Timed out awaiting rendered frame');
     }
-    return {ok:false,timedOut,initialAnimations,samples};
+    return result(false,'Opening state or geometry failed to settle within 3 seconds');
    });
    (r.layoutSettlements??=[]).push(evidence);assert(evidence.ok,'Drawer animation/bounds did not settle within 3 seconds: '+JSON.stringify(evidence));
   };
