@@ -1,4 +1,4 @@
-name: Live production repeated Chrome qualification
+name: Live production corrected Chrome qualification
 on:
   push:
     branches: ['validation/stop-first-resume-check-20261106']
@@ -33,7 +33,7 @@ jobs:
           OUT_DIR: live-production-results
         run: |
           set -o pipefail
-          node verification/live-production/live-chrome.cjs 2>&1 | tee live-production.log
+          node verification/live-production/live-chrome-corrected.cjs 2>&1 | tee live-production.log
       - name: Preserve every attempt
         if: always()
         uses: actions/upload-artifact@v4
