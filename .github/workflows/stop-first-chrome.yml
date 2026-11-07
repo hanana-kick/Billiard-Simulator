@@ -1,15 +1,15 @@
-name: Live production corrected Chrome qualification
+name: Promotion stop paired Chrome qualification
 on:
   push:
     branches: ['validation/stop-first-resume-check-20261106']
-    paths: ['.github/workflows/stop-first-chrome.yml', 'verification/live-production/**']
+    paths: ['.github/workflows/stop-first-chrome.yml', 'verification/promotion-stop/**']
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  live:
+  promotion:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 70
     strategy:
       fail-fast: false
       matrix:
@@ -23,25 +23,39 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --no-audit --no-fund
-      - run: google-chrome --version
-      - name: Record runner metadata
-        run: node -e 'const o=require("node:os"); console.log(JSON.stringify({node:process.version,platform:o.platform(),release:o.release(),cpus:o.cpus().map(c=>({model:c.model,speed:c.speed})),memory:o.totalmem()},null,2))' > runner.json
-      - name: Read-only live Chrome qualification, four fixed cases
+      - name: Build separately pinned source arms
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/promotion-baseline /tmp/promotion-candidate
+          for arm in baseline candidate; do
+            tar --exclude=.git --exclude=node_modules -cf - . | tar -xf - -C /tmp/promotion-$arm
+            ln -s "$PWD/node_modules" /tmp/promotion-$arm/node_modules
+          done
+          cp verification/promotion-stop/baseline-optimizer-service.js /tmp/promotion-baseline/src/optimizer-service.js
+          cp verification/promotion-stop/candidate-optimizer-service.js /tmp/promotion-candidate/src/optimizer-service.js
+          node verification/promotion-stop/check-inputs.cjs /tmp/promotion-baseline /tmp/promotion-candidate
+          (cd /tmp/promotion-baseline && npm run prepare:engine && node build.cjs --canonical-controller-assets)
+          (cd /tmp/promotion-candidate && npm run prepare:engine && node build.cjs --canonical-controller-assets)
+          (cd /tmp/promotion-baseline && PORT=8793 node server.cjs > "$GITHUB_WORKSPACE/baseline-server.log" 2>&1 &)
+          (cd /tmp/promotion-candidate && PORT=8794 node server.cjs > "$GITHUB_WORKSPACE/candidate-server.log" 2>&1 &)
+      - name: Record host
+        run: |
+          google-chrome --version
+          node -e 'const o=require("node:os"); console.log(JSON.stringify({cpus:o.cpus(),memory:o.totalmem(),release:o.release(),node:process.version},null,2))' > runner.json
+      - name: Eight fixed paired cases
         env:
           FIXTURE: ${{ matrix.fixture }}
-          REQUIRE_EXPECTED_ASSETS: '1'
-          OUT_DIR: live-production-results
+          OUT_DIR: promotion-stop-results
         run: |
           set -o pipefail
-          node verification/live-production/live-chrome-corrected.cjs 2>&1 | tee live-production.log
-      - name: Preserve every attempt
+          node verification/promotion-stop/chrome.cjs 2>&1 | tee promotion-stop.log
+      - uses: actions/upload-artifact@v4
         if: always()
-        uses: actions/upload-artifact@v4
         with:
-          name: live-production-${{ matrix.fixture }}
+          name: promotion-stop-${{ matrix.fixture }}
           path: |
-            live-production-results/
-            live-production.log
+            promotion-stop-results/
+            promotion-stop.log
             runner.json
-            verification/live-production/expected-assets.json
+            *-server.log
           retention-days: 14
