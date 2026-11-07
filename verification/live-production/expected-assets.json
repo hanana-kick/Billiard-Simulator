@@ -1,0 +1,41 @@
+{
+  "embeddedUIHash": "0e1ab6727d09d8a696345d2d6d817989fd9c4974325c58d6e8d6ff160021b9ce",
+  "requiredPaths": [
+    "/"
+  ],
+  "provenance": {
+    "source": "Already-downloaded Pages build compiled-app artifact, supplied by caller; no local rebuild",
+    "commit": "277b3b7174e54b2bef16e09a9b7bfc0f5700b36d",
+    "runId": "42354360716",
+    "artifactId": "13568100153",
+    "archiveSHA256": "240fbda3eff54d9d0485c642e13f2ecd1330f891a2164f62b17af1348049e4f2"
+  },
+  "files": {
+    "/sitemap.xml": "b92bf177736e352900a40991888b1995c55129827ae3c9d8c755ed8ddf5ee1d3",
+    "/robots.txt": "5dc804cd511f44f544044715a88dfe56d946579d8c5b6e16e8e68361920cc235",
+    "/llms.txt": "c536d9c0ebff9532b78c9a64ee553eec102b5685df948f289c366ced9b2211dd",
+    "/index.html": "02544aaeef762e6265b6a69dd5a9370cf4dc104cd7145f218aa87c1d168f8b57",
+    "/icon.svg": "322b894fedf0c88aec2bc8b6977a8072c230cf4d1d57cad6dd0a774c5c2970e5",
+    "/guide.html": "c94d86353a1471cb852ae12d6bd7635f151a9449ffde6501ca1f0184703ceeb9",
+    "/CNAME": "bdd9120e88fb68cb087025aa763f2e9af8a1041d05bd41c025213011f510c366",
+    "/canonical-controller-assets/wasm-gpu-compute-worker.mjs": "706b244ef8897367b8d1cee539c1fbe860210159400bd4a0d614a2e59d69b20c",
+    "/canonical-controller-assets/manifest.json": "8443dd33b5b6ef8e6367960c8434a767a4d90be9b6887470a6be877847f97cb0",
+    "/canonical-controller-assets/canonical-controller.mjs": "d524ad7595b3915fa42b02432b42e6921f2d2d7c2f2fd9a169295acf8930b693",
+    "/canonical-controller-assets/build-receipt.json": "446da2a8448e6533f08d451c5355fa74fe5fb17ffbcb5bde455c3abca2e388bf",
+    "/canonical-controller-assets/wasm-gpu-programs/wasm-gpu-runtime.wasm": "396145c6ff702e8e28b9ca9acb6aa489322e486a6c18bae9f080a284e727806e",
+    "/canonical-controller-assets/wasm-gpu-programs/manifest.json": "93f9bcc033060761a0a5dd445c4c8bf43eeca4c5088878d83e187c40fe628f02",
+    "/canonical-controller-assets/wasm-gpu-programs/input-world-n3.json": "6fffc8380a609253a1bb8452062c3c6dfc2a558247ef9480f5828a96e31643eb",
+    "/canonical-controller-assets/wasm-gpu-programs/input-world-n1.json": "2edb7405c5b976b07a0dbd7815656505868f51814a700593bbba78a7af2786d2",
+    "/canonical-controller-assets/wasm-gpu-programs/input-selected-n1.json": "441581b8592e172137434bd5a9952e41dc6f4acbbf67994e1dc07dc3efc7bcc6",
+    "/canonical-controller-assets/wasm-gpu-programs/input-raw-n3.json": "e4f7ad612776f2a82d36a84e2901ce6c59da35b635f5804762b9bed680debe24",
+    "/canonical-controller-assets/wasm-gpu-programs/input-raw-n1.json": "282a849d7767f1c86c8db74dbbe937da961457f3f6bd13c7f934722df5d45e88",
+    "/canonical-controller-assets/wasm-gpu-programs/compiled-selected-N1.json": "d66442e8ade1f7bd242e1b82f217bb8ea487f3f8aabc9b8d41aecd3f16623de3",
+    "/canonical-controller-assets/wasm-gpu-programs/compiled-selected-N1.bin": "1a25d028c347bce2b081fa717b028ff102f9f2c26f7a24c44918065f7d609bec",
+    "/canonical-controller-assets/wasm-gpu-programs/compiled-search-N3.json": "def5c182e35716bb364c3a7cf8960da723dc01b54cf883b4363b8c2f645b01b8",
+    "/canonical-controller-assets/wasm-gpu-programs/compiled-search-N3.bin": "80c7e07360aefc859997162a3759456176583315aac1bd84857a0ed893fb55f1",
+    "/canonical-controller-assets/wasm-gpu-programs/compiled-search-N1.json": "85f588fcf92af2562e20b9ef07be3a6e5015c9011d94aefe91c2ac6f1203bfeb",
+    "/canonical-controller-assets/wasm-gpu-programs/compiled-search-N1.bin": "5173c9b81b22d026351eb73840e2e84a128e7b8659cd272299a70e31163f080b",
+    "/canonical-controller-assets/wasm-gpu-programs/compiled-resource-receipt.json": "e82ef4b8c72cfe4a22581f45008ab9f0029b59554fbf777a3af1ccb2fe2d9437",
+    "/": "02544aaeef762e6265b6a69dd5a9370cf4dc104cd7145f218aa87c1d168f8b57"
+  }
+}

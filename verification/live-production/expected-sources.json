@@ -1,0 +1,20 @@
+{
+  "provenance": "Validated runtime sources from b7a3718d; four engine patch files plus unchanged physics/forecast; UI route-planner source hash provenance separately required",
+  "raw": {
+    "controller": "6895c07a27c2e8de6d5b24a975e0771e8666a4109ea1d53799069ff6c4b24885",
+    "next-shot-service": "6298a28cd5f98928c5951c86bb1b43645a1c7c2da277cf26134a214fd61a77a6",
+    "inverse-planner": "10068db004d310044be79927534698567c25faf7a35b8d9bf77c615411432160",
+    "optimizer-service": "ed09902e8cc9aa0e05e934b4f181d340c24be56ca9cee9ab8e53913a3ef8e275",
+    "forecast": "94f00f7d31ee336cfbf184fe15e95251d4ed623a7972275800f6c0a01381c2e9",
+    "physics": "a36f5297bd96901cc82e041e1879ac5e623384c0575963a50032d27f1e460c1d"
+  },
+  "embedded": {
+    "controller": "0cbdd39b9a6ab98b3bcd9bd255b1d4ddfe3ac97b731a0f6d267602e7434176b8",
+    "next-shot-service": "8fe0c9b87d9f1892512bb621def485cbebdcb9388cd6d9dba64263e8d8aa9f87",
+    "inverse-planner": "498966066eb31bb90ed8300f4b19ccb4fb515e4f838e761952f14bc65e21e37d",
+    "optimizer-service": "6cda9c4eaa325391526a9c17f9610cf4318a6dc152228de8195dca70e33291dc",
+    "forecast": "9b48ffcf08481c2f8b023a51c7b45145817e830718fbb2112781d0e5f06e64d5",
+    "physics": "07e19c233b226a3b686a229649a7da9b73f45d9fb16f3ade518fb134541faab8"
+  },
+  "routePlannerTSXRaw": "e4765d414c737d99c31775ab9ff7553c26fd876f026a228fd48493cf74975ac5"
+}

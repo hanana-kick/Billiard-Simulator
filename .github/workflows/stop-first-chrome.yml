@@ -1,15 +1,19 @@
-name: Production candidate full gates (no deployment)
+name: Live production repeated Chrome qualification
 on:
   push:
     branches: ['validation/stop-first-resume-check-20261106']
-    paths: ['.github/workflows/stop-first-chrome.yml', 'tests/inverse-planner.cjs', 'tests/cpu-event-window-integration.cjs']
+    paths: ['.github/workflows/stop-first-chrome.yml', 'verification/live-production/**']
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  preflight:
+  live:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        fixture: [default3, default4, moved3, moved4]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -19,23 +23,25 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --no-audit --no-fund
-      - run: npm run prepare:engine
-      - run: npm run typecheck
-      - run: node build.cjs --canonical-controller-assets
-      - name: Full physics search and feature regressions
-        run: npm test
-      - run: npm run test:resident:host
-      - run: npm run test:provenance
       - run: google-chrome --version
-      - name: Full real application desktop and mobile
-        run: CANONICAL_ASSETS_REQUIRED=1 npm run test:e2e
-      - name: Preserve all results
+      - name: Record runner metadata
+        run: node -e 'const o=require("node:os"); console.log(JSON.stringify({node:process.version,platform:o.platform(),release:o.release(),cpus:o.cpus().map(c=>({model:c.model,speed:c.speed})),memory:o.totalmem()},null,2))' > runner.json
+      - name: Read-only live Chrome qualification, four fixed cases
+        env:
+          FIXTURE: ${{ matrix.fixture }}
+          REQUIRE_EXPECTED_ASSETS: '1'
+          OUT_DIR: live-production-results
+        run: |
+          set -o pipefail
+          node verification/live-production/live-chrome.cjs 2>&1 | tee live-production.log
+      - name: Preserve every attempt
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: production-candidate-preflight
+          name: live-production-${{ matrix.fixture }}
           path: |
-            playwright-report/
-            test-results/
-            docs/ui-bundle-audit.json
+            live-production-results/
+            live-production.log
+            runner.json
+            verification/live-production/expected-assets.json
           retention-days: 14
