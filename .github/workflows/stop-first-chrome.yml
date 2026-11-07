@@ -1,4 +1,4 @@
-name: Resume background lifecycle Chrome diagnostic correction (no deployment)
+name: Queued Resume boundary and second-route Chrome qualification (no deployment)
 on:
   push:
     branches: ['validation/stop-first-resume-check-20261106']
@@ -10,7 +10,7 @@ jobs:
       fail-fast: false
       max-parallel: 4
       matrix:
-        condition: [queued, inflight, aim-timer, aim-active]
+        condition: [queued]
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
@@ -65,13 +65,13 @@ jobs:
             done
             test "$ready" = 1
           done
-          node verification/resume-background/chrome-diagnostic.cjs | tee resume-background.log
+          node verification/resume-background/chrome-queued.cjs | tee resume-background.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: resume-background-${{ matrix.condition }}
+          name: queued-boundary-${{ matrix.condition }}
           path: |
-            resume-background-results/
+            queued-boundary-results/
             resume-background.log
             build-source-hashes.log
             chrome-version.log
