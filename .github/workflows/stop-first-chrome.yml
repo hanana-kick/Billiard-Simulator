@@ -1,8 +1,8 @@
-name: Promotion CPU capability preflight only
+name: Promotion stop bounded Chrome qualification
 on:
   push:
     branches: ['validation/stop-first-resume-check-20261106']
-    paths: ['.github/workflows/stop-first-chrome.yml', 'verification/promotion-stop-corrected/cpu-preflight*', 'verification/promotion-stop-corrected/check-preflight.cjs', 'verification/promotion-stop-corrected/bounded-records*']
+    paths: ['.github/workflows/stop-first-chrome.yml', 'verification/promotion-stop-corrected/**']
   workflow_dispatch:
 permissions:
   contents: read
@@ -23,22 +23,22 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --no-audit --no-fund
-      - name: Browser-free recording and measurement contracts
+      - name: Browser-free recording, gate and comparison contracts
         run: |
           node verification/promotion-stop-corrected/bounded-records.test.cjs
           node verification/promotion-stop-corrected/cpu-preflight.test.cjs
-      - name: Verify preserved measurement source and Chrome
+          node verification/promotion-stop-corrected/comparison-contract.test.cjs
+      - name: Verify preserved sources and Chrome
         run: |
           echo 'fb377eac4bdf5c0410d520f4842eb7ecec69228bb31cc4da4645c5f8434ef251  verification/promotion-stop-corrected/measurement.cjs' | sha256sum --check
           echo 'ed09902e8cc9aa0e05e934b4f181d340c24be56ca9cee9ab8e53913a3ef8e275  verification/promotion-stop-corrected/baseline-optimizer-service.js' | sha256sum --check
           echo 'd2723c450e14aff9632112eef0d08ce6d65eb420f5f06f20ab600783da8e3d09  verification/promotion-stop-corrected/candidate-optimizer-service.js' | sha256sum --check
           google-chrome --version
-      - name: Bounded CPU capability preflight only
+      - name: Bounded CPU capability preflight
         env:
           OUT_DIR: cpu-preflight-results
-        run: |
-          timeout --signal=TERM --kill-after=5s 75s node verification/promotion-stop-corrected/cpu-preflight.cjs
-      - name: Require qualified and complete capability record
+        run: timeout --signal=TERM --kill-after=5s 75s node verification/promotion-stop-corrected/cpu-preflight.cjs
+      - name: Independently validate preflight evidence
         run: node verification/promotion-stop-corrected/check-preflight.cjs cpu-preflight-results/summary.json cpu-preflight-results/samples.ndjson
       - uses: actions/upload-artifact@v4
         if: always()
@@ -47,6 +47,62 @@ jobs:
           path: cpu-preflight-results/
           if-no-files-found: error
           retention-days: 14
-      # Intentionally no comparison job, application build, server, matrix,
-      # deployment, or main-branch trigger. A pass permits planning the next
-      # actual-app qualification only; it never asserts CPU savings.
+  comparison:
+    needs: preflight
+    if: needs.preflight.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    strategy:
+      fail-fast: false
+      matrix:
+        fixture: [default3, default4, moved3, moved4]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Fresh CPU preflight on this comparison runner
+        env:
+          OUT_DIR: cpu-preflight-results
+        run: timeout --signal=TERM --kill-after=5s 75s node verification/promotion-stop-corrected/cpu-preflight.cjs
+      - name: Require this runner's complete preflight before app comparison
+        run: node verification/promotion-stop-corrected/check-preflight.cjs cpu-preflight-results/summary.json cpu-preflight-results/samples.ndjson
+      - name: Build separately pinned source arms
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/promotion-baseline /tmp/promotion-candidate
+          for arm in baseline candidate; do
+            tar --exclude=.git --exclude=node_modules --exclude=cpu-preflight-results -cf - . | tar -xf - -C /tmp/promotion-$arm
+            ln -s "$PWD/node_modules" /tmp/promotion-$arm/node_modules
+          done
+          cp verification/promotion-stop-corrected/baseline-optimizer-service.js /tmp/promotion-baseline/src/optimizer-service.js
+          cp verification/promotion-stop-corrected/candidate-optimizer-service.js /tmp/promotion-candidate/src/optimizer-service.js
+          node verification/promotion-stop-corrected/check-inputs.cjs /tmp/promotion-baseline /tmp/promotion-candidate
+          (cd /tmp/promotion-baseline && npm run prepare:engine && node build.cjs --canonical-controller-assets)
+          (cd /tmp/promotion-candidate && npm run prepare:engine && node build.cjs --canonical-controller-assets)
+          (cd /tmp/promotion-baseline && PORT=8793 node server.cjs > "$GITHUB_WORKSPACE/baseline-server.log" 2>&1 &)
+          (cd /tmp/promotion-candidate && PORT=8794 node server.cjs > "$GITHUB_WORKSPACE/candidate-server.log" 2>&1 &)
+      - name: Eight fixed actual-app paired cases
+        env:
+          FIXTURE: ${{ matrix.fixture }}
+          OUT_DIR: promotion-stop-results
+          PREFLIGHT_SUMMARY: cpu-preflight-results/summary.json
+          PREFLIGHT_RAW: cpu-preflight-results/samples.ndjson
+        run: |
+          set -o pipefail
+          timeout --signal=TERM --kill-after=10s 65m node verification/promotion-stop-corrected/chrome.cjs 2>&1 | tee promotion-stop.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: promotion-bounded-${{ matrix.fixture }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            cpu-preflight-results/
+            promotion-stop-results/
+            promotion-stop.log
+            *-server.log
+          if-no-files-found: error
+          retention-days: 14
