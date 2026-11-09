@@ -29,12 +29,61 @@ function createCaptureStore(options = {}) {
  // bounded by the same 128 entries. Repeated content needs no repeated SHA-256.
  function intern(text){if(failure)return {$missing:true};try{let id=payloadIds.get(text);if(!id){id=sha256(text);const n=encoder.encode(text).length;if(payloads.size>=limits.maxPayloads||payloadBytes+n>limits.maxBytes)throw Error('capture payload limit');payloadBytes+=n;payloads.set(id,text);payloadIds.set(text,id);}return {$payload:id};}catch(e){fail(e.message);return {$missing:true};}}
  function payload(value){if(failure)return {$missing:true};try{const text=json(value);checkReferences(JSON.parse(text));return intern(text);}catch(e){fail(e.message);return {$missing:true};}}
- function pack(value){const text=json(value),cloned=JSON.parse(text);checkReferences(cloned);function walk(x){if(!x||typeof x!=='object'||Object.hasOwn(x,'$payload'))return x;if(Array.isArray(x))return x.map(walk);const out=Object.create(null);for(const[k,v]of Object.entries(x)){if(v&&typeof v==='object'&&Object.hasOwn(v,'$payload')){out[k]=v;continue;}const evidence=['request','source','snapshot','results','firstRows'].includes(k)&&v!==null;const candidate=evidence||Array.isArray(v),serialized=candidate?JSON.stringify(v):null,n=candidate?encoder.encode(serialized).length:0;const inlineLineage=k==='request'&&v&&typeof v==='object'&&!Array.isArray(v)&&Object.values(v).every(x=>x===null||typeof x!=='object')&&n<=256;out[k]=(evidence&&!inlineLineage||Array.isArray(v)&&n>=1024)?intern(serialized):walk(v);}return out;}return walk(cloned);}
+ function pack(value){const text=json(value),cloned=JSON.parse(text);checkReferences(cloned);function walk(x){if(!x||typeof x!=='object'||Object.hasOwn(x,'$payload'))return x;if(Array.isArray(x))return x.map(walk);const out=Object.create(null);for(const[k,v]of Object.entries(x)){if(k==='occurrences'&&x.type==='audit-observation-repeats'){out[k]=walk(v);continue;}if(v&&typeof v==='object'&&Object.hasOwn(v,'$payload')){out[k]=v;continue;}const evidence=['request','source','snapshot','results','firstRows'].includes(k)&&v!==null;const candidate=evidence||Array.isArray(v),serialized=candidate?JSON.stringify(v):null,n=candidate?encoder.encode(serialized).length:0;const inlineLineage=k==='request'&&v&&typeof v==='object'&&!Array.isArray(v)&&Object.values(v).every(x=>x===null||typeof x!=='object')&&n<=256;out[k]=(evidence&&!inlineLineage||Array.isArray(v)&&n>=1024)?intern(serialized):walk(v);}return out;}return walk(cloned);}
  function capture(value){if(failure)return null;try{if(count>=limits.maxEvents)throw Error('capture event count limit');const packed=pack(value);if(failure)throw Error(failure);const text=json(packed,limits.maxEventBytes),n=encoder.encode(text).length;if(bytes+n>limits.maxBytes)throw Error('capture event byte limit');bytes+=n;count++;return JSON.parse(text);}catch(e){return fail(e.message);}}
  function snapshot(value){try{return JSON.parse(json(value));}catch(e){fail(e.message);throw e;}}
  function importPayload(id,text){if(failure)return false;try{if(typeof text!=='string'||text.length>limits.maxValueBytes||encoder.encode(text).length>limits.maxValueBytes||sha256(text)!==id)throw Error('invalid imported payload');const value=JSON.parse(text);json(value);checkReferences(value);if(payloads.has(id))return false;if(payloads.size>=limits.maxPayloads||payloadBytes+encoder.encode(text).length>limits.maxBytes)throw Error('import payload limit');payloads.set(id,text);payloadIds.set(text,id);payloadBytes+=encoder.encode(text).length;return true;}catch(e){fail(e.message);return false;}}
 
- return {importPayload,limits,payloads,json,sha256,payload,pack,capture,snapshot,fail,status:()=>({complete:failure===null,failure,events:count,eventBytes:bytes,payloads:payloads.size,payloadBytes})};
+
+ // Only exact repetitions of declared observational summaries are eligible.
+ // Evaluator/forecast lifecycle, dispatch, handler, result, verified identity,
+ // outcome, error and unknown-shape events always remain individual records.
+ function observationKind(e){
+  if(!e||typeof e!=='object'||!Number.isFinite(e.at)||typeof e.scope!=='string'||e.scope.length>2048)return null;
+  const keys=Object.keys(e),allowed=xs=>keys.every(k=>xs.includes(k)),base=['at','scope','type','__promotionAudit'];
+  if(Object.hasOwn(e,'__promotionAudit')&&e.__promotionAudit!==true)return null;
+  if(e.type==='service-report-entry'||e.type==='service-report-return'){
+   const state=['serviceId','searchId','requestObjectId','background','suspended','version','goal','requestGoal','target','wave','latest','completed','pending','busy','liveWorkers','activeEvaluations','pause','retryOverhead','retention'];
+   if(!allowed([...base,...state,...(e.type==='service-report-entry'?['final']:[])])||!state.every(k=>Object.hasOwn(e,k))||!Number.isSafeInteger(e.serviceId)||e.serviceId<1||!Number.isSafeInteger(e.version)||typeof e.background!=='boolean'||typeof e.latest!=='boolean'||e.type==='service-report-entry'&&e.final!==false)return null;
+   return 'service-report';
+  }
+  if(!['worker-post','worker-receive'].includes(e.type)||!allowed([...base,'workerId','error','messageType','requestId','candidateId','identities','termination','cost'])||e.error!==null||!Array.isArray(e.identities)||e.identities.length!==0||!Number.isSafeInteger(e.requestId))return null;
+  if(e.type==='worker-receive'&&(typeof e.workerId!=='string'||e.workerId.length>2048))return null;
+  if(e.type==='worker-post'&&Object.hasOwn(e,'workerId'))return null;
+  if(e.messageType===undefined)return Number.isSafeInteger(e.candidateId)&&e.cost===null&&!Object.hasOwn(e,'termination')?'nested-progress':null;
+  if(e.messageType!=='progress'||Object.hasOwn(e,'candidateId')||e.termination!=='running'||!e.cost||typeof e.cost!=='object'||Array.isArray(e.cost)||Object.keys(e.cost).some(k=>!['tested','physicsSteps','workAttemptTotal'].includes(k)))return null;
+  if(!['tested','physicsSteps'].every(k=>Number.isFinite(e.cost[k])&&e.cost[k]>=0))return null;
+  const w=e.cost.workAttemptTotal;if(w!==undefined&&(!w||typeof w!=='object'||Array.isArray(w)||Object.keys(w).sort().join(',')!=='physicsSteps,reportedLowerBound,tested'||w.reportedLowerBound!==true||!['tested','physicsSteps'].every(k=>Number.isFinite(w[k])&&w[k]>=0)))return null;
+  return 'coordinator-progress';
+ }
+ function observationEncoder(transport){
+  const policy=Object.freeze({maxOccurrences:65536,maxExpandedBytes:limits.maxBytes,maxBatch:32,maxStreams:128,maxTemplateBytes:limits.maxValueBytes}),streams=new Map();let observed=0,repeated=0,repeatRows=0,templateBytes=0,expandedBytes=0,pending=[];
+  const charge=n=>{expandedBytes+=n;if(expandedBytes>policy.maxExpandedBytes)throw Error('audit expanded byte limit');};
+  const save=e=>{const v=capture(e);if(v){if(e.type!=='audit-observation-repeats'){const {auditIndex,...original}=v;charge(encoder.encode(JSON.stringify(original)).length);}transport(v);}return v;};
+  const flush=()=>{if(failure)return false;if(!pending.length)return true;const occurrences=pending;pending=[];if(!save({type:'audit-observation-repeats',occurrences}))return false;repeatRows++;return true;};
+  const remove=key=>{const old=streams.get(key);if(old){templateBytes-=old.bytes;streams.delete(key);}};
+  function observe(e){
+   if(failure)return false;
+   try{
+    if(observed>=policy.maxOccurrences)throw Error('audit expanded occurrence limit');
+    // Validate before reading classification or reserved metadata fields.
+    const plain=JSON.parse(json(e));if(Object.hasOwn(plain,'auditIndex')||plain.type==='audit-observation-repeats')throw Error('reserved audit compression metadata');
+    if(!Number.isFinite(plain.at))throw Error('invalid audit timestamp');
+    const index=observed++,kind=observationKind(plain),key=kind?JSON.stringify([plain.scope,plain.type,plain.workerId??null,plain.serviceId??null]):null;
+    if(!kind)return !!save({...plain,auditIndex:index});
+    const {at,...body}=plain,text=JSON.stringify(body),n=encoder.encode(text).length,old=streams.get(key);
+    if(old&&old.text===text){if(at<old.lastAt)throw Error('audit observation time reversed');charge(old.repeatBytes+6+String(at).length);old.lastAt=at;pending.push([index,old.index,at]);repeated++;return pending.length<policy.maxBatch||flush();}
+    remove(key);
+    while(streams.size>=policy.maxStreams||templateBytes+n>policy.maxTemplateBytes){if(!streams.size)throw Error('audit observation template limit');remove(streams.keys().next().value);}
+    const saved=save({...plain,auditIndex:index});if(!saved)return false;
+    const {auditIndex:_,at:savedAt,...packedBody}=saved,repeatBytes=encoder.encode(JSON.stringify(packedBody)).length;
+    streams.set(key,{index,text,bytes:n,repeatBytes,lastAt:at});templateBytes+=n;return true;
+   }catch(e){fail(e.message);return false;}
+  }
+  return {observe,flush,policy,status:()=>({schema:'exact-observation-repeats-v1',observedOccurrences:observed,expandedBytes,maxExpandedBytes:policy.maxExpandedBytes,repeatedOccurrences:repeated,repeatRows,pendingOccurrences:pending.length,templateStreams:streams.size,templateBytes,maxOccurrences:policy.maxOccurrences})};
+ }
+
+ return {observationKind,observationEncoder,importPayload,limits,payloads,json,sha256,payload,pack,capture,snapshot,fail,status:()=>({complete:failure===null,failure,events:count,eventBytes:bytes,payloads:payloads.size,payloadBytes})};
 }
 
 // Verification-only transport/physical-lifecycle observations. No timer wrappers.
@@ -43,7 +92,8 @@ function installPromotionAudit(scope='page',workerRealm=false,createStore=create
  const events=[],children=new Map(),urls=new Map(),sources=[],deferred=[],store=createStore(),sentPayloads=new Set(),sourceHashes=new Map(),pendingSources=new Set(),sourceTasks=new Set();let serial=0,ready=!workerRealm,currentMessage=null,overflowSent=false,staleBytes=0,sourceTextBytes=0;
  const overflow=reason=>{store.fail(reason);if(workerRealm&&ready&&!overflowSent){overflowSent=true;native.post({__promotionOverflow:true,scope,reason:store.status().failure});}};
  const transport=e=>{if(workerRealm){if(!ready){if(deferred.length>=128){overflow('deferred audit limit');return;}deferred.push(e);return;}for(const[id,text]of store.payloads)if(!sentPayloads.has(id)){native.post({__promotionPayload:true,id,text});sentPayloads.add(id);}native.post({__promotionAudit:true,...e});}else events.push(e);};
- const send=e=>{if(!store.status().complete){overflow(store.status().failure);return;}if(e.type==='worker-source-pending')pendingSources.add(e.sourceId);if(e.type==='worker-source')pendingSources.delete(e.sourceId);const value=store.capture(e);if(value)transport(value);else overflow(store.status().failure);};
+ const observation=workerRealm?null:store.observationEncoder(transport);
+ const send=e=>{if(!store.status().complete){overflow(store.status().failure);return;}if(e.type==='worker-source-pending')pendingSources.add(e.sourceId);if(e.type==='worker-source')pendingSources.delete(e.sourceId);if(observation){if(!observation.observe(e))overflow(store.status().failure);}else{const value=store.capture(e);if(value)transport(value);else overflow(store.status().failure);}};
  const limited=(x,limit=2048)=>{if(x.length>limit){overflow('audit list limit');return [];}return x;};
  const list=(x,kind='values')=>{if(x.size>2048){overflow('audit collection limit');return [];}return [...x[kind]()];};
  const remember=(w,data)=>{if(!['result','progress'].includes(data?.type)||!Number.isFinite(data.requestId))return;if(!w.received.has(data.requestId)&&w.received.size>=16){overflow('stale epoch history limit');return;}try{const text=store.json(data),n=new TextEncoder().encode(text).length,previous=w.received.get(data.requestId)?.bytes||0;if(staleBytes-previous+n>store.limits.maxBytes){overflow('stale callback byte limit');return;}staleBytes=staleBytes-previous+n;w.received.set(data.requestId,{at:epoch(),type:data.type,requestId:data.requestId,text,bytes:n});}catch(e){overflow(e.message);}};
@@ -73,8 +123,42 @@ function installPromotionAudit(scope='page',workerRealm=false,createStore=create
   if(G.OptimizerService)for(const method of ['request','promoteToForeground','resume','cancel','completeWave','stopWorkers','report']){const original=G.OptimizerService.prototype[method];if(typeof original!=='function')continue;G.OptimizerService.prototype[method]=function(...args){const before=serviceState(this),requestBefore=method==='promoteToForeground'?store.payload(this.latest||this.search?.req).$payload:null;emit('service-'+method+'-entry',{...before,...(method==='promoteToForeground'?{request:this.latest||this.search?.req}:{}),final:method==='report'?args[0]:undefined});try{return Reflect.apply(original,this,args);}finally{emit('service-'+method+'-return',{...serviceState(this),requestUnchanged:method==='promoteToForeground'?!!requestBefore&&store.payload(this.latest||this.search?.req).$payload===requestBefore:undefined});}};}
   emit('audit-installed');
  }else{
-  G.__promotionAudit={events,children,sources,emit,epoch,store,captureValue:value=>store.snapshot(value),async flushSources(){await Promise.all([...sourceTasks]);return {pendingSources:pendingSources.size,...store.status()};},read(offset,limit=32){if(!Number.isInteger(offset)||offset<0||offset>events.length||limit>32)throw Error('Invalid audit cursor');return {events:events.slice(offset,offset+limit),next:Math.min(events.length,offset+limit),total:events.length,status:{...store.status(),pendingSources:pendingSources.size},payloads:[...store.payloads.keys()]};},payloadPart(id,offset){const text=store.payloads.get(id);if(typeof text!=='string'||!Number.isInteger(offset)||offset<0||offset>text.length)throw Error('Missing payload');return {text:text.slice(offset,offset+8192),length:text.length};},attach(){const c=G.cueLab,n=c.nextShot,original=n.reconcile;n.reconcile=function(job,...args){const before={job,optimizer:job?.optimizer,worker:job?.optimizer?.worker,request:job?.optimizer?.latest,inputStamp:job?.inputStamp,expectedStamp:job?.expectedStamp,settings:JSON.stringify(c.state.settings),options:JSON.stringify(c.state.routeOptions)};emit('reconcile-entry',{generation:job?.generation,workerId:before.worker?.__promotionId,promoted:job?.promoted,inputStamp:before.inputStamp,expectedStamp:before.expectedStamp,snapshotMatches:job?.predicted?G.NextShotState.snapshotEqual(c.lab.snapshot({trails:false}),job.predicted.snapshot):null,gameMatches:job?.predicted?JSON.stringify(c.game.snapshot())===JSON.stringify(job.predicted.game):null,inputMatches:job?.predicted?this.inputStamp()===job.expectedStamp:null});const result=Reflect.apply(original,this,[job,...args]);emit('reconcile-return',{result,promoted:job?.promoted,sameCoordinator:c.optimizer===before.optimizer,sameWorker:c.optimizer?.worker===before.worker,workerId:c.optimizer?.worker?.__promotionId,requestUnchanged:before.request===job?.optimizer?.latest||!job?.optimizer?.latest,settingsUnchanged:JSON.stringify(c.state.settings)===before.settings,optionsUnchanged:JSON.stringify(c.state.routeOptions)===before.options,matched:c.state.nextShotPreparation?.matched,routeStamp:c.routeStamp,routeRequestStamp:c.routeRequestStamp});return result;};},stale(workerId){const w=children.get(workerId),c=G.cueLab,service=[c.optimizer,c.nextShot?.job?.optimizer].find(o=>o?.worker===w?.worker),currentVersion=service?.version,disposed=service?.disposed===true||w?.alive===false,old=w?[...w.received.values()].filter(x=>disposed||Number.isFinite(currentVersion)&&x.requestId!==currentVersion).sort((a,b)=>b.at-a.at)[0]:null;if(!old||!w.worker.onmessage)return {covered:false,reason:'No provably stale epoch on receiving service',currentVersion,disposed};emit('controlled-stale-start',{workerId,requestId:old.requestId,callbackRef:store.payload(JSON.parse(old.text))});Reflect.apply(w.worker.onmessage,w.worker,[{data:JSON.parse(old.text)}]);emit('controlled-stale-end',{workerId});return {covered:true,requestId:old.requestId,currentVersion,disposed};}};
+  G.__promotionAudit={events,children,sources,emit,epoch,store,captureValue:value=>store.snapshot(value),async flushSources(){await Promise.all([...sourceTasks]);observation.flush();return {pendingSources:pendingSources.size,...store.status(),observation:observation.status()};},read(offset,limit=32){observation.flush();if(!Number.isInteger(offset)||offset<0||offset>events.length||limit>32)throw Error('Invalid audit cursor');return {events:events.slice(offset,offset+limit),next:Math.min(events.length,offset+limit),total:events.length,status:{...store.status(),pendingSources:pendingSources.size,observation:observation.status()},payloads:[...store.payloads.keys()]};},payloadPart(id,offset){const text=store.payloads.get(id);if(typeof text!=='string'||!Number.isInteger(offset)||offset<0||offset>text.length)throw Error('Missing payload');return {text:text.slice(offset,offset+8192),length:text.length};},attach(){const c=G.cueLab,n=c.nextShot,original=n.reconcile;n.reconcile=function(job,...args){const before={job,optimizer:job?.optimizer,worker:job?.optimizer?.worker,request:job?.optimizer?.latest,inputStamp:job?.inputStamp,expectedStamp:job?.expectedStamp,settings:JSON.stringify(c.state.settings),options:JSON.stringify(c.state.routeOptions)};emit('reconcile-entry',{generation:job?.generation,workerId:before.worker?.__promotionId,promoted:job?.promoted,inputStamp:before.inputStamp,expectedStamp:before.expectedStamp,snapshotMatches:job?.predicted?G.NextShotState.snapshotEqual(c.lab.snapshot({trails:false}),job.predicted.snapshot):null,gameMatches:job?.predicted?JSON.stringify(c.game.snapshot())===JSON.stringify(job.predicted.game):null,inputMatches:job?.predicted?this.inputStamp()===job.expectedStamp:null});const result=Reflect.apply(original,this,[job,...args]);emit('reconcile-return',{result,promoted:job?.promoted,sameCoordinator:c.optimizer===before.optimizer,sameWorker:c.optimizer?.worker===before.worker,workerId:c.optimizer?.worker?.__promotionId,requestUnchanged:before.request===job?.optimizer?.latest||!job?.optimizer?.latest,settingsUnchanged:JSON.stringify(c.state.settings)===before.settings,optionsUnchanged:JSON.stringify(c.state.routeOptions)===before.options,matched:c.state.nextShotPreparation?.matched,routeStamp:c.routeStamp,routeRequestStamp:c.routeRequestStamp});return result;};},stale(workerId){const w=children.get(workerId),c=G.cueLab,service=[c.optimizer,c.nextShot?.job?.optimizer].find(o=>o?.worker===w?.worker),currentVersion=service?.version,disposed=service?.disposed===true||w?.alive===false,old=w?[...w.received.values()].filter(x=>disposed||Number.isFinite(currentVersion)&&x.requestId!==currentVersion).sort((a,b)=>b.at-a.at)[0]:null;if(!old||!w.worker.onmessage)return {covered:false,reason:'No provably stale epoch on receiving service',currentVersion,disposed};emit('controlled-stale-start',{workerId,requestId:old.requestId,callbackRef:store.payload(JSON.parse(old.text))});Reflect.apply(w.worker.onmessage,w.worker,[{data:JSON.parse(old.text)}]);emit('controlled-stale-end',{workerId});return {covered:true,requestId:old.requestId,currentVersion,disposed};}};
  }
 }
-if(typeof module!=='undefined'&&module.exports)module.exports={createCaptureStore,installPromotionAudit};else installPromotionAudit();
+
+// Host-only decoder. The capture side never expands or changes native delivery.
+// Returned events are the exact original packed observations, in original order.
+function createAuditEventDecoder(){
+ const maxOccurrences=65536,maxExpandedBytes=32*1024*1024,maxRows=30000,maxBatch=32,validator=createCaptureStore(),slots=[],templates=new Map(),lastTimes=new Map(),lastIndices=new Map();let rows=0,observed=0,expandedBytes=0,next=0,mode=null,lastOriginal=-1,lastRepeat=-1,failure=null;
+ const check=(ok,msg)=>{if(!ok)throw Error(msg);};
+ const charge=e=>{expandedBytes+=new TextEncoder().encode(JSON.stringify(e)).length;check(expandedBytes<=maxExpandedBytes,'audit expanded byte limit');};
+ function push(row){
+  if(failure)throw Error(failure);
+  try{
+   row=JSON.parse(validator.json(row,validator.limits.maxEventBytes));check(++rows<=maxRows,'audit compact row limit');check(row&&typeof row==='object'&&!Array.isArray(row),'invalid compact audit row');
+   const repeat=row.type==='audit-observation-repeats',indexed=Object.hasOwn(row,'auditIndex'),current=repeat||indexed?'indexed':'legacy';
+   check(!mode||mode===current,'mixed audit compression schemas');mode=current;
+   if(mode==='legacy'){check(observed<maxOccurrences,'audit expanded occurrence limit');charge(row);observed++;next++;return [row];}
+   if(repeat){
+    check(Object.keys(row).sort().join(',')==='occurrences,type','unknown repeat row field');
+    check(Array.isArray(row.occurrences)&&row.occurrences.length>=1&&row.occurrences.length<=maxBatch,'audit repeat batch limit');
+    let priorIndex=lastRepeat;
+    for(const triple of row.occurrences){check(Array.isArray(triple)&&triple.length===3,'invalid audit repeat occurrence');const [index,templateIndex,at]=triple,t=templates.get(templateIndex);
+     check(t&&validator.observationKind(t),'unknown or ineligible audit repeat template');
+     check(Number.isSafeInteger(index)&&index>priorIndex&&index>lastIndices.get(templateIndex)&&index<maxOccurrences&&index>=next&&!Object.hasOwn(slots,index),'duplicate or out-of-order audit occurrence');
+     check(Number.isFinite(at)&&at>=lastTimes.get(templateIndex),'invalid audit repeat timestamp');check(++observed<=maxOccurrences,'audit expanded occurrence limit');const event={...t,at};charge(event);slots[index]=event;priorIndex=index;lastIndices.set(templateIndex,index);lastTimes.set(templateIndex,at);lastRepeat=index;
+    }
+   }else{
+    const {auditIndex:index,...event}=row;check(Number.isSafeInteger(index)&&index>=0&&index<maxOccurrences&&index>lastOriginal&&index>=next&&!Object.hasOwn(slots,index),'duplicate or out-of-order original audit occurrence');
+    check(Number.isFinite(event.at),'invalid audit timestamp');check(++observed<=maxOccurrences,'audit expanded occurrence limit');charge(event);lastOriginal=index;slots[index]=event;
+    if(validator.observationKind(event)){templates.set(index,event);lastTimes.set(index,event.at);lastIndices.set(index,index);}
+   }
+   const out=[];while(Object.hasOwn(slots,next)){out.push(slots[next]);delete slots[next++];}return out;
+  }catch(e){failure=e.message;throw e;}
+ }
+ function finish(){if(failure)throw Error(failure);if(next!==observed){failure='missing expanded audit occurrence';throw Error(failure);}}
+ return {push,finish,status:()=>({observed,expandedBytes,maxExpandedBytes,delivered:next,pending:observed-next,complete:failure===null,failure,maxOccurrences,compactRows:rows})};
+}
+if(typeof module!=='undefined'&&module.exports)module.exports={createCaptureStore,installPromotionAudit,createAuditEventDecoder};else installPromotionAudit();
 

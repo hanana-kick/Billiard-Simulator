@@ -789,3 +789,224 @@ test('early source-binding and missing evidence fail closed, including changed p
  const copied=path.join(dir,'copied');fs.mkdirSync(copied);for(const name of ['chrome.cjs','measurement.cjs','bounded-records.cjs','check-preflight.cjs','cpu-preflight.cjs','audit.js'])fs.copyFileSync(path.join(support,name),path.join(copied,name));fs.appendFileSync(path.join(copied,'cpu-preflight.cjs'),'\n// changed producer\n');assert.throws(()=>require(path.join(copied,'chrome.cjs')).inspectPreflight(env),/producer changed/);
  fs.appendFileSync(env.PREFLIGHT_RAW,'{}\n');assert.throws(()=>C.inspectPreflight(env));fs.unlinkSync(env.PREFLIGHT_RAW);assert.throws(()=>C.inspectPreflight(env),/ENOENT/);
 });
+
+// BEGIN REVIEWED event-volume-design CONTRACTS
+{
+'use strict';
+// Browser-free portable contracts. Optional full local traces are read only.
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),vm=require('node:vm'),zlib=require('node:zlib');
+const A=require('./audit.js'),sha=x=>crypto.createHash('sha256').update(x).digest('hex');
+const progress=(at,patch={})=>({at,scope:'page.w1.w2',type:'worker-post',error:null,requestId:1,candidateId:3,identities:[],cost:null,...patch});
+const report=(at,patch={})=>({at,scope:'page.w1',type:'service-report-return',serviceId:1,searchId:2,requestObjectId:3,background:false,suspended:false,version:1,goal:null,requestGoal:null,target:0,wave:1,latest:true,completed:[],pending:[],busy:[{id:3,steps:64}],liveWorkers:['page.w1.w2'],activeEvaluations:[],pause:null,retryOverhead:{tested:0,physicsSteps:0},retention:{},...patch});
+function encode(events,options={},flushEvery=0){const store=A.createCaptureStore(options),rows=[],codec=store.observationEncoder(e=>rows.push(e));events.forEach((e,i)=>{assert(codec.observe(e),store.status().failure);if(flushEvery&&(i+1)%flushEvery===0)assert(codec.flush());});assert(codec.flush());return {store,rows,codec};}
+function decode(rows){const d=A.createAuditEventDecoder(),events=[];for(const r of rows)events.push(...d.push(r));d.finish();return {events,decoder:d};}
+function roundtrip(events,flushEvery=0){const encoded=encode(events,{},flushEvery);const decoded=decode(encoded.rows);assert.deepEqual(decoded.events,events);assert.equal(encoded.codec.status().expandedBytes,Buffer.byteLength(JSON.stringify(events))-events.length-1);assert.equal(decoded.decoder.status().expandedBytes,encoded.codec.status().expandedBytes);return encoded;}
+test('unchanged capture row/byte/payload caps and explicit bounded occurrence policy',()=>{const s=A.createCaptureStore();assert.equal(s.limits.maxEvents,30000);assert.equal(s.limits.maxBytes,33554432);assert.equal(s.limits.maxEventBytes,131072);assert.equal(s.limits.maxPayloads,128);assert.deepEqual(s.observationEncoder(()=>{}).policy,{maxOccurrences:65536,maxExpandedBytes:33554432,maxBatch:32,maxStreams:128,maxTemplateBytes:4194304});});
+test('exact repeats preserve original timestamps and interleaved physical order',()=>{const events=[progress(1),progress(2),{at:2,scope:'page.w1.w2',type:'evaluation-begin',id:7},progress(3),report(4),report(5),{at:6,scope:'page.w1.w2',type:'evaluation-finish',id:7},progress(7)];const e=roundtrip(events);assert(e.rows.some(r=>r.type==='audit-observation-repeats'));assert.equal(e.codec.status().repeatedOccurrences,4);});
+test('all physical, dispatch, identity, result, outcome, error and unknown observations remain individual',()=>{const patches=[{type:'evaluation-begin'},{type:'evaluation-advance'},{type:'evaluation-finish'},{type:'evaluation-dispose'},{type:'forecast-begin'},{type:'forecast-advance'},{type:'forecast-finish'},{type:'forecast-dispose'},{type:'worker-dispatch'},{identities:['verified']},{outcome:{verified:false}},{error:'failed'},{messageType:'error'},{messageType:'result'},{messageType:'frame'},{unknown:1}];const events=patches.flatMap((p,i)=>[progress(i*2,p),progress(i*2+1,p)]),e=roundtrip(events);assert.equal(e.rows.length,events.length);assert.equal(e.codec.status().repeatedOccurrences,0);});
+test('changed service state, report side effects, final report entry and nested critical events are retained',()=>{const events=[report(1),report(2),report(3,{type:'service-report-entry',final:true}),{at:4,scope:'page.w1',type:'service-stopWorkers-entry'},report(5,{liveWorkers:[]}),{at:6,scope:'page.w1',type:'worker-terminate',workerId:'page.w1.w2'},report(7,{liveWorkers:[]}),report(8,{busy:[]}),report(9,{type:'service-resume-entry',completed:[3]}),report(10,{type:'service-resume-return',completed:[3]})];roundtrip(events);});
+test('only declared progress schemas qualify, including request/candidate identity',()=>{const s=A.createCaptureStore();assert(s.observationKind(progress(1)));for(const p of [{candidateId:undefined},{requestId:NaN},{cost:{}},{identities:{$payload:'a'.repeat(64)}},{messageType:'progress'},{extra:'unknown'},{error:false},{outcome:null}])assert.equal(s.observationKind(progress(1,p)),null);const events=[progress(1),progress(2),progress(3,{candidateId:4}),progress(4,{requestId:2}),progress(5,{scope:'page.w2.w2'})];const e=roundtrip(events);assert.equal(e.codec.status().repeatedOccurrences,1);});
+test('read flushes are immutable and repeated templates survive multiple reads',()=>{const events=Array.from({length:100},(_,i)=>progress(i));const e=roundtrip(events,7);assert(e.rows.every(r=>r.type!=='audit-observation-repeats'||r.occurrences.length<=32));assert.equal(e.codec.status().observedOccurrences,100);const d=A.createAuditEventDecoder();for(const r of e.rows){d.push(r);if(r.type==='audit-observation-repeats')d.finish();}d.finish();});
+test('stream eviction flushes losslessly rather than widening cache bounds',()=>{const events=[];for(let i=0;i<140;i++)events.push(progress(i*2,{scope:'w'+i}),progress(i*2+1,{scope:'w'+i}));const e=roundtrip(events);assert(e.codec.status().templateStreams<=128);});
+test('65,536 expanded occurrences is a hard sticky bound',()=>{const s=A.createCaptureStore(),rows=[],c=s.observationEncoder(e=>rows.push(e));for(let i=0;i<65536;i++)assert(c.observe(progress(i)));assert(c.flush());assert.equal(s.status().events,2049);assert.equal(c.observe(progress(65536)),false);assert.match(s.status().failure,/expanded occurrence/);assert.equal(c.observe(progress(65537)),false);assert.equal(decode(rows).events.length,65536);});
+test('original row and byte failures remain sticky, never masked by buffering',()=>{for(const options of [{maxEvents:1},{maxBytes:150}]){const s=A.createCaptureStore(options),c=s.observationEncoder(()=>{});c.observe(progress(1));c.observe(progress(2));assert.equal(c.flush(),false);assert.equal(s.status().complete,false);assert.equal(c.observe(progress(3)),false);}});
+test('repeat decoder rejects unknown, critical, malformed, duplicate, reversed and excessive expansions',()=>{const ordinary={...progress(1),auditIndex:0};const bad=[{type:'audit-observation-repeats',occurrences:[[1,20,2]]},{type:'audit-observation-repeats',occurrences:[]},{type:'audit-observation-repeats',occurrences:Array.from({length:33},(_,i)=>[i+1,0,i+2])},{type:'audit-observation-repeats',occurrences:[[1,0,2],[1,0,3]]},{type:'audit-observation-repeats',occurrences:[[2,0,2],[1,0,3]]},{type:'audit-observation-repeats',occurrences:[[1,0,0]]},{type:'audit-observation-repeats',occurrences:[[65536,0,2]]},{type:'audit-observation-repeats',occurrences:[[1,0,2]],unknown:1}];for(const row of bad){const d=A.createAuditEventDecoder();d.push(ordinary);assert.throws(()=>d.push(row));assert.equal(d.status().complete,false);assert.throws(()=>d.finish());}const d=A.createAuditEventDecoder();d.push({...ordinary,type:'evaluation-begin'});assert.throws(()=>d.push({type:'audit-observation-repeats',occurrences:[[1,0,2]]}),/ineligible/);});
+test('out-of-order repeated groups and holes fail, including after an earlier successful drain',()=>{const d=A.createAuditEventDecoder();d.push({...progress(1),auditIndex:0});d.push({type:'audit-observation-repeats',occurrences:[[5,0,5]]});assert.throws(()=>d.push({type:'audit-observation-repeats',occurrences:[[3,0,6]]}),/out-of-order/);const e=A.createAuditEventDecoder();e.push({...progress(1),auditIndex:0});e.finish();e.push({...progress(3),auditIndex:2});assert.throws(()=>e.finish(),/missing expanded/);});
+test('legacy recordings decode unchanged but mixed schemas fail',()=>{const d=A.createAuditEventDecoder();assert.deepEqual(d.push(progress(1)),[progress(1)]);d.finish();assert.throws(()=>d.push({...progress(2),auditIndex:1}),/mixed/);});
+function realm(){const c=vm.createContext({crypto:crypto.webcrypto,TextEncoder,TextDecoder,Uint8Array,performance:{timeOrigin:1000,now:()=>5}});vm.runInContext(`class B {constructor(parts){this.parts=parts;}}class W{constructor(){this.listeners={};this.posted=[];this.nativeReceived=[];}addEventListener(t,f){this.listeners[t]=f;}postMessage(...args){this.posted.push(args);}receive(data){this.listeners.message({data,stopImmediatePropagation(){}});this.nativeReceived.push(data);this.onmessage?.({data});}terminate(){this.terminated=true;}};globalThis.Blob=B;globalThis.Worker=W;globalThis.URL={createObjectURL:()=>"blob:fake"};`,c);vm.runInContext(fs.readFileSync(path.join(__dirname,'audit.js'),'utf8'),c);return c;}
+test('page-only codec leaves native delivery, payloads, app callbacks and injected worker bootstrap unchanged',async()=>{const c=realm();vm.runInContext(`const b=new Blob(['class OptimizerService {}']);globalThis.injected=b.parts.join('');globalThis.w=new Worker(URL.createObjectURL(b));globalThis.calls=0;w.onmessage=()=>calls++;for(let i=0;i<100;i++){w.postMessage({type:'frame',frame:i});w.receive({requestId:1,candidateId:2,steps:i});}globalThis.batch=__promotionAudit.read(0);`,c);new vm.Script(c.injected);assert.equal(c.calls,100);assert.equal(c.w.nativeReceived.length,100);assert.equal(c.w.posted.length,101);assert.equal(c.w.posted[1][0].frame,0);await vm.runInContext('__promotionAudit.flushSources()',c);assert.equal(vm.runInContext('__promotionAudit.store.status().complete',c),true);assert.equal(vm.runInContext('__promotionAudit.read(0).status.observation.observedOccurrences',c),203);assert(c.injected.includes('function observationEncoder'));});
+// PORTABLE_TRACE_FIXTURE is populated from a contiguous, SHA-verified saved trace.
+const PORTABLE_TRACE_FIXTURE='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';
+test('portable actual-trace excerpt preserves all original observations exactly',()=>{const fixture=JSON.parse(zlib.gunzipSync(Buffer.from(PORTABLE_TRACE_FIXTURE,'base64')));assert.equal(sha(JSON.stringify(fixture.events)),fixture.sha256);const encoded=roundtrip(fixture.events);assert(encoded.codec.status().repeatedOccurrences>0);assert(encoded.rows.length<fixture.events.length);assert(fixture.events.some(e=>e.type==='evaluation-begin'));assert(fixture.events.some(e=>e.type==='evaluation-finish'));});
+const EXPECTED={default3:'a1fd4aeb955e1444dbc47467036a4abfca0f1642acf211951fecb7edcd405639',default4:'fcab027b3439d2f63d67a3b587a4608e384848533db26f3967c4641af50d2a89',moved3:'d3017f2a34018ac2d09fb50269300db9d0d78ccbb545a1966115809af96c3ca0',moved4:'1735a47a9bee5f8c2a00eb432783c59f020d7c8d72047ec90e4bf5969ed7288a'};
+function savedTrace(fixture){const file=path.resolve(__dirname,'../results/42575360012',fixture,'promotion-stop-results',fixture+'-baseline-0.raw.ndjson');if(!fs.existsSync(file))return null;const bytes=fs.readFileSync(file);assert.equal(sha(bytes),EXPECTED[fixture]);const rows=bytes.toString().trimEnd().split('\n').map(JSON.parse),payloads=new Map(),events=[];for(const r of rows){if(r.type==='payload-part'){assert.equal((payloads.get(r.sha256)||'').length,r.offset);payloads.set(r.sha256,(payloads.get(r.sha256)||'')+r.text);if(payloads.get(r.sha256).length===r.totalChars)assert.equal(sha(payloads.get(r.sha256)),r.sha256);}if(r.type==='audit-event')events.push(r.value);}return {file,bytes,rows,payloads,events};}
+for(const fixture of Object.keys(EXPECTED))test('full saved '+fixture+' prefix remains exact and original failed artifact stays unchanged',t=>{const input=savedTrace(fixture);if(!input)return t.skip('Optional full artifact absent; portable excerpt still runs');const s=A.createCaptureStore(),rows=[],c=s.observationEncoder(e=>rows.push(e));for(const [id,text] of input.payloads)s.importPayload(id,text);assert(s.status().complete,s.status().failure);const start=performance.now(),cpu=process.cpuUsage();for(const event of input.events)assert(c.observe(event),s.status().failure);assert(c.flush());const encodeMs=performance.now()-start,usage=process.cpuUsage(cpu),restored=decode(rows).events;assert.deepEqual(restored,input.events);assert.equal(sha(fs.readFileSync(input.file)),EXPECTED[fixture]);const summary=JSON.parse(fs.readFileSync(path.join(path.dirname(input.file),'summary.json'))).cases[0];assert.equal(summary.recording.complete,false);console.log(JSON.stringify({fixture,savedOccurrences:input.events.length,compactRows:rows.length,repeated:c.status().repeatedOccurrences,repeatRows:c.status().repeatRows,originalPageEvents:summary.recording.page.events,originalPageComplete:summary.recording.page.complete,eventBytes:s.status().eventBytes,templateBytes:c.status().templateBytes,encodeMs,encodeCpuMs:(usage.user+usage.system)/1000,scope:'Saved prefix only; no missing tail recovered, no rerun or qualification'}));});
+
+test('expanded bytes fail before a compact repeated large template can explode',()=>{
+ const event=report(1,{retention:{large:'x'.repeat(100000)}}),s=A.createCaptureStore(),rows=[],c=s.observationEncoder(e=>rows.push(e));let attempts=0;while(c.observe({...event,at:++attempts})){}assert.match(s.status().failure,/expanded byte/);assert(attempts<400);assert(s.status().eventBytes<200000);assert.equal(c.flush(),false);
+ const d=A.createAuditEventDecoder();d.push({...event,auditIndex:0});let index=1,failed=false;for(let b=0;b<20;b++){try{d.push({type:'audit-observation-repeats',occurrences:Array.from({length:32},()=>{const i=index++;return [i,0,i+1];})});}catch(e){assert.match(e.message,/expanded byte/);failed=true;break;}}assert(failed);assert.equal(d.status().complete,false);
+});
+
+test('high-index realistic epoch repeat metadata remains inline through capture and host recapture',()=>{
+ const events=Array.from({length:10000},(_,i)=>({at:i,scope:'page.w1',type:'evaluation-begin',id:i}));for(let i=0;i<34;i++)events.push(progress(1794207084667.123+i));const e=roundtrip(events),repeat=e.rows.find(r=>r.type==='audit-observation-repeats');assert(Array.isArray(repeat.occurrences));assert(Buffer.byteLength(JSON.stringify(repeat.occurrences))>=1024);const host=A.createCaptureStore();for(const row of e.rows){const captured=host.capture(row);assert(captured,host.status().failure);if(row.type==='audit-observation-repeats')assert(Array.isArray(captured.occurrences));}
+});
+test('out-of-order repeat batches across different templates fail closed',()=>{const d=A.createAuditEventDecoder();d.push({...progress(1),auditIndex:0});d.push({...progress(2,{candidateId:4}),auditIndex:1});d.push({type:'audit-observation-repeats',occurrences:[[5,0,5]]});assert.throws(()=>d.push({type:'audit-observation-repeats',occurrences:[[4,1,6]]}),/out-of-order/);});
+test('realistic wire metadata traverses nested, coordinator, page and real host writer losslessly',t=>{
+ const boundedRecords=fs.existsSync(path.join(__dirname,'bounded-records.cjs'))?path.join(__dirname,'bounded-records.cjs'):path.resolve(__dirname,'../payload-early-assembled/verification/promotion-stop-corrected/bounded-records.cjs'),B=require(boundedRecords);
+ const temp=fs.mkdtempSync(path.join(__dirname,'.wire-test-'));t.after(()=>fs.rmSync(temp,{recursive:true,force:true}));const file=path.join(temp,'wire.ndjson');
+ const limits={maxBytes:64*1024*1024,maxRecords:65536,maxLineBytes:32768,maxStringChars:8192,maxStringBytes:32768,maxArrayLength:4096,maxObjectKeys:256,maxNodes:65536,maxDepth:32};
+ const nested=A.createCaptureStore(),coordinator=A.createCaptureStore(),page=A.createCaptureStore(),host=A.createCaptureStore(),writer=B.createWriter(file,limits),original=[];
+ const codec=page.observationEncoder(row=>{const packed=host.capture(row);assert(packed,host.status().failure);assert(writer.append({type:'audit-event',value:packed}),writer.stats().reason);});
+ function relay(e){const first=nested.capture(e);assert(first,nested.status().failure);const second=coordinator.capture({...first,__promotionAudit:true});assert(second,coordinator.status().failure);original.push(second);assert(codec.observe(second),page.status().failure);}
+ for(let i=0;i<10000;i++)relay({at:i,scope:'page.w1.w2',type:'evaluation-begin',id:i});for(let i=0;i<34;i++)relay(progress(1794207084667.123+i));assert(codec.flush());assert(writer.close());assert(writer.stats().complete);
+ for(const store of [nested,coordinator,page,host])assert(store.status().complete,store.status().failure);assert.equal(page.payloads.size,0);assert.equal(host.payloads.size,0);
+ const rows=fs.readFileSync(file,'utf8').trimEnd().split('\n').map(JSON.parse).map(r=>r.value);assert.deepEqual(decode(rows).events,original);assert.equal(rows.length,10003);assert(rows.some(r=>r.type==='audit-observation-repeats'&&Buffer.byteLength(JSON.stringify(r.occurrences))>=1024));
+});
+
+test('repeat byte charges use packed templates when an eligible inline array is first interned',()=>{
+ const pending=Array.from({length:150},(_,id)=>({id})),events=[report(1,{pending}),report(2,{pending})],e=encode(events),decoded=decode(e.rows);assert.equal(e.store.payloads.size,1);assert.equal(e.codec.status().expandedBytes,decoded.decoder.status().expandedBytes);assert.equal(e.codec.status().expandedBytes,Buffer.byteLength(JSON.stringify(decoded.events))-decoded.events.length-1);assert(decoded.events.every(event=>typeof event.pending.$payload==='string'));
+ const hydrate=x=>x&&typeof x==='object'?(x.$payload?hydrate(JSON.parse(e.store.payloads.get(x.$payload))):Array.isArray(x)?x.map(hydrate):Object.fromEntries(Object.entries(x).map(([k,v])=>[k,hydrate(v)]))):x;assert.deepEqual(decoded.events.map(hydrate),events);
+});
+
+test('observation admission never evaluates type accessors or toJSON hooks',()=>{
+ for(const kind of ['type-getter','toJSON-getter','toJSON-method']){let calls=0;const e={at:1,scope:'page',type:'worker-post'};
+  if(kind==='type-getter')Object.defineProperty(e,'type',{enumerable:true,get(){calls++;return 'worker-post';}});
+  if(kind==='toJSON-getter')Object.defineProperty(e,'toJSON',{enumerable:true,get(){calls++;return ()=>({});}});
+  if(kind==='toJSON-method')e.toJSON=()=>{calls++;return {};};
+  const store=A.createCaptureStore(),rows=[],codec=store.observationEncoder(x=>rows.push(x));assert.equal(codec.observe(e),false);assert.equal(calls,0);assert.equal(rows.length,0);assert.equal(store.status().complete,false);assert.equal(codec.status().observedOccurrences,0);
+ }
+});
+
+}
+// END REVIEWED event-volume-design CONTRACTS
+
+// BEGIN REVIEWED derived-field-design CONTRACTS
+{
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),os=require('node:os'),crypto=require('node:crypto');
+const support=fs.existsSync(path.join(__dirname,'audit.js'))?__dirname:path.resolve(__dirname,'../payload-early-assembled/verification/promotion-stop-corrected');
+const auditOverride=process.env.DERIVED_FIELD_AUDIT?path.resolve(process.env.DERIVED_FIELD_AUDIT):null;
+const A=require(auditOverride||path.join(support,'audit.js')),B=require(path.join(support,'bounded-records.cjs'));
+// Test-only in-memory assembly. Candidate source and every on-disk input stay
+// unchanged; only this module's audit.js dependency is substituted explicitly.
+const C=(()=>{if(!auditOverride)return require('./chrome.cjs');const Module=require('node:module'),file=path.join(__dirname,'chrome.cjs'),m=new Module(file,module);m.filename=file;m.paths=Module._nodeModulePaths(__dirname);const ordinary=m.require.bind(m);m.require=id=>id===path.join(support,'audit.js')?A:ordinary(id);m._compile(fs.readFileSync(file,'utf8'),file);return m.exports;})();
+const sha=text=>crypto.createHash('sha256').update(text).digest('hex');
+const rawLimits={maxBytes:64*1024*1024,maxRecords:65536,maxLineBytes:32768,maxStringChars:8192,maxStringBytes:32768,maxArrayLength:4096,maxObjectKeys:256,maxNodes:65536,maxDepth:32};
+function temp(t){const dir=fs.mkdtempSync(path.join(os.tmpdir(),'derived-fields-'));t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));return dir;}
+function recorder(t,name='case.ndjson'){const file=path.join(temp(t),name),rec=C.createCaseRecorder(file);rec.setPageStatus({complete:true,pendingSources:0});return {file,rec};}
+function page(store,events){return {evaluate:async(fn,arg)=>{const saved=global.__promotionAudit;global.__promotionAudit={read(offset){return {events:events.slice(offset,offset+32),next:Math.min(events.length,offset+32),total:events.length,status:store.status(),payloads:[...store.payloads.keys()]};},payloadPart(id,offset){const value=store.payloads.get(id);return {text:value.slice(offset,offset+8192),length:value.length};}};try{return fn(arg);}finally{global.__promotionAudit=saved;}}};}
+const buffer=rows=>Buffer.from(rows.map(JSON.stringify).join('\n')+'\n');
+const readRows=file=>fs.readFileSync(file,'utf8').trimEnd().split('\n').map(JSON.parse);
+function writeRows(t,rows){const file=path.join(temp(t),'mutated.ndjson'),writer=B.createWriter(file,rawLimits);for(const row of rows)assert(writer.append(row),writer.stats().reason);assert(writer.close());return fs.readFileSync(file);}
+
+test('exact audit identities become immutable index/digest refs, preserving order and duplicates',async t=>{
+ const {file,rec}=recorder(t),store=A.createCaptureStore(),raw=[store.capture({type:'service-report-return',at:1,request:{world:[1,2,3]}}),store.capture({type:'service-report-return',at:2,request:{world:[1,2,3]}})],cache=[];
+ await C.collectAudit(page(store,raw),rec,cache);await C.collectAudit(page(store,raw),rec,cache);assert.equal(cache.length,2);assert.strictEqual(cache[0].request,cache[1].request);
+ assert.throws(()=>{cache[0].at=100;},TypeError);assert.throws(()=>{cache[0].request.world.push(4);},TypeError);
+ const value={nested:[cache[1],cache[0],cache[1]],copy:{...cache[0]},ordinary:{x:'unchanged'}};assert(rec.record('case-field',{key:'evidence',value}));assert(rec.close().complete);
+ const rows=readRows(file),field=rows.find(r=>r.type==='case-field').value.value;assert.equal(field.nested[0].$auditEvent.index,1);assert.equal(field.nested[1].$auditEvent.index,0);assert.equal(field.nested[0].$auditEvent.sha256,sha(JSON.stringify(rows.filter(r=>r.type==='audit-event')[1].value)));assert(!field.copy.$auditEvent);
+ const restored=C.reconstructCaseFields(fs.readFileSync(file));assert.deepEqual(restored.fields.evidence,value);assert.strictEqual(restored.fields.evidence.nested[0],restored.events[1]);assert.strictEqual(restored.fields.evidence.nested[0],restored.fields.evidence.nested[2]);
+});
+
+test('real writer round-trips a >4 MiB derived collection without raising any limit',async t=>{
+ const {file,rec}=recorder(t),store=A.createCaptureStore(),pending=Array.from({length:120},(_,i)=>({id:i,wave:1,kind:'evaluate',purpose:'known-branch',solver:'inverse'}));
+ const raw=Array.from({length:800},(_,i)=>store.capture({type:'service-report-return',scope:'page.w1',at:i,pending}));assert(raw.every(Boolean));const cache=[];await C.collectAudit(page(store,raw),rec,cache);
+ const original={key:'promotedServiceEvidence',value:cache};assert(Buffer.byteLength(JSON.stringify(original))>4*1024*1024);
+ const old=A.createCaptureStore();assert.equal(old.capture(original),null);assert.equal(old.status().failure,'capture byte limit');
+ assert(rec.record('case-field',original));const status=rec.close();assert(status.complete);assert(status.raw.bytes<64*1024*1024&&status.raw.records<65536);
+ const rebuilt=C.reconstructCaseFields(fs.readFileSync(file));assert.deepEqual(rebuilt.fields.promotedServiceEvidence,cache);assert.strictEqual(rebuilt.fields.promotedServiceEvidence[799],rebuilt.events[799]);
+ assert.equal(rec.store.limits.maxValueBytes,4*1024*1024);assert.equal(rec.store.limits.maxEvents,30000);assert.equal(rec.store.limits.maxPayloads,128);
+});
+
+test('nested continuation, ledger, error and Resume evidence uses the same exact archive',t=>{
+ const {file,rec}=recorder(t),a=rec.auditEvent({type:'evaluation-begin',id:5,at:1}),b=rec.auditEvent({type:'service-resume-return',at:2}),c=rec.auditEvent({type:'worker-error',at:3,message:'retained'});
+ const values={continuationDiagnostic:{events:[a,b]},postFirstActiveLedger:{evaluations:[a],nestedWorkers:['page.w1']},resumeRetention:[{entry:a,returned:b,committed:true,redispatched:[]}],workerErrors:[c],failures:[{phase:'worker-errors',errors:[c]}],postFirstEvaluateDispatches:[]};
+ for(const[key,value]of Object.entries(values))assert(rec.record('case-field',{key,value}));assert(rec.close().complete);assert.deepEqual({...C.reconstructCaseFields(fs.readFileSync(file)).fields},values);
+});
+
+test('untrusted reference-shaped inputs fail recording rather than becoming evidence',t=>{
+ for(const value of [{$auditEvent:{index:0,sha256:'a'.repeat(64)}},{nested:{$auditEvent:{index:0}}}]){const {rec}=recorder(t);assert(rec.auditEvent({type:'event'}));assert.equal(rec.record('case-field',{key:'bad',value}),false);assert.equal(rec.close().complete,false);assert.match(rec.status().failure,/Untrusted audit event reference/);}
+ const {rec}=recorder(t);assert.equal(rec.auditEvent({type:'event',nested:{$auditEvent:{index:0,sha256:'a'.repeat(64)}}}),null);assert.equal(rec.close().complete,false);
+});
+
+test('reader rejects dangling, reordered, changed, forward and malformed audit references',t=>{
+ const {file,rec}=recorder(t),a=rec.auditEvent({type:'a',at:1}),b=rec.auditEvent({type:'b',at:2});assert(rec.record('case-field',{key:'selected',value:[a,b]}));assert(rec.close().complete);const original=readRows(file);
+ const scenarios=[
+  rows=>{rows.find(r=>r.type==='case-field').value.value[0].$auditEvent.index=2;},
+  rows=>{rows.find(r=>r.type==='case-field').value.value[0].$auditEvent.index=-1;},
+  rows=>{rows.find(r=>r.type==='case-field').value.value[0].$auditEvent.sha256='0'.repeat(64);},
+  rows=>{rows.find(r=>r.type==='case-field').value.value[0].$auditEvent.extra=true;},
+  rows=>{rows.find(r=>r.type==='case-field').value.value[0].extra=true;},
+  rows=>{rows[0].value.at=99;},
+  rows=>{[rows[0],rows[1]]=[rows[1],rows[0]];},
+  rows=>{rows.splice(0,1);},
+  rows=>{rows.unshift(rows.pop());},
+ ];
+ for(const change of scenarios){const rows=structuredClone(original);change(rows);assert.throws(()=>C.reconstructCaseFields(writeRows(t,rows)),/Audit reference|audit event|digest mismatch/);}
+});
+
+test('reader rejects missing, corrupt, duplicate and partial payloads before reference resolution',t=>{
+ const {file,rec}=recorder(t),event=rec.auditEvent({type:'one',request:{body:'x'.repeat(9000)}});assert(rec.record('case-field',{key:'selected',value:event}));assert(rec.close().complete);const original=readRows(file);
+ const scenarios=[rows=>{rows.splice(rows.findIndex(r=>r.type==='payload-part'),1);},rows=>{rows.find(r=>r.type==='payload-part').text='y'+rows.find(r=>r.type==='payload-part').text.slice(1);},rows=>{rows.splice(rows.findIndex(r=>r.type==='audit-event'),0,structuredClone(rows.find(r=>r.type==='payload-part')));},rows=>{rows.splice(rows.findLastIndex(r=>r.type==='payload-part'),1);}];
+ for(const change of scenarios){const rows=structuredClone(original);change(rows);assert.throws(()=>C.reconstructCaseFields(writeRows(t,rows)),/payload|Payload/);}
+});
+
+test('existing raw/value/record caps, capture failure and writer failure remain sticky',t=>{
+ const {rec}=recorder(t);assert.equal(rec.record('case-field',{key:'oversized',value:'x'.repeat(4*1024*1024)}),false);assert.equal(rec.close().complete,false);assert.match(rec.status().failure,/byte limit/);
+ const file=path.join(temp(t),'capped.ndjson'),writer=B.createWriter(file,{...rawLimits,maxRecords:1}),capped=C.createCaseRecorder(file,{writer});capped.setPageStatus({complete:true});const e=capped.auditEvent({type:'one'});assert(e);assert.equal(capped.record('case-field',{key:'selected',value:e}),false);assert.equal(capped.close().complete,false);assert.match(capped.status().failure,/MAX_RECORDS/);assert.equal(readRows(file).length,1);
+ const failed=C.createCaseRecorder('unused',{writer:{append:()=>false,close(){},stats:()=>({complete:false,reason:'DISK_FULL'})}});assert.equal(failed.auditEvent({type:'event'}),null);assert.equal(failed.record('case-field',{key:'value',value:[]}),false);failed.setPageStatus({complete:true});assert.equal(failed.close().complete,false);
+});
+
+test('actual moved4 raw proves the first failing final field and a lossless local reference round-trip',t=>{
+ const artifact=path.resolve(__dirname,'../results/42575360012/moved4/promotion-stop-results/moved4-baseline-0.raw.ndjson');if(!fs.existsSync(artifact)){t.skip('Optional immutable historical artifact not installed');return;}
+ const original=fs.readFileSync(artifact),originalSHA=sha(original),rows=original.toString('utf8').trimEnd().split('\n').map(JSON.parse),old=C.reconstructCaseFields(original);
+ assert.equal(rows.length,21906);assert.equal(old.events.length,20745);assert.equal(Object.keys(old.fields).at(-1),'postFirst');assert.equal(old.fields.preparedWorkerId,'page.w6');
+ // The final post-first audit read is between the postFirst and resumeBase
+ // milestone records. This raw write order is stronger than filtering timestamps.
+ const postIndex=rows.findIndex(r=>r.type==='milestone-state'&&r.value.at===old.fields.postFirst.at),resumeIndex=rows.findIndex((r,i)=>i>postIndex&&r.type==='milestone-state');assert(postIndex>=0&&resumeIndex>postIndex);
+ const prefix=rows.slice(0,resumeIndex).filter(r=>r.type==='audit-event').length,derived=old.events.slice(0,prefix).filter(e=>e.scope===old.fields.preparedWorkerId&&e.type.startsWith('service-'));
+ assert.equal(prefix,7775);assert.equal(derived.length,1964);const legacy={key:'promotedServiceEvidence',value:derived};assert.equal(Buffer.byteLength(JSON.stringify(legacy)),17398936);assert.equal(sha(JSON.stringify(derived)),'8d1513e483a8cefa5a08c412e9d723e82ec03dd23e7d45c8483e08f543dbea43');
+ const legacyRec=recorder(t,'legacy.ndjson').rec;assert.equal(legacyRec.record('case-field',legacy),false);assert.equal(legacyRec.close().complete,false);assert.match(legacyRec.status().failure,/capture byte limit/);
+ // Re-archive every exact event and payload through the unchanged REAL bounded
+ // writer. No browser run, replacement lifecycle assertion or revised verdict.
+ const {file,rec}=recorder(t,'roundtrip.ndjson'),texts=new Map(),events=[];
+ for(const row of rows){
+  if(row.type==='payload-part'){const accumulated=(texts.get(row.sha256)||'')+row.text;texts.set(row.sha256,accumulated);if(accumulated.length===row.totalChars)assert(rec.payload(row.sha256,accumulated));}
+  else if(row.type==='audit-event'){const event=rec.auditEvent(row.value);assert(event,rec.status().failure);events.push(event);}
+  else assert(rec.record(row.type,row.value),rec.status().failure);
+ }
+ const selected=events.slice(0,prefix).filter(e=>e.scope===old.fields.preparedWorkerId&&e.type.startsWith('service-'));assert(rec.record('case-field',{key:'promotedServiceEvidence',value:selected}),rec.status().failure);
+ const status=rec.close();assert(status.complete);const rebuilt=C.reconstructCaseFields(fs.readFileSync(file));assert.deepEqual(rebuilt.fields.promotedServiceEvidence,derived);assert.equal(sha(JSON.stringify(rebuilt.fields.promotedServiceEvidence)),sha(JSON.stringify(derived)));assert.equal(sha(fs.readFileSync(artifact)),originalSHA);
+ const summary=JSON.parse(fs.readFileSync(artifact.replace('.raw.ndjson','.summary.json')));assert.equal(summary.recording.complete,false);assert.equal(summary.functional.pass,false);assert.equal(summary.ok,false);
+ t.diagnostic(JSON.stringify({historicalRawSHA256:originalSHA,historicalRawBytes:original.length,historicalRows:rows.length,historicalEvents:old.events.length,postFirstPrefix:prefix,derivedCount:derived.length,legacyValueBytes:Buffer.byteLength(JSON.stringify(legacy)),localReconstructionRawBytes:status.raw.bytes,localReconstructionRecords:status.raw.records,historicalOK:summary.ok,historicalVerdictPreserved:true}));
+});
+
+
+const eligibleProgress=at=>({at,scope:'page.w1',type:'worker-post',error:null,requestId:1,candidateId:3,identities:[],cost:null});
+function compressedFixture(events){const store=A.createCaptureStore(),rows=[],encoder=store.observationEncoder(e=>rows.push(e));for(const e of events)assert(encoder.observe(e));assert(encoder.flush());return {store,rows,status:{...store.status(),pendingSources:0,observation:encoder.status()}};}
+function compactPage(fixture,{rows=fixture.rows,status=fixture.status,batchSize=32}={}){return {evaluate:async(fn,offset)=>{assert(!fixture.store.payloads.size,'Fixture must not need payload transfer');return {events:rows.slice(offset,offset+batchSize),next:Math.min(rows.length,offset+batchSize),total:rows.length,status,payloads:[]};}};}
+
+test('compact decoder integration preserves expanded reference indices or fails closed when unavailable',t=>{
+ const {file,rec}=recorder(t),first={...eligibleProgress(1),auditIndex:0};
+ if(typeof A.createAuditEventDecoder!=='function'){
+  assert.equal(rec.auditEvents(first),null);assert.equal(rec.close().complete,false);assert.match(rec.status().failure,/decoder unavailable/);
+  assert.throws(()=>C.reconstructCaseFields(buffer([{type:'audit-event',value:first}])),/decoder unavailable/);return;
+ }
+ const fixture=compressedFixture([eligibleProgress(1),eligibleProgress(2),eligibleProgress(3),{type:'worker-created',workerId:'page.w2',at:4}]);rec.setPageStatus(fixture.status);
+ const cache=fixture.rows.flatMap(row=>rec.auditEvents(row));assert.equal(rec.auditCursor(),3);assert.equal(rec.finishAudit(),true);assert.equal(cache.length,4);assert.deepEqual(cache.map(e=>e.at),[1,2,3,4]);assert(cache.every(e=>!Object.hasOwn(e,'auditIndex')));
+ const selection=[cache[3],cache[1],cache[1],cache[2]];assert(rec.record('case-field',{key:'selected',value:selection}));assert(rec.close().complete);const reconstructed=C.reconstructCaseFields(fs.readFileSync(file));assert.deepEqual(reconstructed.fields.selected,selection);assert.strictEqual(reconstructed.fields.selected[1],reconstructed.events[1]);
+ const rows=readRows(file),field=rows.find(r=>r.type==='case-field');assert.deepEqual(field.value.value.map(x=>x.$auditEvent.index),[3,1,1,2]);
+ rows.find(r=>r.value?.type==='audit-observation-repeats').value.occurrences[0][2]=2.5;assert.throws(()=>C.reconstructCaseFields(writeRows(t,rows)),/digest mismatch/);
+});
+
+test('complete drain rejects omitted terminal repeat rows despite a contiguous decoded prefix',async t=>{
+ if(typeof A.createAuditEventDecoder!=='function'){t.skip('Run with DERIVED_FIELD_AUDIT to exercise merged decoder');return;}
+ const fixture=compressedFixture(Array.from({length:100},(_,i)=>eligibleProgress(i+1)));assert.equal(fixture.rows.length,5);const truncated=fixture.rows.slice(0,-1),{rec}=recorder(t),cache=[];
+ await assert.rejects(C.collectAudit(compactPage(fixture,{rows:truncated}),rec,cache),/Incomplete expanded audit recording/);
+ assert.equal(cache.length,97);assert.equal(rec.auditCursor(),4);assert.equal(rec.close().complete,false);assert.match(rec.status().failure,/compact count mismatch/);
+ // Even falsifying the compact count cannot hide the original occurrence count.
+ const next=recorder(t).rec,status=structuredClone(fixture.status);status.events=4;
+ await assert.rejects(C.collectAudit(compactPage(fixture,{rows:truncated,status}),next,[]),/Incomplete expanded audit recording/);assert.match(next.status().failure,/expanded count mismatch/);assert.equal(next.close().complete,false);
+});
+
+test('producer binding checks schema bytes pending and missing metadata at drain and close',async t=>{
+ if(typeof A.createAuditEventDecoder!=='function'){t.skip('Run with DERIVED_FIELD_AUDIT to exercise merged decoder');return;}
+ const fixture=compressedFixture(Array.from({length:100},(_,i)=>eligibleProgress(i+1)));
+ const mutations=[s=>{s.observation.expandedBytes++;},s=>{s.observation.schema='unknown';},s=>{s.observation.pendingOccurrences=1;},s=>{delete s.observation;},s=>{s.observation.maxExpandedBytes++;},s=>{s.observation.observedOccurrences--;},s=>{s.events++;}];
+ for(const mutate of mutations){const status=structuredClone(fixture.status);mutate(status);const {rec}=recorder(t);await assert.rejects(C.collectAudit(compactPage(fixture,{status}),rec,[]),/Incomplete expanded audit recording/);assert.equal(rec.close().complete,false);assert.match(rec.status().failure,/producer|observation/);}
+ const {rec}=recorder(t);rec.setPageStatus(fixture.status);for(const row of fixture.rows.slice(0,-1))assert(rec.auditEvents(row));assert.equal(rec.close().complete,false);assert.match(rec.status().failure,/compact count mismatch/);
+});
+
+test('producer binding permits partial batches and repeated complete drains with later observations',async t=>{
+ if(typeof A.createAuditEventDecoder!=='function'){t.skip('Run with DERIVED_FIELD_AUDIT to exercise merged decoder');return;}
+ const fixture=compressedFixture(Array.from({length:100},(_,i)=>eligibleProgress(i+1))),{rec}=recorder(t),cache=[];
+ await C.collectAudit(compactPage(fixture,{batchSize:1}),rec,cache);assert.equal(cache.length,100);assert.equal(rec.auditCursor(),5);await C.collectAudit(compactPage(fixture,{batchSize:1}),rec,cache);assert.equal(cache.length,100);
+ const more=compressedFixture(Array.from({length:101},(_,i)=>eligibleProgress(i+1)));assert.deepEqual(more.rows.slice(0,4),fixture.rows.slice(0,4));
+ // A real later drain appends a fresh repeat row; it does not rewrite the last
+ // flushed batch. Build that exact append with the original template index.
+ const appended={type:'audit-observation-repeats',occurrences:[[100,0,101]]},rows=[...fixture.rows,appended],status={...more.status,events:6,observation:{...more.status.observation,repeatRows:5}};
+ await C.collectAudit(compactPage(fixture,{rows,status,batchSize:1}),rec,cache);assert.equal(cache.length,101);assert.equal(rec.auditCursor(),6);assert(rec.close().complete);
+});
+
+}
+// END REVIEWED derived-field-design CONTRACTS

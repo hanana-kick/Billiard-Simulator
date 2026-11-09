@@ -2,11 +2,11 @@
 // Prepared follow-on only. Requiring this module never loads Playwright or opens
 // a socket. Main requires independently verified, CI-bound preflight evidence.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
-const support=fs.existsSync(path.join(__dirname,'measurement.cjs'))?__dirname:path.resolve(__dirname,'../assembled/verification/promotion-stop-corrected');
+const support=fs.existsSync(path.join(__dirname,'measurement.cjs'))?__dirname:path.resolve(__dirname,'../payload-early-assembled/verification/promotion-stop-corrected');
 const auditFile=path.join(support,'audit.js');
 const measurement=require(path.join(support,'measurement.cjs'));
 const records=require(path.join(support,'bounded-records.cjs'));
-const {createCaptureStore}=require(auditFile);
+const {createCaptureStore,createAuditEventDecoder}=require(auditFile);
 const hostNow=()=>Number(process.hrtime.bigint())/1e6;
 const hash=v=>crypto.createHash('sha256').update(typeof v==='string'?v:JSON.stringify(v)).digest('hex');
 async function deadline(work,ms,label){let timer;try{return await Promise.race([Promise.resolve().then(work),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(label+' timed out; no replacement query')),ms);})]);}finally{clearTimeout(timer);}}
@@ -174,19 +174,132 @@ function preflightStatus(env=process.env,options={}){
  if(env.GITHUB_OUTPUT)fs.appendFileSync(env.GITHUB_OUTPUT,`functional_ready=${result.functionalReady}\ncpu_qualified=${result.cpuQualified}\n`);
  return {result,json,exitCode:result.functionalReady?0:1};
 }
+// Final case fields can contain large selections of already-recorded audit
+// events. Only exact archived object identities become references. Their index
+// is zero-based within the raw audit-event sequence, and their digest binds the
+// exact packed event value. The shared payload dictionary is already SHA-bound.
+function newAuditDecoder(){
+ if(typeof createAuditEventDecoder==='function')return createAuditEventDecoder();
+ return {push(row){assert(row&&typeof row==='object'&&!Object.hasOwn(row,'auditIndex')&&row.type!=='audit-observation-repeats','Compressed audit decoder unavailable');return [row];},finish(){}};
+}
+function createRecordedEvidence(store,fail){
+ const events=[],references=new WeakMap(),frozen=new WeakSet(),decoded=[new Map(),new Map()],resolving=[new Set(),new Set()];
+ function freeze(x){if(!x||typeof x!=='object'||frozen.has(x))return x;frozen.add(x);for(const v of Object.values(x))freeze(v);return Object.freeze(x);}
+ function hydrate(x,depth=0,caseField=false){try{
+  assert(depth<=store.limits.maxDepth,'Payload reference depth limit');if(!x||typeof x!=='object')return x;
+  assert(!Object.hasOwn(x,'$missing'),'Missing capture payload');
+  if(Object.hasOwn(x,'$auditEvent')){
+   assert(caseField,'Audit references are only allowed in case fields');exactKeys(x,['$auditEvent'],'Audit reference');
+   const ref=x.$auditEvent;exactKeys(ref,['index','sha256'],'Audit reference target');
+   assert(Number.isSafeInteger(ref.index)&&ref.index>=0&&ref.index<events.length,'Missing referenced audit event');
+   const target=events[ref.index];assert(typeof ref.sha256==='string'&&ref.sha256===target.sha256,'Audit event digest mismatch');return target.value;
+  }
+  if(Object.hasOwn(x,'$payload')){assert(Object.keys(x).length===1,'Invalid payload reference shape');return decode(x.$payload,depth+1,caseField);}
+  if(Array.isArray(x))return x.map(v=>hydrate(v,depth+1,caseField));
+  return Object.fromEntries(Object.entries(x).map(([k,v])=>[k,hydrate(v,depth+1,caseField)]));
+ }catch(e){fail(e.message);throw e;}}
+ function decode(id,depth=0,caseField=false){try{
+  assert(typeof id==='string'&&/^[a-f0-9]{64}$/.test(id)&&store.payloads.has(id),'Missing referenced payload');
+  const cache=decoded[Number(caseField)],active=resolving[Number(caseField)];assert(!active.has(id),'Cyclic payload reference');
+  if(!cache.has(id)){active.add(id);try{cache.set(id,hydrate(JSON.parse(store.payloads.get(id)),depth+1,caseField));}finally{active.delete(id);}}return cache.get(id);
+ }catch(e){fail(e.message);throw e;}}
+ function archive(packed){
+  assert(events.length<(typeof createAuditEventDecoder==='function'?RAW_LIMITS.maxRecords:store.limits.maxEvents),'Archived audit event count limit');
+  const value=freeze(hydrate(packed));assert(value&&typeof value==='object'&&!Array.isArray(value),'Invalid audit event');
+  const ref=Object.freeze({index:events.length,sha256:hash(packed)});events.push({value,sha256:ref.sha256});references.set(value,ref);return value;
+ }
+ function project(value){
+  // Mirror the existing plain-data capture bounds BEFORE allocation/packing.
+  // Replacements are examined first, so hydrated event bodies are never walked
+  // again. No new references can be supplied by a caller or inferred by shape.
+  const limits=store.limits,ancestors=new Set();let nodes=0,bytes=0;
+  const charge=n=>{bytes+=n;assert(bytes<=limits.maxValueBytes,'capture byte limit');};
+  const string=x=>{assert(x.length<=limits.maxValueBytes,'capture string limit');charge(Buffer.byteLength(JSON.stringify(x)));return x;};
+  function visit(x,depth){
+   assert(depth<=limits.maxDepth&&++nodes<=limits.maxNodes,'capture complexity limit');
+   if(x&&typeof x==='object'&&references.has(x)){const ref={$auditEvent:references.get(x)};charge(Buffer.byteLength(JSON.stringify(ref)));return ref;}
+   if(x===undefined||x===null){charge(4);return null;}
+   if(typeof x==='string')return string(x);
+   if(typeof x==='number'){assert(Number.isFinite(x),'nonfinite capture');charge(String(x).length);return x;}
+   if(typeof x==='boolean'){charge(x?4:5);return x;}
+   assert(typeof x==='object','unsupported capture');assert(!ancestors.has(x),'cyclic capture');ancestors.add(x);charge(2);let result;
+   assert(!Object.hasOwn(x,'$auditEvent'),'Untrusted audit event reference');
+   if(Array.isArray(x)||x instanceof Uint8Array){
+    assert(x.length<=limits.maxArray,'capture array limit');result=[];
+    for(let i=0;i<x.length;i++){if(i)charge(1);const d=Object.getOwnPropertyDescriptor(x,String(i));assert(d&&Object.hasOwn(d,'value'),'capture array accessor/hole');result.push(visit(d.value,depth+1));}
+   }else{
+    assert([Object.prototype,null].includes(Object.getPrototypeOf(x)),'nonplain capture');result=Object.create(null);let n=0,written=0;
+    for(const key in x){assert(Object.hasOwn(x,key),'inherited capture key');assert(++n<=limits.maxKeys,'capture key limit');const d=Object.getOwnPropertyDescriptor(x,key);assert(Object.hasOwn(d,'value'),'capture accessor');if(d.value===undefined)continue;if(written++)charge(1);string(key);charge(1);result[key]=visit(d.value,depth+1);}
+   }
+   ancestors.delete(x);return result;
+  }
+  return visit(value,0);
+ }
+ return {hydrate,decode,archive,project,restore:x=>hydrate(x,0,true),events};
+}
 function createCaseRecorder(file,{writer=records.createWriter(file,RAW_LIMITS),maxSamples=6000}={}){
- const store=createCaptureStore(),saved=new Set(),decoded=new Map();let failure=null,pageStatus=null;
+ const store=createCaptureStore(),saved=new Set();let failure=null,pageStatus=null;
  const fail=reason=>{failure=failure||String(reason).slice(0,300);return false;};
+ const evidence=createRecordedEvidence(store,fail),auditDecoder=newAuditDecoder();let auditCursor=0,indexedAudit=false;
  function append(row){if(failure)return false;if(!writer.append(row))return fail('raw writer: '+writer.stats().reason);return true;}
  function payload(id,text){if(failure)return false;if(typeof text!=='string'||hash(text)!==id)return fail('payload SHA-256 mismatch');if(saved.has(id))return true;if(!store.payloads.has(id))store.importPayload(id,text);if(!store.status().complete)return fail(store.status().failure);for(let offset=0;offset<text.length;offset+=8192)if(!append({type:'payload-part',sha256:id,offset,totalChars:text.length,text:text.slice(offset,offset+8192)}))return false;saved.add(id);return true;}
  function flush(){for(const[id,text]of store.payloads)if(!saved.has(id)&&!payload(id,text))return false;return true;}
- function record(type,value){try{const v=store.capture(value);if(!v)return fail(store.status().failure);return flush()&&append({type,value:v});}catch(e){return fail(e.message);}}
- const samples=[],resolving=new Set();
- function hydrate(x,depth=0){try{assert(depth<=store.limits.maxDepth,'Payload reference depth limit');if(!x||typeof x!=='object')return x;assert(!Object.hasOwn(x,'$missing'),'Missing capture payload');if(Object.hasOwn(x,'$payload')){assert(Object.keys(x).length===1,'Invalid payload reference shape');return decode(x.$payload,depth+1);}if(Array.isArray(x))return x.map(v=>hydrate(v,depth+1));return Object.fromEntries(Object.entries(x).map(([k,v])=>[k,hydrate(v,depth+1)]));}catch(e){fail(e.message);throw e;}}
- function decode(id,depth=0){try{assert(typeof id==='string'&&/^[a-f0-9]{64}$/.test(id)&&store.payloads.has(id),'Missing referenced payload');assert(!resolving.has(id),'Cyclic payload reference');if(!decoded.has(id)){resolving.add(id);try{decoded.set(id,hydrate(JSON.parse(store.payloads.get(id)),depth+1));}finally{resolving.delete(id);}}return decoded.get(id);}catch(e){fail(e.message);throw e;}}
- return {store,record,payload,fail,samples,maxSamples,decode,hydrate,setPageStatus:s=>{pageStatus=s;if(s?.complete!==true)fail('page capture incomplete: '+s?.failure);},
+ function captured(type,value){try{const v=store.capture(type==='case-field'?evidence.project(value):value);if(!v){fail(store.status().failure);return null;}return flush()&&append({type,value:v})?v:null;}catch(e){fail(e.message);return null;}}
+ function record(type,value){return type==='audit-event'?auditEvents(value)!==null:captured(type,value)!==null;}
+ function auditEvents(value){try{const packed=captured('audit-event',value);if(packed===null)return null;indexedAudit=indexedAudit||Object.hasOwn(packed,'auditIndex')||packed.type==='audit-observation-repeats';const expanded=auditDecoder.push(packed).map(evidence.archive);auditCursor++;return expanded;}catch(e){fail(e.message);return null;}}
+ // Single-event helper retained for local legacy tests/callers only.
+ function auditEvent(value){const expanded=auditEvents(value);if(expanded===null)return null;if(expanded.length!==1){fail('Expected one uncompressed audit event');return null;}return expanded[0];}
+ function finishAudit(){try{
+  auditDecoder.finish();
+  // A contiguous shorter prefix can still omit a terminal repeat row. At a
+  // complete drain, bind both transport and expanded counts/bytes to the same
+  // producer snapshot. Never compare during a partial batch.
+  if(indexedAudit||pageStatus?.observation!==undefined){
+   const o=pageStatus?.observation;exactKeys(o,['schema','observedOccurrences','expandedBytes','maxExpandedBytes','repeatedOccurrences','repeatRows','pendingOccurrences','templateStreams','templateBytes','maxOccurrences'],'Audit producer observation');
+   assert(o.schema==='exact-observation-repeats-v1','Unknown audit producer observation schema');
+   for(const key of ['observedOccurrences','expandedBytes','repeatedOccurrences','repeatRows','pendingOccurrences','templateStreams','templateBytes'])assert(Number.isSafeInteger(o[key])&&o[key]>=0,'Invalid audit producer observation count');
+   assert(o.maxOccurrences===RAW_LIMITS.maxRecords&&o.maxExpandedBytes===store.limits.maxBytes&&o.observedOccurrences<=o.maxOccurrences&&o.expandedBytes<=o.maxExpandedBytes,'Audit producer observation limit mismatch');
+   assert(o.pendingOccurrences===0&&o.repeatedOccurrences<=o.observedOccurrences&&o.repeatRows<=store.limits.maxEvents&&o.templateStreams<=store.limits.maxPayloads&&o.templateBytes<=store.limits.maxValueBytes,'Invalid audit producer observation metadata');
+   assert(typeof auditDecoder.status==='function','Missing audit decoder status');const d=auditDecoder.status();
+   assert(d.complete===true&&d.pending===0&&d.delivered===d.observed&&d.maxOccurrences===o.maxOccurrences&&d.maxExpandedBytes===o.maxExpandedBytes,'Incomplete audit decoder status');
+   assert(Number.isSafeInteger(pageStatus.events)&&pageStatus.events===auditCursor&&d.compactRows===auditCursor,'Audit producer compact count mismatch');
+   assert(d.observed===o.observedOccurrences,'Audit producer expanded count mismatch');
+   assert(d.expandedBytes===o.expandedBytes,'Audit producer expanded byte mismatch');
+  }
+  return true;
+ }catch(e){return fail(e.message);}}
+ const samples=[];
+ return {store,record,auditEvent,auditEvents,auditCursor:()=>auditCursor,finishAudit,payload,fail,samples,maxSamples,decode:evidence.decode,hydrate:evidence.hydrate,setPageStatus:s=>{pageStatus=s;if(s?.complete!==true)fail('page capture incomplete: '+s?.failure);},
   sample(row){if(samples.length>=maxSamples)return fail('CPU sample count limit');if(!record('process-cpu',row))return false;samples.push(row);return true;},
-  close(){if((pageStatus?.pendingSources??0)!==0)fail('Unresolved worker source hashes at final capture');writer.close();return this.status();},status(){return {complete:!failure&&store.status().complete&&pageStatus?.complete===true&&(pageStatus.pendingSources??0)===0&&writer.stats().complete,failure,page:pageStatus,raw:writer.stats()};},writer};
+  close(){finishAudit();if((pageStatus?.pendingSources??0)!==0)fail('Unresolved worker source hashes at final capture');writer.close();return this.status();},status(){return {complete:!failure&&store.status().complete&&pageStatus?.complete===true&&(pageStatus.pendingSources??0)===0&&writer.stats().complete,failure,page:pageStatus,raw:writer.stats()};},writer};
+}
+// Offline reader only. Reconstruction proves reference/payload integrity, NOT
+// lifecycle completion, case-field completeness or a historical case pass.
+// References must resolve to an earlier, exact raw audit-event, never a future
+// event, missing payload or arbitrary lookalike object. No writer/browser used.
+function reconstructCaseFields(buffer){
+ assert(Buffer.isBuffer(buffer)&&buffer.length<=RAW_LIMITS.maxBytes,'Raw reconstruction byte limit');
+ const text=buffer.toString('utf8');assert(Buffer.from(text).equals(buffer),'Invalid raw UTF-8');
+ const lines=text.split('\n');assert.equal(lines.pop(),'','Missing final raw newline');assert(lines.length<=RAW_LIMITS.maxRecords,'Raw reconstruction record limit');
+ const store=createCaptureStore(),parts=new Map(),fields=Object.create(null),evidence=createRecordedEvidence(store,reason=>{throw Error(reason);}),auditDecoder=newAuditDecoder();
+ for(const line of lines){
+  assert(Buffer.byteLength(line)+1<=RAW_LIMITS.maxLineBytes,'Raw reconstruction line limit');const row=JSON.parse(line);records.encodeBounded(row,RAW_LIMITS);
+  if(row.type==='payload-part'){
+   exactKeys(row,['type','sha256','offset','totalChars','text'],'Payload part');
+   assert(typeof row.sha256==='string'&&/^[a-f0-9]{64}$/.test(row.sha256),'Invalid payload digest');
+   assert(Number.isInteger(row.totalChars)&&row.totalChars>0&&row.totalChars<=store.limits.maxValueBytes&&typeof row.text==='string'&&row.text.length>0&&row.text.length<=8192,'Invalid payload part size');
+   assert(!store.payloads.has(row.sha256),'Duplicate completed payload');
+   if(!parts.has(row.sha256)){assert(parts.size+store.payloads.size<store.limits.maxPayloads,'Payload part count limit');parts.set(row.sha256,{total:row.totalChars,text:''});}
+   const part=parts.get(row.sha256);assert(row.totalChars===part.total&&row.offset===part.text.length&&row.offset+row.text.length<=part.total,'Payload part offset/length mismatch');part.text+=row.text;
+   if(part.text.length===part.total){assert(store.importPayload(row.sha256,part.text),store.status().failure||'Invalid payload');parts.delete(row.sha256);}
+  }else if(row.type==='audit-event'){
+   exactKeys(row,['type','value'],'Audit event row');for(const event of auditDecoder.push(row.value))evidence.archive(event);
+  }else if(row.type==='case-field'){
+   exactKeys(row,['type','value'],'Case field row');const field=evidence.restore(row.value);exactKeys(field,['key','value'],'Case field');
+   assert(typeof field.key==='string'&&!Object.hasOwn(fields,field.key),'Invalid or duplicate case field');fields[field.key]=field.value;
+  }
+ }
+ auditDecoder.finish();assert.equal(parts.size,0,'Incomplete payload parts');return {fields,events:evidence.events.map(e=>e.value)};
 }
 async function assertPageRecordingReady(page,recorder){
  const host=recorder.status();if(host.failure||host.raw?.closed!==false||host.raw?.failures!==0||recorder.store.status().complete!==true){const reason='Host observation unavailable: '+String(host.failure||host.raw?.reason||'writer is not healthy and open');recorder.fail(reason);throw Error(reason);}
@@ -201,11 +314,11 @@ function stopAfterRecordingFailure(report,summary){
  return false;
 }
 async function collectAudit(page,recorder,cache){
- while(true){const batch=await page.evaluate(offset=>__promotionAudit.read(offset),cache.length);recorder.setPageStatus(batch.status);
+ while(true){const batch=await page.evaluate(offset=>__promotionAudit.read(offset),recorder.auditCursor());recorder.setPageStatus(batch.status);
   for(const id of batch.payloads){if(recorder.store.payloads.has(id))continue;let text='',offset=0,total=null;do{const part=await page.evaluate(({id,offset})=>__promotionAudit.payloadPart(id,offset),{id,offset});if(!Number.isInteger(part.length)||part.length>4*1024*1024||part.text.length>8192||part.length<offset||part.text.length===0&&offset<part.length)throw Error('Invalid bounded payload transfer');total=part.length;text+=part.text;offset+=part.text.length;}while(offset<total);if(!recorder.payload(id,text))throw Error('Incomplete payload recording');}
 
-  for(const event of batch.events){if(!recorder.record('audit-event',event))throw Error('Incomplete audit recording');cache.push(recorder.hydrate(event));}
-  assert.equal(cache.length,batch.next,'Audit cursor mismatch');if(batch.next===batch.total)break;
+  for(const event of batch.events){const archived=recorder.auditEvents(event);if(archived===null)throw Error('Incomplete audit recording');cache.push(...archived);}
+  assert.equal(recorder.auditCursor(),batch.next,'Audit cursor mismatch');if(batch.next===batch.total){assert(recorder.finishAudit(),'Incomplete expanded audit recording');break;}
  }
  return cache;
 }
@@ -531,5 +644,5 @@ phase='settings-invalidation';r.beforeSettingsEdit=await state(page);await page.
 
 
 }
-module.exports={assertPageRecordingReady,stopAfterRecordingFailure,deadline,inspectPreflight,verifyPreflight,preflightStatus,createCaseRecorder,collectAudit,startBoundedProcessSampler,classifyCase,qualifiedPairs,reportVerdicts,main};
+module.exports={assertPageRecordingReady,stopAfterRecordingFailure,deadline,inspectPreflight,verifyPreflight,preflightStatus,createCaseRecorder,reconstructCaseFields,collectAudit,startBoundedProcessSampler,classifyCase,qualifiedPairs,reportVerdicts,main};
 if(require.main===module)main().catch(e=>{console.error(String(e.stack||e));process.exitCode=1;});
