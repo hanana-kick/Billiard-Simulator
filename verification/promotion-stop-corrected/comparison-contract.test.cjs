@@ -404,11 +404,11 @@ test('longer case cannot generate more than the two predeclared extra queries', 
 
 test('page observation preflight rejects sticky source failure before search work',async()=>{
  const status={complete:false,failure:'Unobserved worker source',pendingSources:0};let seen;
- await assert.rejects(C.assertPageRecordingReady({evaluate:async()=>status},{setPageStatus:s=>seen=s,status:()=>({failure:null,raw:{complete:true,failures:0}}),store:{status:()=>({complete:true})}}),/Browser observation unavailable: Unobserved worker source/);assert.equal(seen,status);
+ await assert.rejects(C.assertPageRecordingReady({evaluate:async()=>status},{setPageStatus:s=>seen=s,status:()=>({failure:null,raw:{complete:false,closed:false,failures:0}}),store:{status:()=>({complete:true})}}),/Browser observation unavailable: Unobserved worker source/);assert.equal(seen,status);
 });
 test('page observation preflight permits pending source hashes without erasing final requirement',async()=>{
  const status={complete:true,failure:null,pendingSources:2};let seen;
- assert.equal(await C.assertPageRecordingReady({evaluate:async()=>status},{setPageStatus:s=>seen=s,status:()=>({failure:null,raw:{complete:true,failures:0}}),store:{status:()=>({complete:true})}}),status);assert.equal(seen.pendingSources,2);
+ assert.equal(await C.assertPageRecordingReady({evaluate:async()=>status},{setPageStatus:s=>seen=s,status:()=>({failure:null,raw:{complete:false,closed:false,failures:0}}),store:{status:()=>({complete:true})}}),status);assert.equal(seen.pendingSources,2);
 });
 test('recording failure stops remaining repetitions and is not mistaken for completed validation',()=>{
  const report={cases:[],preflight:{mode:'functional-with-separate-cpu'}},summary=C.classifyCase(passingCase(),{complete:false,failure:'page capture incomplete: Unobserved worker source'});report.cases.push(summary);
@@ -422,7 +422,7 @@ test('recording fail-fast is wired before app work and at each bounded case summ
 });
 
 test('failed host recorder prevents even page preflight without waiting for fixture work',async()=>{
- let pageCalls=0;const recorder={status:()=>({failure:null,raw:{complete:false,failures:1,reason:'write-open denied'}}),store:{status:()=>({complete:true})},setPageStatus(){throw Error('should not set page');}};
+ let pageCalls=0;const recorder={status:()=>({failure:null,raw:{complete:false,closed:false,failures:1,reason:'write-open denied'}}),fail(){return false;},store:{status:()=>({complete:true})},setPageStatus(){throw Error('should not set page');}};
  await assert.rejects(C.assertPageRecordingReady({evaluate:async()=>{pageCalls++;}},recorder),/Host observation unavailable: write-open denied/);assert.equal(pageCalls,0);
 });
 
@@ -669,3 +669,18 @@ test('repeated ordinary source URLs share one digest while retaining separate so
 });
 
 }
+
+// Actual writer integration: an open healthy file is not yet final-complete.
+test('real open recorder passes readiness while final completeness remains false until close',async t=>{
+ const rec=C.createCaseRecorder(output(t));let pageCalls=0;assert.equal(rec.status().raw.complete,false);assert.equal(rec.status().raw.closed,false);assert.equal(rec.status().raw.failures,0);
+ await C.assertPageRecordingReady({evaluate:async()=>{pageCalls++;return{complete:true,failure:null,pendingSources:1};}},rec);assert.equal(pageCalls,1);assert.equal(rec.status().failure,null);assert.equal(rec.status().raw.complete,false);assert.equal(rec.status().page.pendingSources,1);
+ rec.setPageStatus({complete:true,failure:null,pendingSources:0});assert.equal(rec.record('proof',{realWriter:true}),true);assert.equal(rec.close().complete,true);assert.equal(rec.status().raw.closed,true);
+});
+test('real closed recorder fails readiness, makes failure sticky, and never calls page',async t=>{
+ const rec=C.createCaseRecorder(output(t));rec.setPageStatus({complete:true,pendingSources:0});assert.equal(rec.close().complete,true);let pageCalls=0;
+ await assert.rejects(C.assertPageRecordingReady({evaluate:async()=>{pageCalls++;}},rec),/Host observation unavailable/);assert.equal(pageCalls,0);assert.match(rec.status().failure,/Host observation unavailable/);assert.equal(rec.close().complete,false);const report={};assert.equal(C.stopAfterRecordingFailure(report,{recording:rec.status()}),true);
+});
+test('real failed-open recorder fails before page and stops fixture at final classification',async t=>{
+ const root=path.dirname(output(t)),rec=C.createCaseRecorder(path.join(root,'missing-parent','raw.ndjson'));let pageCalls=0;assert(rec.status().raw.failures>0);
+ await assert.rejects(C.assertPageRecordingReady({evaluate:async()=>{pageCalls++;}},rec),/Host observation unavailable/);assert.equal(pageCalls,0);assert.equal(rec.close().complete,false);assert.match(rec.status().failure,/Host observation unavailable/);const report={};assert.equal(C.stopAfterRecordingFailure(report,{recording:rec.status()}),true);
+});

@@ -118,7 +118,7 @@ function createCaseRecorder(file,{writer=records.createWriter(file,RAW_LIMITS),m
   close(){if((pageStatus?.pendingSources??0)!==0)fail('Unresolved worker source hashes at final capture');writer.close();return this.status();},status(){return {complete:!failure&&store.status().complete&&pageStatus?.complete===true&&(pageStatus.pendingSources??0)===0&&writer.stats().complete,failure,page:pageStatus,raw:writer.stats()};},writer};
 }
 async function assertPageRecordingReady(page,recorder){
- const host=recorder.status();assert(!host.failure&&host.raw?.complete===true&&host.raw?.failures===0&&recorder.store.status().complete===true,'Host observation unavailable: '+String(host.failure||host.raw?.reason||'incomplete recorder'));
+ const host=recorder.status();if(host.failure||host.raw?.closed!==false||host.raw?.failures!==0||recorder.store.status().complete!==true){const reason='Host observation unavailable: '+String(host.failure||host.raw?.reason||'writer is not healthy and open');recorder.fail(reason);throw Error(reason);}
  const status=await page.evaluate(()=>__promotionAudit.read(0).status);
  recorder.setPageStatus(status);
  assert(status?.complete===true,'Browser observation unavailable: '+String(status?.failure||'missing status'));
