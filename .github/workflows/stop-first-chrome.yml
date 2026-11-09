@@ -1,4 +1,4 @@
-name: Promotion stop bounded Chrome qualification
+name: Promotion Chrome functional and CPU verdicts
 on:
   push:
     branches: ['validation/stop-first-resume-check-20261106']
@@ -14,6 +14,9 @@ jobs:
     if: github.ref == 'refs/heads/validation/stop-first-resume-check-20261106'
     runs-on: ubuntu-latest
     timeout-minutes: 8
+    outputs:
+      functional_ready: ${{ steps.capability.outputs.functional_ready }}
+      cpu_qualified: ${{ steps.capability.outputs.cpu_qualified }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -22,24 +25,34 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-      - run: npm ci --no-audit --no-fund
-      - name: Browser-free recording, gate and comparison contracts
+      - id: dependencies
+        run: npm ci --no-audit --no-fund
+      - id: contracts
+        name: Browser-free recording, gate and comparison contracts
         run: |
           node verification/promotion-stop-corrected/bounded-records.test.cjs
           node verification/promotion-stop-corrected/cpu-preflight.test.cjs
           node verification/promotion-stop-corrected/comparison-contract.test.cjs
-      - name: Verify preserved sources and Chrome
+      - id: pins
+        name: Verify preserved sources and Chrome
         run: |
           echo 'fb377eac4bdf5c0410d520f4842eb7ecec69228bb31cc4da4645c5f8434ef251  verification/promotion-stop-corrected/measurement.cjs' | sha256sum --check
           echo 'ed09902e8cc9aa0e05e934b4f181d340c24be56ca9cee9ab8e53913a3ef8e275  verification/promotion-stop-corrected/baseline-optimizer-service.js' | sha256sum --check
           echo 'd2723c450e14aff9632112eef0d08ce6d65eb420f5f06f20ab600783da8e3d09  verification/promotion-stop-corrected/candidate-optimizer-service.js' | sha256sum --check
           google-chrome --version
-      - name: Bounded CPU capability preflight
+      - id: measure
+        name: Bounded CPU capability preflight
         env:
           OUT_DIR: cpu-preflight-results
         run: timeout --signal=TERM --kill-after=5s 75s node verification/promotion-stop-corrected/cpu-preflight.cjs
-      - name: Independently validate preflight evidence
-        run: node verification/promotion-stop-corrected/check-preflight.cjs cpu-preflight-results/summary.json cpu-preflight-results/samples.ndjson
+      - id: capability
+        name: Classify browser readiness separately from CPU qualification
+        if: always() && steps.contracts.outcome == 'success' && steps.pins.outcome == 'success'
+        env:
+          VALIDATION_MODE: functional-with-separate-cpu
+          PREFLIGHT_SUMMARY: cpu-preflight-results/summary.json
+          PREFLIGHT_RAW: cpu-preflight-results/samples.ndjson
+        run: node verification/promotion-stop-corrected/chrome.cjs --preflight-status
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -49,7 +62,7 @@ jobs:
           retention-days: 14
   comparison:
     needs: preflight
-    if: needs.preflight.result == 'success'
+    if: always() && needs.preflight.outputs.functional_ready == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 70
     strategy:
@@ -64,14 +77,24 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-      - run: npm ci --no-audit --no-fund
-      - name: Fresh CPU preflight on this comparison runner
+      - id: dependencies
+        run: npm ci --no-audit --no-fund
+      - id: measure
+        name: Fresh CPU preflight on this comparison runner
         env:
           OUT_DIR: cpu-preflight-results
         run: timeout --signal=TERM --kill-after=5s 75s node verification/promotion-stop-corrected/cpu-preflight.cjs
-      - name: Require this runner's complete preflight before app comparison
-        run: node verification/promotion-stop-corrected/check-preflight.cjs cpu-preflight-results/summary.json cpu-preflight-results/samples.ndjson
-      - name: Build separately pinned source arms
+      - id: capability
+        name: Validate this runner's records and separate verdicts
+        if: always() && steps.dependencies.outcome == 'success'
+        env:
+          VALIDATION_MODE: functional-with-separate-cpu
+          PREFLIGHT_SUMMARY: cpu-preflight-results/summary.json
+          PREFLIGHT_RAW: cpu-preflight-results/samples.ndjson
+        run: node verification/promotion-stop-corrected/chrome.cjs --preflight-status
+      - id: build
+        name: Build separately pinned source arms
+        if: always() && steps.capability.outputs.functional_ready == 'true'
         run: |
           set -euo pipefail
           mkdir -p /tmp/promotion-baseline /tmp/promotion-candidate
@@ -86,8 +109,11 @@ jobs:
           (cd /tmp/promotion-candidate && npm run prepare:engine && node build.cjs --canonical-controller-assets)
           (cd /tmp/promotion-baseline && PORT=8793 node server.cjs > "$GITHUB_WORKSPACE/baseline-server.log" 2>&1 &)
           (cd /tmp/promotion-candidate && PORT=8794 node server.cjs > "$GITHUB_WORKSPACE/candidate-server.log" 2>&1 &)
-      - name: Eight fixed actual-app paired cases
+      - id: functional
+        name: Eight fixed actual-app paired cases
+        if: always() && steps.capability.outputs.functional_ready == 'true' && steps.build.outcome == 'success'
         env:
+          VALIDATION_MODE: functional-with-separate-cpu
           FIXTURE: ${{ matrix.fixture }}
           OUT_DIR: promotion-stop-results
           PREFLIGHT_SUMMARY: cpu-preflight-results/summary.json
@@ -95,6 +121,18 @@ jobs:
         run: |
           set -o pipefail
           timeout --signal=TERM --kill-after=10s 65m node verification/promotion-stop-corrected/chrome.cjs 2>&1 | tee promotion-stop.log
+      - name: Report actual-window CPU qualification separately
+        if: always() && steps.build.outcome == 'success'
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs'),file='promotion-stop-results/summary.json';
+          const stat=fs.statSync(file);if(!stat.isFile()||stat.size>262144)throw Error('Missing or oversized comparison summary');
+          const r=JSON.parse(fs.readFileSync(file,'utf8'));
+          const qualified=r.cpu?.qualified===true&&r.cpu.criterionMs===250&&r.cpu.eligibleCases===8&&r.cpu.eligiblePairs===4;
+          console.log(JSON.stringify({functional:r.functional,cpu:r.cpu,comparisonQualified:qualified}));
+          if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,`Functional cases: ${r.functional?.passedCases??0}/8 passed. Actual CPU pairs: ${r.cpu?.eligiblePairs??0}/4 qualified at unchanged 250 ms. CPU claims remain null.\n`);
+          if(!qualified)process.exitCode=1;
+          NODE
       - uses: actions/upload-artifact@v4
         if: always()
         with:

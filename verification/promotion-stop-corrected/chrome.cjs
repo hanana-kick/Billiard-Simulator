@@ -2,23 +2,108 @@
 // Prepared follow-on only. Requiring this module never loads Playwright or opens
 // a socket. Main requires independently verified, CI-bound preflight evidence.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
-const support=fs.existsSync(path.join(__dirname,'measurement.cjs'))?__dirname:path.resolve(__dirname,'../verification/promotion-stop-corrected');
+const support=fs.existsSync(path.join(__dirname,'measurement.cjs'))?__dirname:path.resolve(__dirname,'../assembled/verification/promotion-stop-corrected');
+const auditFile=path.join(support,'audit.js');
 const measurement=require(path.join(support,'measurement.cjs'));
 const records=require(path.join(support,'bounded-records.cjs'));
-const {createCaptureStore}=require('./audit.js');
+const {createCaptureStore}=require(auditFile);
 const hostNow=()=>Number(process.hrtime.bigint())/1e6;
 const hash=v=>crypto.createHash('sha256').update(typeof v==='string'?v:JSON.stringify(v)).digest('hex');
 async function deadline(work,ms,label){let timer;try{return await Promise.race([Promise.resolve().then(work),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(label+' timed out; no replacement query')),ms);})]);}finally{clearTimeout(timer);}}
 const RAW_LIMITS={maxBytes:64*1024*1024,maxRecords:65536,maxLineBytes:32768,maxStringChars:8192,maxStringBytes:32768,maxArrayLength:4096,maxObjectKeys:256,maxNodes:65536,maxDepth:32};
 const SUMMARY_LIMITS={...RAW_LIMITS,maxBytes:262144,maxLineBytes:262144,maxStringChars:16384,maxStringBytes:32768};
-function verifyPreflight(env=process.env){
- const gate=require(path.join(support,'check-preflight.cjs'));
+const FUNCTIONAL_MODE='functional-with-separate-cpu';
+const TIMING_ONLY_FAILURE='Loaded CPU window failed unchanged 250 ms qualification';
+function preflightMode(env=process.env,options={}){
+ const mode=options.mode??env.VALIDATION_MODE??'strict';
+ assert(['strict',FUNCTIONAL_MODE].includes(mode),'Unknown VALIDATION_MODE; gate remains closed');
+ return mode;
+}
+function exactKeys(value,keys,label){assert(value&&typeof value==='object'&&!Array.isArray(value),label+' must be an object');assert.deepEqual(Object.keys(value).sort(),[...keys].sort(),label+' schema mismatch');}
+function inspectPreflight(env=process.env,options={}){
+ const mode=preflightMode(env,options),gate=require(path.join(support,'check-preflight.cjs')),{LIMITS,STARTUP,processRows,compactWindow}=require(path.join(support,'cpu-preflight.cjs'));
  for(const key of ['PREFLIGHT_SUMMARY','PREFLIGHT_RAW','GITHUB_SHA','GITHUB_RUN_ID','GITHUB_RUN_ATTEMPT'])assert(env[key],`Missing ${key}; actual-app gate remains closed`);
+ assert(/^[a-f0-9]{40,64}$/.test(env.GITHUB_SHA)&&/^[0-9]{1,24}$/.test(env.GITHUB_RUN_ID)&&/^[1-9][0-9]{0,8}$/.test(env.GITHUB_RUN_ATTEMPT),'Invalid CI source binding');
  assert.equal(hash(fs.readFileSync(path.join(support,'measurement.cjs'),'utf8')),gate.MEASUREMENT_SHA256,'Measurement source changed');
  const s=gate.readSummary(env.PREFLIGHT_SUMMARY);
- gate.requireQualified(s,{commit:env.GITHUB_SHA,runId:env.GITHUB_RUN_ID,runAttempt:env.GITHUB_RUN_ATTEMPT});
- const stat=fs.statSync(env.PREFLIGHT_RAW);assert(stat.isFile()&&stat.size<=1048576,'Preflight raw size exceeds limit');gate.validateRaw(s,fs.readFileSync(env.PREFLIGHT_RAW));
- return {capabilityQualified:true,actualAppQualified:false,commit:env.GITHUB_SHA,runId:env.GITHUB_RUN_ID,runAttempt:env.GITHUB_RUN_ATTEMPT,rawSHA256:s.rawSHA256};
+ records.encodeBounded(s,{maxBytes:65536,maxLineBytes:65536,maxStringChars:1024,maxStringBytes:4096,maxArrayLength:256,maxObjectKeys:64,maxNodes:2048,maxDepth:12});
+ exactKeys(s,['schema','kind','pass','criterionMs','actualAppQualified','actualComparisonsStarted','phase','failure','shutdown','limits','startupTiming','browser','clockBefore','load','clockAfter','clockEnvelope','window','processDiagnostics','recording','sampleCount','acquisitionPendingAtFailure','wallMs','limitsAndCaveats','source','rawSHA256'],'Preflight summary');
+ assert.equal(s.schema,'promotion-cpu-capability-v1','Wrong preflight schema');
+ assert.equal(s.kind,'generic-worker-load-capability-only','Wrong preflight scope');
+ assert.equal(s.criterionMs,250,'Criterion changed');assert.deepEqual(s.limits,LIMITS,'Preflight limits changed');
+ assert.equal(s.actualAppQualified,false,'Preflight cannot qualify actual app');assert.equal(s.actualComparisonsStarted,0,'Preflight started actual comparisons');
+ exactKeys(s.source,['gitCommit','runId','runAttempt','measurementSHA256'],'Source');
+ assert.equal(s.source.gitCommit,env.GITHUB_SHA,'Commit mismatch');assert.equal(s.source.runId,env.GITHUB_RUN_ID,'Run mismatch');assert.equal(s.source.runAttempt,env.GITHUB_RUN_ATTEMPT,'Attempt mismatch');assert.equal(s.source.measurementSHA256,gate.MEASUREMENT_SHA256,'Measurement source mismatch');
+ exactKeys(s.shutdown,['detached','closed'],'Shutdown');assert(s.shutdown.detached===true&&s.shutdown.closed===true,'Cleanup incomplete');
+ const stages=['Chrome launch','Context creation','Page creation','Blank page','Independent browser CDP session'];
+ assert(Array.isArray(s.startupTiming)&&s.startupTiming.length===stages.length,'Startup metadata incomplete');let startupMs=0;
+ s.startupTiming.forEach((v,i)=>{exactKeys(v,['stage','ms','completed'],'Startup stage');assert(v.stage===stages[i]&&v.completed===true&&Number.isFinite(v.ms)&&v.ms>=0&&v.ms<=(i===0?STARTUP.launchMs:STARTUP.stepMs),'Startup failed or exceeded budget');startupMs+=v.ms;});assert(startupMs<=STARTUP.totalMs,'Startup total budget exceeded');
+ exactKeys(s.browser,['product','revision','jsVersion','protocolVersion'],'Browser metadata');for(const value of Object.values(s.browser))assert(typeof value==='string'&&value.length>0&&value.length<=256,'Invalid browser metadata');assert(/^Chrome\//.test(s.browser.product),'Not Chrome');
+ exactKeys(s.recording,['complete','bytes','records','failures','reason','closed'],'Recording');
+ assert(s.recording.complete===true&&s.recording.closed===true&&s.recording.failures===0&&s.recording.reason===null,'Raw records incomplete');
+ assert(Number.isInteger(s.sampleCount)&&s.sampleCount>=15&&s.sampleCount<=LIMITS.maxSamples&&s.recording.records===s.sampleCount+1,'Invalid record count');
+ assert(Number.isSafeInteger(s.recording.bytes)&&s.recording.bytes>0&&s.recording.bytes<=1048576,'Invalid raw byte count');
+ assert(s.acquisitionPendingAtFailure===false,'Unfinished acquisition');assert(Number.isFinite(s.wallMs)&&s.wallMs>=0&&s.wallMs<=LIMITS.maxWallMs,'Work budget exceeded');
+ assert(typeof s.rawSHA256==='string'&&/^[a-f0-9]{64}$/.test(s.rawSHA256),'Missing raw digest');
+ const stat=fs.statSync(env.PREFLIGHT_RAW);assert(stat.isFile()&&stat.size<=1048576,'Preflight raw size exceeds limit');const buffer=fs.readFileSync(env.PREFLIGHT_RAW);
+ assert.equal(buffer.length,s.recording.bytes,'Raw byte count mismatch');assert.equal(crypto.createHash('sha256').update(buffer).digest('hex'),s.rawSHA256,'Raw digest mismatch');
+ const text=buffer.toString('utf8');assert(Buffer.from(text,'utf8').equals(buffer),'Invalid raw UTF-8');const lines=text.split('\n');assert.equal(lines.pop(),'','Missing final newline');assert.equal(lines.length,s.recording.records,'Raw record count mismatch');
+ const rows=lines.map(line=>{assert(Buffer.byteLength(line)+1<=32768,'Oversized raw record');const row=JSON.parse(line);records.encodeBounded(row,{maxLineBytes:32768,maxNodes:2048,maxArrayLength:128,maxObjectKeys:8,maxDepth:5,maxStringChars:256,maxStringBytes:1024});return row;});
+ exactKeys(rows[0],['type','browser'],'Raw metadata');assert.equal(rows[0].type,'metadata','Missing metadata');assert.deepEqual(rows[0].browser,s.browser,'Browser metadata mismatch');
+ const samples=rows.slice(1),phases=['idle','load','post'],counts=[0,0,0];let phase=0;
+ for(let i=0;i<samples.length;i++){
+  const x=samples[i];exactKeys(x,['type','phase','start','end','processes'],'Raw sample');const p=phases.indexOf(x.phase);assert(x.type==='sample'&&p>=phase&&p<=phase+1,'Sample phase order');phase=p;counts[p]++;
+  assert(Number.isFinite(x.start)&&x.start>=0&&Number.isFinite(x.end)&&x.end>=x.start&&x.end-x.start<=250,'Invalid or over-budget acquisition bracket');if(i)assert(x.start>=samples[i-1].end&&x.start-samples[i-1].end<=250,'Overlapping CPU requests or sampling gap');
+  processRows(x.processes);for(const process of x.processes){exactKeys(process,['id','type','cpuTime'],'Process counter');assert(typeof process.id==='string','Process ID must use the recorded string schema');}
+ }
+ assert(counts[0]===LIMITS.idleSamples&&counts[1]>=2&&counts[2]===LIMITS.postSamples,'Incomplete sample phases');
+ function calibration(c){
+  exactKeys(c,['rounds','best'],'Calibration');assert(Array.isArray(c.rounds)&&c.rounds.length===5,'Missing calibration rounds');
+  for(let i=0;i<c.rounds.length;i++){const r=c.rounds[i];exactKeys(r,['start','end','pageEpoch','low','high','width'],'Calibration round');assert(Object.values(r).every(Number.isFinite)&&r.start>=0&&r.end>=r.start&&r.width===r.end-r.start&&r.low===r.pageEpoch-r.end&&r.high===r.pageEpoch-r.start,'Invalid calibration');if(i)assert(r.start>=c.rounds[i-1].end,'Overlapping calibration rounds');}
+  const best=c.rounds.reduce((a,b)=>!a||b.width<a.width?b:a,null);assert.deepEqual(c.best,best,'Calibration best mismatch');return c;
+ }
+ const before=calibration(s.clockBefore),after=calibration(s.clockAfter);assert(before.rounds.at(-1).end<=samples[0].start&&after.rounds[0].start>=samples.at(-1).end,'Calibration not outside observed samples');
+ exactKeys(s.load,['workers','durationRequestedMs','description','observedPageMs','startEpoch','endEpoch','workersRemaining'],'Load');
+ assert(Number.isInteger(s.load.workers)&&s.load.workers>=1&&s.load.workers<=4&&s.load.workersRemaining===0&&s.load.durationRequestedMs===8000,'Invalid load metadata');
+ assert(Number.isFinite(s.load.startEpoch)&&Number.isFinite(s.load.endEpoch)&&s.load.endEpoch-s.load.startEpoch>=8000&&s.load.endEpoch-s.load.startEpoch<=8250&&s.load.observedPageMs===s.load.endEpoch-s.load.startEpoch,'Invalid load endpoint');
+ assert.equal(s.load.description,'10 ms numerical work / 30 ms yield, at most 4 generic workers; not Rapier or app search','Load description changed');
+ const clock=measurement.clockEnvelope(before,after);
+ // Page receipts must be consistent with the actual producer's raw phases.
+ // Use interval overlap, not full containment: clock uncertainty may straddle
+ // a receipt boundary even when the real event obeyed the producer's order.
+ const idle=samples.filter(x=>x.phase==='idle'),loaded=samples.filter(x=>x.phase==='load'),post=samples.filter(x=>x.phase==='post');
+ const startHost=[s.load.startEpoch-clock.high,s.load.startEpoch-clock.low],endHost=[s.load.endEpoch-clock.high,s.load.endEpoch-clock.low];
+ assert(startHost[1]>=idle.at(-1).end&&startHost[0]<=loaded[0].start,'Load start contradicts raw idle/load chronology');
+ assert(endHost[0]<=post[0].start,'Load end contradicts raw post chronology');
+ // observe is recorded by the producer before its first load acquisition and
+ // after the load-start receipt. The loop exits only after 8,300 ms. Its exact
+ // host instant is absent, so require a feasible interval, not an assumed
+ // equality with firstLoad.start. The penultimate acquisition finishes before
+ // the last loop guard, avoiding an invented guard-to-acquisition time bound.
+ const observeLow=Math.max(idle.at(-1).end,startHost[0]),observeHigh=Math.min(loaded[0].start,post[0].start-LIMITS.loadObserveMs);
+ assert(observeLow<=observeHigh&&loaded.at(-2).end<observeHigh+LIMITS.loadObserveMs,'Raw load observation contradicts 8300 ms producer loop');
+ assert(s.wallMs>=after.rounds.at(-1).end-before.rounds[0].start,'Wall time shorter than recorded calibration/sample trace');
+ const w=measurement.windowEvidence(samples,s.load.startEpoch,s.load.endEpoch,clock);
+ assert.deepEqual(s.clockEnvelope,{low:clock.low,high:clock.high,width:clock.width,qualified:clock.qualified,driftIntervalMs:clock.driftIntervalMs},'Clock summary mismatch');assert.deepEqual(s.window,compactWindow(w),'Window summary mismatch');
+ const finiteNonnegative=x=>Number.isFinite(x)&&x>=0;assert(w.reason===undefined&&w.incompleteAcquisition===false,'Incomplete window');assert([clock.width,w.maxGapMs,w.maxAcquisitionMs].every(finiteNonnegative)&&Array.isArray(w.bracketWidthsMs)&&w.bracketWidthsMs.length===2&&w.bracketWidthsMs.every(finiteNonnegative),'Missing timing evidence');
+ for(const part of [w.inner,w.outer])assert(part&&finiteNonnegative(part.cpuSecondsLowerBound)&&Number.isInteger(part.intervals)&&part.intervals>=1&&part.intervals<=110&&Number.isFinite(part.observedSpanMs)&&part.observedSpanMs>0,'Missing lower-bound evidence');
+ const diagnostics={exits:new Set(),newIds:new Set(),resets:new Set(),invalidCounters:new Set()};for(let i=1;i<samples.length;i++){const d=measurement.processDelta(samples[i-1],samples[i]);for(const key of Object.keys(diagnostics))for(const id of d[key])diagnostics[key].add(id);}assert.deepEqual(s.processDiagnostics,Object.fromEntries(Object.entries(diagnostics).map(([k,v])=>[k,[...v]])),'Process diagnostics mismatch');
+ const failedCriteria=[['clock-width',clock.width],['acquisition',w.maxAcquisitionMs],['gap',w.maxGapMs],['start-bracket',w.bracketWidthsMs[0]],['end-bracket',w.bracketWidthsMs[1]]].filter(([,v])=>v>250).map(([criterion,valueMs])=>({criterion,valueMs,limitMs:250}));
+ const cpuQualified=w.qualified===true;
+ if(cpuQualified){assert(s.pass===true&&s.phase==='capability-qualified'&&s.failure===null,'Contradictory passing preflight verdict');gate.requireQualified(s,{commit:env.GITHUB_SHA,runId:env.GITHUB_RUN_ID,runAttempt:env.GITHUB_RUN_ATTEMPT});gate.validateRaw(s,buffer);}
+ else assert(s.pass===false&&s.phase==='failed'&&s.failure===TIMING_ONLY_FAILURE&&failedCriteria.length>0,'Unknown or non-timing preflight failure');
+ assert(Array.isArray(s.limitsAndCaveats)&&s.limitsAndCaveats.length===4&&s.limitsAndCaveats.every(x=>typeof x==='string'),'Missing scope caveats');
+ return {schema:'promotion-preflight-inspection-v1',mode,evidenceValid:true,functionalReady:cpuQualified||mode===FUNCTIONAL_MODE,cpuQualified,capabilityQualified:cpuQualified,actualAppQualified:false,actualComparisonsStarted:0,preflightPass:s.pass,preflightPhase:s.phase,preflightFailure:s.failure,cpuTimingOnlyFailure:!cpuQualified,failedCriteria,criterionMs:250,sampleCount:s.sampleCount,commit:env.GITHUB_SHA,runId:env.GITHUB_RUN_ID,runAttempt:env.GITHUB_RUN_ATTEMPT,rawSHA256:s.rawSHA256,scope:'cpuQualified denotes generic capability only. Each actual 8-second window requires its own unchanged 250 ms proof.'};
+}
+function verifyPreflight(env=process.env,options={}){
+ const result=inspectPreflight(env,options);assert(result.functionalReady,'CPU capability gate closed: preflight failed; functional mode requires explicit opt-in');return result;
+}
+function preflightStatus(env=process.env,options={}){
+ let result;
+ try{result=inspectPreflight(env,options);}catch(error){result={schema:'promotion-preflight-inspection-v1',evidenceValid:false,functionalReady:false,cpuQualified:false,capabilityQualified:false,actualAppQualified:false,actualComparisonsStarted:0,error:String(error.message||error).slice(0,800)};}
+ const json=records.encodeBounded(result,{maxBytes:8192,maxLineBytes:8192,maxStringChars:1024,maxStringBytes:4096,maxArrayLength:16,maxObjectKeys:32,maxNodes:256,maxDepth:5});
+ if(env.GITHUB_OUTPUT)fs.appendFileSync(env.GITHUB_OUTPUT,`functional_ready=${result.functionalReady}\ncpu_qualified=${result.cpuQualified}\n`);
+ return {result,json,exitCode:result.functionalReady?0:1};
 }
 function createCaseRecorder(file,{writer=records.createWriter(file,RAW_LIMITS),maxSamples=6000}={}){
  const store=createCaptureStore(),saved=new Set(),decoded=new Map();let failure=null,pageStatus=null;
@@ -41,29 +126,277 @@ async function collectAudit(page,recorder,cache){
  }
  return cache;
 }
-function startBoundedProcessSampler({cdp,recorder,now=hostNow,sleep=ms=>new Promise(r=>setTimeout(r,ms))}){
- let running=true,pending=null;const {processRows}=require(path.join(support,'cpu-preflight.cjs'));
- const done=(async()=>{while(running){const start=now();pending={start};let row;try{row={start,end:null,processes:processRows((await cdp.send('SystemInfo.getProcessInfo')).processInfo)};row.end=now();}catch(e){row={start,end:now(),error:String(e).slice(0,600)};recorder.fail('CPU acquisition failure');}pending=null;if(!recorder.sample(row)){running=false;break;}if(running)await sleep(Math.max(0,100-(now()-start)));}})();
- return {stop:async({timeoutMs=5000}={})=>{running=false;let timer;const settled=await Promise.race([done.then(()=>true),new Promise(r=>{timer=setTimeout(()=>r(false),timeoutMs);})]);clearTimeout(timer);if(!settled){recorder.fail('CPU acquisition pending at shutdown');recorder.sample({start:pending?.start??now(),end:now(),incomplete:true,error:'Pending acquisition; no replacement poll issued'});}return recorder.samples;}};
+// BEGIN ENDPOINT-AWARE SAMPLER
+const startBoundedProcessSampler = (() => {
+// LOCAL PROTOTYPE ONLY. This module does not load a browser or open a socket.
+// Its sole transport dependency is the caller-supplied cdp.send fake/session.
+const { processRows } = require(path.join(support, 'cpu-preflight.cjs'));
+const POLICY = Object.freeze({
+  intervalMs: 100, criterionMs: 250, windowMs: 8000,
+  maxEndpointQueries: 2, beforeEndMs: 75, afterEndMs: 25,
+  hintLatenessMs: 25, requestTimeoutMs: 2000, maxStopMs: 5000,
+  maxSamples: 6000,
+});
+const hostNow = () => Number(process.hrtime.bigint()) / 1e6;
+function sleepDefault(ms, { signal } = {}) {
+  return new Promise(resolve => {
+    let timer;
+    const finish = () => { clearTimeout(timer); signal?.removeEventListener('abort', finish); resolve(); };
+    if (signal?.aborted) return finish();
+    timer = setTimeout(finish, ms);
+    signal?.addEventListener('abort', finish, { once: true });
+  });
 }
+const brief = error => String(error?.message || error).slice(0, 600);
+function startBoundedProcessSampler({ cdp, recorder, now = hostNow, sleep = sleepDefault,
+  setTimer = setTimeout, clearTimer = clearTimeout }) {
+  if (typeof cdp?.send !== 'function' || typeof recorder?.sample !== 'function' ||
+      typeof recorder?.record !== 'function' || typeof recorder?.fail !== 'function' ||
+      !Array.isArray(recorder.samples)) throw TypeError('Missing sampler dependencies');
+  const maxSamples = recorder.maxSamples ?? POLICY.maxSamples;
+  if (!Number.isInteger(maxSamples) || maxSamples < 1 || maxSamples > POLICY.maxSamples)
+    throw RangeError('CPU sample cap must be between 1 and 6000');
+  let running = true, sealed = false, pending = null, registration = null;
+  let interruptSleep = null, abandonAcquisition = null, stopPromise = null;
+  let nextNormalAt = now(), previousAcquisition = null;
+  const hints = [];
+  const counts = { normalQueries: 0, endpointQueries: 0, waits: 0, wakeups: 0, maxConcurrent: 0 };
+  let activeQueries = 0;
+  const fail = reason => { recorder.fail(reason); running = false; interruptSleep?.(); };
+  const record = (type, value) => {
+    if (sealed) return false;
+    try { if (recorder.record(type, value) !== true) { fail('CPU scheduler metadata incomplete'); return false; } }
+    catch (error) { fail('CPU scheduler metadata failure: ' + brief(error)); return false; }
+    return true;
+  };
+  const saveSample = row => {
+    if (sealed) return false;
+    try { if (recorder.sample(row) !== true) { fail('CPU sample recording incomplete'); return false; } }
+    catch (error) { fail('CPU sample recording failure: ' + brief(error)); return false; }
+    return true;
+  };
+  function finishHint(hint, state, reason, at, queryKind = null) {
+    if (hint.state !== 'planned') return;
+    Object.assign(hint, { state, reason, resolvedAt: at, queryKind });
+    record('cpu-endpoint-hint', { ...hint });
+  }
+  function expireHints(at) {
+    for (const hint of hints) if (hint.state === 'planned' && at > hint.expiresAt) {
+      const pendingAtTarget = previousAcquisition && previousAcquisition.start <= hint.targetAt &&
+        previousAcquisition.end >= hint.targetAt;
+      finishHint(hint, 'missed', pendingAtTarget ? 'acquisition-pending-at-target' : 'scheduler-late', at);
+    }
+  }
+  function cancelHints(reason, at) {
+    for (const hint of hints) finishHint(hint, 'cancelled', reason, at);
+  }
+  async function waitUntil(at) {
+    const controller = new AbortController();
+    let wake;
+    const changed = new Promise(resolve => { wake = resolve; });
+    interruptSleep = () => { controller.abort(); wake(); };
+    counts.waits++;
+    try {
+      await Promise.race([Promise.resolve(sleep(Math.max(0, at - now()), { signal: controller.signal }))
+        .catch(error => { if (!controller.signal.aborted) throw error; }), changed]);
+      counts.wakeups++;
+    } finally { controller.abort(); interruptSleep = null; }
+  }
+  function terminalPending(reason) {
+    if (sealed) return;
+    const at = now();
+    cancelHints(reason, at);
+    // The incomplete row must precede fail(): the production recorder refuses
+    // further writes once failure is sticky. This also reserves no extra slot.
+    if (pending) saveSample({ start: pending.start, end: at, incomplete: true, error: reason });
+    fail(reason);
+    sealed = true;
+    abandonAcquisition?.();
+  }
+  async function acquire(kind) {
+    // Check BEFORE issuing the request. Endpoint rows use the same existing cap.
+    if (recorder.samples.length >= maxSamples) { fail('CPU sample count limit'); return; }
+    const start = now();
+    if (kind === 'normal') { nextNormalAt = start + POLICY.intervalMs; counts.normalQueries++; }
+    else {
+      if (counts.endpointQueries >= POLICY.maxEndpointQueries) { fail('CPU endpoint query limit'); return; }
+      counts.endpointQueries++;
+    }
+    pending = { start, kind };
+    activeQueries++;
+    counts.maxConcurrent = Math.max(counts.maxConcurrent, activeQueries);
+    if (activeQueries !== 1) { terminalPending('Overlapping CPU acquisition'); return; }
+    let requestTimer;
+    let abandon;
+    const abandoned = new Promise(resolve => { abandon = () => resolve({ kind: 'abandoned' }); });
+    abandonAcquisition = () => { clearTimer(requestTimer); abandon(); };
+    let reply;
+    try {
+      reply = Promise.resolve(cdp.send('SystemInfo.getProcessInfo')).then(
+        value => { activeQueries--; return { kind: 'reply', value }; },
+        error => { activeQueries--; return { kind: 'error', error }; });
+    } catch (error) { activeQueries--; reply = Promise.resolve({ kind: 'error', error }); }
+    let outcome;
+    try {
+      outcome = await Promise.race([
+        reply, abandoned,
+        new Promise(resolve => { requestTimer = setTimer(() => resolve({ kind: 'timeout' }), POLICY.requestTimeoutMs); }),
+      ]);
+    } finally { clearTimer(requestTimer); abandonAcquisition = null; }
+    if (sealed || outcome.kind === 'abandoned') return;
+    if (outcome.kind === 'timeout') {
+      terminalPending('CPU acquisition timeout; no replacement poll issued');
+      return;
+    }
+    const end = now();
+    let row;
+    try {
+      if (outcome.kind === 'error') throw outcome.error;
+      if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) throw Error('Invalid host acquisition interval');
+      row = { start, end, processes: processRows(outcome.value.processInfo) };
+    } catch (error) { row = { start, end, error: brief(error) }; }
+    previousAcquisition = { start, end };
+    pending = null;
+    saveSample(row);
+    if (row.error) fail('CPU acquisition failure');
+    // Do not truncate, replace, or discard acquisitions over 250 ms. The
+    // unchanged windowEvidence helper and raw gate decide qualification.
+  }
+  record('cpu-sampler-policy', { ...POLICY, maxSamples });
+  const done = (async () => {
+    try {
+      while (running && !sealed) {
+        const at = now();
+        if (recorder.samples.length >= maxSamples) { fail('CPU sample count limit'); break; }
+        expireHints(at);
+        if (!running) break;
+        const due = hints.filter(h => h.state === 'planned' && h.targetAt <= at);
+        if (at >= nextNormalAt) {
+          for (const hint of due) finishHint(hint, 'coalesced', 'normal-query-due', at, 'normal');
+          if (running) await acquire('normal');
+        } else if (due.length) {
+          // One due batch gets at most ONE query; never burst pending hints.
+          for (const hint of due.slice(0, -1)) finishHint(hint, 'coalesced', 'single-endpoint-query', at, 'endpoint');
+          finishHint(due.at(-1), 'issued', 'predeclared-endpoint-query', at, 'endpoint');
+          if (running) await acquire('endpoint');
+        } else {
+          const nextHintAt = Math.min(...hints.filter(h => h.state === 'planned').map(h => h.targetAt));
+          await waitUntil(Math.min(nextNormalAt, nextHintAt));
+        }
+      }
+    } catch (error) {
+      if (pending) terminalPending('CPU scheduler failure: ' + brief(error));
+      else fail('CPU scheduler failure: ' + brief(error));
+    } finally {
+      cancelHints('sampler-ended', now());
+      interruptSleep?.();
+    }
+  })();
+  function setWindow(pageStart, pageEnd, clockBefore) {
+    // Single registration, including an invalid/unknown clock. No adaptive
+    // replacement window and no append-only log growth from duplicate calls.
+    if (registration) throw Error('CPU window already registered; replacement forbidden');
+    if (!running || sealed) throw Error('CPU sampler is stopped');
+    const registeredAt = now();
+    const best = clockBefore?.best;
+    const endpointsValid = Number.isFinite(pageStart) && Number.isFinite(pageEnd) &&
+      pageEnd - pageStart === POLICY.windowMs;
+    const clockValid = Number.isFinite(best?.low) && Number.isFinite(best?.high) &&
+      best.low <= best.high && best.high - best.low <= POLICY.criterionMs;
+    registration = { registeredAt, pageStart: Number.isFinite(pageStart) ? pageStart : null,
+      pageEnd: Number.isFinite(pageEnd) ? pageEnd : null, accepted: endpointsValid,
+      armed: endpointsValid && clockValid,
+      reason: !endpointsValid ? 'not-a-fixed-eight-second-window' : !clockValid ? 'unknown-or-wide-before-clock' : null,
+      clockBeforeHint: clockValid ? { low: best.low, high: best.high } : null,
+      startHostHint: null, endHostHint: null, startAlreadyElapsed: null, hints: [] };
+    if (registration.armed) {
+      const startHost = [pageStart - best.high, pageStart - best.low];
+      const endHost = [pageEnd - best.high, pageEnd - best.low];
+      if (![...startHost, ...endHost].every(Number.isFinite)) {
+        registration.armed = false; registration.reason = 'host-hint-overflow';
+      } else {
+        Object.assign(registration, { startHostHint: startHost, endHostHint: endHost,
+          startAlreadyElapsed: registeredAt > startHost[1] });
+        for (const [id, targetAt] of [['end-before', endHost[0] - POLICY.beforeEndMs],
+          ['end-after', endHost[1] + POLICY.afterEndMs]]) {
+          const hint = { id, targetAt, expiresAt: targetAt + POLICY.hintLatenessMs, state: 'planned' };
+          hints.push(hint);
+          registration.hints.push({ ...hint });
+        }
+      }
+    }
+    record('cpu-window-registration', registration);
+    // A target earlier than registration is missed, even if inside its grace.
+    // Never turn a late registration into a synthetic past observation.
+    for (const hint of hints) if (hint.targetAt < registeredAt)
+      finishHint(hint, 'missed', 'target-precedes-registration', registeredAt);
+    interruptSleep?.();
+    return structuredClone(registration);
+  }
+  function stop({ timeoutMs = POLICY.maxStopMs } = {}) {
+    if (stopPromise) return stopPromise;
+    if (!Number.isFinite(timeoutMs) || timeoutMs <= 0 || timeoutMs > POLICY.maxStopMs)
+      throw RangeError('Stop timeout must be positive and at most 5000 ms');
+    running = false;
+    cancelHints('stop-requested', now());
+    interruptSleep?.();
+    stopPromise = (async () => {
+      let timer;
+      try {
+        const settled = await Promise.race([
+          done.then(() => true),
+          new Promise(resolve => { timer = setTimer(() => resolve(false), timeoutMs); }),
+        ]);
+        if (!settled) terminalPending('CPU acquisition pending at shutdown; no replacement poll issued');
+        sealed = true;
+        return [...recorder.samples];
+      } finally { clearTimer(timer); }
+    })();
+    return stopPromise;
+  }
+  const stats = () => ({ running, sealed, pending: pending && { ...pending },
+    registration: registration && structuredClone(registration), hints: structuredClone(hints),
+    counts: { ...counts, normal: counts.normalQueries, extra: counts.endpointQueries,
+      missed: hints.filter(h => h.state === 'missed').length,
+      coalesced: hints.filter(h => h.state === 'coalesced').length,
+      overlap: Math.max(0, counts.maxConcurrent - 1) } });
+  return { stop, setWindow, stats, status: stats };
+}
+return startBoundedProcessSampler;
+
+})();
+// END ENDPOINT-AWARE SAMPLER
+
 function classifyCase(r,recording){
  const lifecycleFailures=r.failures.filter(f=>f.phase!=='primary-recall');
  const lifecycle={pass:lifecycleFailures.length===0&&r.uncovered.length===0&&r.lifecycleCompleted===true,failures:lifecycleFailures.map(f=>({phase:f.phase,error:String(f.error||'See raw failure details').slice(0,800)})),uncovered:r.uncovered};
- const recall={primary:r.primaryFirst===true&&!r.primaryRecallFailure,additional:r.additionalRecall===true,diagnostic:r.continuationDiagnostic?.foundIdentity===true};
+ const recall={primary:r.primaryFirst===true&&!r.primaryRecallFailure,additional:r.additionalRecall===true,diagnostic:r.continuationDiagnostic?.foundIdentity===true,primaryStatus:r.primaryFirst===true&&!r.primaryRecallFailure?'passed':r.primaryRecallFailure||r.primaryFirst===false?'failed':'unreached',additionalStatus:r.additionalRecall===true?'passed':r.additionalRecall===false?'failed':'unreached'};
+ lifecycle.status=lifecycle.pass?'passed':lifecycleFailures.length?'failed':'unreached';
+ const functionalPass=lifecycle.pass&&recall.primary&&recall.additional&&recording.complete===true;
+ const functional={pass:functionalPass,status:functionalPass?'passed':lifecycleFailures.length||recording.complete!==true||recall.primaryStatus==='failed'||recall.additionalStatus==='failed'?'failed':'unreached',lifecycleCompleted:r.lifecycleCompleted===true,scope:'Lifecycle, primary and additional recall, replay and complete recording; independent of CPU timing qualification'};
  const w=r.independentPostFirstCPU,bounded=x=>Number.isFinite(x)&&x>=0&&x<=250;
  const cpu={eligible:recording.complete===true&&r.primaryFirst===true&&w?.qualified===true&&r.postFirstCPUWindow?.end-r.postFirstCPUWindow?.start===8000&&bounded(w?.clock?.width)&&bounded(w.maxGapMs)&&bounded(w.maxAcquisitionMs)&&w.bracketWidthsMs?.length===2&&w.bracketWidthsMs.every(bounded)&&Number.isFinite(w?.inner?.cpuSecondsLowerBound)&&Number.isFinite(w?.outer?.cpuSecondsLowerBound),criterionMs:250,claim:null,window:{page:r.postFirstCPUWindow||null,maxAcquisitionMs:w?.maxAcquisitionMs??null,maxGapMs:w?.maxGapMs??null,bracketWidthsMs:w?.bracketWidthsMs??null,clockWidthMs:w?.clock?.width??null,inner:w?.inner?{cpuSecondsLowerBound:w.inner.cpuSecondsLowerBound,observedSpanMs:w.inner.observedSpanMs??null,intervals:w.inner.intervals??null}:null,outer:w?.outer?{cpuSecondsLowerBound:w.outer.cpuSecondsLowerBound,observedSpanMs:w.outer.observedSpanMs??null,intervals:w.outer.intervals??null}:null},limitation:'Shared-process observed lower bounds only. Exited-process terminal CPU and undetected PID reuse unknown; no per-worker attribution or total CPU savings claim'};
+ cpu.status=cpu.eligible?'qualified':'ineligible';cpu.ineligibleReasons=[];if(!cpu.eligible){if(recording.complete!==true)cpu.ineligibleReasons.push('recording-incomplete');if(r.primaryFirst!==true)cpu.ineligibleReasons.push(recall.primaryStatus==='failed'?'primary-first-failed':'primary-first-unreached');if(!w)cpu.ineligibleReasons.push('actual-window-unreached');else{if(w.qualified!==true)cpu.ineligibleReasons.push('actual-window-unqualified');if(!bounded(w.clock?.width))cpu.ineligibleReasons.push('clock-width-unqualified');if(!bounded(w.maxGapMs))cpu.ineligibleReasons.push('sampling-gap-unqualified');if(!bounded(w.maxAcquisitionMs))cpu.ineligibleReasons.push('acquisition-unqualified');if(w.bracketWidthsMs?.length!==2||!w.bracketWidthsMs.every(bounded))cpu.ineligibleReasons.push('endpoint-brackets-unqualified');if(!Number.isFinite(w.inner?.cpuSecondsLowerBound)||!Number.isFinite(w.outer?.cpuSecondsLowerBound))cpu.ineligibleReasons.push('lower-bound-evidence-missing');}if(r.postFirstCPUWindow?.end-r.postFirstCPUWindow?.start!==8000)cpu.ineligibleReasons.push('exact-eight-second-window-missing');}cpu.scope='Actual post-first 8-second window, never inherited from generic preflight';
  const replay={primary:{count:r.replay?.length||0,allRestedAndScored:!!r.replay?.length&&r.replay.every(x=>x.rested&&x.scoreDelta===1)},diagnostic:{count:r.continuationDiagnostic?.replay?.length||0,allRestedAndScored:r.continuationDiagnostic?.replayValid===true}};
- return {id:r.id,fixture:r.fixture,arm:r.arm,repeat:r.repeat,lifecycle,recall,recording,cpu,replay,firstCount:r.firstCount??null,promotionRequestHash:r.promotionRequestHash??null,failures:r.failures.map(f=>({phase:f.phase,error:String(f.error||'See raw failure details').slice(0,800)})),ok:lifecycle.pass&&recall.primary&&recall.additional&&recording.complete===true&&cpu.eligible};
+ return {id:r.id,fixture:r.fixture,arm:r.arm,repeat:r.repeat,lifecycle,functional,recall,recording,cpu,replay,firstCount:r.firstCount??null,promotionRequestHash:r.promotionRequestHash??null,failures:r.failures.map(f=>({phase:f.phase,error:String(f.error||'See raw failure details').slice(0,800)})),ok:functional.pass&&cpu.eligible};
 }
 function qualifiedPairs(cases){const pairs=[];for(let repeat=0;repeat<4;repeat++){const a=cases.find(c=>c.repeat===repeat&&c.arm==='baseline'),b=cases.find(c=>c.repeat===repeat&&c.arm==='candidate');pairs.push({repeat,eligible:!!a?.cpu.eligible&&!!b?.cpu.eligible&&a.lifecycle.pass&&b.lifecycle.pass&&a.recall.primary&&b.recall.primary&&a.promotionRequestHash===b.promotionRequestHash&&!!a.promotionRequestHash,baseline:a?.id??null,candidate:b?.id??null,claim:null});}return pairs;}
+function reportVerdicts(report){
+ const cases=report.cases,pairs=report.pairs||qualifiedPairs(cases),complete=cases.length===8;
+ const functionalPass=!report.fatal&&complete&&cases.every(c=>c.functional.pass);
+ const functional={pass:functionalPass,status:functionalPass?'passed':report.fatal||cases.some(c=>c.functional.status==='failed')?'failed':'unreached',expectedCases:8,recordedCases:cases.length,passedCases:cases.filter(c=>c.functional.pass).length,failedCases:cases.filter(c=>c.functional.status==='failed').length,unreachedCases:8-cases.length+cases.filter(c=>c.functional.status==='unreached').length};
+ const cpu={qualified:!report.fatal&&complete&&cases.every(c=>c.cpu.eligible)&&pairs.length===4&&pairs.every(p=>p.eligible),criterionMs:250,eligibleCases:cases.filter(c=>c.cpu.eligible).length,eligiblePairs:pairs.filter(p=>p.eligible).length,preflightCapabilityQualified:report.preflight?.cpuQualified===true,scope:'Independent actual-window and matched-pair eligibility; preflight capability is retained separately',claim:null};
+ return {functional,cpu,ok:functional.pass&&cpu.qualified,exitOk:report.preflight?.mode===FUNCTIONAL_MODE?functional.pass:functional.pass&&cpu.qualified};
+}
 function writeCompact(file,value){const writer=records.createWriter(file,{...SUMMARY_LIMITS,maxRecords:1});writer.append(value);writer.close();if(!writer.stats().complete)throw Error('Compact summary write failed: '+writer.stats().reason);}
 async function main(){
+ if(process.argv.includes('--preflight-status')){const status=preflightStatus();console.log(status.json);process.exitCode=status.exitCode;return;}
  const preflight=verifyPreflight();
 const inputDir=path.resolve(process.env.INPUT_DIR||support),pageRecords=new WeakMap(),auditCaches=new WeakMap();
 const {chromium}=require(require.resolve('playwright',{paths:[process.env.APP_DIR||process.cwd()]}));
 const fixture=process.env.FIXTURE;assert(['default3','default4','moved3','moved4'].includes(fixture));const input=JSON.parse(fs.readFileSync(path.join(inputDir,'fixtures',fixture+'.json'))),manifest=JSON.parse(fs.readFileSync(path.join(inputDir,'sources.json'))),out=process.env.OUT_DIR||'promotion-stop-results';fs.mkdirSync(out,{recursive:true});
 assert.equal(input.fixture,fixture);assert(Array.isArray(input.submitted?.snapshot?.world)&&input.submitted.snapshot.world.every(x=>Number.isInteger(x)&&x>=0&&x<=255));assert(input.first?.game&&input.initial?.options&&input.applied?.settings&&Number.isInteger(input.applied.selectedId));assert.equal(input.initial.options.solveTimeMs,20000);assert.equal(JSON.parse(input.applied.forecast.requestKey).length,6);assert(/^[a-f0-9]{64}$/.test(input.provenance.originalRecordSHA256));
-const report={fixture,preflight,scope:'Prepared actual-app comparison; never inferred from generic preflight',baselineCommit:'277b3b7174e54b2bef16e09a9b7bfc0f5700b36d',candidateRawSHA:'d2723c450e14aff9632112eef0d08ce6d65eb420f5f06f20ab600783da8e3d09',inputFileSHA:hash(fs.readFileSync(path.join(inputDir,'fixtures',fixture+'.json'),'utf8')),cases:[],budgets:{forecast:15000,prepared:8000,restPromotion:60000,firstAfterPromotion:60000,postFirst:8000,resume:100000,resumeSlices:4,restore:8000,replaySteps:40000,independentCpuIntervalMs:100,cpuQualificationUncertaintyMs:250,diagnosticResumeLimit:4,diagnosticDeadlineMs:100000},started:new Date().toISOString()};
+const report={fixture,preflight,scope:'Prepared actual-app comparison; never inferred from generic preflight',baselineCommit:'277b3b7174e54b2bef16e09a9b7bfc0f5700b36d',candidateRawSHA:'d2723c450e14aff9632112eef0d08ce6d65eb420f5f06f20ab600783da8e3d09',inputFileSHA:hash(fs.readFileSync(path.join(inputDir,'fixtures',fixture+'.json'),'utf8')),cases:[],budgets:{forecast:15000,prepared:8000,restPromotion:60000,firstAfterPromotion:60000,postFirst:8000,resume:100000,resumeSlices:4,restore:8000,replaySteps:40000,independentCpuIntervalMs:100,maxEndpointCPUQueries:2,endpointBeforeMs:75,endpointAfterMs:25,cpuQualificationUncertaintyMs:250,diagnosticResumeLimit:4,diagnosticDeadlineMs:100000},started:new Date().toISOString()};
 const state=async page=>{const value=await page.evaluate(()=>{const c=cueLab,o=c.optimizer,n=c.nextShot,j=n.job,r=c.state.routeResult;if((r?.results?.length||0)>2048||(o?.workers?.length||0)>128||(o?.busy?.size||0)>128){__promotionAudit.store.fail('Milestone collection limit');throw Error('Milestone collection limit');}return __promotionAudit.captureValue({at:performance.timeOrigin+performance.now(),status:c.state.routeStatus,error:c.state.routeError,settings:{...c.state.settings},options:{...c.state.routeOptions},selectedId:c.state.selectedId,predict:c.state.predict,precompute:c.state.nextShotPrecompute,shots:c.lab.shots,score:c.game?.scores,game:c.game?.snapshot(),rested:!c.lab.cue&&!c.lab.anyMotion()&&!c.game?.pending,identities:(r?.results||[]).map(LabRouteRules.successIdentity),termination:r?.terminationReason,continuable:r?.continuable,results:r?.results||[],cost:r?{tested:r.tested,physicsSteps:r.physicsSteps,workAttemptTotal:r.workAttemptTotal,retryOverhead:r.retryOverhead}:null,optimizer:{constructor:o?.constructor?.name,workerId:o?.worker?.__promotionId,workers:o?.workers?.map(w=>w.__promotionId),version:o?.version,disposed:o?.disposed??null,latest:!!o?.latest,poolBusy:o?.busy?[...o.busy.keys()].map(w=>w.__promotionId):null,requestGoal:o?.latest?.options?.searchGoal??o?.search?.req?.options?.searchGoal??null},job:j?{generation:j.generation,promoted:j.promoted,aiming:j.aiming,suspended:j.suspended,workerId:j.optimizer?.worker?.__promotionId,inputStamp:j.inputStamp,expectedStamp:j.expectedStamp,preparedIdentity:j.aimReceipt===c.forecastReceipt}:null,preparation:c.state.nextShotPreparation,forecast:{receipt:!!c.forecastReceipt,rested:c.forecastReceipt?.result?.rested,nextShot:!!c.forecastReceipt?.result?.nextShot,requestKey:c.requestKey,settings:c.forecastReceipt?.request?.settings,cue:c.forecastReceipt?.request?.selectedId},routeStamp:c.routeStamp,routeRequestStamp:c.routeRequestStamp});});if(!pageRecords.get(page).record('milestone-state',value))throw Error('Incomplete milestone capture');return value;};
 const wait=(page,fn,ms)=>page.waitForFunction(fn,null,{timeout:ms}).then(()=>true,()=>false);
 async function open(page){if(await page.locator('#sidebarTrigger').getAttribute('aria-expanded')!=='true')await page.locator('#sidebarTrigger').click();await page.locator('#tab-routes').waitFor({state:'visible'});}
@@ -87,7 +420,7 @@ for(let repeat=0;repeat<4;repeat++)for(const arm of(repeat===0||repeat===3?['bas
  const capture=async name=>{const file=id+'-'+name+'.png';await page.screenshot({path:path.join(out,file),fullPage:true});r.screenshots.push(file);};
  const sample=async()=>{const start=hostNow(),s=await page.evaluate(()=>({at:performance.timeOrigin+performance.now(),status:cueLab.state.routeStatus,resultCount:cueLab.state.routeResult?.results?.length||0})),raw=(await pcdp.send('Performance.getMetrics')).metrics;assert(raw.length<=256,'Page metrics overflow');const metrics=Object.fromEntries(raw.map(x=>[x.name,x.value]));if(!recorder.record('page-observation',{phase,start,end:hostNow(),state:s,metrics,note:'Compact page observation; process CPU independent'}))running=false;};
  try{
-  context=await browser.newContext({viewport:{width:1280,height:850}});await context.addInitScript({path:path.join(__dirname,'audit.js')});page=await context.newPage();pageRecords.set(page,recorder);auditCaches.set(page,[]);pcdp=await context.newCDPSession(page);await pcdp.send('Performance.enable');page.on('pageerror',e=>{const value={error:String(e),stack:e.stack};if(r.pageErrors.length>=128){recorder.fail('Page error count overflow');return;}r.pageErrors.push(value);recorder.record('page-error',value);});page.setDefaultTimeout(7000);
+  context=await browser.newContext({viewport:{width:1280,height:850}});await context.addInitScript({path:auditFile});page=await context.newPage();pageRecords.set(page,recorder);auditCaches.set(page,[]);pcdp=await context.newCDPSession(page);await pcdp.send('Performance.enable');page.on('pageerror',e=>{const value={error:String(e),stack:e.stack};if(r.pageErrors.length>=128){recorder.fail('Page error count overflow');return;}r.pageErrors.push(value);recorder.record('page-error',value);});page.setDefaultTimeout(7000);
   await page.goto(`http://127.0.0.1:${arm==='baseline'?8793:8794}/`,{waitUntil:'domcontentloaded',timeout:45000});assert(await wait(page,()=>globalThis.cueLab?.state.ready,45000),'App not ready');const sources=await page.evaluate(names=>__promotionAudit.captureValue(Object.fromEntries(names.map(k=>[k,document.getElementById('source-'+k)?.textContent]))),Object.keys(manifest[arm]));r.sourceHashes={};for(const[k,v]of Object.entries(sources)){assert.equal(hash(v),manifest[arm][k].embedded,'Wrong embedded '+k);r.sourceHashes[k]=hash(v);}await page.evaluate(()=>__promotionAudit.attach());
   await open(page);await page.locator('#tab-routes').click();if(fixture.endsWith('4'))await page.locator('#gameMode').getByRole('button',{name:'4구',exact:true}).click();
   // Controlled fixture initialization ONLY. No precompute/frontier/result inserted.
@@ -98,7 +431,7 @@ for(let repeat=0;repeat<4;repeat++)for(const arm of(repeat===0||repeat===3?['bas
   phase='natural-precompute';const preparationDeadline=hostNow()+8000;r.preparedReached=await wait(page,()=>!!cueLab.nextShot.job?.optimizer?.latest||!!cueLab.nextShot.job?.result,8000);r.beforeStrike=await state(page);if(!r.preparedReached){r.uncovered.push('Natural prepared coordinator not reached');continue;}r.preparedWorkerId=r.beforeStrike.job.workerId;r.preparedPhysicsReached=await wait(page,()=>{const id=cueLab.nextShot.job?.optimizer?.worker?.__promotionId;return !!cueLab.nextShot.job?.result||__promotionAudit.events.some(e=>e.scope===id&&e.type==='evaluation-advance');},Math.max(1,preparationDeadline-hostNow()));if(!r.preparedPhysicsReached){r.uncovered.push('Prepared request never observed actual evaluation or completed result');continue;}await close(page);await capture('prepared');
   phase='actual-shot-and-rest';r.strikeAt=Date.now();r.strikeStartHostMs=hostNow();await page.locator('#strike').click();const promoted=await wait(page,()=>!!cueLab.nextShot.job?.promoted&&cueLab.state.nextShotPreparation?.matched===true&&!cueLab.game?.pending&&!cueLab.lab.cue&&cueLab.lab.objects.every(o=>o.body.isSleeping()),60000);r.atRest=await state(page);if(!promoted){r.uncovered.push('Natural exact-rest promotion not observed within60s');continue;}assert.equal(r.atRest.score[r.setup.cue],r.setup.game.scores[r.setup.cue]+1,'Actual fixed-input shot did not score');assert.equal(r.atRest.optimizer.constructor,'NextShotOptimizer');assert.equal(r.atRest.optimizer.workerId,r.preparedWorkerId,'Prepared worker lineage replaced');
   const promoteHandled=await wait(page,()=>{const id=cueLab.optimizer?.worker?.__promotionId;return __promotionAudit.events.some(e=>e.scope===id&&e.type==='service-promoteToForeground-return')||cueLab.state.routeStatus==='error';},Math.max(1,60000-(hostNow()-r.strikeStartHostMs)));if(!promoteHandled){r.uncovered.push('Promotion dispatched but coordinator handler not observed within existing60s rest/promotion budget');continue;}const ev=await audit(page),promotion=ev.find(e=>e.type==='worker-dispatch'&&e.messageType==='promote'&&e.workerId===r.preparedWorkerId);assert(promotion,'No actual promote dispatch');r.promotion=promotion;const reconcile=ev.find(e=>e.type==='reconcile-return'&&e.promoted&&e.workerId===r.preparedWorkerId);assert(reconcile?.sameCoordinator&&reconcile.sameWorker&&reconcile.matched&&reconcile.settingsUnchanged&&reconcile.optionsUnchanged,'Natural reconcile invariants failed');r.reconcile=reconcile;const reconcileEntry=ev.findLast(e=>e.type==='reconcile-entry'&&e.workerId===r.preparedWorkerId&&e.at<=reconcile.at);assert(reconcileEntry?.snapshotMatches&&reconcileEntry.gameMatches&&reconcileEntry.inputMatches,'Predicted/rest fixture cache mismatched');r.reconcileEntry=reconcileEntry;const promoteBefore=ev.find(e=>e.type==='service-promoteToForeground-entry'&&e.scope===r.preparedWorkerId),promoteAfter=ev.find(e=>e.type==='service-promoteToForeground-return'&&e.scope===r.preparedWorkerId);assert(promoteAfter?.requestUnchanged);assert.equal(promoteBefore.requestGoal,null,'Original request goal unexpectedly set');assert.equal(promoteAfter.requestGoal,null,'Promotion mutated request goal');assert.equal(promoteAfter.goal,arm==='candidate'?'first-verified':null,'Wrong service-local promotion policy');assert.equal(promoteBefore.searchId,promoteAfter.searchId);assert.equal(promoteBefore.requestObjectId,promoteAfter.requestObjectId);r.promotionRequest=ev.find(e=>e.type==='service-promoteToForeground-entry'&&e.scope===r.preparedWorkerId)?.request;assert(r.promotionRequest,'Missing promoted request');r.promotionRequestHash=hash(r.promotionRequest);r.cpuPairingRule='Compare only cases sharing exact promotionRequestHash and reached lifecycle state; equal initial fixture alone is insufficient';r.settingsAtPromotion=r.atRest.settings;r.optionsAtPromotion=r.atRest.options;
-  phase='promoted-first-search';const remaining=Math.max(1,60000-(await page.evaluate(()=>performance.timeOrigin+performance.now())-promotion.at));const first=await wait(page,()=>!!cueLab.state.routeResult?.results?.length||cueLab.state.routeStatus==='done'||cueLab.state.routeStatus==='error',remaining);r.first=await state(page);assert.notEqual(r.first.status,'error','Promoted search runtime error: '+r.first.error);if(!first||!r.first.identities.length){r.primaryFirst=false;r.primaryRecallFailure=true;r.failures.push({phase:'primary-recall',error:'No verified identity within unchanged natural slice/60s; recall failure, not evidence of a stop-policy defect'});if(fixture==='moved3')r.continuationDiagnostic=await runContinuationDiagnostic(page,r);continue;}r.primaryFirst=true;r.primaryRecallFailure=false;const eligibleEvents=await audit(page),actualRequest=eligibleEvents.findLast(e=>e.type==='worker-dispatch'&&e.workerId===r.preparedWorkerId&&e.messageType==='request'&&e.at<=promotion.at),promoteEntry=eligibleEvents.find(e=>e.type==='service-promoteToForeground-entry'&&e.scope===r.preparedWorkerId),priorVerified=eligibleEvents.findLast(e=>e.type==='worker-post'&&e.scope===r.preparedWorkerId&&e.at>=actualRequest.at&&e.at<=promoteEntry.at&&e.identities?.length),firstVerified=eligibleEvents.find(e=>e.type==='worker-post'&&e.scope===r.preparedWorkerId&&e.at>=promoteEntry.at&&e.requestId===promotion.requestId&&e.identities?.length);r.firstEligibility={alreadyVerified:!!priorVerified,promotionEntry:promoteEntry.at,firstObserved:priorVerified?promoteEntry.at:firstVerified?.at,observationAt:r.first.at};assert(r.firstEligibility.firstObserved,'Missing exact first eligibility event');r.firstAt=r.firstEligibility.firstObserved;r.postFirstCPUWindow={start:r.firstAt,end:r.firstAt+8000,rule:'Page/worker clock endpoints; map through before/after calibration envelope to independent processCPU host-monotonic acquisition intervals. Never filter host samples directly by these epoch-like numbers.'};r.firstRows=r.first.results;r.firstCount=r.first.identities.length;phase='post-first-8s';await page.waitForTimeout(Math.max(0,r.firstAt+8000-await page.evaluate(()=>performance.timeOrigin+performance.now())));r.postFirst=await state(page);await capture('post-first');
+  phase='promoted-first-search';const remaining=Math.max(1,60000-(await page.evaluate(()=>performance.timeOrigin+performance.now())-promotion.at));const first=await wait(page,()=>!!cueLab.state.routeResult?.results?.length||cueLab.state.routeStatus==='done'||cueLab.state.routeStatus==='error',remaining);r.first=await state(page);assert.notEqual(r.first.status,'error','Promoted search runtime error: '+r.first.error);if(!first||!r.first.identities.length){r.primaryFirst=false;r.primaryRecallFailure=true;r.failures.push({phase:'primary-recall',error:'No verified identity within unchanged natural slice/60s; recall failure, not evidence of a stop-policy defect'});if(fixture==='moved3')r.continuationDiagnostic=await runContinuationDiagnostic(page,r);continue;}r.primaryFirst=true;r.primaryRecallFailure=false;const eligibleEvents=await audit(page),actualRequest=eligibleEvents.findLast(e=>e.type==='worker-dispatch'&&e.workerId===r.preparedWorkerId&&e.messageType==='request'&&e.at<=promotion.at),promoteEntry=eligibleEvents.find(e=>e.type==='service-promoteToForeground-entry'&&e.scope===r.preparedWorkerId),priorVerified=eligibleEvents.findLast(e=>e.type==='worker-post'&&e.scope===r.preparedWorkerId&&e.at>=actualRequest.at&&e.at<=promoteEntry.at&&e.identities?.length),firstVerified=eligibleEvents.find(e=>e.type==='worker-post'&&e.scope===r.preparedWorkerId&&e.at>=promoteEntry.at&&e.requestId===promotion.requestId&&e.identities?.length);r.firstEligibility={alreadyVerified:!!priorVerified,promotionEntry:promoteEntry.at,firstObserved:priorVerified?promoteEntry.at:firstVerified?.at,observationAt:r.first.at};assert(r.firstEligibility.firstObserved,'Missing exact first eligibility event');r.firstAt=r.firstEligibility.firstObserved;try{r.cpuEndpointPlan=processSampler.setWindow(r.firstAt,r.firstAt+8000,r.clockBefore);}catch(error){r.cpuEndpointPlan={armed:false,error:String(error.message||error).slice(0,600)};}r.postFirstCPUWindow={start:r.firstAt,end:r.firstAt+8000,rule:'Page/worker clock endpoints; map through before/after calibration envelope to independent processCPU host-monotonic acquisition intervals. Never filter host samples directly by these epoch-like numbers.'};r.firstRows=r.first.results;r.firstCount=r.first.identities.length;phase='post-first-8s';await page.waitForTimeout(Math.max(0,r.firstAt+8000-await page.evaluate(()=>performance.timeOrigin+performance.now())));r.postFirst=await state(page);await capture('post-first');
   const after=await audit(page);r.promotedServiceEvidence=after.filter(e=>e.scope===r.preparedWorkerId&&e.type.startsWith('service-'));r.postFirstEvaluateDispatches=after.filter(e=>e.type==='worker-dispatch'&&e.messageType==='evaluate'&&e.scope===r.preparedWorkerId&&e.at>r.firstAt);const serviceEnd=r.promotedServiceEvidence.at(-1);const liveEvaluation=new Map(),nestedLive=new Set(),terminatedScopes=after.filter(e=>e.type==='worker-terminate').map(e=>e.workerId),terminated=scope=>terminatedScopes.some(dead=>scope===dead||scope?.startsWith(dead+'.'));for(const e of [...after].sort((a,b)=>a.at-b.at)){if(!(e.scope===r.preparedWorkerId||e.scope?.startsWith(r.preparedWorkerId+'.')))continue;if(e.type==='evaluation-begin'&&!terminated(e.scope))liveEvaluation.set(e.scope+':'+e.id,e);if(['evaluation-finish','evaluation-dispose'].includes(e.type))liveEvaluation.delete(e.scope+':'+e.id);if(e.type==='worker-created'&&!terminated(e.workerId))nestedLive.add(e.workerId);if(e.type==='worker-terminate'){for(const id of nestedLive)if(id===e.workerId||id.startsWith(e.workerId+'.'))nestedLive.delete(id);for(const[k,v]of liveEvaluation)if(v.scope===e.workerId||v.scope.startsWith(e.workerId+'.'))liveEvaluation.delete(k);}}r.postFirstActiveLedger={evaluations:[...liveEvaluation.values()],nestedWorkers:[...nestedLive]};if(arm==='candidate'){assert.equal(r.postFirst.status,'done');r.completedCacheAlreadyIdle=!!priorVerified&&!promoteEntry.latest;assert(r.completedCacheAlreadyIdle||r.postFirst.termination==='first-verified-paused','Expected verified pause unless completed cache was already idle');assert.equal(r.postFirstEvaluateDispatches.length,0);assert(r.promotedServiceEvidence.filter(e=>e.type==='service-promoteToForeground-return').every(e=>e.requestUnchanged),'Promotion mutated admitted request');assert.equal(serviceEnd?.liveWorkers?.length,0,'Nested evaluation workers remain live');assert.equal(r.postFirstActiveLedger.evaluations.length,0,'Physical evaluations remain active');assert.equal(r.postFirstActiveLedger.nestedWorkers.length,0,'Nested lineage remains live');}for(const identity of r.first.identities)assert(r.postFirst.identities.includes(identity));
   phase='explicit-resume';await open(page);await page.locator('#tab-routes').click();r.preResumeStop=await measurement.stopIfSearching(page);r.resumeBase=await state(page);r.resumeAt=await page.evaluate(()=>performance.timeOrigin+performance.now());r.resumeStartHostMs=hostNow();await page.locator('#resumeSearch').click();r.resumeSlices=[];for(let slice=0;slice<4;slice++){const remain=100000-(hostNow()-r.resumeStartHostMs);if(remain<=0)break;const done=await wait(page,()=>cueLab.state.routeStatus!=='searching',Math.min(25000,remain)),s=await state(page);r.resumeSlices.push({slice,done,state:s});if(s.identities.some(x=>!r.resumeBase.identities.includes(x))||!done||!s.continuable||slice===3||hostNow()-r.resumeStartHostMs>=100000)break;await page.locator('#resumeSearch').click();}r.afterResume=await state(page);r.additionalIdentities=r.afterResume.identities.filter(x=>!r.resumeBase.identities.includes(x));r.additionalRecall=r.additionalIdentities.length>0;for(const identity of r.resumeBase.identities)assert(r.afterResume.identities.includes(identity));assert.deepEqual(r.afterResume.settings,r.settingsAtPromotion);assert.deepEqual(r.afterResume.options,r.optionsAtPromotion);
   r.resumeRetention=[];const resumeEvents=await audit(page);for(const entry of resumeEvents.filter(e=>e.scope===r.preparedWorkerId&&e.type==='service-resume-entry'&&e.at>=r.resumeAt)){const returned=resumeEvents.find(e=>e.scope===entry.scope&&e.type==='service-resume-return'&&e.at>=entry.at);assert(returned,'Missing Resume return');assert.equal(entry.searchId,returned.searchId,'Resume replaced search');assert.equal(entry.requestObjectId,returned.requestObjectId,'Resume replaced request');const keys=entry.completed||[],sameWave=entry.wave===returned.wave,committed=resumeEvents.some(e=>e.scope===entry.scope&&e.type==='service-completeWave-return'&&e.at>=entry.at&&e.at<=returned.at&&e.wave!==entry.wave);assert(keys.every(id=>sameWave&&returned.completed?.includes(id)||committed),'Completed outcomes lost without wave commit');const redispatched=resumeEvents.filter(e=>e.scope===entry.scope&&e.type==='worker-dispatch'&&e.messageType==='evaluate'&&e.at>entry.at&&keys.includes(e.jobId));assert.equal(redispatched.length,0,'Completed job dispatched again');r.resumeRetention.push({entry,returned,committed,redispatched});}assert(r.resumeRetention.length>0,'No observed service Resume entry');phase='stop-stale-restore';if(r.afterResume.status!=='searching'&&r.afterResume.continuable)await page.locator('#resumeSearch').click();r.finalStop=await measurement.stopIfSearching(page);r.actualStop=r.finalStop.clicked;if(!r.actualStop)r.uncovered.push('Actual Stop state not reached');r.beforeStale=await state(page);r.stale=await page.evaluate(id=>__promotionAudit.stale(id),r.preparedWorkerId);if(!r.stale.covered)r.uncovered.push('No provably stale old callback for final Stop');r.afterStale=await state(page);assert.deepEqual(r.afterStale.identities,r.beforeStale.identities,'Stale generation changed retained results');assert.deepEqual(r.afterStale.settings,r.beforeStale.settings);r.restoreReached=await wait(page,()=>!cueLab.state.predictionBusy&&!!cueLab.forecastReceipt,8000);r.restored=await state(page);assert(r.restoreReached,'Prediction not restored after Stop');r.restoreConsistency=await page.evaluate(()=>{const c=cueLab,q=c.forecastReceipt.request,a=c.lab.snapshot({trails:false});return __promotionAudit.captureValue({request:{...q,snapshot:{...q.snapshot,world:q.snapshot.world}},actual:{...a,world:a.world},key:c.requestKey,expectedKey:JSON.stringify([c.lab.steps,c.lab.revision,c.state.selectedId,c.state.settings,c.state.horizon,c.lab.params])});});assert.equal(hash(r.restoreConsistency.request.snapshot),hash(r.restoreConsistency.actual));assert.deepEqual(r.restoreConsistency.request.settings,r.restored.settings);assert.equal(r.restoreConsistency.request.selectedId,r.restored.selectedId);assert.equal(r.restoreConsistency.key,r.restoreConsistency.expectedKey);
@@ -106,13 +439,13 @@ for(let repeat=0;repeat<4;repeat++)for(const arm of(repeat===0||repeat===3?['bas
   r.workerCPU={available:false,method:'Performance.getMetrics on dedicated worker target',reason:'Not yet attempted'};
   try{const targets=await cdp.send('Target.getTargets');assert(Array.isArray(targets.targetInfos)&&targets.targetInfos.length<=128,'Worker target count limit');for(const t of targets.targetInfos)assert(typeof t.targetId==='string'&&t.targetId.length<=256&&typeof t.url==='string'&&t.url.length<=8192,'Worker target metadata limit');r.workerCPU.probes=[];for(const target of targets.targetInfos.filter(t=>t.type==='worker')){const probe={targetId:target.targetId,url:target.url,method:'Performance.getMetrics'};r.workerCPU.probes.push(probe);let sessionId;try{({sessionId}=await cdp.send('Target.attachToTarget',{targetId:target.targetId,flatten:false}));const response=new Promise(resolve=>{const listener=e=>{if(e.sessionId===sessionId){let value;try{if(typeof e.message!=='string'||e.message.length>32768){recorder.fail('Worker metric message size limit');throw Error('Worker metric message size limit');}value=JSON.parse(e.message);if(value?.result?.metrics){assert(Array.isArray(value.result.metrics)&&value.result.metrics.length<=256,'Worker metric count limit');value=recorder.store.snapshot(value);}}catch(error){recorder.fail('Worker metric response incomplete');value={id:71,error:String(error)};}if(value?.id===71){clearTimeout(timer);cdp.off('Target.receivedMessageFromTarget',listener);resolve(value);}}};const timer=setTimeout(()=>{cdp.off('Target.receivedMessageFromTarget',listener);resolve({error:'Performance.getMetrics response timeout3000ms'});},3000);cdp.on('Target.receivedMessageFromTarget',listener);});await cdp.send('Target.sendMessageToTarget',{sessionId,message:JSON.stringify({id:71,method:'Performance.getMetrics'})});probe.response=await response;}catch(e){probe.error=String(e);}finally{if(sessionId)await cdp.send('Target.detachFromTarget',{sessionId}).catch(()=>{});}}r.workerCPU.available=r.workerCPU.probes.some(p=>p.response?.result?.metrics?.length);r.workerCPU.reason='One-time capability probe only; no per-worker interval CPU attribution unless actual metrics establish it';}catch(e){recorder.fail('Worker capability probe incomplete');r.workerCPU.error=String(e);r.workerCPU.method='Target.getTargets';}
 phase='settings-invalidation';r.beforeSettingsEdit=await state(page);await page.locator('#tab-shot').click();await page.locator('#angle').fill(String(r.beforeSettingsEdit.settings.angle+0.25));await page.locator('#angle').press('Enter');r.afterSettingsEdit=await state(page);assert.notEqual(r.afterSettingsEdit.settings.angle,r.beforeSettingsEdit.settings.angle);assert(!r.afterSettingsEdit.job||r.afterSettingsEdit.job.generation!==r.beforeSettingsEdit.job?.generation,'Settings retained old speculative job');r.settingsStale=await page.evaluate(id=>__promotionAudit.stale(id),r.preparedWorkerId);if(!r.settingsStale.covered)r.uncovered.push('No provably stale callback after settings edit');r.afterSettingsStale=await state(page);assert.deepEqual(r.afterSettingsStale.settings,r.afterSettingsEdit.settings);assert.deepEqual(r.afterSettingsStale.identities,r.afterSettingsEdit.identities);assert.equal(r.pageErrors.length,0);r.lifecycleCompleted=true;
- }catch(e){r.failures.push({phase,error:String(e),stack:e.stack});}finally{running=false;const stopped=processSampler?processSampler.stop():null;if(sampler)try{await deadline(()=>sampler,5000,'Page sampler shutdown');}catch(e){recorder.fail(String(e));r.failures.push({phase:'sampler-shutdown',error:String(e)});}if(stopped)r.processCPU=await stopped;if(processCDP)try{await deadline(()=>processCDP.detach(),5000,'CPU CDP detach');}catch(e){recorder.fail(String(e));}try{r.clockAfter=await deadline(()=>measurement.calibrate({readPageEpoch:()=>page.evaluate(()=>performance.timeOrigin+performance.now())}),5000,'Final clock calibration');r.clockEnvelope=measurement.clockEnvelope(r.clockBefore,r.clockAfter);r.independentPostFirstCPU=measurement.windowEvidence(r.processCPU||[],r.firstAt,r.firstAt===undefined?undefined:r.firstAt+8000,r.clockEnvelope);}catch(e){r.clockCalibrationError=String(e);}try{await deadline(async()=>{await page.evaluate(()=>__promotionAudit.flushSources());r.events=await audit(page);r.events=r.events.map(e=>{if(e.source){const sourceSHA=hash(e.source);const {source,...rest}=e;return {...rest,sourceSHA,sourceBytes:Buffer.byteLength(source)};}return e;});r.final=await state(page);await capture('final');},10000,'Final bounded capture');}catch(e){recorder.fail('Final capture incomplete: '+String(e));r.failures.push({phase:'capture',error:String(e)});}r.workerErrors=r.events.filter(e=>e.type==='worker-error'||(['worker-post','worker-receive'].includes(e.type)&&(e.messageType==='error'||!!e.error)));if(r.workerErrors.length)r.failures.push({phase:'worker-errors',errors:r.workerErrors});if(r.pageErrors.length&&!r.failures.some(f=>f.phase==='page-errors'))r.failures.push({phase:'page-errors',errors:r.pageErrors});r.invalidCacheReconciliation={covered:false,reason:'Settings edit proves cancellation/stale isolation only; no forced mismatching cache reconciliation was performed'};for(const[key,value]of Object.entries(r)){if(['events','processCPU','cpu'].includes(key))continue;recorder.record('case-field',{key,value});}const recording=recorder.close(),summary=classifyCase(r,recording);summary.rawFile=id+'.raw.ndjson';writeCompact(path.join(out,id+'.summary.json'),summary);report.cases.push(summary);if(context)await deadline(()=>context.close(),5000,'Context close');writeCompact(path.join(out,'checkpoint-'+report.cases.length+'.json'),{fixture,cases:report.cases});}
+ }catch(e){r.failures.push({phase,error:String(e),stack:e.stack});}finally{running=false;const stopped=processSampler?processSampler.stop():null;if(sampler)try{await deadline(()=>sampler,5000,'Page sampler shutdown');}catch(e){recorder.fail(String(e));r.failures.push({phase:'sampler-shutdown',error:String(e)});}if(stopped){r.processCPU=await stopped;r.cpuSamplerStats=processSampler.stats();}if(processCDP)try{await deadline(()=>processCDP.detach(),5000,'CPU CDP detach');}catch(e){recorder.fail(String(e));}try{r.clockAfter=await deadline(()=>measurement.calibrate({readPageEpoch:()=>page.evaluate(()=>performance.timeOrigin+performance.now())}),5000,'Final clock calibration');r.clockEnvelope=measurement.clockEnvelope(r.clockBefore,r.clockAfter);r.independentPostFirstCPU=measurement.windowEvidence(r.processCPU||[],r.firstAt,r.firstAt===undefined?undefined:r.firstAt+8000,r.clockEnvelope);}catch(e){r.clockCalibrationError=String(e);}try{await deadline(async()=>{await page.evaluate(()=>__promotionAudit.flushSources());r.events=await audit(page);r.events=r.events.map(e=>{if(e.source){const sourceSHA=hash(e.source);const {source,...rest}=e;return {...rest,sourceSHA,sourceBytes:Buffer.byteLength(source)};}return e;});r.final=await state(page);await capture('final');},10000,'Final bounded capture');}catch(e){recorder.fail('Final capture incomplete: '+String(e));r.failures.push({phase:'capture',error:String(e)});}r.workerErrors=r.events.filter(e=>e.type==='worker-error'||(['worker-post','worker-receive'].includes(e.type)&&(e.messageType==='error'||!!e.error)));if(r.workerErrors.length)r.failures.push({phase:'worker-errors',errors:r.workerErrors});if(r.pageErrors.length&&!r.failures.some(f=>f.phase==='page-errors'))r.failures.push({phase:'page-errors',errors:r.pageErrors});r.invalidCacheReconciliation={covered:false,reason:'Settings edit proves cancellation/stale isolation only; no forced mismatching cache reconciliation was performed'};for(const[key,value]of Object.entries(r)){if(['events','processCPU','cpu'].includes(key))continue;recorder.record('case-field',{key,value});}const recording=recorder.close(),summary=classifyCase(r,recording);summary.rawFile=id+'.raw.ndjson';writeCompact(path.join(out,id+'.summary.json'),summary);report.cases.push(summary);if(context)await deadline(()=>context.close(),5000,'Context close');writeCompact(path.join(out,'checkpoint-'+report.cases.length+'.json'),{fixture,cases:report.cases});}
 
 }
-}catch(e){report.fatal=String(e);}finally{if(browser)try{await deadline(()=>browser.close(),5000,'Browser close');}catch(e){report.fatal=report.fatal||String(e);}report.pairs=qualifiedPairs(report.cases);report.ok=!report.fatal&&report.cases.length===8&&report.cases.every(c=>c.ok)&&report.pairs.every(p=>p.eligible);report.finished=new Date().toISOString();writeCompact(path.join(out,'summary.json'),report);console.log(JSON.stringify({ok:report.ok,cases:report.cases.map(r=>({id:r.id,ok:r.ok,firstCount:r.firstCount,additionalRecall:r.additionalRecall,lifecycle:r.lifecycle.pass,recording:r.recording.complete,cpuEligible:r.cpu.eligible,failures:r.failures})),fatal:report.fatal},null,2));if(!report.ok)process.exitCode=1;}
+}catch(e){report.fatal=String(e);}finally{if(browser)try{await deadline(()=>browser.close(),5000,'Browser close');}catch(e){report.fatal=report.fatal||String(e);}report.pairs=qualifiedPairs(report.cases);Object.assign(report,reportVerdicts(report));report.finished=new Date().toISOString();writeCompact(path.join(out,'summary.json'),report);console.log(JSON.stringify({ok:report.ok,functional:report.functional,cpu:report.cpu,cases:report.cases.map(r=>({id:r.id,ok:r.ok,firstCount:r.firstCount,additionalRecall:r.additionalRecall,lifecycle:r.lifecycle.status,functional:r.functional.status,recall:r.recall,recording:r.recording.complete,cpuEligible:r.cpu.eligible,failures:r.failures})),fatal:report.fatal},null,2));if(!report.exitOk)process.exitCode=1;}
 })();
 
 
 }
-module.exports={deadline,verifyPreflight,createCaseRecorder,collectAudit,startBoundedProcessSampler,classifyCase,qualifiedPairs,main};
+module.exports={deadline,inspectPreflight,verifyPreflight,preflightStatus,createCaseRecorder,collectAudit,startBoundedProcessSampler,classifyCase,qualifiedPairs,reportVerdicts,main};
 if(require.main===module)main().catch(e=>{console.error(String(e.stack||e));process.exitCode=1;});
