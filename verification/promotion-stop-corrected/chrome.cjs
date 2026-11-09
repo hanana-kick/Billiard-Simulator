@@ -10,7 +10,7 @@ const {createCaptureStore,createAuditEventDecoder}=require(auditFile);
 const hostNow=()=>Number(process.hrtime.bigint())/1e6;
 const hash=v=>crypto.createHash('sha256').update(typeof v==='string'?v:JSON.stringify(v)).digest('hex');
 async function deadline(work,ms,label){let timer;try{return await Promise.race([Promise.resolve().then(work),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(label+' timed out; no replacement query')),ms);})]);}finally{clearTimeout(timer);}}
-const PAGE_AUDIT_MAX_EVENTS=30000; // Page/decoder compact rows; distinct from whole-file host records.
+const PAGE_AUDIT_MAX_EVENTS=65536; // Page/decoder compact rows align with original occurrences; raw records also include metadata/payloads.
 const RAW_LIMITS={maxBytes:64*1024*1024,maxRecords:65536,maxLineBytes:32768,maxStringChars:8192,maxStringBytes:32768,maxArrayLength:4096,maxObjectKeys:256,maxNodes:65536,maxDepth:32};
 const SUMMARY_LIMITS={...RAW_LIMITS,maxBytes:262144,maxLineBytes:262144,maxStringChars:16384,maxStringBytes:32768};
 const FUNCTIONAL_MODE='functional-with-separate-cpu';

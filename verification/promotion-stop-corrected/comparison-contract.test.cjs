@@ -1044,8 +1044,8 @@ function child(r,name='w'){run(r,`globalThis.${name}=new Worker(URL.createObject
 function temp(t){const d=fs.mkdtempSync(path.join(ROOT,'.test-'));t.after(()=>fs.rmSync(d,{recursive:true,force:true}));return path.join(d,'trace.ndjson');}
 function writeRows(t,rows,payloads=[]){const file=temp(t),writer=B.createWriter(file,RAW),host=A.createCaptureStore();for(const[id,text]of payloads){assert(host.importPayload(id,text)||host.payloads.has(id),host.status().failure);for(let offset=0;offset<text.length;offset+=8192)assert(writer.append({type:'payload-part',sha256:id,offset,totalChars:text.length,text:text.slice(offset,offset+8192)}));}for(const row of rows){const value=host.capture(row);assert(value,host.status().failure);assert(writer.append({type:'audit-event',value}),writer.stats().reason);}assert(writer.close());return {file,host,writer,rows:fs.readFileSync(file,'utf8').trimEnd().split('\n').map(JSON.parse).filter(r=>r.type==='audit-event').map(r=>r.value)};}
 
-test('worker-only capacity is explicit; page, decoder, raw and byte ceilings do not change',()=>{
- const page=rig(),worker=rig({worker:true});run(worker,`onmessage({data:{__promotionInit:true,scope:'page.w2'}})`);assert.equal(run(worker,'testStore.limits.maxEvents'),65536);assert.equal(run(worker,'testStore.limits.maxBytes'),33554432);assert.equal(A.createCaptureStore().limits.maxEvents,30000);assert.equal(A.createAuditEventDecoder().status().maxOccurrences,65536);assert.deepEqual(status(page).capturePolicy,{workerMaxOriginalOccurrences:65536,pageMaxCompactRows:30000,maxPackedOriginalBytes:33554432,maxOverflowBytes:524288,workerTransport:'immediate-original'});
+test('page and worker capacity is explicit; generic store, original, raw and byte ceilings do not change',()=>{
+ const page=rig(),worker=rig({worker:true});run(worker,`onmessage({data:{__promotionInit:true,scope:'page.w2'}})`);assert.equal(run(worker,'testStore.limits.maxEvents'),65536);assert.equal(run(worker,'testStore.limits.maxBytes'),33554432);assert.equal(A.createCaptureStore().limits.maxEvents,30000);assert.equal(A.createAuditEventDecoder().status().maxOccurrences,65536);assert.deepEqual(status(page).capturePolicy,{workerMaxOriginalOccurrences:65536,pageMaxCompactRows:65536,maxPackedOriginalBytes:33554432,maxOverflowBytes:524288,workerTransport:'immediate-original'});
 });
 
 test('fresh nested bootstrap forwards >30,000 originals immediately through coordinator, page and bounded host writer',async t=>{
@@ -1109,7 +1109,7 @@ test('original byte cap fails before count, without invoking accessors/toJSON',(
  for(const kind of ['accessor','toJSON']){let calls=0;const value={type:'test'};if(kind==='accessor')Object.defineProperty(value,'x',{enumerable:true,get(){calls++;return 1;}});else value.toJSON=()=>{calls++;return {};};const s=A.createCaptureStore({maxEvents:65536});assert.equal(s.capture(value),null);assert.equal(calls,0);const before=s.status();assert.equal(s.capture({ok:true}),null);assert.deepEqual(s.status(),before);}
 });
 
-test('unchanged page compact and default-store ceilings still fail closed',()=>{
+test('generic capture-store compact and metadata ceilings still fail closed',()=>{
  const store=A.createCaptureStore(),codec=store.observationEncoder(()=>{});for(let i=0;i<30000;i++)assert(codec.observe({at:i,scope:'page',type:'evaluation-begin',id:i}));assert.equal(codec.observe({at:30000,scope:'page',type:'evaluation-begin',id:30000}),false);assert.equal(store.status().failure,'capture event count limit');
  const host=A.createCaptureStore();for(let i=0;i<29999;i++)assert(host.capture({type:'cpu-or-page-record',n:i}));assert(host.capture({type:'audit-event'}));assert.equal(host.capture({type:'case-field'}),null);assert.equal(host.status().failure,'capture event count limit');
 });
@@ -1283,7 +1283,7 @@ test('source wiring keeps negative cases after existing settings/stale/replay fl
  const source=fs.readFileSync(require.resolve('./chrome.cjs'),'utf8');assert(source.includes("methodKind:key==='preResumeStop'?'programmatic-setup':'native-pointer'"));assert(source.indexOf("phase='forced-mismatching-cache'")>source.indexOf("phase='settings-invalidation'"));assert(source.indexOf("phase='settings-invalidation'")>source.indexOf("phase='independent-replay'"));assert(!source.includes('measurement.stopIfSearching(page)'));assert(source.includes("r.actualStop=r.finalStop.clicked"));assert(source.includes("if(!r.actualStop)r.uncovered.push('Actual Stop state not reached')"));assert(source.includes('r.invalidCacheReconciliation.covered=true'));assert(source.includes("assertPreparedMismatchEvidence(evidence,r.invalidCacheSeed)"));for(const budget of ['restPromotion:60000','firstAfterPromotion:60000','postFirst:8000','resume:100000','resumeSlices:4','restore:8000','replaySteps:40000','cpuQualificationUncertaintyMs:250'])assert(source.includes(budget));
 });
 function contractFile(t){const folder=fs.mkdtempSync(path.join(__dirname,'.stop-cache-contract-'));t.after(()=>fs.rmSync(folder,{recursive:true,force:true}));return path.join(folder,'trace.ndjson');}
-test('host can record 30000 legal page audit rows plus metadata without enlarging page defaults or byte bounds',t=>{
+test('host can still record 30000 legal page audit rows plus metadata without enlarging generic defaults or byte bounds',t=>{
  const file=contractFile(t),rec=C.createCaseRecorder(file);rec.setPageStatus({complete:true});
  for(let i=0;i<30000;i++)assert(rec.auditEvent({type:'contract-observation',at:i}));
  for(let i=0;i<100;i++)assert(rec.record('page-observation',{at:i,status:'done'}));
@@ -1291,8 +1291,8 @@ test('host can record 30000 legal page audit rows plus metadata without enlargin
  const restored=C.reconstructCaseFields(fs.readFileSync(file));assert.equal(restored.events.length,30000);assert.deepEqual(restored.fields.followOn,{cacheCovered:true});
  assert.equal(C.createCaseRecorder.toString().includes('o.repeatRows<=PAGE_AUDIT_MAX_EVENTS'),true);
 });
-test('page decoder still refuses compact audit row 30001 even with larger host admission count',t=>{
- const rec=C.createCaseRecorder(contractFile(t));rec.setPageStatus({complete:true});for(let i=0;i<30000;i++)assert(rec.auditEvent({type:'contract-observation',at:i}));assert.equal(rec.auditEvent({type:'contract-observation',at:30000}),null);assert.equal(rec.close().complete,false);assert.match(rec.status().failure,/compact row limit/);
+test('page decoder admits 65536 compact audit rows and refuses row 65537',()=>{
+ const decoder=A.createAuditEventDecoder();for(let i=0;i<65536;i++)assert.equal(decoder.push({type:'contract-observation',at:i}).length,1);decoder.finish();assert.equal(decoder.status().complete,true);assert.throws(()=>decoder.push({type:'contract-observation',at:65536}),/compact row limit/);assert.equal(decoder.status().complete,false);assert.throws(()=>decoder.finish(),/compact row limit/);
 });
 test('whole raw 65536 record cap counts payload parts before host capture count is exhausted',t=>{
  const rec=C.createCaseRecorder(contractFile(t));rec.setPageStatus({complete:true});const text='{"fixture":1}',sha=crypto.createHash('sha256').update(text).digest('hex');assert(rec.payload(sha,text));for(let i=0;i<65535;i++)assert(rec.record('host-metadata',{i}));assert.equal(rec.record('host-metadata',{i:65535}),false);assert.equal(rec.close().complete,false);assert.match(rec.status().failure,/raw writer: MAX_RECORDS/);assert.equal(rec.store.status().events,65536);assert.equal(rec.writer.stats().records,65536);assert.equal(rec.record('later',{}),false);
@@ -1326,7 +1326,7 @@ test('oversized first-overflow metadata is rejected whole, never omitted to fit 
  const response={events:[],next:0,total:0,status:{complete:false,events:0,firstOverflow:{origin:'worker-before-failure',message:'x'.repeat(262144)}},payloads:[]};const rec=C.createCaseRecorder(contractFile(t));await assert.rejects(C.collectAudit(transferPage({readChunk:()=>response}),rec,[]),/MAX_LINE_BYTES|MAX_BYTES|capture byte limit/);assert.equal(rec.close().complete,false);assert.equal(response.status.firstOverflow.message.length,262144);
 });
 test('bad cursor, excess rows, mismatched snapshot and zero-progress batches fail sticky without looping',async t=>{
- const base={events:[],next:0,total:0,status:{complete:true,events:0},payloads:[]};for(const change of [x=>{x.total=1;x.status.events=1;},x=>x.next=1,x=>x.total=30001,x=>x.status.events=1,x=>{x.events=Array(257).fill({type:'x',at:1});x.next=257;x.total=257;x.status.events=257;},x=>x.payloads=['invalid']]){const value=structuredClone(base);change(value);let calls=0;const rec=C.createCaseRecorder(contractFile(t));await assert.rejects(C.collectAudit(transferPage({readChunk(){calls++;return value;}}),rec,[]));assert.equal(calls,1);assert.equal(rec.close().complete,false);}}
+ const base={events:[],next:0,total:0,status:{complete:true,events:0},payloads:[]};for(const change of [x=>{x.total=1;x.status.events=1;},x=>x.next=1,x=>x.total=65537,x=>x.status.events=1,x=>{x.events=Array(257).fill({type:'x',at:1});x.next=257;x.total=257;x.status.events=257;},x=>x.payloads=['invalid']]){const value=structuredClone(base);change(value);let calls=0;const rec=C.createCaseRecorder(contractFile(t));await assert.rejects(C.collectAudit(transferPage({readChunk(){calls++;return value;}}),rec,[]));assert.equal(calls,1);assert.equal(rec.close().complete,false);}}
 );
 test('chunk payload inventory is imported before dependent events are archived',async t=>{
  const f=transferFixture({count:0}),request={snapshot:{world:[1,2,3]},options:{maxCushions:3}};f.rows.push(f.store.capture({type:'worker-dispatch',at:1,request}));const rec=C.createCaseRecorder(contractFile(t)),cache=[];await C.collectAudit(f.page,rec,cache);assert.deepEqual(cache[0].request,request);assert.equal(rec.close().complete,true);
@@ -1353,3 +1353,110 @@ test('bulk transport acceptance does not relax per-raw-line32768-byte bound',asy
 
 }
 // END REVIEWED stop-cache-design CONTRACTS
+
+// BEGIN REVIEWED page-budget-design CONTRACTS
+{
+'use strict';
+// Local-only contracts: real audit/host/raw code, in-memory VM page and no browser/socket.
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),crypto=require('node:crypto');
+const A=require('./audit.js'),C=require('./chrome.cjs'),B=require('./bounded-records.cjs');
+const code=fs.readFileSync(path.join(__dirname,'audit.js'),'utf8');
+const plain=x=>JSON.parse(JSON.stringify(x)),sha=x=>crypto.createHash('sha256').update(x).digest('hex');
+// The standalone design and final verification assembly have different depths.
+function externalDirectory(relative){return ['..','../../..'].map(prefix=>path.resolve(__dirname,prefix,relative)).find(p=>fs.existsSync(p))||null;}
+const RAW={maxBytes:67108864,maxRecords:65536,maxLineBytes:32768,maxStringChars:8192,maxStringBytes:32768,maxArrayLength:4096,maxObjectKeys:256,maxNodes:65536,maxDepth:32};
+function output(t,name){const dir=fs.mkdtempSync(path.join(__dirname,'.page-budget-'));t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));return path.join(dir,name+'.ndjson');}
+function page(){
+ const ctx=vm.createContext({TextEncoder,TextDecoder,Uint8Array,crypto:crypto.webcrypto,performance:{timeOrigin:0,now:()=>0}});
+ vm.runInContext(`class Blob {constructor(parts){this.parts=parts;}} class Worker {addEventListener(){} postMessage(){} terminate(){}};globalThis.Blob=Blob;globalThis.Worker=Worker;globalThis.URL={createObjectURL:()=> 'blob:in-memory'};`,ctx);
+ vm.runInContext(code,ctx);
+ const run=s=>vm.runInContext(s,ctx),transfer={calls:0,maxBytes:0,maxRows:0};
+ // Inspect the actual producer implementation, not a replacement chunker.
+ run(`const actualReadChunk=__promotionAudit.readChunk;__promotionAudit.readChunk=function(...args){globalThis.chunkArgs=args;return actualReadChunk(...args);};`);
+ return {ctx,run,transfer,status:()=>plain(run('__promotionAudit.read(0).status')),async evaluate(fn,arg){
+  const result=plain(run(`(${fn.toString()})(${JSON.stringify(arg)})`));
+  if(result&&Array.isArray(result.events)){
+   assert.deepEqual(plain(ctx.chunkArgs).slice(1),[256,262144]);
+   const bytes=Buffer.byteLength(JSON.stringify(result));assert(bytes<=262144);assert(result.events.length<=256);
+   transfer.calls++;transfer.maxBytes=Math.max(transfer.maxBytes,bytes);transfer.maxRows=Math.max(transfer.maxRows,result.events.length);
+  }
+  return result;
+ }};
+}
+function append(p,count,padding=0){p.run(`for(let i=0;i<${count};i++)__promotionAudit.emit('evaluation-begin',{at:i,id:i${padding?`,padding:'x'.repeat(${padding})`:''}});`);}
+function metric(name,started,cpu,extra){const used=process.cpuUsage(cpu);console.log(JSON.stringify({contract:name,...extra,wallMs:performance.now()-started,cpuMs:(used.user+used.system)/1000,claim:'Local contract cost only; no browser/CPU/search qualification'}));}
+
+test('generic store remains exactly 30000; page policy is explicitly 65536 with unchanged independent limits',()=>{
+ const s=A.createCaptureStore();assert.equal(s.limits.maxEvents,30000);for(let i=0;i<30000;i++)assert(s.capture({at:i}));assert.equal(s.capture({at:30000}),null);assert.equal(s.status().failure,'capture event count limit');
+ const p=page();assert.equal(p.run('__promotionAudit.store.limits.maxEvents'),65536);
+ for(const [key,value]of Object.entries({maxBytes:33554432,maxEventBytes:131072,maxValueBytes:4194304,maxPayloads:128,maxSourceBytes:8388608,maxNodes:1048576,maxDepth:32,maxArray:262144,maxKeys:256}))assert.equal(p.run(`__promotionAudit.store.limits.${key}`),value,key);
+ assert.deepEqual(p.status().capturePolicy,{workerMaxOriginalOccurrences:65536,pageMaxCompactRows:65536,maxPackedOriginalBytes:33554432,maxOverflowBytes:524288,workerTransport:'immediate-original'});
+ assert.equal(p.status().observation.maxOccurrences,65536);assert.equal(p.status().observation.maxExpandedBytes,33554432);
+});
+
+test('40000 actual indexed compact rows round trip through page readChunk, actual host and raw reader exactly',async t=>{
+ const start=performance.now(),cpu=process.cpuUsage(),p=page(),count=40000;append(p,count,64);
+ p.run('__promotionAudit.store.payload({fixture:"independent payload inventory"})');
+ const before=p.status(),packed=plain(p.ctx.__promotionAudit.events),expected=packed.map(({auditIndex,...event})=>event);
+ assert.equal(before.complete,true);assert.equal(before.events,count);assert.equal(before.observation.observedOccurrences,count);assert.equal(before.observation.repeatedOccurrences,0);assert.equal(before.observation.repeatRows,0);assert(packed.every((row,i)=>row.auditIndex===i&&row.type!=='audit-observation-repeats'));assert(before.eventBytes<33554432);assert(before.observation.expandedBytes<33554432);
+ const file=output(t,'40000'),rec=C.createCaseRecorder(file),cache=[];assert(rec.record('host-metadata',{policy:'finite page admission'}));
+ assert(rec.sample({start:1,end:2,processes:[{id:'1',type:'browser',cpuTime:0.1}]}));
+ let firstYield=null;setImmediate(()=>{firstYield=rec.auditCursor();});await C.collectAudit(p,rec,cache);assert.equal(firstYield,32);
+ assert.deepEqual(cache,expected);assert(rec.record('case-field',{key:'lastObservation',value:cache.at(-1)}));const status=rec.close();assert.equal(status.complete,true);assert.equal(status.raw.records,count+4);assert.equal(rec.auditCursor(),count);assert.equal(status.page.events,count);
+ const raw=fs.readFileSync(file),rows=raw.toString().trimEnd().split('\n').map(JSON.parse),rebuilt=C.reconstructCaseFields(raw);assert.equal(rows.length,count+4);assert.deepEqual(rebuilt.events,expected);assert.deepEqual(rebuilt.fields.lastObservation,expected.at(-1));assert.deepEqual(status.page.observation,before.observation);
+ assert.equal(p.transfer.calls,Math.ceil(count/256));assert.equal(p.transfer.maxRows,256);assert.equal(p.run('__promotionAudit.read(0).events.length'),32);
+ metric('40000 actual indexed rows',start,cpu,{originals:count,compactRows:count,repeatRows:0,packedBytes:before.eventBytes,expandedBytes:before.observation.expandedBytes,rawRecords:status.raw.records,rawBytes:raw.length,chunkCalls:p.transfer.calls,maxChunkBytes:p.transfer.maxBytes,firstYieldAt:firstYield,rawSHA256:sha(raw)});
+});
+
+test('65536 originals and compact rows fit alone; next row and aggregate metadata/payload overhead fail closed',async t=>{
+ const start=performance.now(),cpu=process.cpuUsage(),p=page();append(p,65536);const before=p.status(),packed=plain(p.ctx.__promotionAudit.events);
+ assert.equal(before.complete,true);assert.equal(before.events,65536);assert.equal(before.observation.observedOccurrences,65536);assert.equal(before.observation.repeatedOccurrences,0);
+ const decoder=A.createAuditEventDecoder();for(const [i,row]of packed.entries())assert.deepEqual(decoder.push(row),[{at:i,scope:'page',type:'evaluation-begin',id:i}]);decoder.finish();assert.equal(decoder.status().observed,65536);assert.equal(decoder.status().compactRows,65536);
+ const file=output(t,'65536-alone'),rec=C.createCaseRecorder(file),cache=[];await C.collectAudit(p,rec,cache);assert.equal(rec.close().complete,true);assert.equal(rec.writer.stats().records,65536);assert.equal(cache.length,65536);assert.deepEqual(C.reconstructCaseFields(fs.readFileSync(file)).events,cache);
+ // The same admissible page cannot fit once raw metadata and payload records
+ // consume the same whole-file count. No segmentation, dropping or resetting.
+ const combined=C.createCaseRecorder(output(t,'combined')),text='{"payload":"overhead"}';assert(combined.payload(sha(text),text));assert(combined.record('host-metadata',{case:'combined'}));assert(combined.sample({start:1,end:2,processes:[]}));
+ await assert.rejects(C.collectAudit(p,combined,[]),/Incomplete audit recording/);const failed=combined.close();assert.equal(failed.complete,false);assert.match(failed.failure,/raw writer: MAX_RECORDS/);assert.equal(combined.writer.stats().records,65536);assert.equal(combined.store.status().events,65536);assert.equal(combined.auditCursor(),65533);assert.equal(combined.record('later',{}),false);assert.equal(p.status().complete,true);
+ p.run("__promotionAudit.emit('evaluation-begin',{at:65536,id:65536})");const overflow=p.status();assert.equal(overflow.complete,false);assert.equal(overflow.events,65536);assert.equal(overflow.observation.observedOccurrences,65536);assert.equal(overflow.firstOverflow.reason,'audit expanded occurrence limit');assert.equal(overflow.firstOverflow.scope,'page');assert.equal(overflow.firstOverflow.unit,'compact-rows');assert.equal(overflow.firstOverflow.maxEvents,65536);
+ p.run("__promotionAudit.emit('later',{at:65537})");assert.deepEqual(p.status(),overflow);
+ assert.throws(()=>decoder.push({at:65536,scope:'page',type:'evaluation-begin',id:65536,auditIndex:65536}),/audit compact row limit/);assert.equal(decoder.status().complete,false);assert.throws(()=>decoder.finish(),/audit compact row limit/);
+ metric('65536 exact and combined raw boundary',start,cpu,{originals:65536,compactRows:65536,packedBytes:before.eventBytes,expandedBytes:before.observation.expandedBytes,rawRecords:rec.writer.stats().records,rawBytes:rec.writer.stats().bytes,combinedAcceptedAuditRows:combined.auditCursor(),combinedFailure:failed.failure});
+});
+
+test('32 MiB page packed bytes and independent decoder expanded bytes still stop before 65536 rows',()=>{
+ const p=page();p.run(`for(let i=0;i<65536&&__promotionAudit.store.status().complete;i++)__promotionAudit.emit('evaluation-begin',{at:i,id:i,padding:'x'.repeat(4096)});`);const status=p.status();assert.equal(status.complete,false);assert.equal(status.failure,'capture event byte limit');assert(status.events>3000&&status.events<10000);assert(status.eventBytes<=33554432);assert(status.observation.expandedBytes<=33554432);assert.equal(status.firstOverflow.maxBytes,33554432);
+ const d=A.createAuditEventDecoder();let count=0;assert.throws(()=>{for(;count<65536;count++)d.push({at:count,scope:'page',type:'evaluation-begin',padding:'x'.repeat(8192)});},/audit expanded byte limit/);assert(count>3000&&count<5000);assert.equal(d.status().maxExpandedBytes,33554432);assert.equal(d.status().complete,false);
+});
+
+test('32 MiB payload aggregate remains independent of aligned row count',()=>{
+ const s=A.createCaptureStore({maxEvents:65536}),bytes=4194304;for(let i=0;i<8;i++){const text='"'+String(i)+'x'.repeat(bytes-3)+'"';assert.equal(Buffer.byteLength(text),bytes);assert(s.importPayload(sha(text),text));}
+ assert.equal(s.status().payloadBytes,33554432);assert.equal(s.status().events,0);assert.equal(s.importPayload(sha('"next"'),'"next"'),false);assert.equal(s.status().failure,'import payload limit');assert.equal(s.status().payloadBytes,33554432);
+});
+
+test('failed old page status and exact first-overflow origin cannot become a passing case',t=>{
+ const origin={scope:'page',failureScope:'page',reason:'capture event count limit',events:30000,eventBytes:20714650,payloads:95,payloadBytes:673885,maxEvents:30000,maxBytes:33554432,maxEventBytes:131072,maxPayloads:128,unit:'compact-rows'};
+ const old={complete:false,failure:origin.reason,events:30000,firstOverflow:origin,capturePolicy:{workerMaxOriginalOccurrences:65536,pageMaxCompactRows:30000,maxPackedOriginalBytes:33554432,maxOverflowBytes:524288,workerTransport:'immediate-original'}};
+ const rec=C.createCaseRecorder(output(t,'historical-status'));rec.setPageStatus(old);const result=rec.close();assert.equal(result.complete,false);assert.deepEqual(result.page.firstOverflow,origin);assert.equal(result.page.capturePolicy.pageMaxCompactRows,30000);assert.match(result.failure,/page capture incomplete/);assert.equal(rec.record('later',{}),false);
+ const classified=C.classifyCase({id:'historical',fixture:'default4',arm:'baseline',failures:[],uncovered:[],lifecycleCompleted:true,primaryFirst:true,additionalRecall:true},result);assert.equal(classified.recording.complete,false);assert.equal(classified.cpu.eligible,false);assert.equal(classified.ok,false);assert.deepEqual(classified.recording.page.firstOverflow,origin);
+});
+
+test('real run42585999515 default4 historical prefix remains readable and its failure stays pinned',t=>{
+ const dir=externalDirectory('results/42585999515/default4/promotion-stop-results');if(!dir)return t.skip('Optional external run42585999515 artifact unavailable; core capacity contracts still run');
+ const rawFile=path.join(dir,'default4-baseline-0.raw.ndjson'),summaryFile=path.join(dir,'default4-baseline-0.summary.json');
+ const raw=fs.readFileSync(rawFile),summaryBytes=fs.readFileSync(summaryFile),summary=JSON.parse(summaryBytes);assert.equal(sha(raw),'0bd90e86b75b4fb04dbbaa38116ac6a11161f47856dad5e957fc6242449dca6e');assert.equal(sha(summaryBytes),'fe4bd3f3a578a2fade2e19842df255534bf27d798f6acbee0ee6ee09bab614a6');
+ const restored=C.reconstructCaseFields(raw);assert.equal(restored.events.length,5990);assert.equal(Object.keys(restored.fields).length,0);assert.equal(summary.recording.complete,false);assert.equal(summary.recording.page.events,30000);assert.equal(summary.recording.page.observation.observedOccurrences,38202);assert.equal(summary.recording.page.observation.expandedBytes,24071248);assert.equal(summary.recording.page.firstOverflow.scope,'page');assert.equal(summary.recording.page.firstOverflow.unit,'compact-rows');assert.equal(summary.recording.page.firstOverflow.maxEvents,30000);assert.equal(summary.cpu.eligible,false);assert.equal(summary.functional.pass,false);assert.equal(summary.ok,false);
+ assert.equal(sha(fs.readFileSync(rawFile)),sha(raw));assert.equal(sha(fs.readFileSync(summaryFile)),sha(summaryBytes));
+});
+
+test('source diff is restricted to explicit page policy, never CPU, worker delivery, physics or search code',t=>{
+ const base=externalDirectory('remaining-validation-assembled/verification/promotion-stop-corrected');if(!base)return t.skip('Optional frozen source assembly unavailable; source diff is separately checked by assembly manifest');
+ const oldAudit=fs.readFileSync(path.join(base,'audit.js'),'utf8'),oldChrome=fs.readFileSync(path.join(base,'chrome.cjs'),'utf8');
+ const expectedAudit=oldAudit.replace('store=createStore(workerRealm?{maxEvents:65536}:{})','store=createStore({maxEvents:65536})').replace('pageMaxCompactRows:30000','pageMaxCompactRows:65536').replace('maxRows=30000','maxRows=maxOccurrences').replace('// The 32 MiB ORIGINAL packed-event byte cap and page compact cap remain.','// Page compact rows share that finite ceiling; generic store defaults stay 30000.\n // The 32 MiB ORIGINAL packed-event byte cap remains independent.');
+ assert.equal(code,expectedAudit);assert.equal(fs.readFileSync(path.join(__dirname,'chrome.cjs'),'utf8'),oldChrome.replace('const PAGE_AUDIT_MAX_EVENTS=30000; // Page/decoder compact rows; distinct from whole-file host records.','const PAGE_AUDIT_MAX_EVENTS=65536; // Page/decoder compact rows align with original occurrences; raw records also include metadata/payloads.'));
+ for(const name of ['bounded-records.cjs','measurement.cjs','cpu-preflight.cjs','check-preflight.cjs','bounded-records.test.cjs','cpu-preflight.test.cjs'])assert.equal(sha(fs.readFileSync(path.join(__dirname,name))),sha(fs.readFileSync(path.join(base,name))),name);
+ for(const marker of ['maxBytes:64*1024*1024,maxRecords:65536,maxLineBytes:32768','cpuQualificationUncertaintyMs:250','__promotionAudit.readChunk(offset,256,262144)','if(++count%32===0)await new Promise(resolve=>setImmediate(resolve))'])assert(fs.readFileSync(path.join(__dirname,'chrome.cjs'),'utf8').includes(marker),marker);
+ assert(code.includes("workerTransport:'immediate-original'"));assert(code.includes('native.post({__promotionAudit:true,...e})'));
+});
+
+}
+// END REVIEWED page-budget-design CONTRACTS

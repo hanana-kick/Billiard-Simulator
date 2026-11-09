@@ -89,12 +89,13 @@ function createCaptureStore(options = {}) {
 // Verification-only transport/physical-lifecycle observations. No timer wrappers.
 function installPromotionAudit(scope='page',workerRealm=false,createStore=createCaptureStore){
  const G=globalThis,epoch=()=>performance.timeOrigin+performance.now(),native={Worker:G.Worker,Blob:G.Blob,create:G.URL.createObjectURL.bind(G.URL),post:workerRealm?G.postMessage.bind(G):null};
- const events=[],children=new Map(),urls=new Map(),sources=[],deferred=[],store=createStore(workerRealm?{maxEvents:65536}:{}),sentPayloads=new Set(),sourceHashes=new Map(),pendingSources=new Set(),sourceTasks=new Set();let serial=0,ready=!workerRealm,currentMessage=null,overflowSent=false,staleBytes=0,sourceTextBytes=0,firstOverflow=null;
+ const events=[],children=new Map(),urls=new Map(),sources=[],deferred=[],store=createStore({maxEvents:65536}),sentPayloads=new Set(),sourceHashes=new Map(),pendingSources=new Set(),sourceTasks=new Set();let serial=0,ready=!workerRealm,currentMessage=null,overflowSent=false,staleBytes=0,sourceTextBytes=0,firstOverflow=null;
  // Workers retain no event list: admit up to the existing page-wide expanded
  // ceiling, without buffering or changing a single native application message.
- // The 32 MiB ORIGINAL packed-event byte cap and page compact cap remain.
+ // Page compact rows share that finite ceiling; generic store defaults stay 30000.
+ // The 32 MiB ORIGINAL packed-event byte cap remains independent.
  // Downstream host admission is independent. Limits count the entire realm lifetime, including forwarded data.
- const capturePolicy=Object.freeze({workerMaxOriginalOccurrences:65536,pageMaxCompactRows:30000,maxPackedOriginalBytes:32*1024*1024,maxOverflowBytes:512*1024,workerTransport:'immediate-original'});
+ const capturePolicy=Object.freeze({workerMaxOriginalOccurrences:65536,pageMaxCompactRows:65536,maxPackedOriginalBytes:32*1024*1024,maxOverflowBytes:512*1024,workerTransport:'immediate-original'});
  const overflow=(reason,origin=null)=>{const prior=store.status();store.fail(reason);if(!firstOverflow){const s=store.status();firstOverflow=Object.freeze(origin&&prior.complete?origin:{scope,failureScope:scope,reason:s.failure,events:s.events,eventBytes:s.eventBytes,payloads:s.payloads,payloadBytes:s.payloadBytes,maxEvents:store.limits.maxEvents,maxBytes:store.limits.maxBytes,maxEventBytes:store.limits.maxEventBytes,maxPayloads:store.limits.maxPayloads,unit:workerRealm?'original-occurrences':'compact-rows'});}if(workerRealm&&ready&&!overflowSent){overflowSent=true;native.post({__promotionOverflow:true,scope,reason:store.status().failure,origin:firstOverflow});}};
  // Forward the first origin unchanged, never substitute a coordinator's own
  // smaller counters. Validate before reading metadata (no accessors/toJSON).
@@ -157,7 +158,7 @@ function installPromotionAudit(scope='page',workerRealm=false,createStore=create
 // Host-only decoder. The capture side never expands or changes native delivery.
 // Returned events are the exact original packed observations, in original order.
 function createAuditEventDecoder(){
- const maxOccurrences=65536,maxExpandedBytes=32*1024*1024,maxRows=30000,maxBatch=32,validator=createCaptureStore(),slots=[],templates=new Map(),lastTimes=new Map(),lastIndices=new Map();let rows=0,observed=0,expandedBytes=0,next=0,mode=null,lastOriginal=-1,lastRepeat=-1,failure=null;
+ const maxOccurrences=65536,maxExpandedBytes=32*1024*1024,maxRows=maxOccurrences,maxBatch=32,validator=createCaptureStore(),slots=[],templates=new Map(),lastTimes=new Map(),lastIndices=new Map();let rows=0,observed=0,expandedBytes=0,next=0,mode=null,lastOriginal=-1,lastRepeat=-1,failure=null;
  const check=(ok,msg)=>{if(!ok)throw Error(msg);};
  const charge=e=>{expandedBytes+=new TextEncoder().encode(JSON.stringify(e)).length;check(expandedBytes<=maxExpandedBytes,'audit expanded byte limit');};
  function push(row){
