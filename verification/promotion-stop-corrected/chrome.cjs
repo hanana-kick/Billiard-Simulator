@@ -20,6 +20,74 @@ function preflightMode(env=process.env,options={}){
  return mode;
 }
 function exactKeys(value,keys,label){assert(value&&typeof value==='object'&&!Array.isArray(value),label+' must be an object');assert.deepEqual(Object.keys(value).sort(),[...keys].sort(),label+' schema mismatch');}
+// Only these two producer throws happen after a finite, fully recorded query.
+// Unknown failures, timeouts, partial records and failed cleanup never enter here.
+const EARLY_CPU_FAILURES=Object.freeze(['CPU acquisition exceeds fixed 250 ms criterion','CPU sampling gap exceeds fixed 250 ms criterion']);
+function inspectEarlyPreflight(s,buffer,env,mode){
+ const {LIMITS,STARTUP,processRows}=require(path.join(support,'cpu-preflight.cjs'));
+ const gate=require(path.join(support,'check-preflight.cjs'));
+ assert(['strict',FUNCTIONAL_MODE].includes(mode),'Unknown early preflight mode');
+ assert.equal(hash(fs.readFileSync(path.join(support,'cpu-preflight.cjs'),'utf8')),'72212677b1cb59b6a4b6d4b07ec8c6ffcfa03a130485bf9738cd040327af62d1','Early preflight producer changed');
+ assert.equal(s.schema,'promotion-cpu-capability-v1','Wrong early preflight schema');
+ assert.equal(s.kind,'generic-worker-load-capability-only','Wrong early preflight scope');
+ assert(s.pass===false&&s.phase==='failed'&&EARLY_CPU_FAILURES.includes(s.failure),'Unknown early preflight failure');
+ assert.equal(s.criterionMs,250,'Early criterion changed');assert.deepEqual(s.limits,LIMITS,'Early preflight limits changed');
+ assert(s.actualAppQualified===false&&s.actualComparisonsStarted===0,'Invalid early preflight scope');
+ exactKeys(s.source,['gitCommit','runId','runAttempt','measurementSHA256'],'Early source');
+ assert.equal(s.source.gitCommit,env.GITHUB_SHA,'Early commit mismatch');assert.equal(s.source.runId,env.GITHUB_RUN_ID,'Early run mismatch');assert.equal(s.source.runAttempt,env.GITHUB_RUN_ATTEMPT,'Early attempt mismatch');assert.equal(s.source.measurementSHA256,gate.MEASUREMENT_SHA256,'Early measurement source mismatch');
+ exactKeys(s.shutdown,['detached','closed'],'Early shutdown');assert(s.shutdown.detached===true&&s.shutdown.closed===true,'Early cleanup incomplete');
+ const stages=['Chrome launch','Context creation','Page creation','Blank page','Independent browser CDP session'];
+ assert(Array.isArray(s.startupTiming)&&s.startupTiming.length===stages.length,'Early startup incomplete');let startupMs=0;
+ s.startupTiming.forEach((v,i)=>{exactKeys(v,['stage','ms','completed'],'Early startup stage');assert(v.stage===stages[i]&&v.completed===true&&Number.isFinite(v.ms)&&v.ms>=0&&v.ms<=(i===0?STARTUP.launchMs:STARTUP.stepMs),'Early startup failed or over budget');startupMs+=v.ms;});assert(startupMs<=STARTUP.totalMs,'Early startup total exceeded');
+ exactKeys(s.browser,['product','revision','jsVersion','protocolVersion'],'Early browser');for(const v of Object.values(s.browser))assert(typeof v==='string'&&v.length>0&&v.length<=256,'Invalid early browser metadata');assert(/^Chrome\//.test(s.browser.product),'Early browser is not Chrome');
+ exactKeys(s.recording,['complete','bytes','records','failures','reason','closed'],'Early recording');
+ assert(s.recording.complete===true&&s.recording.closed===true&&s.recording.failures===0&&s.recording.reason===null,'Early raw recording incomplete');
+ assert(Number.isInteger(s.sampleCount)&&s.sampleCount>=1&&s.sampleCount<=LIMITS.maxSamples&&s.recording.records===s.sampleCount+1,'Early record count mismatch');
+ assert(Number.isSafeInteger(s.recording.bytes)&&s.recording.bytes>0&&s.recording.bytes<=1048576,'Early raw size invalid');
+ assert(s.acquisitionPendingAtFailure===false,'Early acquisition still pending');assert(Number.isFinite(s.wallMs)&&s.wallMs>=0&&s.wallMs<=LIMITS.maxWallMs,'Early work budget exceeded');
+ assert(typeof s.rawSHA256==='string'&&/^[a-f0-9]{64}$/.test(s.rawSHA256),'Early raw digest missing');
+ assert(Buffer.isBuffer(buffer)&&buffer.length===s.recording.bytes&&buffer.length<=1048576,'Early raw byte mismatch');assert.equal(crypto.createHash('sha256').update(buffer).digest('hex'),s.rawSHA256,'Early raw digest mismatch');
+ const text=buffer.toString('utf8');assert(Buffer.from(text,'utf8').equals(buffer),'Early raw invalid UTF-8');const lines=text.split('\n');assert.equal(lines.pop(),'','Early raw missing newline');assert.equal(lines.length,s.recording.records,'Early raw record count mismatch');
+ const rows=lines.map(line=>{assert(Buffer.byteLength(line)+1<=32768,'Early raw oversized record');const row=JSON.parse(line);records.encodeBounded(row,{maxLineBytes:32768,maxNodes:2048,maxArrayLength:128,maxObjectKeys:8,maxDepth:5,maxStringChars:256,maxStringBytes:1024});return row;});
+ exactKeys(rows[0],['type','browser'],'Early raw metadata');assert.equal(rows[0].type,'metadata','Early raw metadata missing');assert.deepEqual(rows[0].browser,s.browser,'Early browser raw mismatch');
+ const samples=rows.slice(1),phases=['idle','load','post'],counts=[0,0,0];let phase=0;
+ for(let i=0;i<samples.length;i++){
+  const x=samples[i];exactKeys(x,['type','phase','start','end','processes'],'Early raw sample');const p=phases.indexOf(x.phase);
+  assert(x.type==='sample'&&p>=phase&&p<=phase+1&&p<=1&&(i!==0||p===0),'Early sample phase order');phase=p;counts[p]++;
+  assert(Number.isFinite(x.start)&&x.start>=0&&Number.isFinite(x.end)&&x.end>=x.start&&x.end-x.start<=LIMITS.requestTimeoutMs,'Early query not finite within request budget');
+  if(i)assert(x.start>=samples[i-1].end,'Early queries overlap');
+  processRows(x.processes);for(const process of x.processes){exactKeys(process,['id','type','cpuTime'],'Early process counter');assert(typeof process.id==='string','Early process ID schema');}
+  // The producer aborts immediately after the FIRST failed acquisition or gap.
+  if(i<samples.length-1){assert(x.end-x.start<=250,'Earlier acquisition already failed');if(i)assert(x.start-samples[i-1].end<=250,'Earlier sampling gap already failed');}
+ }
+ const last=samples.at(-1),lastWidth=last.end-last.start,lastGap=samples.length>1?last.start-samples.at(-2).end:null;
+ const expectedFailure=lastWidth>250?EARLY_CPU_FAILURES[0]:lastGap!==null&&lastGap>250?EARLY_CPU_FAILURES[1]:null;
+ assert(expectedFailure&&s.failure===expectedFailure,'Early failure does not match first terminal timing breach');
+ // Only idle/load aborts are admitted. Post needs endpoint/clock evidence
+ // absent at this throw, so it remains closed even in functional mode.
+ // These are exact producer prefixes, not a full-schema object with holes.
+ assert(counts[0]>=1&&counts[0]<=10&&counts[2]<=3,'Early phase counts invalid');
+ if(phase>=1)assert(counts[0]===10&&counts[1]>=1,'Early load lacks complete idle prefix');
+ const keys=['schema','kind','pass','criterionMs','actualAppQualified','actualComparisonsStarted','phase','failure','shutdown','limits','startupTiming','browser','clockBefore','recording','sampleCount','acquisitionPendingAtFailure','wallMs','limitsAndCaveats','source','rawSHA256'];if(phase>=1)keys.push('load');exactKeys(s,keys,'Early producer summary prefix');
+ exactKeys(s.clockBefore,['rounds','best'],'Early calibration');const rounds=s.clockBefore.rounds;assert(Array.isArray(rounds)&&rounds.length===5,'Early calibration rounds missing');
+ for(let i=0;i<rounds.length;i++){const r=rounds[i];exactKeys(r,['start','end','pageEpoch','low','high','width'],'Early calibration round');assert(Object.values(r).every(Number.isFinite)&&r.start>=0&&r.end>=r.start&&r.end-r.start<=LIMITS.requestTimeoutMs&&r.width===r.end-r.start&&r.low===r.pageEpoch-r.end&&r.high===r.pageEpoch-r.start,'Early calibration invalid or over request budget');if(i)assert(r.start>=rounds[i-1].end,'Early calibration overlaps');}
+ assert.deepEqual(s.clockBefore.best,rounds.reduce((a,b)=>!a||b.width<a.width?b:a,null),'Early calibration best mismatch');assert(rounds.at(-1).end<=samples[0].start,'Early calibration not before samples');
+ assert(s.wallMs>=last.end-rounds[0].start,'Early wall time shorter than recorded trace');
+ if(phase>=1){
+  exactKeys(s.load,['workers','durationRequestedMs','description'],'Early load prefix');
+  assert(Number.isInteger(s.load.workers)&&s.load.workers>=1&&s.load.workers<=4&&s.load.durationRequestedMs===8000,'Early load metadata invalid');assert.equal(s.load.description,'10 ms numerical work / 30 ms yield, at most 4 generic workers; not Rapier or app search','Early load description changed');
+  const loaded=samples.filter(x=>x.phase==='load');
+  // observe lies after idle and no later than the first load query. A next
+  // loop iteration can exist only if its preceding query ended before
+  // observe + 8300. Do not invent a bound from the loop guard to acquisition.
+  if(loaded.length>=2)assert(loaded.at(-2).end<loaded[0].start+LIMITS.loadObserveMs,'Early load contradicts producer observation loop');
+
+ }
+ assert.deepEqual(s.limitsAndCaveats,['Capability pass is not actual-app or paired-CPU qualification.','CPU values are observed shared-process lower bounds, not total CPU savings.','Exited-process final increments and same-type PID reuse can remain unknown.','No actual comparison is started even on a pass.'],'Early scope caveats changed');
+ const failedCriteria=[['acquisition',lastWidth],['gap',lastGap]].filter(([,v])=>v!==null&&v>250).map(([criterion,valueMs])=>({criterion,valueMs,limitMs:250}));
+ return{schema:'promotion-preflight-inspection-v1',mode,evidenceValid:true,functionalReady:mode===FUNCTIONAL_MODE,cpuQualified:false,capabilityQualified:false,actualAppQualified:false,actualComparisonsStarted:0,preflightPass:false,preflightPhase:s.phase,preflightFailure:s.failure,cpuTimingOnlyFailure:true,failedCriteria,criterionMs:250,sampleCount:s.sampleCount,commit:env.GITHUB_SHA,runId:env.GITHUB_RUN_ID,runAttempt:env.GITHUB_RUN_ATTEMPT,rawSHA256:s.rawSHA256,capabilityEvidence:{complete:false,kind:'finite-completed-timing-abort-prefix',terminalPhase:last.phase,phaseCounts:counts,terminalSampleIndex:s.sampleCount-1,finalAcquisitionMs:lastWidth,finalGapMs:lastGap,loadEndpointObserved:false,clockAfterObserved:false,windowObserved:false},scope:'Partial generic capability evidence only; CPU failed, not qualified. Functional opt-in never qualifies an actual 8-second window, which retains its independent unchanged 250 ms proof.'};
+}
+
 function inspectPreflight(env=process.env,options={}){
  const mode=preflightMode(env,options),gate=require(path.join(support,'check-preflight.cjs')),{LIMITS,STARTUP,processRows,compactWindow}=require(path.join(support,'cpu-preflight.cjs'));
  for(const key of ['PREFLIGHT_SUMMARY','PREFLIGHT_RAW','GITHUB_SHA','GITHUB_RUN_ID','GITHUB_RUN_ATTEMPT'])assert(env[key],`Missing ${key}; actual-app gate remains closed`);
@@ -27,6 +95,7 @@ function inspectPreflight(env=process.env,options={}){
  assert.equal(hash(fs.readFileSync(path.join(support,'measurement.cjs'),'utf8')),gate.MEASUREMENT_SHA256,'Measurement source changed');
  const s=gate.readSummary(env.PREFLIGHT_SUMMARY);
  records.encodeBounded(s,{maxBytes:65536,maxLineBytes:65536,maxStringChars:1024,maxStringBytes:4096,maxArrayLength:256,maxObjectKeys:64,maxNodes:2048,maxDepth:12});
+ if(EARLY_CPU_FAILURES.includes(s.failure)){const stat=fs.statSync(env.PREFLIGHT_RAW);assert(stat.isFile()&&stat.size<=1048576,'Early preflight raw size exceeds limit');return inspectEarlyPreflight(s,fs.readFileSync(env.PREFLIGHT_RAW),env,mode);}
  exactKeys(s,['schema','kind','pass','criterionMs','actualAppQualified','actualComparisonsStarted','phase','failure','shutdown','limits','startupTiming','browser','clockBefore','load','clockAfter','clockEnvelope','window','processDiagnostics','recording','sampleCount','acquisitionPendingAtFailure','wallMs','limitsAndCaveats','source','rawSHA256'],'Preflight summary');
  assert.equal(s.schema,'promotion-cpu-capability-v1','Wrong preflight schema');
  assert.equal(s.kind,'generic-worker-load-capability-only','Wrong preflight scope');
@@ -109,11 +178,13 @@ function createCaseRecorder(file,{writer=records.createWriter(file,RAW_LIMITS),m
  const store=createCaptureStore(),saved=new Set(),decoded=new Map();let failure=null,pageStatus=null;
  const fail=reason=>{failure=failure||String(reason).slice(0,300);return false;};
  function append(row){if(failure)return false;if(!writer.append(row))return fail('raw writer: '+writer.stats().reason);return true;}
- function payload(id,text){if(saved.has(id))return true;if(hash(text)!==id)return fail('payload SHA-256 mismatch');if(!store.payloads.has(id))store.importPayload(id,text);if(!store.status().complete)return fail(store.status().failure);for(let offset=0;offset<text.length;offset+=8192)if(!append({type:'payload-part',sha256:id,offset,totalChars:text.length,text:text.slice(offset,offset+8192)}))return false;saved.add(id);return true;}
- function flush(){for(const[id,text]of store.payloads)if(!payload(id,text))return false;return true;}
+ function payload(id,text){if(failure)return false;if(typeof text!=='string'||hash(text)!==id)return fail('payload SHA-256 mismatch');if(saved.has(id))return true;if(!store.payloads.has(id))store.importPayload(id,text);if(!store.status().complete)return fail(store.status().failure);for(let offset=0;offset<text.length;offset+=8192)if(!append({type:'payload-part',sha256:id,offset,totalChars:text.length,text:text.slice(offset,offset+8192)}))return false;saved.add(id);return true;}
+ function flush(){for(const[id,text]of store.payloads)if(!saved.has(id)&&!payload(id,text))return false;return true;}
  function record(type,value){try{const v=store.capture(value);if(!v)return fail(store.status().failure);return flush()&&append({type,value:v});}catch(e){return fail(e.message);}}
- const samples=[];
- return {store,record,payload,fail,samples,maxSamples,decode(id){assert(store.payloads.has(id),'Missing referenced payload');if(!decoded.has(id))decoded.set(id,JSON.parse(store.payloads.get(id)));return decoded.get(id);},setPageStatus:s=>{pageStatus=s;if(s?.complete!==true)fail('page capture incomplete: '+s?.failure);},
+ const samples=[],resolving=new Set();
+ function hydrate(x,depth=0){try{assert(depth<=store.limits.maxDepth,'Payload reference depth limit');if(!x||typeof x!=='object')return x;assert(!Object.hasOwn(x,'$missing'),'Missing capture payload');if(Object.hasOwn(x,'$payload')){assert(Object.keys(x).length===1,'Invalid payload reference shape');return decode(x.$payload,depth+1);}if(Array.isArray(x))return x.map(v=>hydrate(v,depth+1));return Object.fromEntries(Object.entries(x).map(([k,v])=>[k,hydrate(v,depth+1)]));}catch(e){fail(e.message);throw e;}}
+ function decode(id,depth=0){try{assert(typeof id==='string'&&/^[a-f0-9]{64}$/.test(id)&&store.payloads.has(id),'Missing referenced payload');assert(!resolving.has(id),'Cyclic payload reference');if(!decoded.has(id)){resolving.add(id);try{decoded.set(id,hydrate(JSON.parse(store.payloads.get(id)),depth+1));}finally{resolving.delete(id);}}return decoded.get(id);}catch(e){fail(e.message);throw e;}}
+ return {store,record,payload,fail,samples,maxSamples,decode,hydrate,setPageStatus:s=>{pageStatus=s;if(s?.complete!==true)fail('page capture incomplete: '+s?.failure);},
   sample(row){if(samples.length>=maxSamples)return fail('CPU sample count limit');if(!record('process-cpu',row))return false;samples.push(row);return true;},
   close(){if((pageStatus?.pendingSources??0)!==0)fail('Unresolved worker source hashes at final capture');writer.close();return this.status();},status(){return {complete:!failure&&store.status().complete&&pageStatus?.complete===true&&(pageStatus.pendingSources??0)===0&&writer.stats().complete,failure,page:pageStatus,raw:writer.stats()};},writer};
 }
@@ -132,8 +203,8 @@ function stopAfterRecordingFailure(report,summary){
 async function collectAudit(page,recorder,cache){
  while(true){const batch=await page.evaluate(offset=>__promotionAudit.read(offset),cache.length);recorder.setPageStatus(batch.status);
   for(const id of batch.payloads){if(recorder.store.payloads.has(id))continue;let text='',offset=0,total=null;do{const part=await page.evaluate(({id,offset})=>__promotionAudit.payloadPart(id,offset),{id,offset});if(!Number.isInteger(part.length)||part.length>4*1024*1024||part.text.length>8192||part.length<offset||part.text.length===0&&offset<part.length)throw Error('Invalid bounded payload transfer');total=part.length;text+=part.text;offset+=part.text.length;}while(offset<total);if(!recorder.payload(id,text))throw Error('Incomplete payload recording');}
-  const hydrate=x=>{if(!x||typeof x!=='object')return x;if(x.$payload){return recorder.decode(x.$payload);}if(Array.isArray(x))return x.map(hydrate);return Object.fromEntries(Object.entries(x).map(([k,v])=>[k,hydrate(v)]));};
-  for(const event of batch.events){if(!recorder.record('audit-event',event))throw Error('Incomplete audit recording');cache.push(hydrate(event));}
+
+  for(const event of batch.events){if(!recorder.record('audit-event',event))throw Error('Incomplete audit recording');cache.push(recorder.hydrate(event));}
   assert.equal(cache.length,batch.next,'Audit cursor mismatch');if(batch.next===batch.total)break;
  }
  return cache;
