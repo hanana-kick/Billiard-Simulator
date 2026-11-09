@@ -895,7 +895,7 @@ test('real writer round-trips a >4 MiB derived collection without raising any li
  const old=A.createCaptureStore();assert.equal(old.capture(original),null);assert.equal(old.status().failure,'capture byte limit');
  assert(rec.record('case-field',original));const status=rec.close();assert(status.complete);assert(status.raw.bytes<64*1024*1024&&status.raw.records<65536);
  const rebuilt=C.reconstructCaseFields(fs.readFileSync(file));assert.deepEqual(rebuilt.fields.promotedServiceEvidence,cache);assert.strictEqual(rebuilt.fields.promotedServiceEvidence[799],rebuilt.events[799]);
- assert.equal(rec.store.limits.maxValueBytes,4*1024*1024);assert.equal(rec.store.limits.maxEvents,30000);assert.equal(rec.store.limits.maxPayloads,128);
+ assert.equal(rec.store.limits.maxValueBytes,4*1024*1024);assert.equal(rec.store.limits.maxEvents,65536);assert.equal(rec.store.limits.maxPayloads,128);
 });
 
 test('nested continuation, ledger, error and Resume evidence uses the same exact archive',t=>{
@@ -1010,3 +1010,346 @@ test('producer binding permits partial batches and repeated complete drains with
 
 }
 // END REVIEWED derived-field-design CONTRACTS
+
+// BEGIN REVIEWED worker-bounds-design CONTRACTS
+{
+'use strict';
+{
+// Offline only. Fresh VM realms model native delivery, not Chrome scheduling.
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),crypto=require('node:crypto');
+const ROOT=__dirname,BASE=fs.existsSync(path.join(ROOT,'bounded-records.cjs'))?ROOT:path.resolve(ROOT,'../trace-final-v2-assembled/verification/promotion-stop-corrected'),A=require('./audit.js'),B=require(path.join(BASE,'bounded-records.cjs'));
+const CODE=fs.readFileSync(path.join(ROOT,'audit.js'),'utf8'),RAW={maxBytes:64*1024*1024,maxRecords:65536,maxLineBytes:32768,maxStringChars:8192,maxStringBytes:32768,maxArrayLength:4096,maxObjectKeys:256,maxNodes:65536,maxDepth:32};
+const sha=x=>crypto.createHash('sha256').update(x).digest('hex'),plain=x=>JSON.parse(JSON.stringify(x)),run=(r,s)=>vm.runInContext(s,r.ctx),progress=(at,scope='page.w2.w2')=>({at,scope,type:'worker-post',error:null,requestId:1,candidateId:2,identities:[],cost:null});
+function decode(rows){const d=A.createAuditEventDecoder(),events=[];for(const row of rows)events.push(...d.push(row));d.finish();return {events,status:d.status()};}
+function rig({source=null,worker=false,limits=null,sink=null,hash=null}={}){
+ const r={ctx:null,workers:[],outgoing:[],nativeMessages:[],terminated:0,clock:0,blobs:new Map(),url:0};
+ class NativeBlob{constructor(parts=[],options){this.parts=parts;this.options=options;}}
+ class NativeWorker{
+  constructor(url,options){this.url=url;this.options=options;this.listeners={};this.posted=[];this.received=[];this.stopped=false;r.workers.push(this);const blob=r.blobs.get(url);this.child=rig({source:blob.parts.join(''),worker:true,sink:value=>this.receive(value),hash});}
+  addEventListener(type,fn){(this.listeners[type]??=[]).push(fn);}
+  postMessage(data,...args){this.posted.push({data,args});this.child.incoming=plain(data);run(this.child,'onmessage({data:JSON.parse(globalThis.__incoming)})'.replace('globalThis.__incoming',JSON.stringify(JSON.stringify(data))));}
+  receive(value){if(this.stopped)return;const data=run(r,`JSON.parse(${JSON.stringify(JSON.stringify(value))})`);let stopped=false;const event={data,stopImmediatePropagation(){stopped=true;}};for(const f of this.listeners.message??[]){f(event);if(stopped)return;}this.received.push(data);this.onmessage?.(event);}
+  terminate(){this.stopped=true;r.terminated++;}
+ }
+ r.ctx=vm.createContext({TextEncoder,TextDecoder,Uint8Array,crypto:hash||crypto.webcrypto,performance:{timeOrigin:1794209700000,now:()=>++r.clock/10},Blob:NativeBlob,Worker:NativeWorker,URL:{createObjectURL(blob){const id='blob:local-'+(++r.url);r.blobs.set(id,blob);return id;}},postMessage(data,...args){const value=plain(data);r.outgoing.push(value);if(!value.__promotionAudit&&!value.__promotionOverflow&&!value.__promotionPayload)r.nativeMessages.push({data,args});sink?.(value);},onmessage(){}});
+ if(source!==null)run(r,source);
+ else if(worker||limits)run(r,`globalThis.module={exports:{}};${CODE}\nmodule.exports.installPromotionAudit(${JSON.stringify(worker?'pending':'page')},${worker},options=>{const make=${A.createCaptureStore.toString()};globalThis.testStore=make({...options,...${JSON.stringify(limits||{})}});return testStore;});`);
+ else run(r,CODE);
+ return r;
+}
+async function settle(r){for(let i=0;i<4;i++)await new Promise(resolve=>setImmediate(resolve));if(!r.ctx.__promotionAudit)return;await run(r,'__promotionAudit.flushSources()');}
+const status=r=>plain(run(r,'__promotionAudit.read(0).status'));
+const source=`globalThis.LabForecast={begin(){return {steps:0};},advance(job){job.steps++;},finish(){}};globalThis.appIn=[];globalThis.onmessage=function(e){appIn.push(e.data);};`;
+function child(r,name='w'){run(r,`globalThis.${name}=new Worker(URL.createObjectURL(new Blob([${JSON.stringify(source)}])));`);return r.ctx[name].child;}
+function temp(t){const d=fs.mkdtempSync(path.join(ROOT,'.test-'));t.after(()=>fs.rmSync(d,{recursive:true,force:true}));return path.join(d,'trace.ndjson');}
+function writeRows(t,rows,payloads=[]){const file=temp(t),writer=B.createWriter(file,RAW),host=A.createCaptureStore();for(const[id,text]of payloads){assert(host.importPayload(id,text)||host.payloads.has(id),host.status().failure);for(let offset=0;offset<text.length;offset+=8192)assert(writer.append({type:'payload-part',sha256:id,offset,totalChars:text.length,text:text.slice(offset,offset+8192)}));}for(const row of rows){const value=host.capture(row);assert(value,host.status().failure);assert(writer.append({type:'audit-event',value}),writer.stats().reason);}assert(writer.close());return {file,host,writer,rows:fs.readFileSync(file,'utf8').trimEnd().split('\n').map(JSON.parse).filter(r=>r.type==='audit-event').map(r=>r.value)};}
+
+test('worker-only capacity is explicit; page, decoder, raw and byte ceilings do not change',()=>{
+ const page=rig(),worker=rig({worker:true});run(worker,`onmessage({data:{__promotionInit:true,scope:'page.w2'}})`);assert.equal(run(worker,'testStore.limits.maxEvents'),65536);assert.equal(run(worker,'testStore.limits.maxBytes'),33554432);assert.equal(A.createCaptureStore().limits.maxEvents,30000);assert.equal(A.createAuditEventDecoder().status().maxOccurrences,65536);assert.deepEqual(status(page).capturePolicy,{workerMaxOriginalOccurrences:65536,pageMaxCompactRows:30000,maxPackedOriginalBytes:33554432,maxOverflowBytes:524288,workerTransport:'immediate-original'});
+});
+
+test('fresh nested bootstrap forwards >30,000 originals immediately through coordinator, page and bounded host writer',async t=>{
+ const page=rig(),coordinator=child(page,'coordinator'),nested=child(coordinator,'nested');await settle(page);
+ const native=coordinator.ctx.nested;run(coordinator,'globalThis.nativeCallbacks=0;nested.onmessage=()=>nativeCallbacks++;');
+ // Every native nested progress emits one exact nested post plus one coordinator
+ // receive, while the coordinator itself emits progress between periodic
+ // physical lifecycle records. Source hashes and payloads traverse the same wire.
+ const expected=[];const receive=page.ctx.coordinator.receive.bind(page.ctx.coordinator);page.ctx.coordinator.receive=value=>{if(value.__promotionAudit)expected.push(plain(value));receive(value);};
+ const start=performance.now(),cpu=process.cpuUsage();
+ run(nested,`for(let i=0;i<11000;i++)postMessage({requestId:1,candidateId:2,steps:i});`);
+ run(coordinator,`for(let i=0;i<8000;i++)postMessage({requestId:7,candidateId:8,steps:i});`);
+ run(nested,`for(let i=0;i<6000;i++){const job=LabForecast.begin();LabForecast.advance(job);LabForecast.finish(job);}`);
+ // 22,000 nested/receive + 8,000 coordinator + 18,000 uncompressed physical
+ // originals, plus startup/source rows. This is intentionally not a repeats-only
+ // demonstration. The page also observes the 8,000 coordinator native posts.
+ assert(coordinator.outgoing.filter(e=>e.__promotionAudit).length>30000);
+ run(coordinator,`nested.postMessage({type:'evaluate',requestId:4,req:{world:[1,2,255],options:{precise:1.23456789}}});nested.terminate();`);
+ run(page,'coordinator.terminate();');await settle(page);
+ assert.equal(coordinator.ctx.nativeCallbacks,11000);assert.equal(native.received.length,11000);assert.equal(native.posted.length,2);assert.deepEqual(plain(native.posted[1].data),{type:'evaluate',requestId:4,req:{world:[1,2,255],options:{precise:1.23456789}}});assert.equal(coordinator.terminated,1);assert.equal(page.terminated,1);
+ const st=status(page);assert.equal(st.complete,true,st.failure);assert.equal(st.pendingSources,0);assert.equal(st.firstOverflow,null);assert.equal(st.observation.pendingOccurrences,0);assert(st.observation.observedOccurrences>56000);assert(st.events<30000);
+ const rows=plain(page.ctx.__promotionAudit.events),payloads=plain([...page.ctx.__promotionAudit.store.payloads]),written=writeRows(t,rows,payloads),restored=decode(written.rows).events;
+ // Page-only lifecycle rows are outside the coordinator wire subsequence.
+ const actual=restored.filter(e=>e.__promotionAudit);const prior=coordinator.outgoing.filter(e=>e.__promotionAudit).length-expected.length;assert.deepEqual(actual.slice(prior),expected);assert.equal(actual.length,coordinator.outgoing.filter(e=>e.__promotionAudit).length);
+ assert.equal(restored.length,st.observation.observedOccurrences);assert.equal(decode(written.rows).status.expandedBytes,st.observation.expandedBytes);assert(restored.some(e=>e.type==='worker-source'&&e.scope.startsWith('page.w')));assert.equal(restored.filter(e=>e.type==='forecast-begin').length,6000);assert.equal(restored.filter(e=>e.type==='forecast-advance').length,6000);assert.equal(restored.filter(e=>e.type==='forecast-finish').length,6000);assert(restored.some(e=>e.type==='handler-return'));assert(restored.some(e=>e.type==='worker-terminate'));assert(written.writer.stats().bytes<RAW.maxBytes);
+ const usage=process.cpuUsage(cpu);console.log(JSON.stringify({test:'fresh-vm-long-chain',originals:restored.length,compactRows:rows.length,rawBytes:written.writer.stats().bytes,workerOriginals:actual.length,wallMs:performance.now()-start,cpuMs:(usage.user+usage.system)/1000,note:'Offline simulation cost including VM cloning, assertions and disk; not Chrome overhead or a speed claim'}));
+});
+
+test('Worker 65,536 bound is exact, sticky, and leaves native app delivery unchanged',()=>{
+ const worker=rig({worker:true});run(worker,`onmessage({data:{__promotionInit:true,scope:'page.w2'}});for(let i=0;i<65534;i++)postMessage({requestId:1,candidateId:2,steps:i});`);
+ assert.equal(worker.outgoing.filter(e=>e.__promotionAudit).length,65536);assert.equal(worker.outgoing.filter(e=>e.__promotionOverflow).length,0);
+ run(worker,`postMessage({requestId:1,candidateId:2,steps:65534});postMessage({requestId:1,candidateId:2,steps:65535});`);
+ const overflow=worker.outgoing.filter(e=>e.__promotionOverflow);assert.equal(overflow.length,1);assert.equal(overflow[0].reason,'capture event count limit');assert.equal(overflow[0].origin.scope,'page.w2');assert.equal(overflow[0].origin.events,65536);assert.equal(overflow[0].origin.maxEvents,65536);assert.equal(worker.nativeMessages.length,65536);assert.equal(worker.outgoing.filter(e=>e.__promotionAudit).length,65536);assert.equal(run(worker,'testStore.status().complete'),false);
+});
+
+test('first nested overflow origin/counters survive two relays, later failures cannot replace them',async()=>{
+ const page=rig(),coordinator=child(page,'coordinator'),nested=child(coordinator,'nested');await settle(page);
+ const scope=coordinator.ctx.nested.__promotionId,origin={scope,failureScope:scope,reason:'capture event count limit',events:65536,eventBytes:123456,payloads:4,payloadBytes:4321,maxEvents:65536,maxBytes:33554432,maxEventBytes:131072,maxPayloads:128,unit:'original-occurrences'};
+ coordinator.ctx.nested.receive({__promotionOverflow:true,scope,reason:origin.reason,origin});const first=status(page);assert.deepEqual(first.firstOverflow,origin);assert.deepEqual(JSON.parse(B.encodeBounded({firstOverflow:first.firstOverflow},{...RAW,maxBytes:262144,maxLineBytes:262144,maxStringChars:16384,maxStringBytes:32768})),{firstOverflow:origin});assert.equal(first.complete,false);assert(first.events<100);
+ page.ctx.coordinator.receive({__promotionOverflow:true,scope:page.ctx.coordinator.__promotionId,reason:'second failure',origin:{...origin,reason:'second failure'}});run(page,`__promotionAudit.emit('later');`);assert.deepEqual(status(page).firstOverflow,origin);assert.equal(status(page).failure,origin.reason);
+ assert.equal(coordinator.outgoing.filter(x=>x.__promotionOverflow).length,1);
+});
+
+test('local overflow wins a later child origin and counters stay at first failure',async()=>{
+ const page=rig({limits:{maxEvents:3}});child(page);await settle(page);run(page,`__promotionAudit.emit('overflow');`);const first=status(page);assert.equal(first.complete,false);assert.equal(first.firstOverflow.scope,'page');assert.equal(first.firstOverflow.events,3);assert.equal(first.firstOverflow.unit,'compact-rows');page.ctx.w.receive({__promotionOverflow:true,origin:{scope:'forged'}});assert.deepEqual(status(page).firstOverflow,first.firstOverflow);
+});
+
+test('pre-identity failure resolves the final scope without losing failure scope or counts',()=>{
+ const worker=rig({worker:true});run(worker,`URL.createObjectURL(new Blob(['globalThis.LabForecast={}']));onmessage({data:{__promotionInit:true,scope:'page.w2'}});`);const signal=worker.outgoing.find(e=>e.__promotionOverflow);assert.equal(signal.origin.scope,'page.w2');assert.equal(signal.origin.failureScope,'pending');assert.equal(signal.origin.events,1);assert.match(signal.reason,/before unique audit identity/);
+});
+
+test('malformed origin, counters, wrong child and metadata accessors fail closed without evaluation',async()=>{
+ const mutations=[o=>{o.events=-1;},o=>{o.events=65537;},o=>{o.eventBytes=33554433;},o=>{o.payloadBytes=-1;},o=>{o.maxEvents=65537;},o=>{o.scope='page';},o=>{o.scope+='bad';},o=>{o.failureScope='elsewhere';},o=>{o.unit='compact-rows';},o=>{o.unknown=1;}];
+ for(const mutate of mutations){const page=rig();child(page);await settle(page);const scope=page.ctx.w.__promotionId,origin={scope,failureScope:scope,reason:'capture event count limit',events:65536,eventBytes:0,payloads:0,payloadBytes:0,maxEvents:65536,maxBytes:33554432,maxEventBytes:131072,maxPayloads:128,unit:'original-occurrences'};mutate(origin);page.ctx.w.receive({__promotionOverflow:true,scope,reason:origin.reason,origin});const st=status(page);assert.equal(st.complete,false);assert.equal(st.failure,'invalid forwarded capture overflow');assert.equal(st.firstOverflow.scope,'page');}
+ const page=rig();child(page);await settle(page);run(page,`globalThis.calls=0;const data={__promotionOverflow:true,scope:w.__promotionId};Object.defineProperty(data,'origin',{enumerable:true,get(){calls++;throw Error('getter invoked');}});w.listeners.message[0]({data,stopImmediatePropagation(){}});`);assert.equal(page.ctx.calls,0);assert.match(status(page).failure,/capture accessor/);
+ const flag=rig();child(flag);await settle(flag);run(flag,`globalThis.calls=0;const data={};Object.defineProperty(data,'__promotionOverflow',{enumerable:true,get(){calls++;return true;}});w.listeners.message[0]({data,stopImmediatePropagation(){}});`);assert.equal(flag.ctx.calls,0);assert.match(status(flag).failure,/capture accessor/);
+});
+
+test('original byte cap fails before count, without invoking accessors/toJSON',()=>{
+ const worker=rig({worker:true,limits:{maxBytes:350}});run(worker,`onmessage({data:{__promotionInit:true,scope:'page.w2'}});for(let i=0;i<10;i++)postMessage({requestId:1,candidateId:2,steps:i});`);const signal=worker.outgoing.find(e=>e.__promotionOverflow);assert.equal(signal.reason,'capture event byte limit');assert(signal.origin.eventBytes<=350);assert(signal.origin.events<65536);assert.equal(worker.nativeMessages.length,10);
+ for(const kind of ['accessor','toJSON']){let calls=0;const value={type:'test'};if(kind==='accessor')Object.defineProperty(value,'x',{enumerable:true,get(){calls++;return 1;}});else value.toJSON=()=>{calls++;return {};};const s=A.createCaptureStore({maxEvents:65536});assert.equal(s.capture(value),null);assert.equal(calls,0);const before=s.status();assert.equal(s.capture({ok:true}),null);assert.deepEqual(s.status(),before);}
+});
+
+test('unchanged page compact and default-store ceilings still fail closed',()=>{
+ const store=A.createCaptureStore(),codec=store.observationEncoder(()=>{});for(let i=0;i<30000;i++)assert(codec.observe({at:i,scope:'page',type:'evaluation-begin',id:i}));assert.equal(codec.observe({at:30000,scope:'page',type:'evaluation-begin',id:30000}),false);assert.equal(store.status().failure,'capture event count limit');
+ const host=A.createCaptureStore();for(let i=0;i<29999;i++)assert(host.capture({type:'cpu-or-page-record',n:i}));assert(host.capture({type:'audit-event'}));assert.equal(host.capture({type:'case-field'}),null);assert.equal(host.status().failure,'capture event count limit');
+});
+
+test('raw writer remains bounded and sticky at next record and next byte',t=>{
+ for(const limits of [{...RAW,maxRecords:1},{...RAW,maxBytes:20}]){const file=temp(t),writer=B.createWriter(file,limits);assert(writer.append({a:1}));assert.equal(writer.append({a:'x'.repeat(20)}),false);const before=writer.stats();assert.equal(writer.append({a:2}),false);assert.equal(writer.stats().reason,before.reason);assert.equal(writer.close(),false);assert(fs.statSync(file).size<=limits.maxBytes);}
+});
+
+for(const fixture of ['default3','moved3'])test('actual 42580011438 '+fixture+' saved prefix replays exactly; historical failure is retained',t=>{
+ const file=path.resolve(ROOT,'../results/42580011438',fixture,'promotion-stop-results',fixture+'-baseline-0.raw.ndjson'),before=fs.existsSync(file)?fs.readFileSync(file):null; if(!before)return t.skip('Optional immutable full artifact absent; portable VM/codec tests still run');const originalHash=sha(before),rows=before.toString().trimEnd().split('\n').map(JSON.parse),payloads=new Map();
+ for(const r of rows)if(r.type==='payload-part'){assert.equal((payloads.get(r.sha256)||'').length,r.offset);payloads.set(r.sha256,(payloads.get(r.sha256)||'')+r.text);}
+ for(const[id,text]of payloads)assert.equal(sha(text),id);
+ const input=decode(rows.filter(r=>r.type==='audit-event').map(r=>r.value)).events,worker=A.createCaptureStore({maxEvents:65536}),page=A.createCaptureStore(),out=[],codec=page.observationEncoder(e=>out.push(e));for(const s of [worker,page])for(const[id,text]of payloads)assert(s.importPayload(id,text)||s.payloads.has(id));
+ const scopeCounts={};for(const e of input){scopeCounts[e.scope]=(scopeCounts[e.scope]||0)+1;const admitted=worker.capture(e);assert(admitted,worker.status().failure);assert(codec.observe(admitted),page.status().failure);}assert(codec.flush());assert.deepEqual(decode(out).events,input);const written=writeRows(t,out,payloads);assert.deepEqual(decode(written.rows).events,input);assert.equal(sha(fs.readFileSync(file)),originalHash);
+ const summaryFile=path.join(path.dirname(file),'summary.json'),summary=JSON.parse(fs.readFileSync(summaryFile)),recording=summary.cases[0].recording;assert.equal(recording.complete,false);assert.match(recording.failure,/capture event count limit/);console.log(JSON.stringify({fixture,sha256:originalHash,savedOriginals:input.length,reencodedRows:out.length,scopeCounts,workerBytes:worker.status().eventBytes,pageBytes:page.status().eventBytes,rawBytes:written.writer.stats().bytes,historicalPageRows:recording.page.events,historicalOriginals:recording.page.observation.observedOccurrences,note:'Saved prefix only. No missing tail recovered or completion claim.'}));
+});
+
+test('flush-only page failure records its first compact-row origin',async()=>{
+ const page=rig({limits:{maxEvents:1}});run(page,`__promotionAudit.emit('worker-post',{error:null,requestId:1,candidateId:2,identities:[],cost:null});__promotionAudit.emit('worker-post',{error:null,requestId:1,candidateId:2,identities:[],cost:null});`);const first=status(page);assert.equal(first.complete,false);assert.equal(first.firstOverflow.events,1);assert.equal(first.firstOverflow.unit,'compact-rows');assert.equal(first.firstOverflow.reason,'capture event count limit');await settle(page);assert.deepEqual(status(page).firstOverflow,first.firstOverflow);
+});
+
+test('source hash that cannot reach the page after native terminate stays unresolved, never fabricated',async()=>{
+ const page=rig(),coordinator=child(page,'coordinator');await settle(page);let resolve;const pending=new Promise(r=>{resolve=r;});coordinator.ctx.crypto={subtle:{digest:()=>pending}};child(coordinator,'nested');await new Promise(r=>setImmediate(r));assert.equal(status(page).pendingSources,1);run(page,'coordinator.terminate()');const hash=crypto.createHash('sha256').update(source).digest();resolve(hash.buffer.slice(hash.byteOffset,hash.byteOffset+hash.byteLength));await settle(page);assert.equal(page.terminated,1);assert.equal(status(page).pendingSources,1);assert(coordinator.outgoing.some(e=>e.type==='worker-source'&&e.scope===page.ctx.coordinator.__promotionId));assert.equal(decode(plain(page.ctx.__promotionAudit.events)).events.filter(e=>e.type==='worker-source').length,1);
+ // This remains an incomplete source proof. Existing host close() explicitly
+ // rejects nonzero pendingSources, irrespective of otherwise valid row counts.
+ const C=require(path.join(BASE,'chrome.cjs'));const fake={pendingSources:1,complete:true},writer={append:()=>true,close:()=>true,stats:()=>({complete:true})},rec=C.createCaseRecorder('unused',{writer});rec.setPageStatus(fake);assert.equal(rec.close().complete,false);assert.match(rec.status().failure,/Unresolved worker source/);
+});
+
+test('all native app transfer arguments, callback data, and source SHA identities are unchanged',async()=>{
+ const page=rig(),worker=child(page);run(page,`globalThis.token={tag:1};globalThis.transfer=[token];globalThis.payload={type:'evaluate',requestId:9,req:{world:[1,2,3]}};w.postMessage(payload,transfer);`);assert.equal(page.ctx.w.posted.at(-1).data,page.ctx.payload);assert.equal(page.ctx.w.posted.at(-1).args[0],page.ctx.transfer);assert.deepEqual(plain(worker.ctx.appIn),[plain(page.ctx.payload)]);
+ run(worker,`globalThis.token={tag:2};globalThis.transfer=[token];globalThis.payload={requestId:9,candidateId:1,steps:12};postMessage(payload,transfer);`);assert.equal(worker.nativeMessages.at(-1).data,worker.ctx.payload);assert.equal(worker.nativeMessages.at(-1).args[0],worker.ctx.transfer);assert.deepEqual(plain(page.ctx.w.received.at(-1)),plain(worker.ctx.payload));await settle(page);for(const e of decode(plain(page.ctx.__promotionAudit.events)).events.filter(e=>e.type==='worker-source')){assert.equal(e.sourceSHA,sha(source));assert.equal(e.sourceBytes,Buffer.byteLength(source));}
+});
+
+test('small before/after capture-cost sample reports measurement only and exact normal-wire equality',t=>{
+ if(BASE===ROOT)return t.skip('Standalone-only prior-audit cost sample, not qualification');
+ const oldCode=fs.readFileSync(path.join(BASE,'audit.js'),'utf8'),measure=code=>{const worker=rig({source:`globalThis.module={exports:{}};${code}\nmodule.exports.installPromotionAudit('pending',true);onmessage({data:{__promotionInit:true,scope:'page.w2'}});`});const start=performance.now(),cpu=process.cpuUsage();run(worker,`for(let i=0;i<2000;i++)postMessage({requestId:1,candidateId:2,steps:i});`);const used=process.cpuUsage(cpu);return {worker,wallMs:performance.now()-start,cpuMs:(used.user+used.system)/1000};};
+ const before=measure(oldCode),after=measure(CODE);assert.deepEqual(after.worker.outgoing,before.worker.outgoing);console.log(JSON.stringify({test:'2000-posts-single-small-cost-sample',before:{wallMs:before.wallMs,cpuMs:before.cpuMs},after:{wallMs:after.wallMs,cpuMs:after.cpuMs},note:'Single unisolated Node VM sample includes capture, wire cloning and test bookkeeping. Not Chrome CPU overhead, statistical performance evidence, or a speed claim.'}));
+});
+
+test('maximal lineage survives page status but unchanged summary limits correctly reject it',async()=>{
+ const page=rig();child(page);await settle(page);const childId=page.ctx.w.__promotionId,scope=childId+'.w2'.repeat(Math.floor((131072-childId.length)/3)),origin={scope,failureScope:scope,reason:'capture event count limit',events:65536,eventBytes:123,payloads:0,payloadBytes:0,maxEvents:65536,maxBytes:33554432,maxEventBytes:131072,maxPayloads:128,unit:'original-occurrences'};assert(scope.length>2048);page.ctx.w.receive({__promotionOverflow:true,scope:childId,reason:origin.reason,origin});assert.deepEqual(status(page).firstOverflow,origin);assert.equal(status(page).failure,origin.reason);assert.throws(()=>B.encodeBounded({firstOverflow:origin},{...RAW,maxBytes:262144,maxLineBytes:262144,maxStringChars:16384,maxStringBytes:32768}));assert.throws(()=>run(page,'__promotionAudit.readChunk(0)'),/audit chunk envelope byte limit/);assert.deepEqual(status(page).firstOverflow,origin);assert.equal(status(page).failure,origin.reason);
+});
+
+function bulk(r,{limit=256,maxBytes=262144,afterFirst=null}={}){let offset=0,calls=0,maxResponseBytes=0,last;const rows=[];while(true){const batch=plain(run(r,`__promotionAudit.readChunk(${offset},${limit},${maxBytes})`)),bytes=Buffer.byteLength(JSON.stringify(batch));assert(bytes<=maxBytes);assert(batch.events.length<=limit);assert.equal(batch.next,offset+batch.events.length);assert(batch.next<=batch.total);assert(batch.next>offset||offset===batch.total);maxResponseBytes=Math.max(maxResponseBytes,bytes);rows.push(...batch.events);offset=batch.next;last=batch;calls++;if(calls===1&&afterFirst){afterFirst();continue;}if(offset===batch.total)break;}return {rows,calls,maxResponseBytes,last};}
+
+test('readChunk preserves legacy read and exact moving-total snapshots with128 payload IDs',()=>{
+ const page=rig();run(page,`for(let i=0;i<128;i++)__promotionAudit.store.payload({id:i});for(let i=0;i<900;i++)__promotionAudit.emit('evaluation-begin',{id:i,text:'한글😀'.repeat(200)});`);const legacy=plain(run(page,'__promotionAudit.read(0,32)')),small=plain(run(page,'__promotionAudit.readChunk(0,32)'));assert.deepEqual(small,legacy);assert.equal(small.payloads.length,128);
+ const transfer=bulk(page,{afterFirst:()=>run(page,`for(let i=900;i<930;i++)__promotionAudit.emit('evaluation-finish',{id:i});`)});assert(transfer.calls>1);assert(transfer.calls<Math.ceil(transfer.rows.length/32));assert.deepEqual(transfer.rows,plain(page.ctx.__promotionAudit.events));assert.equal(transfer.last.total,930);const restored=decode(transfer.rows);assert.equal(restored.status.observed,transfer.last.status.observation.observedOccurrences);assert.equal(restored.status.expandedBytes,transfer.last.status.observation.expandedBytes);assert.equal(transfer.last.status.observation.pendingOccurrences,0);assert.equal(transfer.last.payloads.length,128);assert.equal(transfer.last.status.firstOverflow,null);assert.deepEqual(transfer.last.status.capturePolicy,status(page).capturePolicy);assert.equal(plain(run(page,'__promotionAudit.readChunk(930)')).events.length,0);
+});
+
+test('readChunk budgets whole UTF-8 envelope and next-event boundary exactly, without omissions',()=>{
+ const create=()=>{const r=rig();run(r,`for(let i=0;i<3;i++)__promotionAudit.emit('evaluation-begin',{id:i,text:'x'.repeat(120000)});`);return r;};
+ const page=create(),all=plain(run(page,'__promotionAudit.read(0,32)')),envelope={...all,events:[],next:all.total},budget=Buffer.byteLength(JSON.stringify({...envelope,events:[all.events[0]]}));assert(budget<262144);const one=plain(run(page,`__promotionAudit.readChunk(0,256,${budget})`));assert.equal(one.events.length,1);assert.equal(Buffer.byteLength(JSON.stringify(one)),budget);assert.deepEqual(one.events[0],all.events[0]);const transfer=bulk(page);assert.equal(transfer.calls,2);assert.deepEqual(transfer.rows,all.events);
+ const tooSmall=create();assert.throws(()=>run(tooSmall,`__promotionAudit.readChunk(0,256,${budget-1})`),/audit chunk event byte limit/);const failed=status(tooSmall);assert.equal(failed.complete,false);assert.equal(failed.firstOverflow.reason,'audit chunk event byte limit');assert.equal(failed.events,3);run(tooSmall,`__promotionAudit.emit('later');`);assert.deepEqual(status(tooSmall),failed);
+});
+
+test('readChunk rejects invalid cursor/limits and envelope overflow with sticky provenance',()=>{
+ for(const args of ['-1','1.5','1','0,0','0,257','0,NaN','0,32,0','0,32,262145','0,32,Infinity','{},32,262144']){const page=rig();assert.throws(()=>run(page,`__promotionAudit.readChunk(${args})`),/Invalid audit chunk cursor or limit/);const first=status(page);assert.equal(first.complete,false);assert.equal(first.firstOverflow.scope,'page');assert.equal(first.firstOverflow.events,0);run(page,`__promotionAudit.emit('later');`);assert.deepEqual(status(page),first);}
+ const page=rig();run(page,`for(let i=0;i<128;i++)__promotionAudit.store.payload({id:i});`);assert.throws(()=>run(page,'__promotionAudit.readChunk(0,256,100)'),/audit chunk envelope byte limit/);assert.equal(status(page).payloads,128);assert.equal(status(page).firstOverflow.reason,'audit chunk envelope byte limit');
+});
+
+test('readChunk flush preserves original repeat occurrences and flush-failure origin',()=>{
+ const page=rig();run(page,`for(let i=0;i<103;i++)__promotionAudit.emit('worker-post',{error:null,requestId:1,candidateId:2,identities:[],cost:null});`);const before=plain(page.ctx.__promotionAudit.events),all=bulk(page),restored=decode(all.rows);assert(all.rows.length>before.length);assert.equal(restored.events.length,103);assert.equal(all.last.status.observation.pendingOccurrences,0);assert.equal(restored.status.expandedBytes,all.last.status.observation.expandedBytes);
+ const failed=rig({limits:{maxEvents:1}});run(failed,`for(let i=0;i<2;i++)__promotionAudit.emit('worker-post',{error:null,requestId:1,candidateId:2,identities:[],cost:null});`);const chunk=plain(run(failed,'__promotionAudit.readChunk(0)'));assert.equal(chunk.status.complete,false);assert.equal(chunk.status.firstOverflow.events,1);assert.equal(chunk.status.firstOverflow.reason,'capture event count limit');assert.equal(chunk.status.observation.pendingOccurrences,0);
+});
+
+for(const fixture of ['default3','moved3'])test('actual saved '+fixture+' prefix uses byte-bounded bulk reads with no omitted originals',t=>{
+ const file=path.resolve(ROOT,'../results/42580011438',fixture,'promotion-stop-results',fixture+'-baseline-0.raw.ndjson');if(!fs.existsSync(file))return t.skip('Optional full artifact absent; portable bulk tests still run');const before=fs.readFileSync(file),records=before.toString().trimEnd().split('\n').map(JSON.parse),payloads=new Map();for(const r of records)if(r.type==='payload-part')payloads.set(r.sha256,(payloads.get(r.sha256)||'')+r.text);const originals=decode(records.filter(r=>r.type==='audit-event').map(r=>r.value)).events,page=rig();page.ctx.input=JSON.stringify({payloads:[...payloads],originals});run(page,`const fixture=JSON.parse(input);for(const[id,text]of fixture.payloads)__promotionAudit.store.importPayload(id,text);for(const e of fixture.originals)__promotionAudit.emit(e.type,e);`);const transferred=bulk(page);assert.deepEqual(decode(transferred.rows).events,originals);assert.equal(transferred.last.status.complete,true);assert.equal(transferred.last.status.observation.observedOccurrences,originals.length);assert.equal(transferred.last.status.observation.expandedBytes,decode(transferred.rows).status.expandedBytes);assert.equal(sha(fs.readFileSync(file)),sha(before));console.log(JSON.stringify({fixture,bulkCalls:transferred.calls,legacyMinimumCalls:Math.ceil(transferred.rows.length/32),maxResponseBytes:transferred.maxResponseBytes,originals:originals.length,compactRows:transferred.rows.length,note:'Offline prefix transfer only; moving-total browser catch-up and CPU qualification unproved.'}));
+});
+}
+
+}
+// END REVIEWED worker-bounds-design CONTRACTS
+
+// BEGIN REVIEWED stop-cache-design CONTRACTS
+{
+'use strict';
+// Focused browser-free contracts. This file is merged into the approved
+// comparison-contract.test.cjs for any later authorized validation bundle.
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),crypto=require('node:crypto');
+const C=require('./chrome.cjs');
+function stopFixture({race=null,methodKind='native-pointer',stopThrows=false}={}){
+ const context=vm.createContext({structuredClone,performance:{timeOrigin:1000,now:()=>++tick}});let tick=0,guardCount=0,moveCount=0,downCount=0,upCount=0,saved;const audit=[];
+ context.addAudit=x=>audit.push({...x,scope:'page'});context.stopThrows=stopThrows;
+ vm.runInContext(`
+ const handlers=new Map();globalThis.window={addEventListener(type,fn,options){const list=handlers.get(type)||[];list.push({fn,capture:options===true||!!options?.capture});handlers.set(type,list);},removeEventListener(type,fn){handlers.set(type,(handlers.get(type)||[]).filter(x=>x.fn!==fn));}};
+ const button={id:'cancelRoute',textContent:'중단 · 찾은 경로 유지',disabled:false,isConnected:true,closest(){return this;},click(){dispatch('click',false);}};
+ const background={closest(){return null;}};globalThis.pointerInside=true;globalThis.document={querySelector(id){return id==='#cancelRoute'&&button.id==='cancelRoute'?button:null;},elementFromPoint(){return pointerInside?button:background;}};
+ globalThis.__promotionAudit={store:{fail(message){throw Error(message);}},captureValue(value){return structuredClone(value);}};
+ globalThis.cueLab={optimizer:{worker:{__promotionId:'page.w1'},version:1},state:{routeStatus:'searching',routeResult:{results:[{id:1}]}},stopSearch(){if(stopThrows)throw Error('real action failed');this.optimizer.version++;addAudit({type:'worker-dispatch',messageType:'cancel',workerId:'page.w1',requestId:this.optimizer.version,at:performance.timeOrigin+performance.now()});this.state.routeStatus='done';button.id='findRoute';},startSearch(){this.startSearchRequest();},startSearchRequest(){this.optimizer.version++;this.state.routeStatus='searching';addAudit({type:'worker-dispatch',messageType:'request',workerId:'page.w1',requestId:this.optimizer.version,at:performance.timeOrigin+performance.now()});}};
+ globalThis.originalStop=cueLab.stopSearch;
+ globalThis.complete=()=>{addAudit({type:'worker-receive',messageType:'result',workerId:'page.w1',requestId:cueLab.optimizer.version,at:performance.timeOrigin+performance.now()});cueLab.state.routeStatus='done';button.id='findRoute';};
+ globalThis.dispatch=(type,trusted)=>{const target=pointerInside?button:background,event={type,isTrusted:trusted,target,timeStamp:performance.now(),button:0,buttons:type.includes('down')?1:0,pointerId:1};for(const h of handlers.get(type)||[])if(h.capture)h.fn(event);if(type==='click'&&pointerInside){if(button.id==='cancelRoute')cueLab.stopSearch();else cueLab.startSearch();}for(const h of handlers.get(type)||[])if(!h.capture)h.fn(event);};
+ `,context);
+ const run=(fn,arg)=>{context.arg=arg;return vm.runInContext('('+fn.toString()+')(arg)',context);};
+ const page={evaluate:async(fn,arg)=>{
+  const code=fn.toString();if(code.includes("guard('before-pointerdown'")){guardCount++;if(race==='before-down')vm.runInContext('complete()',context);}
+  if(code.includes("guard('before-pointerup'")){guardCount++;if(race==='before-up-check')vm.runInContext('complete()',context);}
+  if(code.includes("guard('atomic-setup-guard'")){guardCount++;if(race==='before-atomic')vm.runInContext('complete()',context);}
+  const value=run(fn,arg);return value===undefined?undefined:JSON.parse(JSON.stringify(value));
+ },locator(){return {count:async()=>vm.runInContext("document.querySelector('#cancelRoute')?1:0",context),scrollIntoViewIfNeeded:async()=>{},boundingBox:async()=>({x:20,y:20,width:100,height:20})};},mouse:{move:async(x,y)=>{moveCount++;context.pointerInside=x!==1;},down:async()=>{downCount++;vm.runInContext("dispatch('pointerdown',true);dispatch('mousedown',true)",context);},up:async()=>{upCount++;if(race==='after-up-check')vm.runInContext('complete()',context);vm.runInContext("dispatch('pointerup',true);dispatch('mouseup',true);dispatch('click',true)",context);}}};
+ return {context,invoke:()=>C.observedStopIfSearching(page,{methodKind,readAudit:async()=>audit,save:e=>{saved=e;}}),saved:()=>saved,counts:()=>({guardCount,moveCount,downCount,upCount}),audit};
+}
+test('native Stop records trusted pointer and actual handler identity/epoch with cancel dispatch',async()=>{
+ const f=stopFixture(),e=await f.invoke();assert.equal(e.clicked,true);assert.equal(e.stopApplied,true);assert.equal(e.setupStopApplied,false);assert.equal(e.nativeClickObserved,true);assert.equal(e.events.filter(x=>x.type==='click').length,1);assert.equal(e.actions[0].name,'stopSearch');assert.equal(e.actions[0].state.version,1);assert.equal(e.after.version,2);assert.equal(vm.runInContext('cueLab.stopSearch===originalStop&&!globalThis.__promotionStopObserver',f.context),true);assert.equal(f.counts().downCount,1);
+});
+test('pre-Resume setup atomically invokes UI DOM click without claiming native coverage',async()=>{
+ const f=stopFixture({methodKind:'programmatic-setup'}),e=await f.invoke();assert.equal(e.setupStopApplied,true);assert.equal(e.clicked,false);assert.equal(e.stopApplied,false);assert.equal(e.nativeClickObserved,false);assert.equal(e.programmaticClickObserved,true);assert.equal(e.events[0].isTrusted,false);assert.equal(e.events[0].type,'click');assert.equal(f.counts().downCount,0);assert.equal(f.counts().upCount,0);
+});
+test('completion before atomic setup guard causes a proven no-op, never a Start action',async()=>{
+ const f=stopFixture({methodKind:'programmatic-setup',race:'before-atomic'}),e=await f.invoke();assert.equal(e.atomicSetup.attempted,false);assert.equal(e.naturalCompletionProven,true);assert.equal(e.clicked,false);assert.equal(e.events.length,0);assert.equal(e.actions.length,0);assert(!f.audit.some(x=>x.messageType==='request'));
+});
+test('native completion before pointerdown skips native input without counting Stop',async()=>{
+ const f=stopFixture({race:'before-down'}),e=await f.invoke();assert.equal(e.pointerSkipped,true);assert.equal(e.clicked,false);assert.equal(e.naturalCompletionProven,true);assert.equal(e.events.length,0);assert.equal(f.counts().downCount,0);
+});
+test('native completion while pointer held releases outside button and proves natural completion',async()=>{
+ const f=stopFixture({race:'before-up-check'}),e=await f.invoke();assert.equal(e.pointerAborted,true);assert.equal(e.naturalCompletionProven,true);assert.equal(e.clicked,false);assert.equal(e.actions.length,0);assert.equal(f.counts().downCount,1);assert.equal(f.counts().upCount,1);
+});
+test('residual native final-dispatch race is a retained failure, never silently repaired or retried',async()=>{
+ const f=stopFixture({race:'after-up-check'});await assert.rejects(f.invoke(),/Unintended new search/);const e=f.saved();assert(e.failure);assert.equal(e.events.find(x=>x.type==='click').target.id,'findRoute');assert(e.actions.some(x=>x.name==='startSearchRequest'));assert(e.audit.some(x=>x.messageType==='request'));assert.equal(e.after.status,'searching');assert.equal(f.counts().downCount,1);assert.equal(f.counts().upCount,1);
+});
+test('throwing actual Stop handler still saves input/action and raw epoch evidence before rethrow',async()=>{
+ const f=stopFixture({stopThrows:true});await assert.rejects(f.invoke(),/real action failed/);const e=f.saved();assert(e.failure);assert(e.events.some(x=>x.type==='click'));assert(e.actions.some(x=>x.name==='stopSearch'));assert.equal(e.after.status,'searching');assert.equal(vm.runInContext('cueLab.stopSearch===originalStop',f.context),true);
+});
+test('natural completion requires exact guarded request epoch and complete evidence',async()=>{
+ const f=stopFixture({race:'before-down'}),e=await f.invoke();const copy=structuredClone(e);copy.audit[0].requestId=999;assert.throws(()=>C.classifyStopAttempt(copy),/natural completion proof/);copy.audit=e.audit;copy.observerFailure='overflow';assert.throws(()=>C.classifyStopAttempt(copy),/observer incomplete/);
+});
+test('an untrusted click can never satisfy native Stop coverage',async()=>{
+ const f=stopFixture(),e=await f.invoke(),copy=structuredClone(e);copy.events.find(x=>x.type==='click').isTrusted=false;assert.throws(()=>C.classifyStopAttempt(copy),/trusted native click/);
+});
+test('same DOM object with changed action is rejected by stage checks',()=>{
+ const before={status:'searching',workerId:'w',version:1,target:{objectId:1,id:'cancelRoute',connected:true,disabled:false}};
+ assert(C.stopTargetReady(before,{...before,hit:before.target},{hit:true}));assert(!C.stopTargetReady(before,{...before,target:{...before.target,id:'findRoute'}}));assert(!C.stopTargetReady(before,{...before,version:2}));assert(!C.stopTargetReady(before,{...before,status:'done'}));
+});
+const nextSourceCandidates=[path.resolve(__dirname,'../../src/next-shot-service.js'),path.resolve(__dirname,'../results/42580011438/pinned-inputs/next-shot-service.js'),path.resolve(__dirname,'../../../results/42580011438/pinned-inputs/next-shot-service.js')];
+const nextSourcePath=nextSourceCandidates.find(fs.existsSync);assert(nextSourcePath,'Exact next-shot-service source required for browser-free negative-cache contracts');
+const nextSource=fs.readFileSync(nextSourcePath,'utf8');assert.equal(crypto.createHash('sha256').update(nextSource).digest('hex'),'6298a28cd5f98928c5951c86bb1b43645a1c7c2da277cf26134a214fd61a77a6','NextShotService source pin mismatch');
+function cacheFixture({badMode=null}={}){
+ const events=[],context=vm.createContext({structuredClone,clearTimeout(){},performance:{timeOrigin:1000,now:()=>5}});context.emit=(type,x)=>events.push({type,...x});
+ vm.runInContext(nextSource,context);
+ vm.runInContext(`
+ const snapshot={world:new Uint8Array([1,2,3]),time:0,steps:0,dt:0.01,shots:1,nextId:5,revision:1,params:{gravity:9},lastStroke:null,strokeSubsteps:0,events:[],statics:[],objects:[{id:1}]};
+ const game={kind:'four',scores:{1:0,2:0},cueIds:[1,2],redIds:[3,4],pending:null};
+ const oldResult={results:[],partial:true},oldProgress={found:0};
+ globalThis.cueLab={disposed:false,state:{gameMode:'four',selectedId:1,settings:{angle:1,power:4},routeOptions:{maxCushions:3},routeStatus:'done',routeError:'',routeApplied:null,routeResult:oldResult,routeProgress:oldProgress,nextShotPreparation:{phase:'idle'}},optimizer:{dispose(){}},lab:{cue:null,objects:[{body:{isSleeping:()=>true}}],snapshot:()=>structuredClone(snapshot)},game:{pending:null,snapshot:()=>structuredClone(game)},notify(){},invalidate(){},worldStamp:()=> 'world-stamp',routeStamp:'existing-world',routeRequestStamp:'existing-request'};
+ cueLab.nextShot=new NextShotService(cueLab);
+ globalThis.NextShotOptimizer=class {constructor(){this.worker={__promotionId:'page.negative'};this.version=0;this.disposed=false;}dispose(){this.disposed=true;this.worker=null;}promoteToForeground(){return true;}};
+ globalThis.__promotionAudit={emit,captureValue:value=>JSON.parse(JSON.stringify(value,(key,v)=>v instanceof Uint8Array?[...v]:v))};
+ globalThis.__promotionPreparedCacheSeed={scope:'Natural after-Resume',at:900,workerId:'page.natural',version:4,result:{results:[{id:7,settings:{angle:2,power:4},verified:true}],continuable:true,terminationReason:'first-verified-paused'}};
+ `,context);
+ if(badMode==='no-discard')vm.runInContext('cueLab.nextShot.reconcile=function(){return false;}',context);
+ if(badMode==='publish')vm.runInContext('cueLab.nextShot.reconcile=function(job){cueLab.state.routeResult=job.result;return true;}',context);
+ return {context,events,run(kind){context.arg=kind;return JSON.parse(JSON.stringify(vm.runInContext('('+C.exercisePreparedMismatch.toString()+')(arg)',context)));},seed:()=>JSON.parse(JSON.stringify(vm.runInContext('__promotionPreparedCacheSeed',context)))};
+}
+for(const kind of ['snapshot','game','input'])test('exact pinned NextShotService discards only '+kind+' mismatch without changing live settings/results',()=>{
+ const f=cacheFixture(),e=f.run(kind);C.assertPreparedMismatchEvidence(e,f.seed());assert.equal(e.matches[kind],false);assert.equal(e.preparation.phase,'discarded');assert.equal(e.preparation.reason,'rest-mismatch');assert.equal(e.rejected.routeResultSameObject,true);assert.equal(e.rejected.proposedNotDisplayed,true);assert.deepEqual(e.before,e.after);assert.equal(vm.runInContext('cueLab.state.nextShotPreparation.phase',f.context),'idle');assert.equal(f.events.at(-1).type,'controlled-cache-mismatch-end');
+});
+test('return-false alone does not prove discard, disposal, or isolation',()=>{
+ const f=cacheFixture({badMode:'no-discard'}),e=f.run('snapshot');assert.throws(()=>C.assertPreparedMismatchEvidence(e,f.seed()));assert.equal(e.rejected.jobCleared,false);assert.equal(e.rejected.optimizerDisposed,false);
+});
+test('publishing the proposed cache is preserved as a failure, never undone to manufacture proof',()=>{
+ const f=cacheFixture({badMode:'publish'}),e=f.run('game');assert.throws(()=>C.assertPreparedMismatchEvidence(e,f.seed()),/reconciled successfully/);assert.equal(e.rejected.proposedNotDisplayed,false);assert.equal(e.rejected.routeResultSameObject,false);assert.equal(vm.runInContext('cueLab.state.routeResult.results[0].id',f.context),7);
+});
+test('cache assertion rejects counterfeit source, wrong dimension, or omitted disposal proof',()=>{
+ const f=cacheFixture(),e=f.run('input');for(const alter of [x=>x.proposedResult.results[0].id=8,x=>x.source.version++,x=>x.matches.game=false,x=>delete x.rejected.optimizerDisposed]){const copy=structuredClone(e);alter(copy);assert.throws(()=>C.assertPreparedMismatchEvidence(copy,f.seed()));}
+});
+test('negative cache requires actual rest and no ongoing foreground search',()=>{
+ const f=cacheFixture();vm.runInContext("cueLab.state.routeStatus='searching'",f.context);assert.throws(()=>f.run('snapshot'),/actual full rest/);assert.equal(f.events.length,0);
+});
+test('source wiring keeps negative cases after existing settings/stale/replay flows and native final Stop',()=>{
+ const source=fs.readFileSync(require.resolve('./chrome.cjs'),'utf8');assert(source.includes("methodKind:key==='preResumeStop'?'programmatic-setup':'native-pointer'"));assert(source.indexOf("phase='forced-mismatching-cache'")>source.indexOf("phase='settings-invalidation'"));assert(source.indexOf("phase='settings-invalidation'")>source.indexOf("phase='independent-replay'"));assert(!source.includes('measurement.stopIfSearching(page)'));assert(source.includes("r.actualStop=r.finalStop.clicked"));assert(source.includes("if(!r.actualStop)r.uncovered.push('Actual Stop state not reached')"));assert(source.includes('r.invalidCacheReconciliation.covered=true'));assert(source.includes("assertPreparedMismatchEvidence(evidence,r.invalidCacheSeed)"));for(const budget of ['restPromotion:60000','firstAfterPromotion:60000','postFirst:8000','resume:100000','resumeSlices:4','restore:8000','replaySteps:40000','cpuQualificationUncertaintyMs:250'])assert(source.includes(budget));
+});
+function contractFile(t){const folder=fs.mkdtempSync(path.join(__dirname,'.stop-cache-contract-'));t.after(()=>fs.rmSync(folder,{recursive:true,force:true}));return path.join(folder,'trace.ndjson');}
+test('host can record 30000 legal page audit rows plus metadata without enlarging page defaults or byte bounds',t=>{
+ const file=contractFile(t),rec=C.createCaseRecorder(file);rec.setPageStatus({complete:true});
+ for(let i=0;i<30000;i++)assert(rec.auditEvent({type:'contract-observation',at:i}));
+ for(let i=0;i<100;i++)assert(rec.record('page-observation',{at:i,status:'done'}));
+ assert(rec.record('case-field',{key:'followOn',value:{cacheCovered:true}}));const status=rec.close();assert.equal(status.complete,true);assert.equal(status.raw.records,30101);assert.equal(rec.store.limits.maxEvents,65536);assert.equal(rec.store.limits.maxBytes,32*1024*1024);assert.equal(rec.store.limits.maxPayloads,128);assert.equal(rec.store.limits.maxValueBytes,4*1024*1024);assert.equal(rec.store.limits.maxEventBytes,128*1024);
+ const restored=C.reconstructCaseFields(fs.readFileSync(file));assert.equal(restored.events.length,30000);assert.deepEqual(restored.fields.followOn,{cacheCovered:true});
+ assert.equal(C.createCaseRecorder.toString().includes('o.repeatRows<=PAGE_AUDIT_MAX_EVENTS'),true);
+});
+test('page decoder still refuses compact audit row 30001 even with larger host admission count',t=>{
+ const rec=C.createCaseRecorder(contractFile(t));rec.setPageStatus({complete:true});for(let i=0;i<30000;i++)assert(rec.auditEvent({type:'contract-observation',at:i}));assert.equal(rec.auditEvent({type:'contract-observation',at:30000}),null);assert.equal(rec.close().complete,false);assert.match(rec.status().failure,/compact row limit/);
+});
+test('whole raw 65536 record cap counts payload parts before host capture count is exhausted',t=>{
+ const rec=C.createCaseRecorder(contractFile(t));rec.setPageStatus({complete:true});const text='{"fixture":1}',sha=crypto.createHash('sha256').update(text).digest('hex');assert(rec.payload(sha,text));for(let i=0;i<65535;i++)assert(rec.record('host-metadata',{i}));assert.equal(rec.record('host-metadata',{i:65535}),false);assert.equal(rec.close().complete,false);assert.match(rec.status().failure,/raw writer: MAX_RECORDS/);assert.equal(rec.store.status().events,65536);assert.equal(rec.writer.stats().records,65536);assert.equal(rec.record('later',{}),false);
+});
+test('host count alignment does not relax packed byte or per-value limits',t=>{
+ const rec=C.createCaseRecorder(contractFile(t),{writer:{append:()=>true,close(){},stats:()=>({complete:true,records:0,bytes:0})}});rec.setPageStatus({complete:true});let accepted=0;while(accepted<65536&&rec.record('host-metadata',{padding:'x'.repeat(8192)}))accepted++;assert(accepted>3000&&accepted<5000);assert.equal(rec.close().complete,false);assert.match(rec.status().failure,/capture event byte limit/);assert.equal(rec.record('later',{}),false);
+});
+test('new Stop and mismatch evidence round-trip through bounded raw capture and case-field projection',async t=>{
+ const stop=await stopFixture().invoke(),cache=cacheFixture(),mismatch=cache.run('snapshot'),file=contractFile(t),rec=C.createCaseRecorder(file);rec.setPageStatus({complete:true});const auditRef=rec.auditEvent({type:'worker-dispatch',at:2,workerId:'page.w1',messageType:'cancel'});stop.audit=[auditRef];assert(rec.record('stop-attempt',{key:'finalStop',evidence:stop}));assert(rec.record('case-field',{key:'finalStop',value:stop}));assert(rec.record('case-field',{key:'invalidCacheReconciliation',value:{covered:true,cases:[mismatch]}}));assert.equal(rec.close().complete,true);const rebuilt=C.reconstructCaseFields(fs.readFileSync(file));assert.deepEqual(rebuilt.fields.finalStop,stop);assert.strictEqual(rebuilt.fields.finalStop.audit[0],rebuilt.events[0]);assert.deepEqual(rebuilt.fields.invalidCacheReconciliation.cases[0],mismatch);
+});
+const extraAudit=require(fs.existsSync(path.join(__dirname,'audit.js'))?path.join(__dirname,'audit.js'):path.resolve(__dirname,'../trace-final-v2-assembled/verification/promotion-stop-corrected/audit.js'));
+function transferPage(api){return {async evaluate(fn,arg){const old=global.__promotionAudit;global.__promotionAudit=api;try{return fn(arg);}finally{global.__promotionAudit=old;}}};}
+function transferFixture({count=257,chunked=true,indexed=false}={}){
+ const store=extraAudit.createCaptureStore(),rows=[];let chunkCalls=0,legacyCalls=0;
+ const codec=indexed?store.observationEncoder(row=>rows.push(row)):null;
+ const append=i=>{const value={type:'contract-audit-row',at:i,value:i};if(codec){codec.observe(value);codec.flush();}else rows.push(store.capture(value));};
+ for(let i=0;i<count;i++)append(i);
+ const status=()=>({...store.status(),...(codec?{observation:codec.status()}:{}),pendingSources:0});
+ const response=(offset,limit)=>({events:rows.slice(offset,offset+limit),next:Math.min(offset+limit,rows.length),total:rows.length,status:status(),payloads:[...store.payloads.keys()]});
+ const api={read(offset){legacyCalls++;return response(offset,32);},payloadPart(id,offset){const text=store.payloads.get(id);return {text:text.slice(offset,offset+8192),length:text.length};}};
+ if(chunked)api.readChunk=(offset,limit,maxBytes)=>{chunkCalls++;assert.equal(limit,256);assert.equal(maxBytes,262144);return response(offset,limit);};
+ return {store,rows,append,api,page:transferPage(api),counts:()=>({chunkCalls,legacyCalls}),status};
+}
+test('optional chunk transport archives ordered256-row batches; old32-row reader remains supported',async t=>{
+ for(const chunked of [true,false]){const f=transferFixture({chunked}),rec=C.createCaseRecorder(contractFile(t)),cache=[];await C.collectAudit(f.page,rec,cache);assert.equal(cache.length,257);assert.deepEqual(cache.map(x=>x.value),Array.from({length:257},(_,i)=>i));assert.equal(rec.close().complete,true);assert.deepEqual(f.counts(),chunked?{chunkCalls:2,legacyCalls:0}:{chunkCalls:0,legacyCalls:9});}
+});
+test('bulk response uses whole UTF-8 JSON envelope bound with no hidden newline off-by-one',async t=>{
+ for(const delta of [0,1]){const response={events:[],next:0,total:0,status:{complete:true,events:0,padding:''},payloads:[]};response.status.padding='x'.repeat(262144-Buffer.byteLength(JSON.stringify(response))+delta);assert.equal(Buffer.byteLength(JSON.stringify(response)),262144+delta);const rec=C.createCaseRecorder(contractFile(t)),page=transferPage({readChunk:()=>response});if(delta){await assert.rejects(C.collectAudit(page,rec,[]),/MAX_LINE_BYTES|MAX_BYTES|capture byte limit/);assert.equal(rec.close().complete,false);}else{await C.collectAudit(page,rec,[]);assert.equal(rec.close().complete,true);}}
+});
+test('oversized first-overflow metadata is rejected whole, never omitted to fit transfer',async t=>{
+ const response={events:[],next:0,total:0,status:{complete:false,events:0,firstOverflow:{origin:'worker-before-failure',message:'x'.repeat(262144)}},payloads:[]};const rec=C.createCaseRecorder(contractFile(t));await assert.rejects(C.collectAudit(transferPage({readChunk:()=>response}),rec,[]),/MAX_LINE_BYTES|MAX_BYTES|capture byte limit/);assert.equal(rec.close().complete,false);assert.equal(response.status.firstOverflow.message.length,262144);
+});
+test('bad cursor, excess rows, mismatched snapshot and zero-progress batches fail sticky without looping',async t=>{
+ const base={events:[],next:0,total:0,status:{complete:true,events:0},payloads:[]};for(const change of [x=>{x.total=1;x.status.events=1;},x=>x.next=1,x=>x.total=30001,x=>x.status.events=1,x=>{x.events=Array(257).fill({type:'x',at:1});x.next=257;x.total=257;x.status.events=257;},x=>x.payloads=['invalid']]){const value=structuredClone(base);change(value);let calls=0;const rec=C.createCaseRecorder(contractFile(t));await assert.rejects(C.collectAudit(transferPage({readChunk(){calls++;return value;}}),rec,[]));assert.equal(calls,1);assert.equal(rec.close().complete,false);}}
+);
+test('chunk payload inventory is imported before dependent events are archived',async t=>{
+ const f=transferFixture({count:0}),request={snapshot:{world:[1,2,3]},options:{maxCushions:3}};f.rows.push(f.store.capture({type:'worker-dispatch',at:1,request}));const rec=C.createCaseRecorder(contractFile(t)),cache=[];await C.collectAudit(f.page,rec,cache);assert.deepEqual(cache[0].request,request);assert.equal(rec.close().complete,true);
+});
+test('32-row real event-loop yield lets independent CPU acquisition complete before bulk drain finishes',async t=>{
+ const f=transferFixture({count:64}),rec=C.createCaseRecorder(contractFile(t)),cache=[];let resolveCPU,seenAt=null,calls=0;const pending=new Promise(resolve=>{resolveCPU=resolve;});const sampler=C.startBoundedProcessSampler({recorder:rec,cdp:{send(){calls++;return pending;}}});
+ setImmediate(()=>{seenAt=rec.auditCursor();resolveCPU({processInfo:[{id:1,type:'browser',cpuTime:0.1}]});});await C.collectAudit(f.page,rec,cache);await sampler.stop();assert.equal(seenAt,32);assert.equal(rec.samples.length,1);assert.equal(calls,1);assert.equal(cache.length,64);assert.equal(rec.close().complete,true);
+});
+test('yielding does not replace terminal batch status with a newer producer total',async t=>{
+ const f=transferFixture({count:64,indexed:true}),rec=C.createCaseRecorder(contractFile(t)),cache=[];setImmediate(()=>f.append(64));await C.collectAudit(f.page,rec,cache);assert.equal(cache.length,64);assert.equal(f.rows.length,65);assert.equal(rec.status().page.events,64);assert.equal(rec.finishAudit(),true);await C.collectAudit(f.page,rec,cache);assert.equal(cache.length,65);assert.equal(rec.status().page.events,65);assert.equal(rec.close().complete,true);
+});
+test('terminal producer binding still rejects an internally inconsistent status after chunk delivery',async t=>{
+ const f=transferFixture({count:64,indexed:true}),original=f.api.readChunk;f.api.readChunk=(...args)=>{const value=original(...args);value.status.observation.observedOccurrences++;return value;};const rec=C.createCaseRecorder(contractFile(t));await assert.rejects(C.collectAudit(f.page,rec,[]),/Incomplete expanded audit recording/);assert.equal(rec.close().complete,false);assert.match(rec.status().failure,/count mismatch/);
+});
+test('transport aggregates more than65536 nodes of individually legal inline-array rows',async t=>{
+ const f=transferFixture({count:0});for(let i=0;i<256;i++)f.rows.push(f.store.capture({type:'inline-array',at:i,small:Array(260).fill(0)}));assert(f.rows.every(Boolean));assert(!f.rows[0].small.$payload);const rec=C.createCaseRecorder(contractFile(t)),cache=[];await C.collectAudit(f.page,rec,cache);assert.equal(cache.length,256);assert.deepEqual(cache[255].small,Array(260).fill(0));assert.equal(rec.close().complete,true);
+});
+test('transport wrapper nesting preserves deepest legal raw event without relaxing raw depth',async t=>{
+ for(const layers of [30,31]){const f=transferFixture({count:0});let deep=0;for(let i=0;i<layers;i++)deep={child:deep};f.rows.push(f.store.capture({type:'deep-inline',at:1,deep}));assert(f.rows[0]);const rec=C.createCaseRecorder(contractFile(t)),cache=[];if(layers===30){await C.collectAudit(f.page,rec,cache);assert.equal(rec.close().complete,true);assert.deepEqual(cache[0].deep,deep);}else{await assert.rejects(C.collectAudit(f.page,rec,cache),/Incomplete audit recording/);assert.equal(rec.close().complete,false);assert.match(rec.status().failure,/MAX_DEPTH/);}}
+});
+test('bulk transport acceptance does not relax per-raw-line32768-byte bound',async t=>{
+ const f=transferFixture({count:0});f.rows.push(f.store.capture({type:'over-raw-line',at:1,p0:'x'.repeat(8192),p1:'x'.repeat(8192),p2:'x'.repeat(8192),p3:'x'.repeat(8192)}));assert(f.rows[0]);const rec=C.createCaseRecorder(contractFile(t));await assert.rejects(C.collectAudit(f.page,rec,[]),/Incomplete audit recording/);assert.equal(rec.close().complete,false);assert.match(rec.status().failure,/MAX_LINE_BYTES/);
+});
+
+}
+// END REVIEWED stop-cache-design CONTRACTS
