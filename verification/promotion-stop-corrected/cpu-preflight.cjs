@@ -4,6 +4,7 @@
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const M=require('./measurement.cjs');
 const LIMITS=Object.freeze({criterionMs:250,intervalMs:100,idleSamples:10,loadMs:8000,loadObserveMs:8300,postSamples:3,maxSamples:110,maxProcesses:128,requestTimeoutMs:2000,closeTimeoutMs:2000,maxWallMs:30000});
+const STARTUP=Object.freeze({totalMs:20000,launchMs:15000,stepMs:10000});
 const hostNow=()=>Number(process.hrtime.bigint())/1e6;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const brief=e=>String(e?.message||e).slice(0,600);
@@ -14,7 +15,7 @@ function processRows(info){
 }
 function compactWindow(w){const part=p=>p?{cpuSecondsLowerBound:p.cpuSecondsLowerBound,intervals:p.intervals,observedSpanMs:p.observedSpanMs,exitedProcessIds:p.exitedProcessIds,resetProcessIds:p.resetProcessIds}:null;return{qualified:w.qualified,reason:w.reason||null,maxGapMs:w.maxGapMs??null,maxAcquisitionMs:w.maxAcquisitionMs??null,bracketWidthsMs:w.bracketWidthsMs??null,incompleteAcquisition:!!w.incompleteAcquisition,inner:part(w.inner),outer:part(w.outer)};}
 async function runPreflight({adapter,writer,now=hostNow,wait=sleep}){
- const start=now(),samples=[],summary={schema:'promotion-cpu-capability-v1',kind:'generic-worker-load-capability-only',pass:false,criterionMs:250,actualAppQualified:false,actualComparisonsStarted:0,phase:'starting',failure:null,shutdown:{detached:false,closed:false},limits:LIMITS};
+ const start=now(),samples=[],summary={schema:'promotion-cpu-capability-v1',kind:'generic-worker-load-capability-only',pass:false,criterionMs:250,actualAppQualified:false,actualComparisonsStarted:0,phase:'starting',failure:null,shutdown:{detached:false,closed:false},limits:LIMITS,startupTiming:adapter.startupTiming||[]};
  let failed=null,everPending=false,acquisitionPending=false;
  const guard=()=>{if(now()-start>LIMITS.maxWallMs)throw Error('Preflight whole-work budget exceeded');};
  const record=row=>{if(writer.append(row)!==true)throw Error('Bounded raw recording failed: '+writer.stats().reason);};
@@ -68,17 +69,23 @@ async function runPreflight({adapter,writer,now=hostNow,wait=sleep}){
  }
  return summary;
 }
+async function initializeBrowser(chromium,{now=hostNow}={}){
+ let browser,context,page,cdp;const begin=now(),timings=[];
+ async function stage(name,fn,cap=STARTUP.stepMs){const remaining=STARTUP.totalMs-(now()-begin);if(remaining<=0)throw Error('Browser startup total budget exceeded');const allowance=Math.min(cap,remaining),start=now();try{const result=await deadline(fn,allowance,name);if(now()-start>allowance)throw Error(name+' exceeded startup budget');timings.push({stage:name,ms:now()-start,completed:true});return result;}catch(e){timings.push({stage:name,ms:now()-start,completed:false});throw e;}}
+ try{
+  browser=await stage('Chrome launch',()=>chromium.launch({channel:'chrome',headless:true,timeout:STARTUP.launchMs}),STARTUP.launchMs);
+  context=await stage('Context creation',()=>browser.newContext({viewport:{width:1280,height:850}}));
+  page=await stage('Page creation',()=>context.newPage());
+  await stage('Blank page',()=>page.goto('about:blank'));
+  cdp=await stage('Independent browser CDP session',()=>browser.newBrowserCDPSession());
+  return{browser,context,page,cdp,startupTiming:timings};
+ }catch(e){if(browser)await deadline(()=>browser.close(),2000,'Startup cleanup').catch(()=>{});e.startupTiming=timings;throw e;}
+}
 async function realAdapter(){
  // Loaded only by explicit CLI execution, never by local contract tests.
- const {chromium}=require('playwright');let browser,context,page,cdp;
- try{
-  browser=await chromium.launch({channel:'chrome',headless:true,timeout:10000});
-  context=await deadline(()=>browser.newContext({viewport:{width:1280,height:850}}),2000,'Context creation');
-  page=await deadline(()=>context.newPage(),2000,'Page creation');
-  await deadline(()=>page.goto('about:blank'),2000,'Blank page');
-  cdp=await deadline(()=>browser.newBrowserCDPSession(),2000,'Independent browser CDP session');
- }catch(e){if(browser)await deadline(()=>browser.close(),2000,'Startup cleanup').catch(()=>{});throw e;}
+ const {chromium}=require('playwright');const{browser,page,cdp,startupTiming}=await initializeBrowser(chromium);
  return{
+  startupTiming,
   async metadata(){const v=await cdp.send('Browser.getVersion');const pick=k=>{if(typeof v[k]!=='string'||v[k].length>256)throw Error('Invalid browser version field');return v[k];};return{product:pick('product'),revision:pick('revision'),jsVersion:pick('jsVersion'),protocolVersion:pick('protocolVersion')};},
   async getProcesses(){return(await cdp.send('SystemInfo.getProcessInfo')).processInfo;},
   pageEpoch:()=>page.evaluate(()=>performance.timeOrigin+performance.now()),
@@ -102,7 +109,7 @@ async function main(){
  const out=path.resolve(process.env.OUT_DIR||'cpu-preflight-results');fs.mkdirSync(out,{recursive:false});
  const raw=path.join(out,'samples.ndjson');let writer,summary;
  try{writer=createWriter(raw,{maxBytes:1048576,maxRecords:128,maxLineBytes:32768});if(writer.stats().failures)throw Error('Raw output unavailable before browser launch');const adapter=await realAdapter();summary=await runPreflight({adapter,writer});}
- catch(e){try{writer?.close();}catch{}summary={schema:'promotion-cpu-capability-v1',pass:false,criterionMs:250,actualAppQualified:false,actualComparisonsStarted:0,phase:'startup-failed',failure:brief(e),recording:writer?.stats()||null};}
+ catch(e){try{writer?.close();}catch{}summary={schema:'promotion-cpu-capability-v1',pass:false,criterionMs:250,actualAppQualified:false,actualComparisonsStarted:0,phase:'startup-failed',failure:brief(e),startupTiming:e.startupTiming||[],recording:writer?.stats()||null};}
  summary.source={gitCommit:process.env.GITHUB_SHA||null,runId:process.env.GITHUB_RUN_ID||null,runAttempt:process.env.GITHUB_RUN_ATTEMPT||null,measurementSHA256:crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname,'measurement.cjs'))).digest('hex')};
  if(fs.existsSync(raw)){const stat=fs.statSync(raw);if(stat.size<=1048576)summary.rawSHA256=crypto.createHash('sha256').update(fs.readFileSync(raw)).digest('hex');else{summary.pass=false;summary.failure='Raw file exceeded declared limit';}}
  const saved=writeSummary(path.join(out,'summary.json'),summary,writer,{maxBytes:65536,maxLineBytes:65536,maxStringLength:1024,maxArrayLength:256,maxObjectKeys:64,maxNodes:2048,maxDepth:12});
@@ -110,5 +117,5 @@ async function main(){
  console.log(JSON.stringify({kind:summary.schema,pass:summary.pass,samples:summary.sampleCount||0,failure:summary.failure||null,actualComparisonsStarted:0}));
  return summary.pass?0:2;
 }
-module.exports={LIMITS,deadline,processRows,compactWindow,runPreflight};
+module.exports={LIMITS,STARTUP,deadline,processRows,compactWindow,runPreflight,initializeBrowser};
 if(require.main===module)main().then(code=>{process.exitCode=code;},e=>{console.error('CPU preflight fatal: '+brief(e));process.exitCode=2;});

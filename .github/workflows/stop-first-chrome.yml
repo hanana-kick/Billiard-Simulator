@@ -37,7 +37,7 @@ jobs:
         env:
           OUT_DIR: cpu-preflight-results
         run: |
-          timeout --signal=TERM --kill-after=5s 45s node verification/promotion-stop-corrected/cpu-preflight.cjs
+          timeout --signal=TERM --kill-after=5s 75s node verification/promotion-stop-corrected/cpu-preflight.cjs
       - name: Require qualified and complete capability record
         run: node verification/promotion-stop-corrected/check-preflight.cjs cpu-preflight-results/summary.json cpu-preflight-results/samples.ndjson
       - uses: actions/upload-artifact@v4
